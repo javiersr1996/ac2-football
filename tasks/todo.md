@@ -1,14 +1,15 @@
 # ac2-football: entrada de fútbol a la Analytics Cup 2.0 (planificado y revisado el 2026-10-17)
 
-Carpeta y paquete con nombre provisional (`ac2-football`, `ac2fb`) hasta que Javier elija (J2).
+Dos repos con nombre provisional hasta J2 (decisión 7): la entrada (`ac2-football`, paquete `ac2fb`)
+y la base (`football-tracking-base`, paquete `ftbase`, carpeta hermana en `proyectos\`).
 **Las cifras que no vienen del inventario son hipótesis** y van marcadas así hasta que una tarea
 las imprima. Lo que no se pudo medir dice PENDIENTE DE CONFIRMAR.
 
 ## La entrada en tres capas
 
-- **Capa 1, base (trabajo previo, declarado).** Ingesta verificada por sha256 contra manifiesto,
-  bronze, frames y eventos conformados, copiados de tracklab (repo privado del autor, MIT). No se
-  enlaza; se nombra como origen.
+- **Capa 1, base (trabajo previo, publicado aparte y declarado).** Ingesta verificada por sha256
+  contra manifiesto, bronze, frames y eventos conformados, extraídos de tracklab (privado, MIT) a
+  un repo público propio (`ftbase`, decisión 7) que la entrada fija como dependencia.
 - **Capa 2, fiabilidad (nuevo, la columna vertebral, no puede morir).** Cuánto cambia cada métrica
   de posicionamiento defensivo al separar lo visto de lo extrapolado (`is_detected`), por partido
   y por longitud del hueco, con una referencia medida por amputación. tracklab midió la PROPORCIÓN
@@ -45,7 +46,7 @@ Fuente: sondas de solo lectura de esta sesión (`m1.py` a `m11.py` y sus `.out` 
 `C:\Users\javie\AppData\Local\Temp\claude\C--Users-javie-Desktop-proyectos-tracklab\32ca1c69-cc35-4afa-8188-48fc580d005f\scratchpad\ac2\`),
 DuckDB en memoria sobre `tracklab/pipeline/data` (silver `frames`, bronze `dynamic_events`,
 `phases_of_play`, `match_players`, `dim_team_period`); ninguna escribe en tracklab. m1 a m9 miran
-los 20 partidos; **m10 y m11 solo los 10 de calibración del split A**. **La tarea 10 re-deriva en
+los 20 partidos; **m10 y m11 solo los 10 de calibración del split A**. **La tarea 12 re-deriva en
 código las cifras de capa 2 y tiene que dar las mismas**; si no, se corrige este plan. "Por
 partido" = mínimo a máximo (mediana entre paréntesis).
 
@@ -102,11 +103,11 @@ partido" = mínimo a máximo (mediana entre paréntesis).
   el hueco; aquí la posición aterriza en la readquirida: **el proveedor interpola con el futuro
   visto** (paso dentro de huecos largos 0,137 m, más suave). Posiciones extrapoladas por hueco, por
   partido: ≤ 1 s 0,3 a 0,6 %; 1 a 5 s 15,8 a 19,5; 5 a 20 s 40,6 a 46,8; **más de 20 s 34,9 a
-  40,3 %**. Consecuencia (hipótesis hasta la 10): una trayectoria interpolada casi sin aceleración
+  40,3 %**. Consecuencia (hipótesis hasta la 12): una trayectoria interpolada casi sin aceleración
   da residuo sobre velocidad cero por construcción: toda métrica de REACCIÓN defensiva lee cero en
   los jugadores extrapolados.
 - Cadencia (m7, exploratoria): el hueco entre quiebros de detectados es 1 frame en el 57,6 a
-  59,8 % y decae sin pico; el umbral cae dentro del ruido de redondeo de 1 cm. Lo cierra la 11.
+  59,8 % y decae sin pico; el umbral cae dentro del ruido de redondeo de 1 cm. Lo cierra la 13.
 
 **La recepción y la línea, solo calibración (m10; 9.178 posesiones, 8.959 con línea de 4,
 presión y balón en `t` y `t - 1 s`). Signo: + es la línea retrocediendo hacia su portería.**
@@ -130,9 +131,9 @@ presión y balón en `t` y `t - 1 s`). Signo: + es la línea retrocediendo hacia
   presionadas y cercanas al balón, y toda variante restringida declara ese sesgo.
 
 **kloppy.** kloppy 3.19.1 (última en PyPI hoy): el deserializador `skillcorner` lee `player_data`
-sin `is_detected` (grep del paquete instalado en esta sesión). Lo vuelve a comprobar la tarea 8.
+sin `is_detected` (grep del paquete instalado en esta sesión). Lo vuelve a comprobar la tarea 10.
 
-**Código a copiar (lectura de un subagente sobre tracklab `pipeline/`).**
+**Código a copiar al repo base (lectura de un subagente sobre tracklab `pipeline/`).**
 - Casi tal cual: `ingest/{fetch,lfs,verify,manifest,local}.py` (sin HuggingFace, `freeze` ni
   baloncesto), `bronze/common.py`, `bronze/football/{tracking,events,meta}.py`,
   `formats/csvschema.py`, dos esquemas JSON, `quality/{common,detection}.py`, `paths.py`.
@@ -141,7 +142,8 @@ sin `is_detected` (grep del paquete instalado en esta sesión). Lo vuelve a comp
   `silver/orientation.py`); el CLI (unas 80); los 6 tests dbt de fútbol como SQL de 0 filas. No se
   copian `formats/football.py`, `runs/` (P5), `build.py`, Dagster, dbt, pose ni publish.
   Estimación (hipótesis): **unas 2.250 líneas copiadas y 460 reescritas**; dependencias `duckdb`,
-  `pyarrow`, `httpx`; Python >= 3.13. Tiempo y RAM del build: PENDIENTE DE CONFIRMAR (tarea 7).
+  `pyarrow`, `httpx`; Python >= 3.13. Tiempo y RAM del build: PENDIENTE DE CONFIRMAR (tarea 9).
+  `gap_len` no existe en tracklab (grep, 0 ocurrencias): es capa 2 y va en la entrada.
 
 **Contaminación declarada.** m1 a m9 calcularon en los 20 partidos solo recuentos, nulos,
 vocabularios, detección y pasos. m10 y m11, solo en los 10 de calibración: m11 pasos y huecos; m10
@@ -233,11 +235,11 @@ decide CP1, no este plan.
 - **Intención no reclamable**: "decision-making" solo como definición geométrica medida.
 - **El protocolo es código y se congela antes del reservado**; un umbral que falla no se mueve. La
   capa 2 corre solo en calibración hasta la lectura. Tests que pueden fallar (mutación anotada).
-- **Un solo agente escribe en este árbol; nadie escribe en tracklab.** LF en todo escritor. 0 €.
+- **Un agente por repo; nadie escribe en tracklab; nada de análisis en la base.** LF siempre. 0 €.
 - **Fuera de alcance:** EPV propio, rankings de jugador o equipo, predicción de resultados, vídeo,
   body pose, baloncesto, cualquier dato fuera del commit fijado de `SkillCorner/opendata`.
 
-## Decisiones, con su porqué (las aprueba Javier en J3)
+## Decisiones, con su porqué (1 a 6 aprobadas en J3; la 7 la aprueba Javier en J2)
 
 1. **Split A de P5, declarado hoy, antes de calcular ningún desenlace.** Calibración 1874553,
    1886347, 1925299, 1959846, 1996435, 1996436, 2007448, 2010085, 2011166, 2015213; reservado
@@ -259,13 +261,23 @@ decide CP1, no este plan.
 6. **Variantes de capa 2 fijadas para toda métrica de equipo**: V0 todo; V1 unidades con los
    jugadores de la métrica detectados en toda la ventana (selección declarada); V2 el efecto por
    número de jugadores detectados (0 a 4 en la línea), monótono si lo extrapolado atenúa; más la
-   referencia por amputación (24). Sustituye a "sin extrapolados", que para una línea es otra línea.
+   referencia por amputación (26). Sustituye a "sin extrapolados", que para una línea es otra línea.
+7. **Dos repos: la base en un repo público propio, la entrada la fija como dependencia.** Con
+   tracklab privado, una base copiada dentro de la entrada no encajaba al pie de la letra en
+   "pre-existing ... open-source projects ... appropriately licensed and disclosed" (bases, arriba).
+   `ftbase` (tarea 2: MIT, CI, tests de contrato, procedencia desde tracklab `686508a`) es open
+   source por sí mismo; la entrada lo fija en `pyproject.toml` y todo su `git log` es trabajo de la
+   Cup. Frontera: en la base solo lo que ya existía en tracklab para fútbol más dos añadidos sin
+   análisis que necesita para funcionar y probarse sola (`--match`, generador sintético),
+   etiquetados `nuevo`; en la entrada todo lo demás, `gap_len` incluido. Coste: dos gates y dos CI;
+   un arreglo en la base pide tag nuevo y re-fijar (nunca análisis); el clon limpio depende de
+   GitHub; el repo base nace en octubre de 2026 con código anterior, y los dos README lo dicen.
 
 ## Fases y fechas
 
 | Fase | Fechas | Contenido | Horas (hipótesis) |
 |---|---|---|---|
-| 0 | sáb 17 oct a dom 25 oct | Repo, base copiada, CI con fixtures, kloppy | 12 a 16 |
+| 0 | sáb 17 oct a dom 25 oct | Repo base público (copia, CI, procedencia, `v0.1.0`); entrada con la base fijada, clon limpio, kloppy | 14 a 20 (+2 a 4 por el segundo repo) |
 | 1 | lun 26 oct a dom 1 nov | Split y guard, núcleo de capa 2, sondas, potencia | 12 a 16 |
 | CP1 | lun 2 nov | **Javier elige la pregunta** | 1 |
 | 2 | lun 2 nov a dom 15 nov | Protocolo, sintéticos, calibración, congelación | 14 a 18 |
@@ -285,12 +297,18 @@ cuáles son sobre todo modelo, por partido y por longitud de hueco, con el sesgo
 la referencia por amputación; (3) dónde murió la pregunta, con las cifras por partido de esa sonda
 y lo que no se abrió. La figura 2 enseña la muerte. Si en CP1 mueren las tres, rama B ese día.
 
-## Fase 0: base (sáb 17 oct a dom 25 oct)
+## Fase 0: repo base `[base]` y entrada `[entrada]` (sáb 17 oct a dom 25 oct)
 
 - [ ] J1. **[Javier]** Registrarse en la Cup (región Europa) y confirmar que puede asistir a París
   el 17 Feb 2027 (las bases lo piden antes de entregar). Antes del dom 25 oct; si no, replantear.
-- [ ] J2. **[Javier]** Elegir nombre del repo y del paquete, y crear el repo en GitHub (privado
-  hasta J6 o público ya, a su elección) para que corra CI. Antes del dom 25 oct.
+- [ ] J2. **[Javier]** Aprobar la decisión 7 y elegir nombres: base (provisionales
+  `football-tracking-base`, `ftbase`, carpeta hermana en `C:\Users\javie\Desktop\proyectos\`; sin
+  "ac2" ni "tracklab", que se lea como proyecto propio) y entrada (`ac2-football`, `ac2fb`). Crear
+  los dos repos en GitHub y **hacer público el repo base**: recomendado ya; límite antes de la 8,
+  cuya CI lo instala sin token, como un juez. Publicar es irreversible hacia fuera: lo copiado de
+  tracklab para fútbol queda a la vista y clonable aunque luego se vuelva privado. Antes del mar 20
+  oct (recomendado); límite jue 22 oct: más tarde, 8 a 10 pasan a la semana siguiente y la fase 1
+  pierde dos días, lo mínimo que se mueve.
 - [x] J3. **[Javier]** Aprobar este plan y las decisiones 1 a 6. Aprobado el 2026-10-17 (revisión
   de Fable, `ca5712a`); ejecución en modo mixto según las etiquetas.
 - [x] 1. `sonnet` Esqueleto: `pyproject.toml` (uv, hatchling, `ruff` línea 100 y reglas
@@ -300,41 +318,58 @@ y lo que no se abrió. La figura 2 enseña la muerte. Si en CP1 mueren las tres,
   (split, guard, congelación), `cli.py`. Aceptación: `uv sync --locked` y el gate (V) en verde con
   un test trivial que se rompe al mutar.
   Medido: gate en verde con 3 tests; mutar `prog` en `cli.py` rompe 2 de 3; todo `i/lf`.
-- [ ] 2. `sonnet` Ingesta copiada: manifiesto recortado a `opendata-football` (85 ficheros, commit
-  `4340d27`), `fetch` sin HuggingFace ni `freeze`, `verify`, `lfs`, `manifest`, `local`
-  (`--from-existing`) y `--match <id>` (los 4 ficheros de un partido más `matches.json`).
-  Cabecera en cada fichero copiado: origen en tracklab, commit, cambios; renombrar
-  `TRACKLAB_DATA_ROOT`, `User-Agent` y metadatos `tracklab.*`. Aceptación: `ac2fb ingest` verifica
+- [ ] 2. `sonnet` `[base]` Repo base con `git init` nuevo (sin historia de tracklab, para no
+  filtrar el resto del repo privado). **Primer commit, solo la copia literal** de los ficheros de
+  tracklab `686508a` listados en `docs/provenance.md` (fichero, ruta en tracklab, estado
+  `copiado`), mensaje "Import football base from tracklab@686508a (author's prior work, MIT)".
+  Segundo commit, el esqueleto con las herramientas de la tarea 1 (`name = "ftbase"`, `py.typed`
+  para el mypy estricto de la entrada, `.python-version`, `.gitattributes` LF, `.gitignore` con
+  `data/`, `LICENSE.md` MIT) y un README corto en inglés (qué es, instalar, los tres comandos, datos
+  y LFS, procedencia, licencia). Aceptación: `git show --stat <import>` lista solo ficheros de la
+  tabla; gate (V) en verde desde el segundo commit con un test trivial que se rompe al mutar.
+- [ ] 3. `sonnet` `[base]` Ingesta: manifiesto recortado a `opendata-football` (85 ficheros,
+  commit `4340d27`), `fetch` sin HuggingFace ni `freeze`, `verify`, `lfs`, `manifest`, `local`
+  (`--from-existing`) y `--match <id>` (los 4 ficheros de un partido más `matches.json`; nuevo,
+  etiquetado así). Cabecera en cada fichero copiado: origen en tracklab, commit, cambios; renombrar
+  `TRACKLAB_DATA_ROOT`, `User-Agent` y metadatos `tracklab.*`. Aceptación: `ftbase ingest` verifica
   los 85 (`failed: 0`); `--match 1874553` verifica 5 y dice `PARTIAL 5/85`; tests copiados de
   `test_ingest.py` sin baloncesto; mutación anotada (un sha256 cambiado tiene que fallar).
-- [ ] 3. `sonnet` Bronze copiado: `common`, `tracking`, `events`, `meta`, `csvschema` y los dos
-  esquemas JSON. Aceptación: `ac2fb bronze` produce las tablas de fútbol con los mismos recuentos
+- [ ] 4. `sonnet` `[base]` Bronze: `common`, `tracking`, `events`, `meta`, `csvschema` y los dos
+  esquemas JSON. Aceptación: `ftbase bronze` produce las tablas de fútbol con los mismos recuentos
   que tracklab (94.361 filas de eventos; tracking por partido igual) y las cabeceras congeladas
   (`header_sha256`); tests de contrato copiados y recortados; mutación anotada.
-- [ ] 4. `opus` Silver sin dbt: orientación de fútbol desde `match.home_team_side` (reescrita,
-  unas 250 líneas), dims, `frames` con `gap_len` (frames hasta la detección más cercana, 0 si
-  detectado), `events` y la vista `frames_attacking`, ejecutados desde Python en orden; los 6
-  tests dbt de fútbol como aserciones SQL de 0 filas. Aceptación: 20.213.849 filas de `frames` y
+- [ ] 5. `opus` `[base]` Silver sin dbt: orientación de fútbol desde `match.home_team_side`
+  (reescrita, unas 250 líneas), dims, `frames` (**sin `gap_len`**: es capa 2, tarea 12), `events` y
+  la vista `frames_attacking`, desde Python en orden; los 6 tests dbt de fútbol como aserciones SQL
+  de 0 filas; lector de silver exportado (para la 11). Aceptación: 20.213.849 filas de `frames` y
   mismos recuentos por partido y `is_detected` que tracklab, comparados con un script de solo
   lectura contra `tracklab/pipeline/data`; signos de ataque opuestos por periodo en los 20;
-  mutación: invertir un signo hace fallar la aserción; `gap_len` plantado en un sintético.
-- [ ] 5. `sonnet` Fixtures sintéticos (decisión 3): generador determinista de un partido corto en
-  formato SkillCorner (JSONL, `match.json`, CSV de eventos y fases con las cabeceras congeladas),
-  con tramos extrapolados plantados de longitudes conocidas. CI `ci.yml` en `ubuntu-latest`: ruff,
-  format, mypy, pytest sobre fixtures. Aceptación: CI en verde en GitHub; un skip cuenta como
-  fallo; mutación anotada en el generador.
-- [ ] 6. `haiku` Procedencia: `docs/provenance.md` (fichero copiado, ruta y commit en tracklab,
-  líneas copiadas, líneas cambiadas) y `ac2fb provenance` que imprime y escribe
-  `reports/provenance.json` (líneas en `base/` frente al resto). Primer commit del repo: solo la
-  base importada, mensaje "Import base from tracklab@<sha> (author's prior work, MIT)".
-  Aceptación: el recuento del JSON coincide con `wc -l`; test que falla si un fichero de `base/`
-  no está en la tabla.
-- [ ] 7. `sonnet` Build completo de los 20 partidos y `scripts/clean_clone_check.sh` con dos
-  bloques (el rápido de un partido y el completo), cada uno el bloque literal de un README
-  provisional, 5 comandos como máximo, en un `mktemp -d`, recibo sin fallos, árbol sin cambios.
-  Aceptación: `CLEAN CLONE OK in N s` para los dos en local; tiempo, bytes y pico de RAM anotados.
-- [ ] 8. `haiku` kloppy: con la versión fijada, cargar el partido sintético y comprobar si
-  `is_detected` sobrevive; si no, borrador del texto de un issue (no se publica: es de Javier).
+  mutación: invertir un signo hace fallar la aserción.
+- [ ] 6. `sonnet` `[base]` Fixtures sintéticos (decisión 3): `ftbase.fixtures`, partido corto
+  determinista en formato SkillCorner (JSONL, `match.json`, CSV de eventos y fases con las cabeceras
+  congeladas) con tramos extrapolados plantados de longitudes conocidas; único fichero `nuevo` de la
+  base. CI `ci.yml` de la base en `ubuntu-latest` (ruff, format, mypy, pytest sobre fixtures, sin
+  LFS). Aceptación: CI en verde en GitHub; un skip cuenta como fallo; mutación anotada.
+- [ ] 7. `haiku` `[base]` Procedencia y tag: completar `docs/provenance.md` (fichero, ruta y commit
+  en tracklab, estado `copiado`/`reescrito`/`nuevo`, líneas copiadas, líneas cambiadas) y `ftbase
+  provenance` que imprime y escribe `reports/provenance.json` (líneas por estado). Tag `v0.1.0`
+  en el commit que pasa el gate. Aceptación: el recuento del JSON coincide con `wc -l`; test que
+  falla si un fichero de `src/ftbase/` no está en la tabla; `--check` compara con el JSON escrito.
+- [ ] 8. `sonnet` `[entrada]` Dependencia fijada: `git rm -r src/ac2fb/base/`; `ftbase` en
+  `dependencies` con `[tool.uv.sources] ftbase = { git = "<URL pública>", tag = "v0.1.0" }`; nunca
+  una fuente `path`: para probar cambios de la base sin tag, `uv run --with-editable
+  ../football-tracking-base ...`, que no toca el lock. CI `ci.yml` de la entrada en `ubuntu-latest`
+  (ruff, format, mypy, pytest) instalando la base desde GitHub sin token; test de humo que construye
+  el sintético de `ftbase`. Aceptación: CI en verde en GitHub con el clon de la base en el log;
+  `uv.lock` lleva URL y sha; test que falla si `[tool.uv.sources]` lleva `path`; mutación: cambiar
+  el sha en `uv.lock` hace fallar `uv sync --locked`. Base privada: CI roja, no saltada, hasta J2.
+- [ ] 9. `sonnet` `[entrada]` Build completo de los 20 partidos con el CLI de la base y
+  `scripts/clean_clone_check.sh` con dos bloques (el rápido de un partido y el completo), cada uno
+  el bloque literal de un README provisional, 5 comandos como máximo (la base se instala desde
+  GitHub: el clon no ve la carpeta hermana), en un `mktemp -d`, recibo sin fallos, árbol sin
+  cambios. Aceptación: `CLEAN CLONE OK in N s` para los dos en local; tiempo, bytes y RAM anotados.
+- [ ] 10. `haiku` `[entrada]` kloppy: con la versión fijada, cargar el sintético de la base y ver si
+  `is_detected` sobrevive; si no, borrador de un issue (no se publica: es de Javier).
 
 ## Fase 1: capa 2 y sondas (lun 26 oct a dom 1 nov)
 
@@ -342,33 +377,36 @@ Todas las sondas corren **solo en los 10 partidos de calibración** y ninguna ca
 de ninguna candidata (`[t, t + W]`). Cada una escribe `reports/probe_<n>.json` por partido y trae
 su test sintético con el fallo plantado (una sonda que no puede fallar no protege nada).
 
-- [ ] 9. `opus` Split y guard: `protocol/split.json` con la decisión 1, commiteado antes de
-  cualquier código de desenlace. Una sola puerta a los datos: toda lectura de silver pasa por
-  `protocol.data`, que rehúsa los ids del reservado salvo con protocolo `frozen` en `HEAD`,
+- [ ] 11. `opus` Split y guard: `protocol/split.json` con la decisión 1, commiteado antes de
+  cualquier código de desenlace. Una sola puerta a los datos: toda lectura del silver de la base
+  pasa por `protocol.data`, que rehúsa los ids del reservado salvo con protocolo `frozen` en `HEAD`,
   `code_tree_sha` de `defence/` y `reliability/` igual al congelado y árbol limpio; tras la lectura,
   `stage: "read"` con su commit, y entonces reproduce. Aceptación: test de comportamiento sobre
   toda ruta pública (cada comando del CLI y cada función exportada, enumerados por el test);
   mutaciones anotadas: guard que solo mira `stage`, guard sin comparar el sha, lectura que
   esquiva `protocol.data`; las tres tienen que hacer fallar un test.
-- [ ] 10. `sonnet` Núcleo de la capa 2 (`reliability/`): detección por partido, por distancia al
-  balón, de la línea y del bloque; tramos extrapolados con su longitud y salto al readquirir por
+- [ ] 12. `sonnet` Núcleo de la capa 2 (`reliability/`): `gap_len` (frames hasta la detección
+  más cercana, 0 si detectado) calculado sobre el silver de la base y escrito en el Parquet largo
+  de la decisión 4, nunca en la base; detección por partido, por distancia al balón, de la línea
+  y del bloque; tramos extrapolados con su longitud y salto al readquirir por
   banda de hueco (m11); **aceleración (segunda diferencia) de extrapolados frente a detectados por
   banda** (decide la hipótesis "residuo cero por construcción"); `sensitivity(metric, frames)`
   devuelve, por partido, la métrica en V0, V1 y V2 (decisión 6), la fracción extrapolada que la
   sostiene y el `gap_len` de esos jugadores. Aceptación: re-deriva las cifras de m3 a m6, m9 y m11
   en los 10 de calibración (iguales o este plan se corrige); sintético con extrapolación plantada,
-  5 semillas; mutación: una `sensitivity` que ignora `is_detected` da V0 = V1 y el test falla.
-- [ ] 11. `sonnet` Cadencia en fútbol: segundas diferencias de jugadores detectados con un umbral
+  5 semillas; mutación: una `sensitivity` que ignora `is_detected` da V0 = V1 y el test falla;
+  `gap_len` plantado en un sintético con huecos de longitud conocida.
+- [ ] 13. `sonnet` Cadencia en fútbol: segundas diferencias de jugadores detectados con un umbral
   por encima del ruido de redondeo de la rejilla de 1 cm (justificado en la tarea), hueco entre
   quiebros en los 10 de calibración. Aceptación: `reports/probe_cadence.json`; decide la ventana
   más corta admisible (W mínimo) y lo escribe; sintético con cadencia plantada de 5 frames que
   el estimador tiene que recuperar.
-- [ ] 12. `sonnet` Sonda S1 (C1): índice de presión en la recepción; contraste de dirección
+- [ ] 14. `sonnet` Sonda S1 (C1): índice de presión en la recepción; contraste de dirección
   forzada (mediana del índice creciente en los 5 niveles de `overall_pressure_start` en al menos
   9 de 10 partidos); fracción del índice que sostienen rivales extrapolados; estratos de balón
   entrante por partido (recuentos, nunca el avance posterior). Muere C1 en sonda si el contraste
   falla. Mutación: un índice sin peso por distancia debe romper el contraste en el sintético.
-- [ ] 13. `opus` Sonda S2 (C2): (a) altura de línea propia contra `last_defensive_line_x_start`
+- [ ] 15. `opus` Sonda S2 (C2): (a) altura de línea propia contra `last_defensive_line_x_start`
   en la recepción (concordancia por partido; umbral fijado antes de correr, en el commit de la
   sonda); (b) contraste forzado: la línea sigue al balón entrante en `[t - W, t]` (m10, re-derivado
   en código); (c) **pre-tendencia dentro de estrato** (dirección por longitud del balón entrante
@@ -377,21 +415,21 @@ su test sintético con el fallo plantado (una sonda que no puede fallar no prote
   número de detectados, por estrato y distancia al balón (la selección de V1); (f) fracción con el
   balón extrapolado en `[t - W, t]`. Muere C2 en sonda si el instrumento no concuerda en al menos
   9 de 10, si la pre-tendencia dentro de estrato pasa de 0,15 sd en más de 2 partidos, o si quedan
-  menos de 100 recepciones por partido con la línea vista (hipótesis, se revisa con la 15).
+  menos de 100 recepciones por partido con la línea vista (hipótesis, se revisa con la 17).
   Mutación: con los estratos barajados el sintético con confundidor plantado devuelve la
   pre-tendencia cruda de m10 (+0,0 a +0,5 m) y el test falla.
-- [ ] 14. `sonnet` Sonda S3 (C3): anchura y longitud propias contra las del proveedor al inicio
+- [ ] 16. `sonnet` Sonda S3 (C3): anchura y longitud propias contra las del proveedor al inicio
   de fase (y la definición que usa el proveedor: con o sin portero, extremos o percentiles);
   fracción extrapolada de los jugadores que fijan cada extremo; correlación de rango entre
   fracción detectada y la propia métrica (sesgo de visibilidad). Muere C3 en sonda si no se
   reproduce la métrica del proveedor. Mutación: incluir al portero rompe la reproducción.
-- [ ] 15. `opus` Potencia por candidata con los tamaños medidos en 12 a 14, en sd: simula el bar
+- [ ] 17. `opus` Potencia por candidata con los tamaños medidos en 14 a 16, en sd: simula el bar
   exacto (mismo signo en al menos 8 de 10 y p de permutación agrupado ≤ 0,00135, 2.500 réplicas)
   con n por estrato y partido y la correlación dentro de la posesión de equipo medida con la
   estadística PREVIA (`[t - W, t]`, nunca el desenlace), para V0 y V1. Aceptación:
   `reports/power.json`; tabla de CP1; test que contrasta la aproximación con la permutación
   completa en un conjunto pequeño (diferencia < 0,025).
-- [ ] 16. `opus` (subagente `revisor-adversarial`) Revisión de 9 a 15 antes de CP1, repetida
+- [ ] 18. `opus` (subagente `revisor-adversarial`) Revisión de 11 a 17 antes de CP1, repetida
   sobre los arreglos hasta que no salga nada alto ni medio.
 - [ ] CP1. **[Javier] lun 2 nov.** Elige UNA pregunta con la tabla delante (por candidata:
   instrumento pasa o no, pre-tendencia dentro de estrato, fracción extrapolada que la sostiene,
@@ -401,12 +439,12 @@ su test sintético con el fallo plantado (una sonda que no puede fallar no prote
 
 ## Fase 2: protocolo y calibración (lun 2 nov a dom 15 nov)
 
-- [ ] 17. `fable` Protocolo en `stage: "design"` (`protocol/protocol.json`), escrito antes de
+- [ ] 19. `fable` Protocolo en `stage: "design"` (`protocol/protocol.json`), escrito antes de
   calcular un solo desenlace (fable: el protocolo se congela y el reservado se lee una vez, un
   error aquí no tiene reintento). Contenido: instante de la causa (de la sonda), ventana W (de la
-  11), desenlace exacto, estratos (dirección por longitud del balón entrante por tercio, cortes
+  13), desenlace exacto, estratos (dirección por longitud del balón entrante por tercio, cortes
   escritos), nulo por permutación de la etiqueta de causa dentro de partido y estrato (2.000,
-  semilla fija; bloque la posesión de equipo si la correlación medida en la 15 pasa de 0,1),
+  semilla fija; bloque la posesión de equipo si la correlación medida en la 17 pasa de 0,1),
   variantes V0, V1, V2 (decisión 6), familia de Holm {V0, V1}, bar de calibración (mismo signo en
   al menos 8 de 10 y p ≤ 0,00135) y de reservado (8 de 10 y p ≤ 0,01 con Holm). **Criterios de
   muerte, inamovibles:** D1 el instrumento falla su contraste; D2 MDE80 > 0,3 sd en alguna mitad
@@ -416,16 +454,16 @@ su test sintético con el fallo plantado (una sonda que no puede fallar no prote
   capa 2); D5 nada pasa en calibración, el reservado no se abre; D6 el reservado no pasa, se
   publica así. Aceptación: `--check` del protocolo; test de que ningún campo numérico del
   protocolo se lee de un fichero de resultados.
-- [ ] 18. `sonnet` Estimador validado con sintéticos antes de tocar datos reales: efecto plantado
+- [ ] 20. `sonnet` Estimador validado con sintéticos antes de tocar datos reales: efecto plantado
   que se recupera; pre-tendencia plantada que sale por D3; confundidor plantado (presión con pase
   hacia delante y línea que sigue al balón, como m10) que el estrato anula; jugadores interpolados
   linealmente en hueco que dan residuo cero y disparan la monotonía de V2; 5 semillas cada uno.
   Mutación: la causa en `t + 1 s` deja pasar la pre-tendencia; sin estrato pasa el confundidor.
-- [ ] 19. `opus` Calibración: efecto por partido en los 10, las tres variantes, pre-tendencia y
+- [ ] 21. `opus` Calibración: efecto por partido en los 10, las tres variantes, pre-tendencia y
   veredicto mecánico D1 a D5 en `reports/calibration.json`. Nada de este paso mueve un umbral.
-- [ ] 20. `opus` (subagente `revisor-adversarial`) Revisión del protocolo, el estimador y la
+- [ ] 22. `opus` (subagente `revisor-adversarial`) Revisión del protocolo, el estimador y la
   calibración antes de congelar, hasta que no salga nada alto ni medio.
-- [ ] 21. `sonnet` Congelación en un commit propio: `stage: "frozen"`, `code_tree_sha`, semilla,
+- [ ] 23. `sonnet` Congelación en un commit propio: `stage: "frozen"`, `code_tree_sha`, semilla,
   umbrales. Aceptación: desde ese commit hasta la lectura, `git diff <congelación> --
   src/ac2fb/defence src/ac2fb/reliability protocol/` vacío; test contra `HEAD` que el reservado
   sigue cerrado con un cambio de código posterior.
@@ -437,14 +475,14 @@ su test sintético con el fallo plantado (una sonda que no puede fallar no prote
 
 - [ ] J4. **[Javier]** Lectura única del reservado: autoriza y lanza `ac2fb heldout read` (o lo
   autoriza por escrito a quien lo lance). Paso irreversible.
-- [ ] 22. `opus` Veredicto mecánico del reservado (D6) por partido en `reports/heldout.json`, con
+- [ ] 24. `opus` Veredicto mecánico del reservado (D6) por partido en `reports/heldout.json`, con
   el commit de la lectura; `stage: "read"`. Se publica como cae.
-- [ ] 23. `sonnet` Capa 2 en los 20 partidos (ya permitido): mapa de fiabilidad por métrica y
+- [ ] 25. `sonnet` Capa 2 en los 20 partidos (ya permitido): mapa de fiabilidad por métrica y
   partido (presión local, distancia al rival más cercano, altura de línea, anchura, longitud, área
   del bloque, y la reacción de la línea al balón entrante) en V0, V1 y V2, con la fracción
   extrapolada y su `gap_len`, en `reports/reliability.csv`. Aceptación: las cifras de calibración
-  coinciden con las de la 10; mutación anotada.
-- [ ] 24. `sonnet` Referencia por amputación (`reliability/amputate.py`): en tramos con los
+  coinciden con las de la 12; mutación anotada.
+- [ ] 26. `sonnet` Referencia por amputación (`reliability/amputate.py`): en tramos con los
   jugadores de la métrica detectados se enmascaran huecos muestreados de la distribución real de
   `gap_len` y de la detección por distancia al balón, se rellenan por interpolación lineal entre
   extremos (lo que m11 dice que hace el proveedor; declarado como cota, no como su modelo) y se
@@ -455,60 +493,63 @@ su test sintético con el fallo plantado (una sonda que no puede fallar no prote
 
 ## Fase 4: empaquetado (lun 30 nov a dom 6 dic)
 
-- [ ] 25. `sonnet` Las dos figuras (máximo de las bases), generadas por `ac2fb figures` desde
+- [ ] 27. `sonnet` Las dos figuras (máximo de las bases), generadas por `ac2fb figures` desde
   `reports/`: figura 1, detección por distancia al balón, fracción del modelo por banda de hueco y
   sensibilidad por métrica (V0 frente a V1, error por amputación), por partido; figura 2, el efecto
   de la capa 3 por partido en V0, V1 y V2, calibración y reservado (o la muerte, rama B).
   Aceptación: test que regenera y compara; cada número de una etiqueta sale de un artefacto.
-- [ ] 26. `sonnet` `--check` en cada comando que escribe un artefacto (recalcula y compara; con
+- [ ] 28. `sonnet` `--check` en cada comando que escribe un artefacto (recalcula y compara; con
   fixtures dice cuánto verificó, `PARTIAL n/20`). Aceptación: mutar un valor de un JSON hace
   fallar su `--check`.
-- [ ] 27. `sonnet` API pública mínima y documentada (`reliability.sensitivity`,
-  `reliability.amputate`, lector de silver, esquema del Parquet largo con `gap_len`) y un
+- [ ] 29. `sonnet` API pública mínima y documentada (`reliability.sensitivity`,
+  `reliability.amputate`, `protocol.data` como lector guardado del silver de la base, esquema del
+  Parquet largo con `gap_len`) y un
   `examples/sensitivity.py` que corre sobre el sintético. Aceptación: el ejemplo corre en CI.
-- [ ] 28. `sonnet` `full-build.yml`: `workflow_dispatch`, caché de `data/raw` por huella del
+- [ ] 30. `sonnet` `full-build.yml`: `workflow_dispatch`, caché de `data/raw` por huella del
   manifiesto, build completo, todos los `--check` y los dos bloques de `clean_clone_check.sh` en
   `ubuntu-latest`. Aceptación: una ejecución en verde con su enlace; el árbol queda limpio.
-- [ ] 29. `sonnet` `scripts/readme_check.py` y su test: palabras del README (todo el texto, bloques
+- [ ] 31. `sonnet` `scripts/readme_check.py` y su test: palabras del README (todo el texto, bloques
   de código incluidos, sin comentarios HTML) ≤ 1000, figuras más tablas ≤ 2, cada número del README
   presente en algún artefacto de `reports/`, y la frase literal de que los fixtures sintéticos no
   producen cifra alguna. Mutaciones: 1001 palabras, tercera tabla, número inventado, frase borrada.
-- [ ] 30. `sonnet` Clip de 10 s para el vídeo: una recepción con los defensores detectados en
+- [ ] 32. `sonnet` Clip de 10 s para el vídeo: una recepción con los defensores detectados en
   relleno y los extrapolados en hueco con su `gap_len`, desde silver por `ac2fb clip` (matplotlib).
-- [ ] J5. **[Javier, opcional]** Abrir el issue en kloppy con el texto de la 8.
+- [ ] J5. **[Javier, opcional]** Abrir el issue en kloppy con el texto de la 10.
 
 ## Fase 5: entrega (lun 7 dic a vie 18 dic)
 
-- [ ] 31. `sonnet` README en inglés: qué es, procedencia (abajo), capa 2 (con "extrapolated is
+- [ ] 33. `sonnet` README en inglés: qué es, procedencia (abajo), capa 2 (con "extrapolated is
   interpolated" y la cifra de huecos largos), capa 3, método en corto, reproducir (bloque rápido
   de un partido y bloque completo, con tiempos medidos), fixtures sintéticos solo para tests,
-  reutilizar, licencia y datos. Aceptación: la 29 en verde; lectura de Javier.
-- [ ] 32. `sonnet` Guion del vídeo (≤ 60 s, unas 140 palabras, voz de Javier) con plano por frase
-  (figura 1, figura 2, clip de la 30); cada cifra con su artefacto.
-- [ ] J6. **[Javier]** Repo público (si no lo era) y comprobar que la `full-build` en verde es del
-  commit que se entrega.
+  reutilizar, licencia y datos. Aceptación: la 31 en verde; lectura de Javier.
+- [ ] 34. `sonnet` Guion del vídeo (≤ 60 s, unas 140 palabras, voz de Javier) con plano por frase
+  (figura 1, figura 2, clip de la 32); cada cifra con su artefacto.
+- [ ] J6. **[Javier]** `ac2-football` público (si no lo era; la base lo es desde J2); `full-build`
+  en verde del commit entregado y el tag de la base que fija `uv.lock` presente en el repo público.
 - [ ] J7. **[Javier]** Grabar el vídeo con su voz (máximo 1 minuto) y subirlo a YouTube
   (visibilidad admitida: PENDIENTE DE CONFIRMAR en las bases).
 - [ ] J8. **[Javier]** Enviar en submissions.analytics-cup.org. Objetivo mar 15 dic; límite vie 18.
 
 ## Cómo se declara la base (cumplir "disclosed" sin parecer "lightly adapted")
 
-- Árbol separado: `src/ac2fb/base/` es lo copiado; todo lo demás es nuevo. Cada fichero de
-  `base/` abre con su origen (`tracklab`, ruta, commit) y sus cambios.
-- Historia de git: el primer commit importa solo la base; `git diff <import>..HEAD --stat` es el
-  trabajo nuevo. `reports/provenance.json` imprime líneas de `base/` frente al resto y el README
-  cita esa cifra, no una estimación.
+- Dependencia declarada, no árbol copiado (decisión 7): `ac2-football` no tiene `base/` ni commit
+  de importación; `pyproject.toml` fija `ftbase` (URL git pública más tag, commit en `uv.lock`) y
+  todo su `git log` es trabajo de la Cup.
+- La procedencia vive en el repo base: primer commit con la copia literal de tracklab `686508a`,
+  `docs/provenance.md` (fichero, origen, estado, líneas; tarea 7), `ftbase provenance` en
+  `reports/provenance.json`, y su README dice que se extrajo de tracklab en octubre de 2026.
+- La cifra "líneas nuevas frente a copiadas" sale del README de la entrada: allí todo es nuevo por
+  construcción; basta el puntero a la base (tag, commit) y su tabla; `readme_check` (31) no la pide.
 - Lo previo que se reutiliza como dato (la proporción detectada por partido que midió tracklab) se
   dice como previo; lo nuevo es la sensibilidad, la interpolación medida y la pregunta. P5 no se
   reutiliza; su protocolo (split, nulo, criterios de muerte) se cita como método, no resultado.
-- Borrador de la sección del README (unas 70 palabras, en inglés):
+- Borrador de la sección del README de la entrada (unas 60 palabras, en inglés):
 
-  > **Provenance.** `src/ac2fb/base/` (ingest verified against a pinned manifest, bronze, conformed
-  > frames and events) is the author's prior work, released here under MIT from his private
-  > repository *tracklab* at commit `<sha>`; [`docs/provenance.md`](docs/provenance.md) lists every
-  > file and what changed. Everything else was written for the Analytics Cup: the reliability
-  > layer, the defensive question, its protocol and held-out reading, figures and tests (`<n>` of
-  > `<m>` lines, `reports/provenance.json`).
+  > **Provenance.** Ingestion, bronze and conformed frames and events come from [`ftbase`](<URL>),
+  > the author's open-source pipeline for SkillCorner open data (MIT), pinned at tag `<tag>` (commit
+  > `<sha>`), extracted in October 2026 from his private repository *tracklab* (`docs/provenance.md`
+  > lists every file and what changed). Everything here was written for the Analytics Cup: the
+  > reliability layer, the defensive question, its protocol and held-out reading, figures and tests.
 
 ## Choques con las bases detectados al planificar
 
@@ -517,20 +558,21 @@ su test sintético con el fallo plantado (una sonda que no puede fallar no prote
    falla. Mitigación: decisión 5 (`--from-existing`, `--match`), error que los nombra, tiempos medidos.
 2. **kloppy (recurso sugerido) pierde `is_detected`** en 3.19.1: la capa 2 no se puede construir
    encima. Mitigación: decisión 4; el hallazgo entra en el README.
-3. **"Lightly adapted" y "pre-existing open-source projects".** tracklab es privado: la base no
-   era open source antes de este repo. Se declara como trabajo previo del autor liberado aquí bajo
-   MIT (texto arriba) con la cifra de `provenance.json`; las 2.250 líneas copiadas quedan por
-   debajo del trabajo nuevo y la capa 2 vale sola (rama B). Riesgo residual: un juez puede leer
-   "pre-existing" como "ya público"; hacer tracklab público lo cerraría y es decisión de Javier.
+3. **"Lightly adapted" y "pre-existing open-source projects".** Cerrado en lo esencial por la
+   decisión 7: la base es un "open-source project" propio (repo público MIT), "appropriately
+   licensed and disclosed" (dependencia declarada, procedencia en su repo), y la entrada no contiene
+   nada previo que adaptar; la capa 2 vale sola (rama B). Residual, reducido: "pre-existing" en el
+   tiempo (el repo base nace en octubre de 2026 con código anterior); los dos README lo dicen.
 4. **"Solo los datos de SkillCorner" y los fixtures sintéticos.** Un lector estricto podría leer
    el sintético como dato adicional. Mitigación: solo alimentan tests y CI, ninguna cifra sale de
-   ellos, el README lo dice con una frase literal y `readme_check` la exige (29). **París**: J1.
+   ellos, el README lo dice con una frase literal y `readme_check` la exige (31). **París**: J1.
 5. **1000 palabras y 2 figuras o tablas**: reproducción y procedencia comen unas 200 (hipótesis);
    resultados en prosa con cifras y las dos figuras, sin tablas.
 
 ## Verificación
 
-- [ ] V. Verificación. Gate, desde la raíz del repo, en este orden:
+- [ ] V. Verificación. Gate en los dos repos, cada uno desde su raíz, en este orden (en la base,
+  sin las dos últimas líneas y con `uv run ftbase provenance --check` al final):
   ```
   uv sync --locked
   uv run ruff check .
@@ -540,13 +582,17 @@ su test sintético con el fallo plantado (una sonda que no puede fallar no prote
   uv run python scripts/readme_check.py
   bash scripts/clean_clone_check.sh
   ```
-  Criterio de aceptación agregado: todo lo anterior en verde en local y la `full-build` de GitHub
-  Actions en verde en `ubuntu-latest` sobre el commit que se entrega (enlace a la ejecución);
-  README ≤ 1000 palabras contadas por script y ≤ 2 figuras o tablas; `LICENSE.md` presente; clon
-  limpio OK en Linux en los dos bloques con el tiempo impreso; ningún número del README, del guion
-  ni de las figuras sin un artefacto de `reports/` que lo imprima; `protocol.json` en `read` (o en
+  Criterio de aceptación agregado: todo lo anterior en verde en local en los dos repos; `ci.yml` de
+  la base en verde en `ubuntu-latest` sobre el commit del tag fijado y `full-build` de la entrada en
+  verde en `ubuntu-latest` sobre el commit que se entrega (enlaces a las dos ejecuciones); `uv.lock`
+  fija `ftbase` a URL git pública más sha, sin fuente `path`, el commit que cita el README; el clon
+  limpio de `ac2-football` en Linux instala la base desde GitHub sin token en los dos bloques, con
+  el tiempo impreso; `src/ac2fb/base/` no existe; README ≤ 1000 palabras contadas por script y ≤ 2
+  figuras o tablas; `LICENSE.md` en los dos repos; ningún número del README, del guion ni de las
+  figuras sin un artefacto de `reports/` que lo imprima; `protocol.json` en `read` (o en
   `design`/`frozen` con D5 documentado, rama B) y su historia en git; ninguna ruta pública lee el
   reservado fuera del guard; cada test nuevo con su mutación anotada; las cifras de m10 y m11
-  re-derivadas por la 10 y la 13 o este plan corregido. Revisión adversarial del diff completo
-  (`git diff <import>..HEAD`) con el subagente `revisor-adversarial`, repetida sobre los arreglos
-  hasta que no salga nada alto ni medio.
+  re-derivadas por la 12 y la 15 o este plan corregido. Revisión adversarial (`revisor-adversarial`)
+  de todo `ac2-football` (sin commit de importación: todo es nuevo) y del diff de la base desde su
+  importación (`git diff <import>..HEAD` en `ftbase`), repetida sobre los arreglos hasta que no
+  salga nada alto ni medio.

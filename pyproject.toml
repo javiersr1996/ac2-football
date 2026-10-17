@@ -1,0 +1,37 @@
+[project]
+name = "ac2fb"
+version = "0.1.0"
+description = "Football entry to the SkillCorner Analytics Cup 2.0."
+requires-python = ">=3.13"
+dependencies = []
+
+[project.scripts]
+ac2fb = "ac2fb.cli:main"
+
+[dependency-groups]
+dev = [
+    "mypy>=1.11",
+    "pytest>=8.3",
+    "ruff>=0.6",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/ac2fb"]
+
+[tool.ruff]
+line-length = 100
+src = ["src"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
+
+[tool.mypy]
+strict = true
+files = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

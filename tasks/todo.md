@@ -291,13 +291,15 @@ y lo que no se abrió. La figura 2 enseña la muerte. Si en CP1 mueren las tres,
   el 17 Feb 2027 (las bases lo piden antes de entregar). Antes del dom 25 oct; si no, replantear.
 - [ ] J2. **[Javier]** Elegir nombre del repo y del paquete, y crear el repo en GitHub (privado
   hasta J6 o público ya, a su elección) para que corra CI. Antes del dom 25 oct.
-- [ ] J3. **[Javier]** Aprobar este plan y las decisiones 1 a 6.
-- [ ] 1. `sonnet` Esqueleto: `pyproject.toml` (uv, hatchling, `ruff` línea 100 y reglas
+- [x] J3. **[Javier]** Aprobar este plan y las decisiones 1 a 6. Aprobado el 2026-10-17 (revisión
+  de Fable, `ca5712a`); ejecución en modo mixto según las etiquetas.
+- [x] 1. `sonnet` Esqueleto: `pyproject.toml` (uv, hatchling, `ruff` línea 100 y reglas
   `E,F,I,UP,B`, `mypy --strict`, `pytest`), `.python-version`, `.gitattributes` con `* text=auto
   eol=lf`, `.gitignore` con `data/`, `LICENSE.md` (MIT, Javier Sánchez Rueda, 2026). Paquete
   `src/ac2fb/` con `base/` (copiado), `reliability/` (capa 2), `defence/` (capa 3), `protocol/`
   (split, guard, congelación), `cli.py`. Aceptación: `uv sync --locked` y el gate (V) en verde con
   un test trivial que se rompe al mutar.
+  Medido: gate en verde con 3 tests; mutar `prog` en `cli.py` rompe 2 de 3; todo `i/lf`.
 - [ ] 2. `sonnet` Ingesta copiada: manifiesto recortado a `opendata-football` (85 ficheros, commit
   `4340d27`), `fetch` sin HuggingFace ni `freeze`, `verify`, `lfs`, `manifest`, `local`
   (`--from-existing`) y `--match <id>` (los 4 ficheros de un partido más `matches.json`).

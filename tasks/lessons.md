@@ -21,8 +21,9 @@ consolida o se archiva en `lessons-archive.md`.
   el clon limpio de Linux.
 - **Que pase en local no dice que quepa en CI**, y un skip silencioso esconde fallos. Todo
   `--check` sobre fixtures dice cuánto verificó.
-- **El instante que da el proveedor puede no ser el causal** (P5: `frame_start` llegaba con el
-  corredor ya a 4 m/s y la pre-tendencia contenía el arranque). Medir la cinemática alrededor del
-  instante antes de fijar la causa.
+- **El instante que da el proveedor puede no ser el causal, y el balón es la causa común** (P5:
+  `frame_start` con el corredor ya a 4 m/s; C2: presionado tras balón hacia delante, la línea ya
+  seguía al balón, 10 de 10). Medir la cinemática previa y estratificar por el balón entrante
+  antes de fijar la causa.
 - **Tras editar `todo.md`, comprobar la forma** (`wc -l`, encabezados, `git diff --stat`): un Edit
   puede duplicar bloques enteros.

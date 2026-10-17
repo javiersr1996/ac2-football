@@ -301,9 +301,11 @@ y lo que no se abrió. La figura 2 enseña la muerte. Si en CP1 mueren las tres,
 
 - [ ] J1. **[Javier]** Registrarse en la Cup (región Europa) y confirmar que puede asistir a París
   el 17 Feb 2027 (las bases lo piden antes de entregar). Antes del dom 25 oct; si no, replantear.
-- [ ] J2. **[Javier]** Aprobar la decisión 7 y elegir nombres: base (provisionales
-  `football-tracking-base`, `ftbase`, carpeta hermana en `C:\Users\javie\Desktop\proyectos\`; sin
-  "ac2" ni "tracklab", que se lea como proyecto propio) y entrada (`ac2-football`, `ac2fb`). Crear
+- [ ] J2. **[Javier]** Aprobar la decisión 7 y elegir nombres: base (`football-tracking-base`,
+  `ftbase`, carpeta hermana en `C:\Users\javie\Desktop\proyectos\`; sin "ac2" ni "tracklab", que
+  se lea como proyecto propio) y entrada (`ac2-football`, `ac2fb`). **Hecho el 2026-10-17:
+  decisión 7 y nombres aprobados; falta cuándo se publica la base y quién crea los repos (`gh`
+  tiene sesión en `javiersr1996`; crearlos es de Javier o con su sí explícito).** Crear
   los dos repos en GitHub y **hacer público el repo base**: recomendado ya; límite antes de la 8,
   cuya CI lo instala sin token, como un juez. Publicar es irreversible hacia fuera: lo copiado de
   tracklab para fútbol queda a la vista y clonable aunque luego se vuelva privado. Antes del mar 20

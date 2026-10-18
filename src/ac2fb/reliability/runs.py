@@ -22,6 +22,7 @@ __all__ = [
     "extrapolated_runs",
     "linear_rounding_floor",
     "run_summary",
+    "second_differences",
     "step_summary",
     "unlisted_stretches",
 ]
@@ -242,6 +243,24 @@ def unlisted_stretches(match: MatchData) -> dict[str, object]:
     }
 
 
+def second_differences(match: MatchData) -> tuple[NDArray[np.float64], NDArray[np.bool_]]:
+    """Second difference ``|p(t+1) - 2 p(t) + p(t-1)|`` (m per frame squared) of every player row.
+
+    ``centre[i]`` is true where rows i-1, i and i+1 are consecutive frames of one player; the
+    second difference is NaN elsewhere.
+    """
+    n = len(match.frame)
+    consecutive, _ = _steps(match)
+    centre = np.zeros(n, dtype=np.bool_)
+    centre[1:-1] = consecutive[1:-1] & consecutive[2:]
+    accel = np.full(n, np.nan)
+    accel[1:-1] = np.hypot(
+        match.x[2:] - 2 * match.x[1:-1] + match.x[:-2],
+        match.y[2:] - 2 * match.y[1:-1] + match.y[:-2],
+    )
+    return accel, centre
+
+
 def acceleration_summary(match: MatchData) -> dict[str, object]:
     """Second difference (metres per frame squared) of extrapolated against detected frames.
 
@@ -250,18 +269,11 @@ def acceleration_summary(match: MatchData) -> dict[str, object]:
     are banded by the length of their run; detected rows are pooled and also banded by the
     length of their own run, with the same cuts.
     """
-    n = len(match.frame)
     consecutive, _ = _steps(match)
-    centre = np.zeros(n, dtype=np.bool_)
-    centre[1:-1] = consecutive[1:-1] & consecutive[2:]
-    same = np.zeros(n, dtype=np.bool_)
+    accel, centre = second_differences(match)
+    same = np.zeros(len(match.frame), dtype=np.bool_)
     same[1:-1] = (match.detected[:-2] == match.detected[1:-1]) & (
         match.detected[2:] == match.detected[1:-1]
-    )
-    accel = np.full(n, np.nan)
-    accel[1:-1] = np.hypot(
-        match.x[2:] - 2 * match.x[1:-1] + match.x[:-2],
-        match.y[2:] - 2 * match.y[1:-1] + match.y[:-2],
     )
     pick = centre & same
     runs = extrapolated_runs(match)

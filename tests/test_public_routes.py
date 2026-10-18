@@ -37,7 +37,7 @@ import ac2fb
 from ac2fb import cli
 from ac2fb.protocol import data
 from ac2fb.protocol.data import HeldOutLocked
-from ac2fb.reliability import inventory, long, report, runs, visibility
+from ac2fb.reliability import cadence, inventory, long, report, runs, visibility
 from ac2fb.reliability import match as match_module
 from ac2fb.reliability.sensitivity import Reading, WindowFrames, sensitivity
 
@@ -97,6 +97,17 @@ def layer2_command(m: int) -> pa.Table:
     return served(m, True)
 
 
+def cadence_command(m: int) -> pa.Table:
+    """The ``cadence`` command for one match: exit 2 and a refusal on stderr is a refusal."""
+    err = io.StringIO()
+    with contextlib.redirect_stderr(err), contextlib.redirect_stdout(io.StringIO()):
+        code = cli.main(["cadence", "--match", str(m), "--reports-dir", OUT])
+    if code == 2 and "held-out" in err.getvalue():
+        raise HeldOutLocked(err.getvalue())
+    assert code == 0, err.getvalue()
+    return served(m, True)
+
+
 def one_unit(window: WindowFrames) -> Reading | None:
     return Reading(0.0, ())
 
@@ -126,6 +137,20 @@ FUNCTION_ROUTES: dict[str, Route] = {
     "ac2fb.protocol.data.read_dim": by_match(
         *[lambda m, name=name: data.read_dim(name, [m]) for name in DIMS]
     ),
+    "ac2fb.reliability.cadence.cadence_of": without_match(
+        lambda: cadence.cadence_of(np.array([2, 2, 3], dtype=np.int64))
+    ),
+    "ac2fb.reliability.cadence.cadence_report": by_match(
+        lambda m: served(m, "decision" in cadence.cadence_report([loaded(m)]))
+    ),
+    "ac2fb.reliability.cadence.kink_gaps": on_match(lambda mt: cadence.kink_gaps(mt).size >= 0),
+    "ac2fb.reliability.cadence.match_cadence": on_match(
+        lambda mt: "histogram" in cadence.match_cadence(mt)
+    ),
+    "ac2fb.reliability.cadence.min_window": without_match(lambda: cadence.min_window([1], [3])),
+    "ac2fb.reliability.cadence.write_cadence_report": by_match(
+        lambda m: served(m, cadence.write_cadence_report([m], Path(OUT)).is_file())
+    ),
     "ac2fb.reliability.long.gap_len": without_match(
         lambda: long.gap_len(np.zeros(2, dtype=np.int64), np.arange(2), np.array([True, False]))
     ),
@@ -152,6 +177,9 @@ FUNCTION_ROUTES: dict[str, Route] = {
     ),
     "ac2fb.reliability.runs.run_summary": on_match(
         lambda mt: runs.run_summary(runs.extrapolated_runs(mt))
+    ),
+    "ac2fb.reliability.runs.second_differences": on_match(
+        lambda mt: runs.second_differences(mt)[1].any()
     ),
     "ac2fb.reliability.runs.step_summary": on_match(runs.step_summary),
     "ac2fb.reliability.runs.unlisted_stretches": on_match(runs.unlisted_stretches),
@@ -184,6 +212,7 @@ FUNCTION_ROUTES: dict[str, Route] = {
 CLI_ROUTES: dict[tuple[str, ...], Route] = {
     ("status",): without_match(lambda: cli.main(["status"])),
     ("layer2",): by_match(layer2_command),
+    ("cadence",): by_match(cadence_command),
 }
 
 

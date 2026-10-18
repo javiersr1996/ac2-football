@@ -15,6 +15,7 @@ from ac2fb.protocol.data import (
     guard_status,
     load_split,
 )
+from ac2fb.reliability.cadence import write_cadence_report
 from ac2fb.reliability.long import write_long
 from ac2fb.reliability.report import layer2_report, write_report
 
@@ -53,7 +54,36 @@ def build_parser() -> argparse.ArgumentParser:
         default=_REPORTS,
         help="where layer2.json goes (default: reports/)",
     )
+    cadence = commands.add_parser(
+        "cadence",
+        help="write reports/probe_cadence.json: gaps between kinks of detected players",
+        description=(
+            "Cadence probe, descriptive: how often detected paths bend, and the shortest "
+            "admissible window. Reads through the guarded door. Without --match, the "
+            "calibration matches."
+        ),
+    )
+    cadence.add_argument(
+        "--match", type=int, action="append", metavar="ID", help="native match id (repeatable)"
+    )
+    cadence.add_argument(
+        "--reports-dir",
+        type=Path,
+        default=_REPORTS,
+        help="where probe_cadence.json goes (default: reports/)",
+    )
     return parser
+
+
+def _cadence(match_ids: Sequence[int] | None, reports_dir: Path) -> int:
+    ids = list(match_ids) if match_ids else list(load_split().calibration)
+    try:
+        path = write_cadence_report(ids, reports_dir)
+    except HeldOutLocked as exc:
+        print(f"refused: {exc}", file=sys.stderr)
+        return 2
+    print(f"wrote {path}")
+    return 0
 
 
 def _layer2(match_ids: Sequence[int] | None, reports_dir: Path) -> int:
@@ -91,6 +121,8 @@ def main(argv: Sequence[str] | None = None) -> int:
         return _status()
     if args.command == "layer2":
         return _layer2(args.match, args.reports_dir)
+    if args.command == "cadence":
+        return _cadence(args.match, args.reports_dir)
     return 0
 
 

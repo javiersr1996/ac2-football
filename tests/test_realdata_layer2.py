@@ -54,14 +54,11 @@ def test_the_committed_report_is_what_the_code_writes_for_the_calibration_matche
 
 
 def test_the_goalkeeper_proxy_is_the_rostered_goalkeeper_in_every_period_and_team() -> None:
-    import duckdb
-
     from ac2fb.reliability.visibility import goalkeepers
 
-    with duckdb.connect() as con:
-        for match_id in CALIBRATION:  # the rosters of calibration matches only
-            path = data.data_dir() / "bronze" / "football" / "match_players" / f"{match_id}.parquet"
-            sql = "select distinct id from read_parquet(?) where player_role_name ilike '%goal%'"
-            rostered = {row[0] for row in con.execute(sql, [str(path)]).fetchall()}
-            proxy = goalkeepers(load_match(match_id))
-            assert len(proxy) == 4 and set(proxy.values()) <= rostered, (match_id, proxy)
+    for match_id in CALIBRATION:  # the rosters of calibration matches only, through the door
+        roster = data.read_bronze_players([match_id], columns=["id", "player_role_name"])
+        rostered = {r["id"] for r in roster.to_pylist() if "goal" in r["player_role_name"].lower()}
+        assert rostered, match_id
+        proxy = goalkeepers(load_match(match_id))
+        assert len(proxy) == 4 and set(proxy.values()) <= rostered, (match_id, proxy)

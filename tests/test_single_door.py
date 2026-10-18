@@ -1,11 +1,19 @@
-"""One door to the data: only ``ac2fb.protocol.data`` reaches the base or opens Parquet.
+"""One door to the data: only ``ac2fb.protocol.data`` reaches the base or opens a data file.
 
 The check walks the syntax tree of every module under ``src/ac2fb`` except the door and
 rejects: importing ``ftbase`` (any part of it: silver, bronze and raw hold the held-out matches
-too), ``duckdb`` or ``pyarrow.dataset``; calling or importing a Parquet reader by name; reaching
-a private name of the door; and any string, outside docstrings, that names ``ftbase``,
-``duckdb`` or ``silver`` (the way to a dynamic import or to a silver path). The checker is
-itself tested on snippets it must reject and snippets it must let through.
+too), ``duckdb``, ``pandas``, ``polars`` or ``fastparquet``; importing any part of ``pyarrow``
+but the in-memory ``pyarrow`` and ``pyarrow.compute`` and ``pyarrow.parquet`` (kept for
+writing: ``reliability.long``), or reaching a private or input module of ``pyarrow`` through
+an alias (``pa._parquet``, ``pa.ipc``); calling, importing or naming a file reader (a Parquet,
+CSV, JSON, IPC or NumPy reader, a memory map, a stream); opening or listing a file (``open``,
+``read_text``, ``read_bytes``, ``glob``, ``listdir`` and the like) outside
+:data:`ALLOWED_FILE_CALLS`; naming the data root (``data_dir``, ``DATA_ROOT_ENV``) outside
+:data:`ALLOWED_DATA_ROOT`; reaching a private name of the door; and any string, outside
+docstrings, that names ``ftbase``, ``duckdb``, ``silver``, ``bronze``, ``pandas``, ``polars``,
+``jsonl`` or ``_parquet`` (the way to a dynamic import or to a data path). The checker is itself
+tested on snippets it must reject and snippets it must let through. A determined bypass (a
+subprocess, a path spelt in pieces) is out of its reach: the check catches the plain ways.
 """
 
 from __future__ import annotations
@@ -23,20 +31,57 @@ PACKAGE = ROOT / "src" / "ac2fb"
 DOOR = PACKAGE / "protocol" / "data.py"
 DOOR_MODULE = "ac2fb.protocol.data"
 
-FORBIDDEN_MODULES = ("ftbase", "duckdb", "pyarrow.dataset")
-PARQUET_READERS = frozenset(
+FORBIDDEN_MODULES = ("ftbase", "duckdb", "pandas", "polars", "fastparquet")
+# The parts of pyarrow a module may import: tables in memory, compute, and Parquet writing.
+PYARROW_ALLOWED = ("pyarrow", "pyarrow.compute", "pyarrow.parquet")
+PYARROW_INPUT = frozenset(
+    {"csv", "cuda", "dataset", "feather", "flight", "fs", "hdfs", "ipc", "json", "orc"}
+)
+READERS = frozenset(
     {
+        "OSFile",
         "ParquetDataset",
         "ParquetFile",
+        "ParquetReader",
+        "PythonFile",
+        "create_memory_map",
+        "fromfile",
+        "genfromtxt",
+        "input_stream",
+        "load",
+        "loadtxt",
+        "memmap",
+        "memory_map",
+        "open_file",
+        "open_input_file",
+        "open_input_stream",
+        "open_stream",
+        "read_csv",
+        "read_feather",
+        "read_ipc",
+        "read_json",
         "read_metadata",
+        "read_ndjson",
         "read_pandas",
         "read_parquet",
         "read_schema",
         "read_table",
+        "scan_csv",
+        "scan_ndjson",
         "scan_parquet",
     }
 )
-FORBIDDEN_TEXT = re.compile(r"ftbase|duckdb|silver", re.IGNORECASE)
+# Calls that open or list a file; only where a module reads its own reports, never data.
+FILE_CALLS = frozenset(
+    {"glob", "iterdir", "listdir", "open", "read_bytes", "read_text", "rglob", "scandir", "walk"}
+)
+ALLOWED_FILE_CALLS = frozenset({("ac2fb.defence.power", "read_text")})  # the probe reports
+DATA_ROOT_NAMES = frozenset({"DATA_ROOT_ENV", "data_dir"})
+# `cli` prints the data root; `reliability.long` writes layer 2's Parquet under it.
+ALLOWED_DATA_ROOT = frozenset({"ac2fb.cli", "ac2fb.reliability.long"})
+FORBIDDEN_TEXT = re.compile(
+    r"ftbase|duckdb|silver|bronze|pandas|polars|jsonl|_parquet", re.IGNORECASE
+)
 
 
 def module_name(path: Path) -> str:
@@ -44,8 +89,16 @@ def module_name(path: Path) -> str:
     return ".".join(parts[:-1] if parts[-1] == "__init__" else parts)
 
 
+def _under(name: str, module: str) -> bool:
+    return name == module or name.startswith(module + ".")
+
+
 def _forbidden(name: str) -> bool:
-    return any(name == m or name.startswith(m + ".") for m in FORBIDDEN_MODULES)
+    if any(_under(name, m) for m in FORBIDDEN_MODULES):
+        return True
+    if not _under(name, "pyarrow") or name == "pyarrow":
+        return False
+    return not any(_under(name, m) for m in PYARROW_ALLOWED[1:])
 
 
 def _absolute(node: ast.ImportFrom, module: str, is_package: bool) -> str:
@@ -72,6 +125,8 @@ def violations(source: str, module: str, is_package: bool = False) -> list[str]:
     tree = ast.parse(source)
     docstrings = _docstrings(tree)
     door_aliases = {"ac2fb.protocol.data"}
+    arrow_aliases = {"pyarrow"}
+    root_allowed = module in ALLOWED_DATA_ROOT
     found: list[str] = []
     for node in ast.walk(tree):
         line = getattr(node, "lineno", 0)
@@ -81,23 +136,38 @@ def violations(source: str, module: str, is_package: bool = False) -> list[str]:
                     found.append(f"{line}: import {alias.name}")
                 if alias.name == DOOR_MODULE:
                     door_aliases.add(alias.asname or alias.name)
+                if _under(alias.name, "pyarrow"):
+                    arrow_aliases.add(alias.asname or alias.name.partition(".")[0])
         elif isinstance(node, ast.ImportFrom):
             base = _absolute(node, module, is_package)
             for alias in node.names:
                 full = f"{base}.{alias.name}"
                 if _forbidden(base) or _forbidden(full):
                     found.append(f"{line}: from {base} import {alias.name}")
-                if alias.name in PARQUET_READERS:
-                    found.append(f"{line}: imports the Parquet reader {alias.name}")
+                if alias.name in READERS:
+                    found.append(f"{line}: imports the file reader {alias.name}")
                 if base == DOOR_MODULE and alias.name.startswith("_"):
                     found.append(f"{line}: imports the door's private {alias.name}")
+                if alias.name in DATA_ROOT_NAMES and not root_allowed:
+                    found.append(f"{line}: imports the data root {alias.name}")
                 if full == DOOR_MODULE:
                     door_aliases.add(alias.asname or alias.name)
+                if _under(full, "pyarrow"):
+                    arrow_aliases.add(alias.asname or alias.name)
+        elif isinstance(node, ast.Call):
+            func = node.func
+            name = func.id if isinstance(func, ast.Name) else getattr(func, "attr", None)
+            if name in FILE_CALLS and (module, name) not in ALLOWED_FILE_CALLS:
+                found.append(f"{line}: opens or lists a file with {name}")
         elif isinstance(node, ast.Attribute):
-            if node.attr in PARQUET_READERS:
-                found.append(f"{line}: calls the Parquet reader {node.attr}")
-        elif isinstance(node, ast.Name) and node.id in PARQUET_READERS:
-            found.append(f"{line}: calls the Parquet reader {node.id}")
+            if node.attr in READERS:
+                found.append(f"{line}: calls the file reader {node.attr}")
+            if node.attr in DATA_ROOT_NAMES and not root_allowed:
+                found.append(f"{line}: reaches the data root {node.attr}")
+        elif isinstance(node, ast.Name) and node.id in READERS:
+            found.append(f"{line}: calls the file reader {node.id}")
+        elif isinstance(node, ast.Name) and node.id in DATA_ROOT_NAMES and not root_allowed:
+            found.append(f"{line}: reaches the data root {node.id}")
         elif (
             isinstance(node, ast.Constant)
             and isinstance(node.value, str)
@@ -106,13 +176,14 @@ def violations(source: str, module: str, is_package: bool = False) -> list[str]:
         ):
             found.append(f"{line}: string {node.value!r}")
     for node in ast.walk(tree):
-        if (
-            isinstance(node, ast.Attribute)
-            and node.attr.startswith("_")
-            and not node.attr.startswith("__")
-            and ast.unparse(node.value) in door_aliases
-        ):
+        if not isinstance(node, ast.Attribute):
+            continue
+        private = node.attr.startswith("_") and not node.attr.startswith("__")
+        owner = ast.unparse(node.value)
+        if private and owner in door_aliases:
             found.append(f"{node.lineno}: reaches the door's private {node.attr}")
+        if (private or node.attr in PYARROW_INPUT) and owner in arrow_aliases:
+            found.append(f"{node.lineno}: reaches pyarrow's {node.attr}")
     return found
 
 
@@ -160,6 +231,39 @@ REJECTED = [
     "from ac2fb.protocol import data\ndata._silver.read_frames([1])",
     "import ac2fb.protocol.data as d\nd._admit([1])",
     "import ac2fb.protocol.data\nac2fb.protocol.data._silver",
+    # The holes of review 18: pyarrow's private Parquet reader, and a raw file opened by hand.
+    "import pyarrow._parquet as pp\npp.ParquetReader()",
+    "from pyarrow._parquet import ParquetReader",
+    "from pyarrow import _parquet",
+    "import pyarrow as pa\npa._parquet.ParquetReader().open(path)",
+    "import pyarrow as pa\nreader = pa._parquet",
+    "with open(path) as f:\n    rows = [json.loads(line) for line in f]",
+    "import io\nio.open(path)",
+    "from pathlib import Path\nPath(path).read_bytes()",
+    "from pathlib import Path\nPath(path).read_text(encoding='utf-8')",
+    "import os\nos.listdir(path)",
+    "from pathlib import Path\nlist(Path(path).rglob('*.parquet'))",
+    "from ac2fb.protocol.data import data_dir\nroot = data_dir()",
+    "from ac2fb.protocol import data\nroot = data.data_dir() / 'raw'",
+    "from ac2fb.protocol import data\nimport os\nos.environ[data.DATA_ROOT_ENV]",
+    "import pandas as pd",
+    "import polars",
+    "from fastparquet import ParquetFile",
+    "from pyarrow import csv",
+    "import pyarrow.ipc",
+    "import pyarrow.json as pj",
+    "import pyarrow as pa\npa.memory_map(path)",
+    "import pyarrow as pa\npa.OSFile(path)",
+    "import pyarrow as pa\npa.input_stream(path)",
+    "reader = ParquetReader()",
+    "import numpy as np\nnp.fromfile(path)",
+    "import pyarrow as pa\npa.ipc.open_file(path)",
+    "import pyarrow as pa\npa.dataset.dataset(path)",
+    "import pyarrow.parquet as pq\npq.ParquetDataset(path)",
+    "import numpy as np\nnp.load(path)",
+    "import importlib\nimportlib.import_module('pyarrow._parquet')",
+    "name = 'match.jsonl'",
+    "x = f'{root}/bronze/football'",
 ]
 
 ACCEPTED = [
@@ -169,8 +273,24 @@ ACCEPTED = [
     'def f() -> None:\n    """Silver frames, via the door."""',
     "import pyarrow.parquet as pq\npq.write_table(table, 'reports/out.parquet')",
     "import pyarrow as pa\npa.table({'x': [1]})",
+    "import pyarrow.compute as pc\npc.equal(table['a'], 1)",
     "class A:\n    def __init__(self) -> None:\n        self._cache = {}",
+    "print('held-out: open' if status.open else 'held-out: locked')",
+    "from pathlib import Path\nPath(path).write_bytes(body)",
 ]
+
+
+def test_the_allowances_are_by_module() -> None:
+    # Reading a report is the power module's, and the data root the CLI's and layer 2's.
+    report = "import json\njson.loads((probes / 'probe_s1.json').read_text(encoding='utf-8'))"
+    assert violations(report, "ac2fb.defence.power") == []
+    assert violations(report, "ac2fb.defence.probe_s1") != []
+    root = "from ac2fb.protocol import data\nout = data.data_dir() / 'layer2'"
+    assert violations(root, "ac2fb.reliability.long") == []
+    assert violations("from ac2fb.protocol.data import data_dir", "ac2fb.cli") == []
+    assert violations(root, "ac2fb.reliability.match") != []
+    # An allowance names one call: the power module still may not open a file by hand.
+    assert violations("open(path)", "ac2fb.defence.power") != []
 
 
 @pytest.mark.parametrize("source", REJECTED)

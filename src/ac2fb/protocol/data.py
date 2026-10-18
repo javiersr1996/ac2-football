@@ -3,10 +3,10 @@
 Every read of the base's silver from ``ac2fb`` goes through this module: no other module of
 the package imports ``ftbase`` or opens a Parquet file, and ``tests/test_single_door.py``
 walks the code to keep it so. The readers (:func:`read_frames`, :func:`read_events`,
-:func:`read_dim`, :func:`read_bronze_events` and :func:`read_bronze_phases`) take match ids,
-look each one up in ``protocol/split.json`` and refuse a held-out id with
-:class:`HeldOutLocked` before any file is opened. An id outside the split is refused too
-(:class:`ValueError`). Calibration matches are served in every stage.
+:func:`read_dim`, :func:`read_bronze_events`, :func:`read_bronze_phases` and
+:func:`read_bronze_players`) take match ids, look each one up in ``protocol/split.json`` and
+refuse a held-out id with :class:`HeldOutLocked` before any file is opened. An id outside the
+split is refused too (:class:`ValueError`). Calibration matches are served in every stage.
 
 The held-out opens when, and only when, all of this holds in the git checkout the package runs
 from (:func:`guard_status` says which part fails):
@@ -58,6 +58,7 @@ __all__ = [
     "load_split",
     "read_bronze_events",
     "read_bronze_phases",
+    "read_bronze_players",
     "read_dim",
     "read_events",
     "read_frames",
@@ -255,9 +256,14 @@ def read_bronze_events(
     ``(match_id, event_type, event_id)``. Rows are in file order; the files of the matches are
     stacked in ascending id order. Only the files of the admitted matches are opened.
     """
+    return _read_bronze("dynamic_events", match_ids, columns)
+
+
+def _read_bronze(kind: str, match_ids: Sequence[int], columns: Sequence[str] | None) -> pa.Table:
+    """The bronze files of one kind for the admitted matches, stacked in ascending id order."""
     ids = _admit(match_ids)
     cols = None if columns is None else list(columns)
-    files = [bronze_path(data_dir(), "football", "dynamic_events", m) for m in ids]
+    files = [bronze_path(data_dir(), "football", kind, m) for m in ids]
     return pa.concat_tables([pq.read_table(f, columns=cols) for f in files])
 
 
@@ -270,10 +276,19 @@ def read_bronze_phases(
     start; they stay in bronze. Rows are in file order; the files of the matches are stacked in
     ascending id order. Only the files of the admitted matches are opened.
     """
-    ids = _admit(match_ids)
-    cols = None if columns is None else list(columns)
-    files = [bronze_path(data_dir(), "football", "phases_of_play", m) for m in ids]
-    return pa.concat_tables([pq.read_table(f, columns=cols) for f in files])
+    return _read_bronze("phases_of_play", match_ids, columns)
+
+
+def read_bronze_players(
+    match_ids: Sequence[int], *, columns: Sequence[str] | None = None
+) -> pa.Table:
+    """The provider's roster (bronze ``match_players``) of the given matches, guarded.
+
+    Silver keeps a player as an entity without the provider's role; the role (the goalkeeper
+    among them) stays in bronze. Rows are in file order; the files of the matches are stacked in
+    ascending id order. Only the files of the admitted matches are opened.
+    """
+    return _read_bronze("match_players", match_ids, columns)
 
 
 def _keep(table: pa.Table, column: str, values: Iterable[str]) -> pa.Table:

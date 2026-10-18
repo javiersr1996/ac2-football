@@ -221,6 +221,10 @@ FUNCTION_ROUTES: dict[str, Route] = {
         lambda m: served(m, data.read_bronze_phases([m], columns=["frame_start"]).num_rows > 0),
         lambda m: served(m, data.read_bronze_phases([m]).num_rows > 0),
     ),
+    "ac2fb.protocol.data.read_bronze_players": by_match(
+        lambda m: served(m, data.read_bronze_players([m], columns=["id"]).num_rows > 0),
+        lambda m: served(m, data.read_bronze_players([m]).num_rows > 0),
+    ),
     "ac2fb.protocol.data.read_dim": by_match(
         *[lambda m, name=name: data.read_dim(name, [m]) for name in DIMS]
     ),

@@ -165,7 +165,7 @@ presión y balón en `t` y `t - 1 s`). Signo: + es la línea retrocediendo hacia
   +1,04; sd 1,67 a 1,96 y 3,20 a 3,75), 10 de 10 no negativos, porque el presionado recibe tras un
   balón hacia delante (+0,55 a +1,79 m) y el libre tras uno hacia atrás (−0,53 a −1,56). **Sin
   estratificar por el balón entrante, "presión, línea arriba" sale solo de esto.** Dentro de
-  estratos de dirección, presionado menos libre: hacia atrás −0,34 a +0,42 (7 de 10 positivos),
+  estratos de dirección, presionado menos libre: hacia atrás −0,34 a +0,42 (8 de 10 positivos),
   hacia delante −0,65 a +0,14 (8 de 10 negativos, agregado −0,27 m, 0,14 sd), lateral −0,47 a
   +0,38. Queda un residuo del tamaño de 0,1 a 0,15 sd que D3 tiene que juzgar.
 - La etiqueta del proveedor es monótona con la geometría (rivales a 5 m; distancia al más cercano):
@@ -173,6 +173,11 @@ presión y balón en `t` y `t - 1 s`). Signo: + es la línea retrocediendo hacia
   `very_high` 1,72 y 1,3. **La visibilidad va con la causa**: con presión se ven 2,51 de los 4 de
   la línea (los 4 en el 43,9 %), sin presión 1,78 (28,6 %): "línea vista" selecciona recepciones
   presionadas y cercanas al balón, y toda variante restringida declara ese sesgo.
+- **Re-derivado en código por la tarea 15** (`reports/probe_s2.json`, `m10_inventory`, con las
+  definiciones de m10): 314 de 340 cifras impresas por m10 iguales a sus decimales; las otras 26
+  difieren en 0,0061 o menos por empates de profundidad a 1 cm entre el cuarto y el quinto
+  defensor, que m10 rompía sin orden fijo. Todas las cifras de este bloque se reproducen a su
+  precisión salvo una: hacia atrás eran 8 de 10 positivos, no 7 (corregido arriba).
 
 **kloppy.** kloppy 3.19.1 (última en PyPI hoy): el deserializador `skillcorner` lee `player_data`
 sin `is_detected` (grep del paquete instalado en esta sesión). Lo vuelve a comprobar la tarea 10.
@@ -889,7 +894,7 @@ su test sintético con el fallo plantado (una sonda que no puede fallar no prote
   distinga dentro de un nivel. (4) La sonda no mide la correlación del índice con el desenlace
   ni con el avance posterior, a propósito. (5) `W` = 13 (suelo de la 13) para los estratos; un test
   lo ata a `reports/probe_cadence.json`. Nadie leyó el reservado.
-- [ ] 15. `opus` Sonda S2 (C2): (a) altura de línea propia contra `last_defensive_line_x_start`
+- [x] 15. `opus` Sonda S2 (C2): (a) altura de línea propia contra `last_defensive_line_x_start`
   en la recepción (concordancia por partido; umbral fijado antes de correr, en el commit de la
   sonda); (b) contraste forzado: la línea sigue al balón entrante en `[t - W, t]` (m10, re-derivado
   en código); (c) **pre-tendencia dentro de estrato** (dirección por longitud del balón entrante
@@ -901,6 +906,99 @@ su test sintético con el fallo plantado (una sonda que no puede fallar no prote
   menos de 100 recepciones por partido con la línea vista (hipótesis, se revisa con la 17).
   Mutación: con los estratos barajados el sintético con confundidor plantado devuelve la
   pre-tendencia cruda de m10 (+0,0 a +0,5 m) y el test falla.
+  Medido (2026-10-18; todas las cifras salen de `reports/probe_s2.json`, 10 de calibración, por
+  partido): **código y regla en `5a435ed`, empujado antes de calcular la línea en ningún partido
+  real** (CI en verde, run 39141308101); el informe y este registro, en el commit siguiente. Gate
+  local en verde (`sync --locked`, ruff, format, `mypy src`, `pytest -q`: 490 pasan, eran 422; 10
+  deseleccionados, eran 9; `pytest -m realdata`: 10 de 10, con el informe confirmado byte a
+  byte). Nuevo: `defence/line.py` (línea, unidades, visibilidad, concordancia, pre-tendencia
+  dentro de estrato), `defence/probe_s2.py` (regla, carga, informe), `defence/m10.py` (m10
+  re-derivado y sus tablas impresas) y el comando `ac2fb s2 [--match ID] [--reports-dir D]`.
+  Rutas públicas nuevas (17 funciones y el comando `s2`) cubiertas por el test de la 11.
+  Reutiliza `pressure.incoming_ball` (estratos, W = 13), `visibility.goalkeepers`,
+  `match.locate_rows` y `players_at`, `report.render_report` y `protocol.data.read_bronze_events`.
+  **Definiciones y regla, escritas en los docstrings antes de leer los datos.** Recepción `t` =
+  `frame_start` de toda `player_possession` con jugador y equipo, con etiqueta o sin ella. Línea:
+  los 4 jugadores de campo más profundos del rival en `t` (x por el signo de ataque del
+  poseedor; portero fuera por el proxy de la 12), elegidos en `t` y seguidos sin re-rankear; `L`
+  su profundidad media, + es la línea retrocediendo. Presionado: un rival a 5 m o menos en `t`
+  (el proxy de m10). V0: línea listada en `t`, `t - 5`, `t - 13` y `t - 18` y estrato definido.
+  Pre-tendencia bruta `P = L(t) - L(t - 13)`; residual `R = P - 13 v(t - 13)`, con `v` medida en
+  5 frames (el desenlace de C2 movido W hacia atrás). Criterios: (1) instrumento por partido = r
+  de Pearson de `L(t)` con `last_defensive_line_x_start` de al menos 0,9 (30 pares o más) y `P`
+  medio negativo tras balón hacia atrás y positivo tras balón hacia delante (30 o más cada uno);
+  muere si pasan menos de 9 de 10. (2) Pre-tendencia dentro de estrato (18 celdas; presionado
+  menos libre en sd de la celda, media ponderada por `n_p n_f / (n_p + n_f)`, fuera las celdas
+  con menos de 5 en un grupo): un partido está por encima si `P` o `R` pasa de 0,15 sd en valor
+  absoluto; muere si hay más de 2. (3) Muere si algún partido tiene menos de 100 recepciones en
+  V1 (los 4 detectados en todo `[t - 13, t + 13]`).
+  **Veredicto: C2 muere en la sonda (`verdict.c2_survives_probe` = false), por el criterio 2.**
+  - (1) Instrumento: pasa en 10 de 10. (a) r 0,990 a 0,993 (CCC 0,964 a 0,979) sobre 754 a
+    1.050 pares por partido; la media de 4 queda 1,57 a 2,59 m menos profunda que el proveedor
+    (mediana de la diferencia). **El proveedor da el defensor más retrasado, no la media de 4**:
+    con el más profundo solo, r 0,997 a 1,000 y diferencia mediana −0,09 a +0,02 m (absoluta
+    0,00 a 0,17). (b) La línea sigue al balón en los 10: tras balón hacia atrás `P` medio −1,52
+    a −0,93 m (n 296 a 448), tras balón hacia delante +0,87 a +1,43 (n 281 a 415), lateral
+    −0,36 a +0,29.
+  - (2) Pre-tendencia: **por encima de 0,15 sd en 7 de 10** (1874553, 1886347, 1925299,
+    1959846, 2010085, 2011166, 2015213); por debajo 1996435, 1996436 y 2007448. Bruta dentro de
+    estrato −0,272 a +0,002 sd (−0,57 a +0,01 m; negativa en 9 de 10, por encima en 3); residual
+    −0,305 a −0,106 sd (negativa en 10 de 10, por encima en 5): con cualquiera de las dos sola,
+    C2 muere igual. La cruda (sin estratos) es la de m10, bruta +0,008 a +0,660 m (+0,003 a
+    +0,279 sd); dentro de estrato cambia de signo: **el presionado ya retrocede menos que el
+    libre antes de `t`**, sobre todo tras balón hacia delante (celdas `forward/*` de
+    `pretrend.raw.within_strata.by_stratum`), en la dirección del efecto que C2 buscaría
+    ("presión, línea arriba"). Entran 13 a 16 de las 18 celdas por partido (40 a 86 recepciones
+    fuera por celdas finas).
+  - (3) Visibilidad: V1 138 a 477 recepciones por partido (V0 733 a 1.037), 100 o más en los 10.
+    Por número de detectados en toda la ventana: 0, 226 a 454; 1, 93 a 167; 2, 68 a 122; 3, 77
+    a 126; 4, 138 a 477. La selección va con la causa: en V1 quedan 86 a 223 presionadas y 45 a
+    254 libres (`visibility.by_group`), y cae con la distancia de la línea al balón
+    (`visibility.by_ball_distance`); las 18 celdas por grupo, en V0 y V1, están en
+    `visibility.by_stratum` para la 17.
+  - (d) Velocidad de la línea en `t` (m/s, + retrocede): presionado −0,05 a +0,33, libre −0,46 a
+    +0,11 (presionado por encima en 9 de 10); dentro de estrato −0,295 a −0,035 sd (negativa en
+    10 de 10). Informa, no decide.
+  - (f) Balón extrapolado o sin fila en algún frame de `[t - 13, t]`: 3,4 a 6,2 % de V0
+    (presionado 3,5 a 6,5 %, libre 2,3 a 6,6 %); en 9 de 10 es igual a la fracción con el
+    balón extrapolado en un extremo de la ventana (`ball.extrapolated_at_ends`; 1925299, 6,1
+    frente a 6,2 %).
+  **m10 re-derivado** (`m10_inventory`, definiciones de m10: ventanas de 10 y 20 frames, todas
+  las posesiones): 314 de 340 cifras impresas iguales a sus decimales; las 26 restantes (1925299:
+  1, 1959846: 2, 1996436: 8, 2010085: 8, 2015213: 3, agregadas: 4) difieren en 0,0061 o menos.
+  Causa: empates de profundidad a 1 cm entre el cuarto y el quinto defensor en `t`, que m10
+  rompía con `row_number()` sin orden fijo; rompiéndolos al revés (diagnóstico de solo lectura
+  en el scratchpad), 1925299, 1959846, 1996436 y 2010085 reproducen entero y 1996435 pasa a
+  diferir; los porteros del reparto no entran en ninguna línea. Las cifras en prosa del bloque m10
+  del inventario se reproducen a su precisión salvo el "7 de 10 positivos" hacia atrás, que son 8
+  (corregido en el bloque).
+  **Mutaciones** (31 sobre el código, script en el scratchpad, todo restaurado, `git status`
+  limpio; tests que fallan, de 32): la pedida, estratos ignorados (4) o barajados (4): la
+  pre-tendencia vuelve a la cruda de +0,4 m del sintético y
+  `test_the_strata_absorb_the_planted_confounder` falla; profundidad sin signo (1), ranking sin
+  signo (1), línea re-rankeada en cada desfase (1), portero en la línea (10), lectura en `t + lag`
+  (16), presión con 2 rivales (6), visto con solo fila (4), pre-tendencia sin dividir por la sd (2)
+  o con pesos 1 (1), mínimo de celda solo en un grupo (1 y 1), ventana del balón que no ve una
+  fila ausente (1) o que empieza tarde (1), visibilidad que acaba en `t` (4), residual sin
+  velocidad (2), velocidad por frame (1), veredicto solo con la bruta (1), sin celdas que agregar
+  no cuenta (1), concordancia sin mínimo de pares (1), contraste sin el lado hacia atrás (1), sin
+  el lado hacia delante (1) o sin mínimo (1), regla de 8 de 10 (2), de 3 partidos por encima (2),
+  un partido corto admitido en V1 (1), instrumento sin concordancia (1), corte de m10 con `>=`
+  (1), tolerancia de m10 por 10 (1), sd de m10 con ddof 0 (1). La primera pasada dejó viva la de
+  la fila de balón ausente: se añadió ese caso al test.
+  **Desviaciones.** (1) Concordancia por r de Pearson (la CCC se imprime y no decide): el plan no
+  fijaba la medida. (2) La pre-tendencia decide con dos estadísticas, la bruta (la de m10) y la
+  residual ("la misma estadística" del desenlace en `[t - W, t]`), y basta una por encima: lo más
+  conservador; el veredicto no cambia con una sola. (3) El criterio 3 se aplica en cada partido
+  (lectura estricta de "por partido"); el plan marca el 100 como hipótesis de la 17. (4) `K` = 5
+  frames, los mínimos de 30 y de 5, el radio de 5 m de m10 como presión y los cortes de distancia
+  de la capa 2 son convenciones mías, escritas antes de los datos. (5) (e) no pasa por
+  `reliability.sensitivity`, cuya métrica recibe las posiciones de toda la ventana, también
+  después de `t`: `seen_through` cuenta la misma selección (V1, V2) leyendo solo banderas. (6)
+  El proxy del portero usa la posición media del periodo entero, también después de `t`: un rol,
+  no un movimiento (declarado en el docstring). (7) Entran todas las `player_possession` con
+  jugador y equipo, como en m10, no solo las etiquetadas de S1. Nadie leyó el reservado; nada
+  medido en `(t, t + W]` salvo las banderas de detección de (e).
 - [ ] 16. `sonnet` Sonda S3 (C3): anchura y longitud propias contra las del proveedor al inicio
   de fase (y la definición que usa el proveedor: con o sin portero, extremos o percentiles);
   fracción extrapolada de los jugadores que fijan cada extremo; correlación de rango entre

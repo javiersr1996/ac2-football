@@ -11,9 +11,11 @@ CSV, JSON, IPC or NumPy reader, a memory map, a stream); opening or listing a fi
 :data:`ALLOWED_FILE_CALLS`; naming the data root (``data_dir``, ``DATA_ROOT_ENV``) outside
 :data:`ALLOWED_DATA_ROOT`; reaching a private name of the door; and any string, outside
 docstrings, that names ``ftbase``, ``duckdb``, ``silver``, ``bronze``, ``pandas``, ``polars``,
-``jsonl`` or ``_parquet`` (the way to a dynamic import or to a data path). The checker is itself
-tested on snippets it must reject and snippets it must let through. A determined bypass (a
-subprocess, a path spelt in pieces) is out of its reach: the check catches the plain ways.
+``jsonl`` or ``_parquet`` (the way to a dynamic import or to a data path). The one allowance
+(:data:`ALLOWED_FILE_SITES`) is a site, not a module: one function, one call, one receiver. The
+checker is itself tested on snippets it must reject and snippets it must let through. A
+determined bypass (a subprocess, a path spelt in pieces) is out of its reach: the check catches
+the plain ways.
 """
 
 from __future__ import annotations
@@ -31,7 +33,15 @@ PACKAGE = ROOT / "src" / "ac2fb"
 DOOR = PACKAGE / "protocol" / "data.py"
 DOOR_MODULE = "ac2fb.protocol.data"
 
-FORBIDDEN_MODULES = ("ftbase", "duckdb", "pandas", "polars", "fastparquet")
+FORBIDDEN_MODULES = (
+    "ftbase",
+    "duckdb",
+    "pandas",
+    "polars",
+    "fastparquet",
+    "fileinput",
+    "linecache",
+)
 # The parts of pyarrow a module may import: tables in memory, compute, and Parquet writing.
 PYARROW_ALLOWED = ("pyarrow", "pyarrow.compute", "pyarrow.parquet")
 PYARROW_INPUT = frozenset(
@@ -39,6 +49,7 @@ PYARROW_INPUT = frozenset(
 )
 READERS = frozenset(
     {
+        "FileIO",
         "OSFile",
         "ParquetDataset",
         "ParquetFile",
@@ -52,8 +63,11 @@ READERS = frozenset(
         "loadtxt",
         "memmap",
         "memory_map",
+        "copyfile",
+        "copyfileobj",
         "open_file",
         "open_input_file",
+        "open_code",
         "open_input_stream",
         "open_stream",
         "read_csv",
@@ -71,11 +85,14 @@ READERS = frozenset(
         "scan_parquet",
     }
 )
-# Calls that open or list a file; only where a module reads its own reports, never data.
+# Names that open or list a file, called or merely mentioned (``f = open; f(p)``).
 FILE_CALLS = frozenset(
     {"glob", "iterdir", "listdir", "open", "read_bytes", "read_text", "rglob", "scandir", "walk"}
 )
-ALLOWED_FILE_CALLS = frozenset({("ac2fb.defence.power", "read_text")})  # the probe reports
+STATUS_FIELD = ("status", "open")  # the guard's `status.open` flag, read in `cli` and the door
+# The one allowance, by site: (module, function, call, receiver). The command line reads the
+# three probe reports there, and hands the verdicts to `power`, which opens nothing.
+ALLOWED_FILE_SITES = frozenset({("ac2fb.cli", "_probe_verdicts", "read_text", "probes_dir / name")})
 DATA_ROOT_NAMES = frozenset({"DATA_ROOT_ENV", "data_dir"})
 # `cli` prints the data root; `reliability.long` writes layer 2's Parquet under it.
 ALLOWED_DATA_ROOT = frozenset({"ac2fb.cli", "ac2fb.reliability.long"})
@@ -120,6 +137,16 @@ def _docstrings(tree: ast.AST) -> set[int]:
     return found
 
 
+def _enclosing(tree: ast.AST) -> dict[int, str]:
+    """The innermost function around each node, by node id ("" at module level)."""
+    where: dict[int, str] = {}
+    for node in ast.walk(tree):
+        if isinstance(node, ast.FunctionDef | ast.AsyncFunctionDef):
+            for child in ast.walk(node):
+                where[id(child)] = node.name
+    return where
+
+
 def violations(source: str, module: str, is_package: bool = False) -> list[str]:
     """Every way ``source`` reaches the data without the door, one line each."""
     tree = ast.parse(source)
@@ -127,6 +154,8 @@ def violations(source: str, module: str, is_package: bool = False) -> list[str]:
     door_aliases = {"ac2fb.protocol.data"}
     arrow_aliases = {"pyarrow"}
     root_allowed = module in ALLOWED_DATA_ROOT
+    enclosing = _enclosing(tree)
+    permitted: set[int] = set()  # the openers of an allowed site
     found: list[str] = []
     for node in ast.walk(tree):
         line = getattr(node, "lineno", 0)
@@ -156,14 +185,20 @@ def violations(source: str, module: str, is_package: bool = False) -> list[str]:
                     arrow_aliases.add(alias.asname or alias.name)
         elif isinstance(node, ast.Call):
             func = node.func
-            name = func.id if isinstance(func, ast.Name) else getattr(func, "attr", None)
-            if name in FILE_CALLS and (module, name) not in ALLOWED_FILE_CALLS:
-                found.append(f"{line}: opens or lists a file with {name}")
+            if isinstance(func, ast.Attribute):
+                site = (module, enclosing.get(id(node), ""), func.attr, ast.unparse(func.value))
+                if site in ALLOWED_FILE_SITES:
+                    permitted.add(id(func))
         elif isinstance(node, ast.Attribute):
+            owner_attr = (ast.unparse(node.value), node.attr)
+            if node.attr in FILE_CALLS and id(node) not in permitted and owner_attr != STATUS_FIELD:
+                found.append(f"{line}: opens or lists a file with {node.attr}")
             if node.attr in READERS:
                 found.append(f"{line}: calls the file reader {node.attr}")
             if node.attr in DATA_ROOT_NAMES and not root_allowed:
                 found.append(f"{line}: reaches the data root {node.attr}")
+        elif isinstance(node, ast.Name) and node.id in FILE_CALLS:
+            found.append(f"{line}: names the file opener {node.id}")
         elif isinstance(node, ast.Name) and node.id in READERS:
             found.append(f"{line}: calls the file reader {node.id}")
         elif isinstance(node, ast.Name) and node.id in DATA_ROOT_NAMES and not root_allowed:
@@ -263,6 +298,21 @@ REJECTED = [
     "import numpy as np\nnp.load(path)",
     "import importlib\nimportlib.import_module('pyarrow._parquet')",
     "name = 'match.jsonl'",
+    # Review 18, pass 2: openers named without a call, and readers the list did not know.
+    "from pathlib import Path\nPath(path).read_text()",
+    "import io\nio.FileIO(path)",
+    "from io import FileIO",
+    "import io\nio.open_code(path)",
+    "import linecache\nlinecache.getlines(path)",
+    "from linecache import getlines",
+    "import fileinput\nfileinput.input(path)",
+    "import shutil\nshutil.copyfile(path, other)",
+    "from shutil import copyfile",
+    "f = open\nf(path)",
+    "import io\nf = io.open\nf(path)",
+    "from pathlib import Path\nf = Path(path).read_bytes\nf()",
+    "import os\nf = os.listdir\nf(path)",
+    "import io\nio.open(path) ",
     "x = f'{root}/bronze/football'",
 ]
 
@@ -280,17 +330,27 @@ ACCEPTED = [
 ]
 
 
-def test_the_allowances_are_by_module() -> None:
-    # Reading a report is the power module's, and the data root the CLI's and layer 2's.
-    report = "import json\njson.loads((probes / 'probe_s1.json').read_text(encoding='utf-8'))"
-    assert violations(report, "ac2fb.defence.power") == []
-    assert violations(report, "ac2fb.defence.probe_s1") != []
+def test_the_allowances_are_by_site() -> None:
+    # Reading the probe reports is one function of the CLI's; the data root is the CLI's and
+    # layer 2's.
+    site = (
+        "import json\n"
+        "def _probe_verdicts(probes_dir):\n"
+        "    return json.loads((probes_dir / name).read_text(encoding='utf-8'))"
+    )
+    assert violations(site, "ac2fb.cli") == []
+    # Another module, another function, another receiver or another call: none is the site.
+    assert violations(site, "ac2fb.defence.power") != []
+    assert violations(site.replace("_probe_verdicts", "_other"), "ac2fb.cli") != []
+    assert violations(site.replace("probes_dir / name", "Path(any)"), "ac2fb.cli") != []
+    assert (
+        violations(site.replace("read_text(encoding='utf-8')", "read_bytes()"), "ac2fb.cli") != []
+    )
     root = "from ac2fb.protocol import data\nout = data.data_dir() / 'layer2'"
     assert violations(root, "ac2fb.reliability.long") == []
     assert violations("from ac2fb.protocol.data import data_dir", "ac2fb.cli") == []
     assert violations(root, "ac2fb.reliability.match") != []
-    # An allowance names one call: the power module still may not open a file by hand.
-    assert violations("open(path)", "ac2fb.defence.power") != []
+    assert violations("open(path)", "ac2fb.cli") != []
 
 
 @pytest.mark.parametrize("source", REJECTED)

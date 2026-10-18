@@ -8,8 +8,9 @@ statistic **before** ``t``, over ``[t - W, t]``, through readers that only take 
 (:func:`ball_advance`, :func:`block_before`): the outcome window ``(t, t + W]`` cannot be asked
 for. Everything below was written before any power was computed.
 
-**Which candidates.** The verdicts of the three probes, read from ``probe_s1.json``,
-``probe_s2.json`` and ``probe_s3.json``. A candidate that died in its probe is not simulated.
+**Which candidates.** The verdicts of the three probes, read by the command line from
+``probe_s1.json``, ``probe_s2.json`` and ``probe_s3.json`` and passed in. A candidate that died
+in its probe is not simulated.
 C2's simulation is not written (it died in probe S2); if its verdict said it survived, this
 module refuses to build the report rather than leave it out.
 
@@ -66,11 +67,11 @@ strata (C1, and each contrast and outcome of C3).
 
 from __future__ import annotations
 
-import json
 import zlib
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Any
 
 import numpy as np
 import pyarrow as pa
@@ -555,12 +556,14 @@ def candidate_power(
 # --- the probes, the rule and the report -------------------------------------------------------
 
 
-def probe_verdicts(probes_dir: Path) -> dict[str, bool]:
-    """Whether each candidate survived its probe, from the probe reports in ``probes_dir``."""
+def probe_verdicts(reports: Mapping[str, Mapping[str, Any]]) -> dict[str, bool]:
+    """Whether each candidate survived its probe, from the parsed probe reports by file name.
+
+    The module reads no file: the command line reads the three reports and passes them in.
+    """
     found: dict[str, bool] = {}
     for candidate, name in _PROBES.items():
-        report = json.loads((probes_dir / name).read_text(encoding="utf-8"))
-        value = report["verdict"][f"{candidate.lower()}_survives_probe"]
+        value = reports[name]["verdict"][f"{candidate.lower()}_survives_probe"]
         if not isinstance(value, bool):
             raise ValueError(f"{name} has no complete verdict")
         found[candidate] = value
@@ -589,9 +592,11 @@ def cp1_rule(alive: Mapping[str, bool], mde80_v0: Mapping[str, float | None]) ->
     }
 
 
-def power_report(match_ids: Sequence[int], probes_dir: Path) -> dict[str, object]:
-    """Read each match through the guarded door and simulate the power of the live candidates."""
-    alive = probe_verdicts(probes_dir)
+def power_report(match_ids: Sequence[int], alive: Mapping[str, bool]) -> dict[str, object]:
+    """Read each match through the guarded door and simulate the power of the live candidates.
+
+    ``alive`` is :func:`probe_verdicts` of the committed probe reports.
+    """
     if alive["C2"]:
         raise NotImplementedError("C2 survived probe S2: its power is not written")
     candidates: dict[str, object] = {}
@@ -704,15 +709,17 @@ def power_report(match_ids: Sequence[int], probes_dir: Path) -> dict[str, object
             "window_frames": W,
         },
         "matches": [int(m) for m in match_ids],
-        "probes": alive,
+        "probes": dict(alive),
         "candidates": candidates,
         "cp1_rule": cp1_rule(alive, mde),
     }
 
 
-def write_power_report(match_ids: Sequence[int], reports_dir: Path, probes_dir: Path) -> Path:
+def write_power_report(
+    match_ids: Sequence[int], reports_dir: Path, alive: Mapping[str, bool]
+) -> Path:
     """Build the report and write ``reports_dir/power.json`` (LF); return its path."""
-    report = power_report(match_ids, probes_dir)
+    report = power_report(match_ids, alive)
     reports_dir.mkdir(parents=True, exist_ok=True)
     path = reports_dir / REPORT_NAME
     path.write_bytes(render_report(report).encode("utf-8"))

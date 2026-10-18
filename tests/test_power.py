@@ -407,19 +407,28 @@ def test_cp1_rule_follows_the_plan() -> None:
         power.cp1_rule({"C1": True, "C2": True, "C3": True}, {})
 
 
-def test_probe_verdicts_reads_the_three_reports(tmp_path: Path) -> None:
+def test_probe_verdicts_reads_the_three_reports() -> None:
+    reports = {
+        "probe_s1.json": {"verdict": {"c1_survives_probe": True}},
+        "probe_s2.json": {"verdict": {"c2_survives_probe": False}},
+        "probe_s3.json": {"verdict": {"c3_survives_probe": True}},
+    }
+    assert power.probe_verdicts(reports) == {"C1": True, "C2": False, "C3": True}
+    reports["probe_s3.json"] = {"verdict": {"c3_survives_probe": None}}
+    with pytest.raises(ValueError, match="no complete verdict"):
+        power.probe_verdicts(reports)
+
+
+def test_the_command_line_reads_the_probe_reports(tmp_path: Path) -> None:
+    from ac2fb import cli
+
     for name, key, value in (
         ("probe_s1.json", "c1_survives_probe", True),
         ("probe_s2.json", "c2_survives_probe", False),
         ("probe_s3.json", "c3_survives_probe", True),
     ):
         (tmp_path / name).write_text(json.dumps({"verdict": {key: value}}), encoding="utf-8")
-    assert power.probe_verdicts(tmp_path) == {"C1": True, "C2": False, "C3": True}
-    (tmp_path / "probe_s3.json").write_text(
-        json.dumps({"verdict": {"c3_survives_probe": None}}), encoding="utf-8"
-    )
-    with pytest.raises(ValueError, match="no complete verdict"):
-        power.probe_verdicts(tmp_path)
+    assert cli._probe_verdicts(tmp_path) == {"C1": True, "C2": False, "C3": True}
 
 
 def test_the_bar_constants_are_the_plans() -> None:

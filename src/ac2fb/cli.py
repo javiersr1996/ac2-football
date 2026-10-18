@@ -3,12 +3,13 @@
 from __future__ import annotations
 
 import argparse
+import json
 import sys
 from collections.abc import Sequence
 from pathlib import Path
 
 from ac2fb import __version__
-from ac2fb.defence.power import write_power_report
+from ac2fb.defence.power import probe_verdicts, write_power_report
 from ac2fb.defence.probe_s1 import write_s1_report
 from ac2fb.defence.probe_s2 import write_s2_report
 from ac2fb.defence.probe_s3 import write_s3_report
@@ -158,10 +159,21 @@ def build_parser() -> argparse.ArgumentParser:
     return parser
 
 
+_PROBE_REPORTS = ("probe_s1.json", "probe_s2.json", "probe_s3.json")
+
+
+def _probe_verdicts(probes_dir: Path) -> dict[str, bool]:
+    """The one place that reads a file on the way to ``power.json``: the three probe reports."""
+    reports = {
+        name: json.loads((probes_dir / name).read_text(encoding="utf-8")) for name in _PROBE_REPORTS
+    }
+    return probe_verdicts(reports)
+
+
 def _power(match_ids: Sequence[int] | None, reports_dir: Path) -> int:
     ids = list(match_ids) if match_ids else list(load_split().calibration)
     try:
-        path = write_power_report(ids, reports_dir, _REPORTS)
+        path = write_power_report(ids, reports_dir, _probe_verdicts(_REPORTS))
     except HeldOutLocked as exc:
         print(f"refused: {exc}", file=sys.stderr)
         return 2

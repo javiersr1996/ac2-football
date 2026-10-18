@@ -19,6 +19,7 @@ import dataclasses
 import importlib
 import inspect
 import io
+import json
 import pkgutil
 import tempfile
 from collections.abc import Callable, Iterator
@@ -154,6 +155,10 @@ def power_command(m: int) -> pa.Table:
 
 
 REPORTS = Path(__file__).resolve().parent.parent / "reports"  # the committed probe verdicts
+VERDICTS = cli._probe_verdicts(REPORTS)
+PROBE_REPORTS = {
+    name: json.loads((REPORTS / name).read_text(encoding="utf-8")) for name in cli._PROBE_REPORTS
+}
 
 
 def tiny_design() -> bar.Design:
@@ -411,7 +416,7 @@ FUNCTION_ROUTES: dict[str, Route] = {
         )
     ),
     "ac2fb.defence.power.power_report": by_match(
-        lambda m: served(m, "candidates" in power.power_report([m], REPORTS))
+        lambda m: served(m, "candidates" in power.power_report([m], VERDICTS))
     ),
     "ac2fb.defence.power.pressed_at": on_match(
         lambda mt: isinstance(
@@ -424,9 +429,11 @@ FUNCTION_ROUTES: dict[str, Route] = {
             bool,
         )
     ),
-    "ac2fb.defence.power.probe_verdicts": without_match(lambda: power.probe_verdicts(REPORTS)),
+    "ac2fb.defence.power.probe_verdicts": without_match(
+        lambda: power.probe_verdicts(PROBE_REPORTS)
+    ),
     "ac2fb.defence.power.write_power_report": by_match(
-        lambda m: served(m, power.write_power_report([m], Path(OUT), REPORTS).is_file())
+        lambda m: served(m, power.write_power_report([m], Path(OUT), VERDICTS).is_file())
     ),
     "ac2fb.defence.line.ball_extrapolated": on_match(
         lambda mt: isinstance(line.ball_extrapolated(mt, int(mt.frame[0]), int(mt.frame[0])), bool)

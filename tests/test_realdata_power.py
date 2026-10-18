@@ -9,6 +9,7 @@ from typing import Any
 import pytest
 from test_split import CALIBRATION
 
+from ac2fb import cli
 from ac2fb.defence import power
 from ac2fb.reliability.report import render_report
 
@@ -22,7 +23,7 @@ def report(name: str) -> Any:
 
 
 def test_the_committed_power_report_is_what_the_code_writes() -> None:
-    fresh = render_report(power.power_report(CALIBRATION, REPORTS))
+    fresh = render_report(power.power_report(CALIBRATION, cli._probe_verdicts(REPORTS)))
     committed = (REPORTS / power.REPORT_NAME).read_bytes()
     assert b"\r" not in committed
     assert committed.decode("utf-8") == fresh

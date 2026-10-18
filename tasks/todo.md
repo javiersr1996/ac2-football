@@ -1166,11 +1166,11 @@ su test sintético con el fallo plantado (una sonda que no puede fallar no prote
   |---|---|---|---|
   | Instrumento | pasa S1, 10 de 10 (`probe_s1.json`) | pasa, 10 de 10 (`probe_s2.json`) | pasa S3, 10 de 10 (`probe_s3.json`) |
   | Pre-tendencia dentro de estrato (sd) | V0 +0,081 a +0,371; > 0,15 en 9 de 10 (`power.json`) | bruta −0,272 a +0,002, residual −0,305 a −0,106; > 0,15 en 7 de 10: **muerta en S2** | no aplica (nivel) |
-  | Pre-tendencia agregada (sd) y efecto mínimo para pasar D3, V0 / V1 | +0,224 / +0,216; D3 pide \|efecto\| > 0,447 / 0,433, 3,7 / 3,6 veces el MDE80 (`pretrend`) | no aplica (muerta) | no aplica (nivel) |
+  | Pre-tendencia agregada (sd) y efecto mínimo para pasar D3 (V0) | V0 +0,224, V1 +0,216 (informativa: D3 se aplica solo en V0); D3 pide \|efecto\| > 0,447 en V0, 3,7 veces el MDE80 (`pretrend`) | no aplica (muerta) | no aplica (nivel) |
   | Fracción que lo extrapolado sostiene | 0,008 a 0,050 del índice (`probe_s1.json`) | línea detectada en `t` 0,444 a 0,697 (`layer2.json`); el resto, extrapolada | fijadores de la anchura 0,271 a 0,455, de la longitud 0,524 a 0,633 (`probe_s3.json`) |
   | n por partido, V0 / V1 | 650 a 934 / 610 a 907 | 733 a 1.037 / 138 a 477 (`probe_s2.json`) | bajo y alto 110 a 162 / anchura 44 a 90, longitud 2 a 18; bajo/medio en el tercio medio 96 a 142 / anchura 32 a 87, longitud 0 a 14; medio/alto en el propio 74 a 141 / anchura 15 a 53, longitud 0 |
-  | MDE80 (sd), V0 / V1 | 0,12 / 0,12 | no simulada | dentro de estrato: bajo/alto, 0 celdas por construcción; bajo/medio en el tercio medio, anchura 0,41 / no alcanzable, longitud 0,41 / no alcanzable; medio/alto en el propio, anchura 0,85 / no alcanzable, longitud 0,83 / no alcanzable. Sin estratos (cota, bajo/alto): anchura 0,24 / 0,41, longitud 0,25 / no alcanzable |
-  | Riesgo | medio; D3 por la pre-tendencia | murió | bajo como medida, alto como hallazgo |
+  | MDE80 (sd), V0 / V1 | 0,12 / 0,12 | no simulada | dentro de estrato: bajo/alto, 0 celdas por construcción; bajo/medio en el tercio medio, anchura 0,41 / no alcanzable, longitud 0,41 / no alcanzable; medio/alto en el propio, anchura 0,85 / no alcanzable, longitud 0,83 / no alcanzable. Sin estratos (cota, bajo/alto, que incumple la regla de estratos y no tiene D3): anchura 0,24 / 0,41, longitud 0,25 / no alcanzable; tasa sin efecto de su nulo 0,0008 en la anchura y 0,0018 en la longitud (esta pasa de 0,00135) |
+  | Riesgo | medio; D3 por la pre-tendencia | murió | bajo como medida, alto como hallazgo; **ningún contraste cumple las reglas del plan** (ver abajo) |
   | Encaje (R, M, O, C, OS) | alta, media-alta, **baja**, alta, media | muy alta, alta, alta, alta, alta | muy alta, media, media-alta, alta, alta |
 
   **Lo que sale de la regla de CP1 (recomienda; decide Javier).** C2 murió en S2, así que la regla
@@ -1181,9 +1181,17 @@ su test sintético con el fallo plantado (una sonda que no puede fallar no prote
   está en D3: con una pre-tendencia por partido de +0,08 a +0,37 sd, positiva en 10 de 10 (de signo
   contrario al efecto que C1 busca: la presión reduciría el avance), D3 pide un efecto de más
   del doble de la pre-tendencia agregada en V0 (+0,224 sd: |efecto| > 0,447 sd, 3,7 veces el
-  MDE80; revisión 18); y su originalidad es baja. C3, con bajo frente a alto, no tiene celdas
-  dentro de estrato por construcción; sus contrastes contiguos dan 0,41 a 0,85 sd en V0 y no
-  alcanzan en V1; sin estratos, en V1 solo mide la anchura (0,41 sd).
+  MDE80; revisión 18); y su originalidad es baja. **C3 no tiene ningún diseño que cumpla las
+  reglas del plan.** Dentro de estrato (la regla: la causa se compara siempre dentro de estratos),
+  bajo frente a alto no tiene celdas por construcción y los contrastes contiguos dan 0,41 a 0,85
+  sd en V0 (`testable_v0` falso en los seis diseños, así que D2 los mataría) y no alcanzan en V1.
+  Bajo frente a alto sin estratos pasa D2 (0,24 anchura y 0,25 longitud en V0) pero incumple la
+  regla de estratos, su nulo de longitud da 0,0018 de tasa sin efecto (por encima de 0,00135) y D3
+  no está definida para un nivel (queda en "no aplica"). Elegir C3 obliga a CP1 a cambiar por
+  escrito la regla de estratos o D2, y a definir D3 para un nivel, antes de la 19. Sospechoso, sin
+  confirmar (la definición no está en `docs/`): el grupo de C3 es
+  `team_out_of_possession_phase_type`, una etiqueta de toda la fase que el proveedor podría fijar
+  con lo posterior a `frame_start`, es decir, una lectura parcial del desenlace.
   **Notas de la revisión 18 a la tabla** (cifras de `power.json`). (1) Con la vara de S2 (más de
   2 partidos con la pre-tendencia por encima de 0,15 sd en valor absoluto), C1 también moriría:
   9 de 10 en V0 y en V1 (`pretrend.s2_bar`). El plan, a la letra, solo la somete a D3 (la regla
@@ -1193,9 +1201,15 @@ su test sintético con el fallo plantado (una sonda que no puede fallar no prote
   tras más avance del balón en `[t − 13, t]` que la libre de su celda; si ese avance revierte en
   `[t, t + W]`, el avance posterior de la presionada cae sin que la presión cause nada, y ese es
   justo el signo que C1 busca. D3 compara magnitudes y no lo separa: la 19 lo tiene que tratar
-  (p. ej. la estadística previa como covariable o el desenlace como cambio respecto a lo previo).
+  con la estadística previa como covariable dentro de la celda (ajuste por lo previo dentro de
+  estrato). El desenlace como cambio respecto a lo previo no sirve: con E[después | antes, G] =
+  α + β·antes + τ·G (G la causa), el desenlace estima τ + β·pre, el cambio τ + (β − 1)·pre y la
+  covariable τ; con pre positiva (+0,224 sd) el cambio añade −(1 − β)·pre, del signo que busca C1,
+  para todo β < 1, y con β = 0 un nulo sale como −pre.
   (3) La 19 fija si D3 se mide en sd o en metros (aquí, sd de la celda). (4) La elección de qué
-  contraste usaría C3 (bajo/alto sin estratos, o uno contiguo dentro de estrato) la hará CP1.
+  contraste usaría C3 no tiene respuesta dentro de las reglas (ni bajo/alto sin estratos ni uno
+  contiguo dentro de estrato las cumplen, véase arriba): la hará CP1, cambiando por escrito la
+  regla de estratos o D2 y definiendo D3 para un nivel.
   **Mutaciones** (22 sobre el código, script en el scratchpad, todo restaurado; todas matan algún
   test, entre paréntesis cuántos): las pedidas, ruido que ignora la correlación dentro de la
   posesión, que infla la potencia (2: `test_ignoring_the_possession_correlation_inflates_the_power`
@@ -1259,8 +1273,7 @@ su test sintético con el fallo plantado (una sonda que no puede fallar no prote
     de la 23 y no se implementa ahora.
   - *Bajo 4, solape de ventanas.* `candidates.C1.window_overlap`, sobre las unidades de C1 en
     V0: hueco con la anterior del mismo periodo de W o menos, 8,9 a 14,0 % (del mismo equipo, 7,3
-    a 11,2 %); de 2W o menos, 37,7 a 46,2 % (31,7 a 40,1 %). El revisor midió 8,1 a 12,5 % con
-    `< 13` sobre todas las `player_possession`. Requisito (b) en la 19.
+    a 11,2 %); de 2W o menos, 37,7 a 46,2 % (31,7 a 40,1 %). Requisito (b) en la 19.
   - *Bajo 5, agujeros del chequeo estático.* `tests/test_single_door.py` rechaza además pandas,
     polars y fastparquet; todo pyarrow salvo `pyarrow`, `compute` y `parquet`; privados y módulos
     de entrada de pyarrow por alias; lectores de fichero por nombre (Parquet, CSV, JSON, IPC,
@@ -1326,12 +1339,13 @@ su test sintético con el fallo plantado (una sonda que no puede fallar no prote
   publica así. Aceptación: `--check` del protocolo; test de que ningún campo numérico del
   protocolo se lee de un fichero de resultados. **Requisitos de la revisión 18:** (a) fija si D3
   se mide en sd (de la celda, como en la 17) o en metros, y cómo trata la reversión a la media de
-  una pre-tendencia positiva (nota 2 de la tabla de CP1); (b) excluye o bloquea las unidades cuyo
+  una pre-tendencia positiva (nota 2 de la tabla de CP1): con lo previo como covariable dentro de
+  celda, no con el desenlace como cambio respecto a lo previo, que añade −(1 − β)·pre; (b) excluye o bloquea las unidades cuyo
   instante cae en la ventana de desenlace de la unidad anterior del mismo periodo: en C1, 8,9 a
   14,0 % de las unidades de V0 con un hueco de W o menos (7,3 a 11,2 % del mismo equipo), y 37,7
   a 46,2 % con 2W o menos, cuya ventana previa toca esa ventana de desenlace (31,7 a 40,1 % del
   mismo equipo; `power.json`, `candidates.C1.window_overlap`); si la 19 cambia W o las unidades,
-  la cifra se rehace; (c) si CP1 elige C3, escribe el contraste que CP1 elija.
+  la cifra se rehace; (c) C3 no tiene diseño que cumpla las reglas del plan (tabla de CP1): si CP1 la elige, antes de la 19 cambia por escrito la regla de estratos o D2 y define D3 para un nivel, y la 19 escribe el contraste resultante.
 - [ ] 20. `sonnet` Estimador validado con sintéticos antes de tocar datos reales: efecto plantado
   que se recupera; pre-tendencia plantada que sale por D3; confundidor plantado (presión con pase
   hacia delante y línea que sigue al balón, como m10) que el estrato anula; jugadores interpolados
@@ -1351,8 +1365,12 @@ su test sintético con el fallo plantado (una sonda que no puede fallar no prote
   heldout read` (el comando que lanza J4) y hace que, en `frozen`, el reservado solo se abra
   dentro de ese comando, que registra la lectura (commit con `stage: "read"`, el sha de la
   congelación y los ids leídos) antes de dar ninguna cifra; y que en `read` solo se reproduzca
-  con el mismo `code_tree_sha`. Aceptación: test de que una segunda apertura en `frozen` fuera del
-  comando falla, y mutación anotada (la puerta que abre en `frozen` sin registrar la lectura).
+  con el mismo `code_tree_sha`. El sha congela `uv.lock`, no el entorno instalado: `ac2fb heldout
+  read` compara las versiones instaladas (`importlib.metadata`) con las de `uv.lock` antes de
+  abrir y se niega si alguna difiere. Aceptación: test de que una segunda apertura en `frozen`
+  fuera del comando falla, test de que una versión instalada distinta de la del lock cierra la
+  lectura, y mutaciones anotadas (la puerta que abre en `frozen` sin registrar la lectura; la
+  lectura que no compara las versiones).
 - [ ] CP2. **[Javier] lun 16 nov.** Aprueba la congelación y queda avisado de que la lectura del
   reservado es irreversible. Si D5 ya mató la pregunta, aprueba la rama B: la capa 2 se queda en
   los 10 de calibración, salvo que Javier decida abrir el reservado solo para ella (irreversible).

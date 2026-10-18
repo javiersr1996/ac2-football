@@ -11,11 +11,12 @@ import hashlib
 import json
 import shutil
 import subprocess
+from collections.abc import Sequence
 from dataclasses import dataclass
 from pathlib import Path
 
 from ftbase.cli import main as ftbase_main
-from ftbase.fixtures import write_synthetic_match
+from ftbase.fixtures import PlantedRun, write_synthetic_match
 
 ROOT = Path(__file__).resolve().parent.parent
 CAL, HELD = 1874553, 1899585  # the first id of each set in protocol/split.json
@@ -124,3 +125,17 @@ def make_checkout(root: Path) -> Checkout:
     checkout.write("README.md", "throwaway checkout for the gate tests\n")
     checkout.commit("start")
     return checkout
+
+
+def build_one(root: Path, *, match_id: int, seed: int, runs: Sequence[PlantedRun]) -> Path:
+    """Silver for one synthetic match with the given planted runs; returns its data dir.
+
+    ``match_id`` may be any id: the base's own readers do not know the split.
+    """
+    match = write_synthetic_match(root / "fx", match_id=match_id, seed=seed, runs=runs)
+    data = root / "data"
+    args = ["--manifest", str(match.manifest), "--data-dir", str(data)]
+    assert ftbase_main(["ingest", *args, "--from-existing", str(match.root)]) == 0
+    assert ftbase_main(["bronze", *args]) == 0
+    assert ftbase_main(["silver", *args]) == 0
+    return data

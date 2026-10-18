@@ -14,15 +14,20 @@ finish (one that opened a held-out file would fail on the garbage).
 from __future__ import annotations
 
 import argparse
+import contextlib
 import dataclasses
 import importlib
 import inspect
+import io
 import pkgutil
+import tempfile
 from collections.abc import Callable, Iterator
 from dataclasses import dataclass
+from pathlib import Path
 from types import ModuleType
 from typing import Any
 
+import numpy as np
 import pyarrow as pa
 import pytest
 from ftbase import silver
@@ -32,6 +37,9 @@ import ac2fb
 from ac2fb import cli
 from ac2fb.protocol import data
 from ac2fb.protocol.data import HeldOutLocked
+from ac2fb.reliability import inventory, long, report, runs, visibility
+from ac2fb.reliability import match as match_module
+from ac2fb.reliability.sensitivity import Reading, WindowFrames, sensitivity
 
 DIMS = ("dim_sport", "dim_period", "dim_team", "dim_match", "dim_team_period", "dim_entity")
 
@@ -52,6 +60,56 @@ def without_match(*calls: Callable[[], Any]) -> Route:
     return Route(False, calls)
 
 
+OUT = tempfile.mkdtemp(prefix="ac2fb-routes-")  # where the routes that write put their files
+FRAME_COLUMNS = [
+    "match_id", "native_match_id", "period", "frame_native", "entity_id", "entity_kind",
+    "team_id", "x_m", "y_m", "is_detected",
+]  # fmt: skip
+
+
+def served(match: int, ok: bool) -> pa.Table:
+    """A route that returns something other than a table says it served the match this way."""
+    assert ok
+    return pa.table({"match_id": [f"fb:{match}"]})
+
+
+def loaded(m: int) -> match_module.MatchData:
+    return match_module.load_match(m)
+
+
+def on_match(check: Callable[[match_module.MatchData], object]) -> Route:
+    """A route driven by one loaded match: served when ``check`` returns something truthy."""
+    return by_match(lambda m: served(m, bool(check(loaded(m)))))
+
+
+def long_of(m: int) -> pa.Table:
+    return long.long_table(data.read_frames([m], columns=FRAME_COLUMNS))
+
+
+def layer2_command(m: int) -> pa.Table:
+    """The ``layer2`` command for one match: exit 2 and a refusal on stderr is a refusal."""
+    err = io.StringIO()
+    with contextlib.redirect_stderr(err), contextlib.redirect_stdout(io.StringIO()):
+        code = cli.main(["layer2", "--match", str(m), "--reports-dir", OUT])
+    if code == 2 and "held-out" in err.getvalue():
+        raise HeldOutLocked(err.getvalue())
+    assert code == 0, err.getvalue()
+    return served(m, True)
+
+
+def one_unit(window: WindowFrames) -> Reading | None:
+    return Reading(0.0, ())
+
+
+def built(m: int) -> match_module.MatchData:
+    return match_module.build_match(
+        m,
+        data.read_frames([m], columns=FRAME_COLUMNS),
+        data.read_events([m]),
+        data.read_dim("dim_team_period", [m]),
+    )
+
+
 FUNCTION_ROUTES: dict[str, Route] = {
     "ac2fb.cli.build_parser": without_match(cli.build_parser),
     "ac2fb.cli.main": without_match(lambda: cli.main([])),
@@ -68,10 +126,64 @@ FUNCTION_ROUTES: dict[str, Route] = {
     "ac2fb.protocol.data.read_dim": by_match(
         *[lambda m, name=name: data.read_dim(name, [m]) for name in DIMS]
     ),
+    "ac2fb.reliability.long.gap_len": without_match(
+        lambda: long.gap_len(np.zeros(2, dtype=np.int64), np.arange(2), np.array([True, False]))
+    ),
+    "ac2fb.reliability.long.long_dir": without_match(long.long_dir),
+    "ac2fb.reliability.long.long_table": by_match(long_of),
+    "ac2fb.reliability.long.write_long": by_match(
+        lambda m: served(m, len(long.write_long([m], Path(OUT))) == 1)
+    ),
+    "ac2fb.reliability.match.build_match": by_match(lambda m: served(m, built(m).player.size > 0)),
+    "ac2fb.reliability.match.load_match": on_match(lambda mt: mt.player.size > 0),
+    "ac2fb.reliability.match.locate_rows": on_match(
+        lambda mt: match_module.locate_rows(mt, mt.player[:3], mt.frame[:3]).min() >= 0
+    ),
+    "ac2fb.reliability.match.players_at": on_match(
+        lambda mt: len(match_module.players_at(mt, int(mt.frame[0]))) > 0
+    ),
+    "ac2fb.reliability.runs.acceleration_summary": on_match(runs.acceleration_summary),
+    "ac2fb.reliability.runs.band_of": without_match(lambda: runs.band_of(np.array([1, 99]))),
+    "ac2fb.reliability.runs.extrapolated_runs": on_match(
+        lambda mt: len(runs.extrapolated_runs(mt).length) > 0
+    ),
+    "ac2fb.reliability.runs.linear_rounding_floor": without_match(
+        lambda: runs.linear_rounding_floor(n=100)
+    ),
+    "ac2fb.reliability.runs.run_summary": on_match(
+        lambda mt: runs.run_summary(runs.extrapolated_runs(mt))
+    ),
+    "ac2fb.reliability.runs.step_summary": on_match(runs.step_summary),
+    "ac2fb.reliability.runs.unlisted_stretches": on_match(runs.unlisted_stretches),
+    "ac2fb.reliability.visibility.block_detection": on_match(visibility.block_detection),
+    "ac2fb.reliability.visibility.defensive_line_detection": on_match(
+        visibility.defensive_line_detection
+    ),
+    "ac2fb.reliability.visibility.detection_by_ball_distance": on_match(
+        visibility.detection_by_ball_distance
+    ),
+    "ac2fb.reliability.visibility.detection_shares": on_match(visibility.detection_shares),
+    "ac2fb.reliability.visibility.engager_detection": on_match(visibility.engager_detection),
+    "ac2fb.reliability.visibility.goalkeepers": on_match(visibility.goalkeepers),
+    "ac2fb.reliability.visibility.reception_detection": on_match(visibility.reception_detection),
+    "ac2fb.reliability.sensitivity.sensitivity": by_match(
+        lambda m: served(m, m in sensitivity(one_unit, long_of(m)))
+    ),
+    "ac2fb.reliability.inventory.compare": without_match(lambda: inventory.compare({}, {})),
+    "ac2fb.reliability.inventory.leaf": without_match(lambda: inventory.leaf({"a": 1}, "a")),
+    "ac2fb.reliability.report.layer2_report": by_match(
+        lambda m: served(m, "inventory" in report.layer2_report([m]))
+    ),
+    "ac2fb.reliability.report.match_report": on_match(lambda mt: "runs" in report.match_report(mt)),
+    "ac2fb.reliability.report.render_report": without_match(lambda: report.render_report({})),
+    "ac2fb.reliability.report.write_report": without_match(
+        lambda: report.write_report({}, Path(OUT))
+    ),
 }
 
 CLI_ROUTES: dict[tuple[str, ...], Route] = {
     ("status",): without_match(lambda: cli.main(["status"])),
+    ("layer2",): by_match(layer2_command),
 }
 
 

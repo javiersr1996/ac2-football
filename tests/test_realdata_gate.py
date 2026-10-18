@@ -19,6 +19,8 @@ def test_the_door_serves_the_ten_calibration_matches() -> None:
     for match_id in CALIBRATION:
         frames = data.read_frames([match_id], columns=["native_match_id"])
         events = data.read_events([match_id], columns=["native_match_id"])
+        bronze = data.read_bronze_events([match_id], columns=["match_id"])
+        assert bronze.num_rows > 0 and set(bronze["match_id"].to_pylist()) == {match_id}
         for table in (frames, events):
             assert table.num_rows > 0
             assert set(table["native_match_id"].to_pylist()) == {match_id}
@@ -35,5 +37,7 @@ def test_the_door_refuses_the_ten_heldout_matches() -> None:
             data.read_frames([match_id], columns=["native_match_id"])
         with pytest.raises(data.HeldOutLocked):
             data.read_events([match_id], columns=["native_match_id"])
+        with pytest.raises(data.HeldOutLocked):
+            data.read_bronze_events([match_id], columns=["match_id"])
         with pytest.raises(data.HeldOutLocked):
             data.read_dim("dim_match", [match_id])

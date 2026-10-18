@@ -8,6 +8,7 @@ from collections.abc import Sequence
 from pathlib import Path
 
 from ac2fb import __version__
+from ac2fb.defence.probe_s1 import write_s1_report
 from ac2fb.protocol.data import (
     GUARDED_CODE,
     HeldOutLocked,
@@ -72,7 +73,37 @@ def build_parser() -> argparse.ArgumentParser:
         default=_REPORTS,
         help="where probe_cadence.json goes (default: reports/)",
     )
+    s1 = commands.add_parser(
+        "s1",
+        help="write reports/probe_s1.json: the pressure index at the reception against the label",
+        description=(
+            "Probe S1 (candidate C1), descriptive: does the geometric pressure index grow with "
+            "the provider's pressure label, how much of it extrapolated rivals carry, and the "
+            "incoming-ball strata. Reads through the guarded door. Without --match, the "
+            "calibration matches."
+        ),
+    )
+    s1.add_argument(
+        "--match", type=int, action="append", metavar="ID", help="native match id (repeatable)"
+    )
+    s1.add_argument(
+        "--reports-dir",
+        type=Path,
+        default=_REPORTS,
+        help="where probe_s1.json goes (default: reports/)",
+    )
     return parser
+
+
+def _s1(match_ids: Sequence[int] | None, reports_dir: Path) -> int:
+    ids = list(match_ids) if match_ids else list(load_split().calibration)
+    try:
+        path = write_s1_report(ids, reports_dir)
+    except HeldOutLocked as exc:
+        print(f"refused: {exc}", file=sys.stderr)
+        return 2
+    print(f"wrote {path}")
+    return 0
 
 
 def _cadence(match_ids: Sequence[int] | None, reports_dir: Path) -> int:
@@ -123,6 +154,8 @@ def main(argv: Sequence[str] | None = None) -> int:
         return _layer2(args.match, args.reports_dir)
     if args.command == "cadence":
         return _cadence(args.match, args.reports_dir)
+    if args.command == "s1":
+        return _s1(args.match, args.reports_dir)
     return 0
 
 

@@ -35,6 +35,7 @@ from gate_helpers import CAL, HELD, POISON, Checkout
 
 import ac2fb
 from ac2fb import cli
+from ac2fb.defence import pressure, probe_s1
 from ac2fb.protocol import data
 from ac2fb.protocol.data import HeldOutLocked
 from ac2fb.reliability import cadence, inventory, long, report, runs, visibility
@@ -108,6 +109,17 @@ def cadence_command(m: int) -> pa.Table:
     return served(m, True)
 
 
+def s1_command(m: int) -> pa.Table:
+    """The ``s1`` command for one match: exit 2 and a refusal on stderr is a refusal."""
+    err = io.StringIO()
+    with contextlib.redirect_stderr(err), contextlib.redirect_stdout(io.StringIO()):
+        code = cli.main(["s1", "--match", str(m), "--reports-dir", OUT])
+    if code == 2 and "held-out" in err.getvalue():
+        raise HeldOutLocked(err.getvalue())
+    assert code == 0, err.getvalue()
+    return served(m, True)
+
+
 def one_unit(window: WindowFrames) -> Reading | None:
     return Reading(0.0, ())
 
@@ -134,8 +146,54 @@ FUNCTION_ROUTES: dict[str, Route] = {
         lambda m: data.read_frames([m], columns=["native_match_id"]),
     ),
     "ac2fb.protocol.data.read_events": by_match(lambda m: data.read_events([m])),
+    "ac2fb.protocol.data.read_bronze_events": by_match(
+        lambda m: served(m, data.read_bronze_events([m], columns=["event_id"]).num_rows > 0),
+        lambda m: served(m, data.read_bronze_events([m]).num_rows > 0),
+    ),
     "ac2fb.protocol.data.read_dim": by_match(
         *[lambda m, name=name: data.read_dim(name, [m]) for name in DIMS]
+    ),
+    "ac2fb.defence.pressure.distance_weight": without_match(
+        lambda: pressure.distance_weight(np.array([0.0, 10.0]))
+    ),
+    "ac2fb.defence.pressure.extrapolated_share": without_match(
+        lambda: pressure.extrapolated_share([])
+    ),
+    "ac2fb.defence.pressure.goal_side_weight": without_match(
+        lambda: pressure.goal_side_weight(np.array([1.0]))
+    ),
+    "ac2fb.defence.pressure.incoming_ball": on_match(
+        lambda mt: isinstance(pressure.incoming_ball(mt, int(mt.frame[0]), 1, 0.0), str)
+    ),
+    "ac2fb.defence.pressure.level_contrast": without_match(lambda: pressure.level_contrast([], 10)),
+    "ac2fb.defence.pressure.make_metric": on_match(
+        lambda mt: callable(pressure.make_metric(mt, []))
+    ),
+    "ac2fb.defence.pressure.rival_weights": without_match(
+        lambda: pressure.rival_weights((0.0, 0.0), np.array([[1.0, 0.0]]), 1)
+    ),
+    "ac2fb.defence.pressure.score_receptions": on_match(
+        lambda mt: pressure.score_receptions(mt, []) == []
+    ),
+    "ac2fb.defence.pressure.stratum_counts": without_match(lambda: pressure.stratum_counts([])),
+    "ac2fb.defence.probe_s1.load_inputs": by_match(
+        lambda m: served(m, probe_s1.load_inputs(m).match.player.size > 0)
+    ),
+    "ac2fb.defence.probe_s1.match_report": by_match(
+        lambda m: served(m, "contrast" in probe_s1.match_report(probe_s1.load_inputs(m)))
+    ),
+    "ac2fb.defence.probe_s1.receptions_from": without_match(
+        lambda: probe_s1.receptions_from(
+            pa.table({k: pa.array([], pa.string()) for k in ("native_family",)}),
+            pa.table({k: pa.array([], pa.string()) for k in ("event_id", "event_type")}),
+        )
+    ),
+    "ac2fb.defence.probe_s1.s1_report": by_match(
+        lambda m: served(m, "verdict" in probe_s1.s1_report([probe_s1.load_inputs(m)]))
+    ),
+    "ac2fb.defence.probe_s1.verdict": without_match(lambda: probe_s1.verdict({})),
+    "ac2fb.defence.probe_s1.write_s1_report": by_match(
+        lambda m: served(m, probe_s1.write_s1_report([m], Path(OUT)).is_file())
     ),
     "ac2fb.reliability.cadence.cadence_of": without_match(
         lambda: cadence.cadence_of(np.array([2, 2, 3], dtype=np.int64))
@@ -213,6 +271,7 @@ CLI_ROUTES: dict[tuple[str, ...], Route] = {
     ("status",): without_match(lambda: cli.main(["status"])),
     ("layer2",): by_match(layer2_command),
     ("cadence",): by_match(cadence_command),
+    ("s1",): by_match(s1_command),
 }
 
 

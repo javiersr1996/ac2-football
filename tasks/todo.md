@@ -1315,6 +1315,27 @@ su test sintético con el fallo plantado (una sonda que no puede fallar no prote
   subprocess ni una ruta escrita a trozos. (5) A C1 no se le aplica la vara de S2: se imprime y
   decide CP1. (6) Los contrastes contiguos usan la correlación previa de todas las fases, como
   bajo/alto. Nadie leyó el reservado; ninguna cifra de `(t, t + W]` de ninguna candidata.
+  Revisión 18, pasada 2 (2026-10-18): cinco hallazgos (2 medios, 3 bajos), arreglados en `e574fa4`;
+  falta la re-revisión. (Medio 1) La nota 2 y el requisito (a) ofrecían el desenlace como cambio
+  respecto a lo previo, que añade −(1 − β)·pre del signo de C1: se quita y queda la covariable
+  dentro de celda. (Medio 2) La tabla, la recomendación, la nota 4 y el requisito (c) dicen que C3
+  no tiene diseño que cumpla las reglas (dentro de estrato D2 los mata; sin estratos incumple la
+  regla de estratos, su nulo de longitud da 0,0018 y D3 no aplica); tasa añadida a la tabla;
+  `team_out_of_possession_phase_type` anotado como sospechoso, sin confirmar. (Bajo 3) La
+  excepción del chequeo estático es por sitio (módulo, función, llamada y receptor); `power` ya
+  no lee ficheros (el CLI lee los tres informes y le pasa los veredictos); el chequeo rechaza
+  además cualquier mención de `open`, `read_text` y similares sin llamada, `FileIO`, `open_code`,
+  `linecache`, `fileinput` y `copyfile`. (Bajo 4) Quitado el "8,1 a 12,5 %" sin artefacto; la fila
+  de D3 de la tabla da 0,447 solo para V0 (V1 informativa). (Bajo 5) La 23 exige que `ac2fb heldout
+  read` compare las versiones instaladas con `uv.lock` antes de abrir. **Mutaciones (10, script en
+  el scratchpad `review18b`, todo restaurado; cada una hace fallar el test del chequeo):**
+  `Path(...).read_text()` en `power` y en otro módulo, `io.FileIO`, `io.open_code`, `linecache`,
+  `fileinput`, `shutil.copyfile`, `f = open; f(p)`, lectura fuera de la función permitida del CLI
+  y la función permitida copiada a `power`. Gate local en verde (751 pasan, 15 de 15 `realdata`);
+  **CI en verde:
+  https://github.com/javiersr1996/ac2-football/actions/runs/39156486410**. Sin desviaciones
+  de fondo: `probe_verdicts` recibe los informes ya leídos y vive aún en `power`. Nadie leyó el
+  reservado; ninguna cifra del desenlace.
 - [ ] CP1. **[Javier] lun 2 nov.** Elige UNA pregunta con la tabla delante (por candidata:
   instrumento pasa o no, pre-tendencia dentro de estrato, fracción extrapolada que la sostiene,
   n por partido en V0 y V1, MDE80, riesgo y encaje con los 5 criterios). Va recomendada primero

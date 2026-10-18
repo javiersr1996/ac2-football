@@ -610,7 +610,7 @@ Todas las sondas corren **solo en los 10 partidos de calibración** y ninguna ca
 de ninguna candidata (`[t, t + W]`). Cada una escribe `reports/probe_<n>.json` por partido y trae
 su test sintético con el fallo plantado (una sonda que no puede fallar no protege nada).
 
-- [ ] 11. `opus` Split y guard: `protocol/split.json` con la decisión 1, commiteado antes de
+- [x] 11. `opus` Split y guard: `protocol/split.json` con la decisión 1, commiteado antes de
   cualquier código de desenlace. Una sola puerta a los datos: toda lectura del silver de la base
   pasa por `protocol.data`, que rehúsa los ids del reservado salvo con protocolo `frozen` en `HEAD`,
   `code_tree_sha` de `defence/` y `reliability/` igual al congelado y árbol limpio; tras la lectura,
@@ -618,6 +618,57 @@ su test sintético con el fallo plantado (una sonda que no puede fallar no prote
   toda ruta pública (cada comando del CLI y cada función exportada, enumerados por el test);
   mutaciones anotadas: guard que solo mira `stage`, guard sin comparar el sha, lectura que
   esquiva `protocol.data`; las tres tienen que hacer fallar un test.
+  Medido (2026-10-18): **commit del split `7747bed`**, solo `protocol/split.json` (los 20 ids de la
+  decisión 1, comprobados contra `tracklab/tasks/todo.md:4767-4771` y contra los 20 de silver por nombre
+  de fichero) y `protocol/protocol.json` (`stage: "design"`, `code_tree_sha: null`), empujado antes de
+  cualquier código (CI verde 39129954707). Código en `dad335a`, empujado: CI verde
+  https://github.com/javiersr1996/ac2-football/actions/runs/39132358688 (95 pasan, 2 deseleccionados, 3,9 s).
+  Datos: `FTBASE_DATA_ROOT=C:/Users/javie/Desktop/proyectos/ac2-football/data` (`data/` en `.gitignore:1`),
+  `ftbase ingest --from-existing` contra tracklab: `downloaded=0 verified=85 failed=0`, 10 s; `bronze` 297 s
+  (295,5 según ftbase); `silver` 76 s (73,5; `checks: 64/64 passed`); 383 s en total; tracklab sin cambios
+  (`git status` vacío). Puerta `ac2fb.protocol.data` (`read_frames`, `read_events`, `read_dim`,
+  `load_split`, `guard_status`, `code_tree_sha`, `data_dir`): split y `stage` se leen de `HEAD` con
+  `git show`, nunca del árbol; un id del reservado se rehúsa con `HeldOutLocked` antes de abrir ningún
+  fichero salvo `stage` `frozen` o `read` en `HEAD`, `code_tree_sha` igual al registrado y árbol limpio
+  (`git status --porcelain --untracked-files=all` vacío y ningún fichero `assume-unchanged` o
+  `skip-worktree`); un id fuera del split, `ValueError`. `code_tree_sha` es el sha256 de `git ls-tree HEAD
+  -- src/ac2fb/defence src/ac2fb/reliability` (en `dad335a`: `51a755a8...8911d`); `data_dir()` es
+  `$FTBASE_DATA_ROOT` o `data/` en la raíz del checkout. `ac2fb status` imprime el estado (solo git).
+  Gate local en verde (`sync --locked`, ruff, format, `mypy src`, `pytest -q`: 95 pasan, eran 7; 0
+  saltados; 2 deseleccionados); `pytest -m realdata`: 2 de 2 (sirve los 10 de calibración por frames,
+  events y `dim_match`; rehúsa los 10 del reservado por los tres lectores, sin abrir nada suyo). Tests
+  sobre el sintético de la base escrito dos veces, con ids 1874553 y 1899585, y construido por su CLI;
+  control positivo: ese reservado se lee directo con `ftbase.silver`. **Rutas públicas enumeradas por
+  el test** (`__all__` de cada módulo, que debe listar todo nombre público, y subcomandos del CLI): 9
+  funciones (`cli.build_parser`, `cli.main` y las 7 de la puerta) y 1 comando (`status`). Las 3 que
+  toman partido, en 10 llamadas (frames normal, `attacking` y con columnas; events; `read_dim` en las 6
+  dimensiones), rehúsan el reservado y sirven calibración con los Parquet del reservado envenenados, y
+  sirven el reservado con el protocolo congelado; las 6 funciones sin partido y `status` corren sobre los
+  envenenados sin fallar. Test AST: fuera de la puerta, ningún import de `ftbase`, `duckdb` ni
+  `pyarrow.dataset`, ningún lector de Parquet por nombre, ningún privado de la puerta y ninguna cadena
+  con `ftbase|duckdb|silver` fuera de docstrings; el comprobador se prueba con 23 fragmentos que debe
+  rechazar y 7 que debe dejar pasar. **Mutaciones (18, todas matan algún test; script en el
+  scratchpad, todo restaurado):** guard que solo mira `stage` (8 tests); guard sin comparar el sha (2);
+  `reliability/leak.py` que importa `ftbase.silver` y exporta un lector (2: AST y tabla de rutas), sin
+  `__all__` (5) y con `duckdb` sobre un glob de silver (1); sin árbol limpio (5); sin
+  `assume-unchanged`/`skip-worktree` (2); split del árbol (1); `stage` del árbol (1, por el mensaje: el
+  árbol sucio también cierra); `read_dim` sin recorte (6); `dim_team` sin recorte (1); ids fuera del
+  split admitidos (1); sha de una sola carpeta (10); `design` abre (3); `read_frames` sin guard (24);
+  sin comprobar la raíz del checkout (1); lector exportado en la puerta sin guard (1); petición mixta
+  que mira solo el primer id (1). Fallo de la base (no arreglado): `ftbase bronze` y `ftbase silver`
+  imprimen recuentos por partido (filas, frames, eventos, MB) de los 20, reservado incluido, y el bloque
+  completo del README también; de los logs (scratchpad) se borraron sin mirarlas las 70 líneas con ids
+  del reservado. Desviaciones: `protocol.json` entra en el commit del split (la 19 lo rellena) y el
+  split lleva un campo `about`; la puerta prohíbe a los demás módulos todo `ftbase`, no solo
+  `ftbase.silver` (`pyarrow.parquet.write_table` sigue permitido para la 12); `read_dim` pide ids y lee
+  entero el fichero de cada dimensión, pero solo devuelve las filas de esos partidos (`dim_team`, sus
+  equipos; `dim_sport`, entera); `read` abre como `frozen` (reproducir) con las mismas condiciones, y la
+  puerta no escribe `stage: "read"` ni exige el commit de la lectura (J4 y la 24); no detecta una
+  recongelación (un commit que cambie código y `code_tree_sha` a la vez: lo cubre el `git diff` de la
+  23) y su propio código (`src/ac2fb/protocol/`) no entra en el sha; ids fuera del split rehusados
+  (el sintético con su id por defecto no pasa); solo sirve desde su checkout git, fuera da
+  `RuntimeError`; `pyarrow>=26.0.0` como dependencia directa (misma versión del lock), override de mypy
+  y `addopts = -m 'not realdata'` como en la base; `ac2fb status` nuevo (da el sha que pedirá la 23).
 - [ ] 12. `sonnet` Núcleo de la capa 2 (`reliability/`): `gap_len` (frames hasta la detección
   más cercana, 0 si detectado) calculado sobre el silver de la base y escrito en el Parquet largo
   de la decisión 4, nunca en la base; detección por partido, por distancia al balón, de la línea

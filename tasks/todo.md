@@ -662,7 +662,8 @@ su test sintético con el fallo plantado (una sonda que no puede fallar no prote
 - [x] 11. `opus` Split y guard: `protocol/split.json` con la decisión 1, commiteado antes de
   cualquier código de desenlace. Una sola puerta a los datos: toda lectura del silver de la base
   pasa por `protocol.data`, que rehúsa los ids del reservado salvo con protocolo `frozen` en `HEAD`,
-  `code_tree_sha` de `defence/` y `reliability/` igual al congelado y árbol limpio; tras la lectura,
+  `code_tree_sha` de `defence/` y `reliability/` igual al congelado (desde la revisión 18, de todo
+  `src`, `pyproject.toml`, `uv.lock` y `.python-version`) y árbol limpio; tras la lectura,
   `stage: "read"` con su commit, y entonces reproduce. Aceptación: test de comportamiento sobre
   toda ruta pública (cada comando del CLI y cada función exportada, enumerados por el test);
   mutaciones anotadas: guard que solo mira `stage`, guard sin comparar el sha, lectura que
@@ -1147,8 +1148,10 @@ su test sintético con el fallo plantado (una sonda que no puede fallar no prote
   C1 en sonda; es la cifra que D3 juzgará contra el efecto.
   **C3** (`candidates.C3`): fases medidas 374 a 473 por partido (V1 de anchura 137 a 249, de
   longitud 15 a 43: las de S3). En el contraste, sin estratos, V0 110 a 162 (bajo 60 a 96, alto 34
-  a 74). **Con los estratos del plan, 0 celdas con 5 de cada grupo en los 10 partidos** (bajo y
-  alto no comparten tercio del balón): MDE80 no alcanzable en V0 ni V1, anchura ni longitud. Sin
+  a 74). **Con los estratos del plan, bajo/alto: 0 celdas por construcción** en los 10 partidos
+  (bajo y alto no comparten tercio del balón): MDE80 no alcanzable en V0 ni V1, anchura ni
+  longitud, para ese contraste; no es que C3 no sea medible dentro de estrato (los contrastes
+  contiguos, en la revisión 18, más abajo). Sin
   estratos (cota inferior): **anchura 0,24 en V0 y 0,41 en V1** (V1: bajo 28 a 68, alto 7 a 28);
   **longitud 0,25 en V0 y no alcanzable en V1** (V1 2 a 18, ninguna de bloque alto: sus dos
   fijadores de `x` nunca se ven a la vez). Correlación agregada de V0: anchura 0,126 con estratos y
@@ -1162,21 +1165,37 @@ su test sintético con el fallo plantado (una sonda que no puede fallar no prote
   | | C1 | C2 | C3 |
   |---|---|---|---|
   | Instrumento | pasa S1, 10 de 10 (`probe_s1.json`) | pasa, 10 de 10 (`probe_s2.json`) | pasa S3, 10 de 10 (`probe_s3.json`) |
-  | Pre-tendencia dentro de estrato (sd) | V0 +0,081 a +0,371; > 0,15 en 9 de 10 (`power.json`) | bruta −0,272 a +0,002, residual −0,305 a −0,106; > 0,15 en 7 de 10: **muerta en S2** | no aplica (nivel); con los estratos del plan, 0 celdas |
+  | Pre-tendencia dentro de estrato (sd) | V0 +0,081 a +0,371; > 0,15 en 9 de 10 (`power.json`) | bruta −0,272 a +0,002, residual −0,305 a −0,106; > 0,15 en 7 de 10: **muerta en S2** | no aplica (nivel) |
+  | Pre-tendencia agregada (sd) y efecto mínimo para pasar D3, V0 / V1 | +0,224 / +0,216; D3 pide \|efecto\| > 0,447 / 0,433, 3,7 / 3,6 veces el MDE80 (`pretrend`) | no aplica (muerta) | no aplica (nivel) |
   | Fracción que lo extrapolado sostiene | 0,008 a 0,050 del índice (`probe_s1.json`) | línea detectada en `t` 0,444 a 0,697 (`layer2.json`); el resto, extrapolada | fijadores de la anchura 0,271 a 0,455, de la longitud 0,524 a 0,633 (`probe_s3.json`) |
-  | n por partido, V0 / V1 | 650 a 934 / 610 a 907 | 733 a 1.037 / 138 a 477 (`probe_s2.json`) | bajo y alto 110 a 162 / anchura 44 a 90, longitud 2 a 18 |
-  | MDE80 (sd), V0 / V1 | 0,12 / 0,12 | no simulada | con estratos: no alcanzable; sin ellos, anchura 0,24 / 0,41, longitud 0,25 / no alcanzable |
+  | n por partido, V0 / V1 | 650 a 934 / 610 a 907 | 733 a 1.037 / 138 a 477 (`probe_s2.json`) | bajo y alto 110 a 162 / anchura 44 a 90, longitud 2 a 18; bajo/medio en el tercio medio 96 a 142 / anchura 32 a 87, longitud 0 a 14; medio/alto en el propio 74 a 141 / anchura 15 a 53, longitud 0 |
+  | MDE80 (sd), V0 / V1 | 0,12 / 0,12 | no simulada | dentro de estrato: bajo/alto, 0 celdas por construcción; bajo/medio en el tercio medio, anchura 0,41 / no alcanzable, longitud 0,41 / no alcanzable; medio/alto en el propio, anchura 0,85 / no alcanzable, longitud 0,83 / no alcanzable. Sin estratos (cota, bajo/alto): anchura 0,24 / 0,41, longitud 0,25 / no alcanzable |
   | Riesgo | medio; D3 por la pre-tendencia | murió | bajo como medida, alto como hallazgo |
   | Encaje (R, M, O, C, OS) | alta, media-alta, **baja**, alta, media | muy alta, alta, alta, alta, alta | muy alta, media, media-alta, alta, alta |
 
   **Lo que sale de la regla de CP1 (recomienda; decide Javier).** C2 murió en S2, así que la regla
   da **C1 primero** y C3 como respaldo descriptivo (`cp1_rule`: `recommended_first` C1, `backup`
-  C3; `testable_v0` C1 sí, C3 no). El MDE80 de C1, 0,12 sd en V0 y en V1, queda muy por debajo del
+  C3; `testable_v0` C1 sí y ninguno de los seis diseños de C3 dentro de estrato, revisión 18). El
+  MDE80 de C1, 0,12 sd en V0 y en V1, queda muy por debajo del
   0,3 de D2 en la mitad de calibración: la potencia no es razón para la rama B. El riesgo de C1
   está en D3: con una pre-tendencia por partido de +0,08 a +0,37 sd, positiva en 10 de 10 (de signo
-  contrario al efecto que C1 busca: la presión reduciría el avance), D3 pedirá un efecto de más
-  del doble de la pre-tendencia agregada en V0; y su originalidad es baja. C3 no sirve como
-  pregunta causal dentro de los estratos del plan y en V1 solo mide la anchura (0,41 sd).
+  contrario al efecto que C1 busca: la presión reduciría el avance), D3 pide un efecto de más
+  del doble de la pre-tendencia agregada en V0 (+0,224 sd: |efecto| > 0,447 sd, 3,7 veces el
+  MDE80; revisión 18); y su originalidad es baja. C3, con bajo frente a alto, no tiene celdas
+  dentro de estrato por construcción; sus contrastes contiguos dan 0,41 a 0,85 sd en V0 y no
+  alcanzan en V1; sin estratos, en V1 solo mide la anchura (0,41 sd).
+  **Notas de la revisión 18 a la tabla** (cifras de `power.json`). (1) Con la vara de S2 (más de
+  2 partidos con la pre-tendencia por encima de 0,15 sd en valor absoluto), C1 también moriría:
+  9 de 10 en V0 y en V1 (`pretrend.s2_bar`). El plan, a la letra, solo la somete a D3 (la regla
+  de S1 no tenía pre-tendencia); aplicarle la vara de S2 sería mover un umbral después de ver la
+  cifra, y no se hace aquí: lo decide CP1 con las dos lecturas delante. (2) Una pre-tendencia
+  positiva con reversión a la media puede producir sola un efecto negativo: la presionada recibe
+  tras más avance del balón en `[t − 13, t]` que la libre de su celda; si ese avance revierte en
+  `[t, t + W]`, el avance posterior de la presionada cae sin que la presión cause nada, y ese es
+  justo el signo que C1 busca. D3 compara magnitudes y no lo separa: la 19 lo tiene que tratar
+  (p. ej. la estadística previa como covariable o el desenlace como cambio respecto a lo previo).
+  (3) La 19 fija si D3 se mide en sd o en metros (aquí, sd de la celda). (4) La elección de qué
+  contraste usaría C3 (bajo/alto sin estratos, o uno contiguo dentro de estrato) la hará CP1.
   **Mutaciones** (22 sobre el código, script en el scratchpad, todo restaurado; todas matan algún
   test, entre paréntesis cuántos): las pedidas, ruido que ignora la correlación dentro de la
   posesión, que infla la potencia (2: `test_ignoring_the_possession_correlation_inflates_the_power`
@@ -1213,6 +1232,76 @@ su test sintético con el fallo plantado (una sonda que no puede fallar no prote
   candidata.
 - [ ] 18. `opus` (subagente `revisor-adversarial`) Revisión de 11 a 17 antes de CP1, repetida
   sobre los arreglos hasta que no salga nada alto ni medio.
+  Revisión 18, pasada 1 (2026-10-18): seis hallazgos (3 medios, 3 bajos, ningún alto), todos
+  arreglados; falta la re-revisión. Las cifras salen de `reports/power.json`.
+  - *Medio 1, la tabla de CP1 no mostraba la cifra que decide C1.* `power.json` imprime por
+    variante `pretrend`: la pre-tendencia agregada sobre todas las celdas (partido, estrato) con
+    los pesos del bar, el efecto que D3 deja pasar en valor absoluto (|pre-tendencia| / 0,5), su
+    razón con el MDE80 y la vara de S2 (`s2_bar`). C1: V0 +0,224 sd, |efecto| > 0,447 (3,7 veces
+    el MDE80); V1 +0,216, > 0,433 (3,6); por encima de 0,15 sd en 9 de 10 en las dos, así que con
+    la vara de S2 moriría. Fila nueva y notas 1 a 3 en la tabla de CP1; requisito (a) en la 19.
+  - *Medio 2, "C3 no medible" era bajo/alto por construcción.* `phase_types_by_third` cuenta
+    todas las fases de S3 por tipo y tercio del balón (total de los 10, propio/medio/final:
+    `high_block` 569/2/1, `low_block` 0/349/462, `medium_block` 532/762/25). Contrastes contiguos
+    dentro de estrato (`candidates.C3.contiguous`) con el mismo bar y la misma correlación previa
+    (agregada de V0, 0,126 en la anchura y 0,208 en la longitud: nulo bloqueado), V0 y V1:
+    bajo/medio en el tercio medio, MDE80 0,41 en anchura y en longitud (con alguna celda en 10 de
+    10 partidos); medio/alto en el propio, 0,85 y 0,83 (en 8 de 10: los otros 2 nunca cuentan
+    para el signo); en V1, no alcanzable en los cuatro; tasa sin efecto 0,0002 a 0,0009. Corregidos
+    la tabla y el "Medido" de la 17; `testable_v0` lista cada diseño (ninguno de C3 llega a 0,3);
+    la elección del contraste de C3 queda para CP1 (nota 4).
+  - *Medio 3, la congelación no cubría todo lo que llega al código congelado.* `code_tree_sha` es
+    el sha256 de `git ls-tree HEAD -- .python-version pyproject.toml src uv.lock`, y un checkout
+    sin alguno de ellos no se puede congelar; test que cambia cada fichero (`.python-version`,
+    `pyproject.toml`, `uv.lock`, `cli.py`, la puerta, `defence/` y `reliability/`) y un módulo
+    nuevo bajo `src`, y ve cerrarse el reservado. Diff de la 23 ampliado. Lectura única: la fase 3
+    la deja a J4 y a la 24 (`ac2fb heldout read` no existe), así que va como requisito explícito
+    de la 23 y no se implementa ahora.
+  - *Bajo 4, solape de ventanas.* `candidates.C1.window_overlap`, sobre las unidades de C1 en
+    V0: hueco con la anterior del mismo periodo de W o menos, 8,9 a 14,0 % (del mismo equipo, 7,3
+    a 11,2 %); de 2W o menos, 37,7 a 46,2 % (31,7 a 40,1 %). El revisor midió 8,1 a 12,5 % con
+    `< 13` sobre todas las `player_possession`. Requisito (b) en la 19.
+  - *Bajo 5, agujeros del chequeo estático.* `tests/test_single_door.py` rechaza además pandas,
+    polars y fastparquet; todo pyarrow salvo `pyarrow`, `compute` y `parquet`; privados y módulos
+    de entrada de pyarrow por alias; lectores de fichero por nombre (Parquet, CSV, JSON, IPC,
+    NumPy, mapas de memoria, flujos); abrir o listar ficheros (`open`, `read_text`, `read_bytes`,
+    `glob`, `listdir` y similares) salvo la lectura de informes de `power`; la raíz de datos
+    fuera de `cli` y `reliability.long`; y cadenas con `bronze`, `jsonl`, `_parquet`, `pandas` o
+    `polars` (55 fragmentos que rechazar, eran 23; 10 que dejar pasar, eran 7; las excepciones
+    son por módulo). Puerta: `read_bronze_players` (guardada, en la tabla de rutas); el test
+    `realdata` del portero lee la plantilla por ella y no con duckdb; el `realdata` de la puerta
+    sirve y rehúsa con los tres lectores de bronce (en el reservado solo comprueba que rehúsa).
+  - *Bajo 6, test tautológico.* Literales 4 y 5 en
+    `test_measure_needs_enough_players_and_finite_coordinates`.
+  **Mutaciones (30, scripts en el scratchpad `review18_fix`, todo restaurado; entre paréntesis,
+  tests que fallan):** `MIN_PLAYERS` de 5 a 3 (1) y a 4 (1); sha de `defence` y `reliability`
+  solo (10), sin `uv.lock` (8), sin `pyproject.toml` (8), sin `.python-version` (8), que acepta
+  un checkout sin un pin (3); chequeo que admite submódulos de pyarrow (6), pandas y polars (2),
+  sin la regla de abrir ficheros (7), con la excepción por nombre y no por módulo (2), sin
+  excepción (2: `power` no podría leer sus informes), con la raíz de datos en todas partes (4),
+  sin la regla de privados de pyarrow por alias (2), sin `OSFile` (1), sin `ParquetReader` (1),
+  sin `memory_map` (1), sin las cadenas nuevas (3); `read_bronze_players` sin guarda (1); suelo de
+  D3 sin valor absoluto (1) o con la razón al revés (1); pre-tendencia agregada con las celdas de
+  dos partidos juntas (1) o como media sin pesos (1); vara de S2 que muere con 2 (1); contraste
+  contiguo que ignora su tercio (1) o leído como bajo/alto (1); tipos por la longitud del balón y
+  no por el tercio (1); solape con `<` (1), entre periodos (1) y ciego al equipo (1). La primera
+  pasada dejó viva la de `OSFile`: se añadieron fragmentos literales.
+  **Gate local en verde** (`sync --locked`, ruff, format, `mypy src`, `pytest -q`: 736 pasan,
+  eran 679; 15 deseleccionados, eran 13; `pytest -m realdata`: 15 de 15, con `power.json`
+  confirmado byte a byte); todas las cifras anteriores de `power.json`, iguales (cambian solo el
+  texto de la regla y `testable_v0`). Commits: `68bd574` (bajo 6), `cb5f39c` (medio 3),
+  `58aa3a5` (bajo 5) y `b86ed70` (medios 1 y 2, bajo 4 e informe), empujados; **CI en verde:
+  https://github.com/javiersr1996/ac2-football/actions/runs/39153216333** (736 pasan, 99 s). Los
+  dos commits intermedios, probados aparte en worktrees (ruff, `mypy src` y sus tests de puerta,
+  chequeo, rutas y bloque: 408 y 447 pasan).
+  **Desviaciones.** (1) `.python-version` entra en el sha (no se pedía: fija el intérprete). (2)
+  El solape se mide sobre las unidades de C1 y con W o menos (el instante cae en la ventana de
+  desenlace), no sobre todas las recepciones con `< 13`. (3) Lector nuevo `read_bronze_players`
+  en la puerta. (4) Las excepciones del chequeo (la lectura de informes de `power`; la raíz de
+  datos en `cli` y `reliability.long`) son por módulo y explícitas; el chequeo no ve un
+  subprocess ni una ruta escrita a trozos. (5) A C1 no se le aplica la vara de S2: se imprime y
+  decide CP1. (6) Los contrastes contiguos usan la correlación previa de todas las fases, como
+  bajo/alto. Nadie leyó el reservado; ninguna cifra de `(t, t + W]` de ninguna candidata.
 - [ ] CP1. **[Javier] lun 2 nov.** Elige UNA pregunta con la tabla delante (por candidata:
   instrumento pasa o no, pre-tendencia dentro de estrato, fracción extrapolada que la sostiene,
   n por partido en V0 y V1, MDE80, riesgo y encaje con los 5 criterios). Va recomendada primero
@@ -1235,7 +1324,14 @@ su test sintético con el fallo plantado (una sonda que no puede fallar no prote
   mitad de V0 (el efecto era modelo: muere como hallazgo táctico y se publica como hallazgo de la
   capa 2); D5 nada pasa en calibración, el reservado no se abre; D6 el reservado no pasa, se
   publica así. Aceptación: `--check` del protocolo; test de que ningún campo numérico del
-  protocolo se lee de un fichero de resultados.
+  protocolo se lee de un fichero de resultados. **Requisitos de la revisión 18:** (a) fija si D3
+  se mide en sd (de la celda, como en la 17) o en metros, y cómo trata la reversión a la media de
+  una pre-tendencia positiva (nota 2 de la tabla de CP1); (b) excluye o bloquea las unidades cuyo
+  instante cae en la ventana de desenlace de la unidad anterior del mismo periodo: en C1, 8,9 a
+  14,0 % de las unidades de V0 con un hueco de W o menos (7,3 a 11,2 % del mismo equipo), y 37,7
+  a 46,2 % con 2W o menos, cuya ventana previa toca esa ventana de desenlace (31,7 a 40,1 % del
+  mismo equipo; `power.json`, `candidates.C1.window_overlap`); si la 19 cambia W o las unidades,
+  la cifra se rehace; (c) si CP1 elige C3, escribe el contraste que CP1 elija.
 - [ ] 20. `sonnet` Estimador validado con sintéticos antes de tocar datos reales: efecto plantado
   que se recupera; pre-tendencia plantada que sale por D3; confundidor plantado (presión con pase
   hacia delante y línea que sigue al balón, como m10) que el estrato anula; jugadores interpolados
@@ -1246,9 +1342,17 @@ su test sintético con el fallo plantado (una sonda que no puede fallar no prote
 - [ ] 22. `opus` (subagente `revisor-adversarial`) Revisión del protocolo, el estimador y la
   calibración antes de congelar, hasta que no salga nada alto ni medio.
 - [ ] 23. `sonnet` Congelación en un commit propio: `stage: "frozen"`, `code_tree_sha`, semilla,
-  umbrales. Aceptación: desde ese commit hasta la lectura, `git diff <congelación> --
-  src/ac2fb/defence src/ac2fb/reliability protocol/` vacío; test contra `HEAD` que el reservado
-  sigue cerrado con un cambio de código posterior.
+  umbrales. Aceptación: desde ese commit hasta la lectura, `git diff <congelación> -- src
+  pyproject.toml uv.lock .python-version protocol/` vacío (revisión 18: el sha cubre ya todo
+  `src`, la puerta y el CLI incluidos, y los pines de la base, las librerías y el intérprete);
+  test contra `HEAD` que el reservado sigue cerrado con un cambio de código posterior.
+  **Requisito de la revisión 18, una sola lectura por código y no solo por procedimiento:** hoy
+  la puerta abre en `frozen` tantas veces como se pida (`OPEN_STAGES`). La 23 escribe `ac2fb
+  heldout read` (el comando que lanza J4) y hace que, en `frozen`, el reservado solo se abra
+  dentro de ese comando, que registra la lectura (commit con `stage: "read"`, el sha de la
+  congelación y los ids leídos) antes de dar ninguna cifra; y que en `read` solo se reproduzca
+  con el mismo `code_tree_sha`. Aceptación: test de que una segunda apertura en `frozen` fuera del
+  comando falla, y mutación anotada (la puerta que abre en `frozen` sin registrar la lectura).
 - [ ] CP2. **[Javier] lun 16 nov.** Aprueba la congelación y queda avisado de que la lectura del
   reservado es irreversible. Si D5 ya mató la pregunta, aprueba la rama B: la capa 2 se queda en
   los 10 de calibración, salvo que Javier decida abrir el reservado solo para ella (irreversible).

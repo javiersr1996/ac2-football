@@ -3,10 +3,15 @@ name = "ac2fb"
 version = "0.1.0"
 description = "Football entry to the SkillCorner Analytics Cup 2.0."
 requires-python = ">=3.13"
-dependencies = []
+dependencies = [
+    "ftbase",
+]
 
 [project.scripts]
 ac2fb = "ac2fb.cli:main"
+
+[tool.uv.sources]
+ftbase = { git = "https://github.com/javiersr1996/football-tracking-base", tag = "v0.1.0" }
 
 [dependency-groups]
 dev = [

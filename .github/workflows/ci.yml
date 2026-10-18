@@ -1,0 +1,37 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  gate:
+    runs-on: ubuntu-latest
+    steps:
+      # No LFS and no secrets: the base is installed from its public GitHub repo, as a judge would.
+      - uses: actions/checkout@v7.0.1
+        with:
+          lfs: false
+      - uses: astral-sh/setup-uv@v10.3.0
+        with:
+          version: "0.10.4"
+      - name: Python from .python-version
+        run: |
+          cat .python-version
+          uv python install
+      - name: Install (the base is cloned from GitHub without a token)
+        run: uv sync --locked -v
+      - name: Show the installed base and the commit it was cloned at
+        run: |
+          uv pip show ftbase
+          uv run python -c "import importlib.metadata as m; print(m.distribution('ftbase').read_text('direct_url.json'))"
+      - run: uv run ruff check .
+      - run: uv run ruff format --check .
+      - run: uv run mypy src
+      - name: Tests (a skipped test fails the run, see tests/conftest.py)
+        run: uv run pytest -q

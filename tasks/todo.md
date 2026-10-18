@@ -395,13 +395,50 @@ y lo que no se abrió. La figura 2 enseña la muerte. Si en CP1 mueren las tres,
   `bronze/basketball/*` en los docstrings de `meta.py` y `tracking.py`; no se construyen `aggregates_*` ni `bodypose_*` de
   tracklab (fuera de la 4); `test_frozen_schemas.py` pasa de 28 esquemas a los 2 de fútbol; `pipeline/` solo conserva `dbt/` y
   `src/tracklab/__init__.py`, y sigue excluido del gate hasta la 5.
-- [ ] 5. `opus` `[base]` Silver sin dbt: orientación de fútbol desde `match.home_team_side`
+- [x] 5. `opus` `[base]` Silver sin dbt: orientación de fútbol desde `match.home_team_side`
   (reescrita, unas 250 líneas), dims, `frames` (**sin `gap_len`**: es capa 2, tarea 12), `events` y
   la vista `frames_attacking`, desde Python en orden; los 6 tests dbt de fútbol como aserciones SQL
   de 0 filas; lector de silver exportado (para la 11). Aceptación: 20.213.849 filas de `frames` y
   mismos recuentos por partido y `is_detected` que tracklab, comparados con un script de solo
   lectura contra `tracklab/pipeline/data`; signos de ataque opuestos por periodo en los 20;
   mutación: invertir un signo hace fallar la aserción.
+  Medido: commits en `football-tracking-base` `ad38e3a` (solo `git mv`, 22 renombres, 0 cambios de contenido), `8c5942c`
+  (SQL sin dbt ni baloncesto, `orientation.py`, `checks.py`, `build.py`, `read.py`, `ftbase silver`), `3f06892` (tests),
+  `75cb933` (fuera `pipeline/` y su `extend-exclude`, README y procedencia) y `c4ffe15` (fixture de dos partidos), empujados.
+  `ftbase silver` con `FTBASE_DATA_ROOT` en el scratchpad: 26,4 s (38,1 s la primera vez), pico de memoria del proceso
+  1.796.546.560 B (working set, `GetProcessMemoryInfo` en `run_silver.py`), 101.974.624 B en disco (`frames` 99.162.422,
+  `events` 2.787.526, zstd); 62 de 62 comprobaciones. Comparación de solo lectura (`compare_silver.py` en el scratchpad;
+  `tracklab.duckdb` con `read_only=True`, sha256 y mtime iguales antes y después, `git status` de tracklab limpio): `frames`
+  20.213.849 filas en los dos (la cifra del plan se confirma), 897.345 a 1.116.466 por partido, `is_detected` 11.683.552
+  vistos y 8.530.297 extrapolados en los dos, `EXCEPT ALL` vacío en los dos sentidos por partido en las 14 columnas (todas
+  comunes); `events` 107.204 (4.507 a 6.264), `EXCEPT ALL` vacío; `frames_attacking` 15.284.167 (664.217 a 867.629); dims
+  con `EXCEPT ALL` vacío: `dim_sport` 1, `dim_period` 40, `dim_team` 13, `dim_match` 20, `dim_team_period` 80 (evidencia
+  incluida), `dim_entity` 739. **20 de 20 partidos coinciden en todo; ninguna diferencia.** Signos: 40 periodos con dos
+  equipos de signo opuesto en los 20 partidos, `assert_attack_signs_opposite` 0 filas, fases de acuerdo al 100 % en las 80
+  filas. Gate desde la raíz ya sin exclusión (`sync --locked`, ruff, format, `mypy --strict src`, `pytest -q`: 88 pasan, 0
+  saltados, 22 deseleccionados); `pytest -m realdata`: 22 de 22 (17 de bronze, 5 de silver). `schema.yml`: de sus 111 tests
+  de fútbol (modelos y semilla), 56 de integridad portados a `checks.py` (unicidad de clave, `not_null` de columnas de clave o clave
+  ajena, relaciones); 55 descartados: 13 `accepted_values` y 42 `not_null` de columnas que no son clave (entre ellos
+  `frames.is_detected`, `x_m`, `y_m`, `period` y `attack_sign` en `dim_team_period` y `frames_attacking`), más los 4 de la
+  semilla `surface_spec` (baloncesto). Mutaciones: invertir el signo del visitante en `orientation.py` da exit 1 con
+  `assert_attack_signs_opposite` en 40 filas (y la comprobación de fases falla en los 20); invertirlo solo en
+  `dim_team_period.sql` (`abs`) da 61 de 62, la misma aserción con 40 filas; en el gate, cada una de las 6 aserciones y cada
+  tipo de comprobación genérica fallan sobre su violación plantada (9 tests permanentes); de código, cada una rompe al menos
+  un test: lector que abre todos los partidos (6), `unique` que pide 3 copias (2), relaciones invertidas, `not_null` que
+  nunca salta (1), fallos de orientación ignorados (1); todo restaurado. Procedencia: 55 filas, 31 `copiado`, 18
+  `reescrito`, 6 `nuevo`. Desviaciones: entra también la vista `frame_possession`, que `frames_attacking` necesita; las 6
+  aserciones viven en el paquete (`src/ftbase/silver/assertions/`) y las ejecutan `ftbase silver` tras cada build (como
+  `dbt build`) y pytest, no `tests/`; la orientación (176 líneas, no unas 250) no trae la sonda de marco de eventos, los CSV
+  ni los docs de tracklab (medición, no build), no escribe `bronze/common/orientation` y una fase en desacuerdo hace fallar
+  el build (exit 1) tras escribir; silver en un Parquet por partido (`silver/{frames,events}/<id>.parquet`, como bronze)
+  en vez de particiones hive, con la columna `sport` conservada para que el esquema sea el de tracklab; `dim_sport` queda
+  con una fila; `event_type_map.csv` con sus 3 filas de fútbol y una nota que ya no cita un informe de tracklab; el commit
+  fijado entra desde Python (`manifest_sources`), no leyendo el JSON en SQL; lectores `read_frames`, `read_events` y
+  `read_dim` (solo abren los ficheros de los partidos pedidos, contrato en el docstring); `read.py`, `__init__.py` y dos
+  ficheros de test son `nuevo` (el plan contaba los fixtures como único `nuevo`, algo que ya rompieron la 3 y la 4); los
+  tests unitarios construyen un bronze mínimo de dos partidos con solo las columnas que lee silver (no son los fixtures de
+  la 6); `src/ftbase/py.typed` y `tests/test_cli.py` (de la tarea 2) siguen sin fila en la procedencia: los caza el test
+  de la 7; un fichero de bronze que falte a mitad de build sale como error de DuckDB sin mensaje propio.
 - [ ] 6. `sonnet` `[base]` Fixtures sintéticos (decisión 3): `ftbase.fixtures`, partido corto
   determinista en formato SkillCorner (JSONL, `match.json`, CSV de eventos y fases con las cabeceras
   congeladas) con tramos extrapolados plantados de longitudes conocidas; único fichero `nuevo` de la

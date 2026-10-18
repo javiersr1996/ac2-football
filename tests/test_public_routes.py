@@ -35,7 +35,7 @@ from gate_helpers import CAL, HELD, POISON, Checkout
 
 import ac2fb
 from ac2fb import cli
-from ac2fb.defence import block, line, m10, pressure, probe_s1, probe_s2, probe_s3
+from ac2fb.defence import bar, block, line, m10, power, pressure, probe_s1, probe_s2, probe_s3
 from ac2fb.protocol import data
 from ac2fb.protocol.data import HeldOutLocked
 from ac2fb.reliability import cadence, inventory, long, report, runs, visibility
@@ -140,6 +140,43 @@ def s3_command(m: int) -> pa.Table:
         raise HeldOutLocked(err.getvalue())
     assert code == 0, err.getvalue()
     return served(m, True)
+
+
+def power_command(m: int) -> pa.Table:
+    """The ``power`` command for one match: exit 2 and a refusal on stderr is a refusal."""
+    err = io.StringIO()
+    with contextlib.redirect_stderr(err), contextlib.redirect_stdout(io.StringIO()):
+        code = cli.main(["power", "--match", str(m), "--reports-dir", OUT])
+    if code == 2 and "held-out" in err.getvalue():
+        raise HeldOutLocked(err.getvalue())
+    assert code == 0, err.getvalue()
+    return served(m, True)
+
+
+REPORTS = Path(__file__).resolve().parent.parent / "reports"  # the committed probe verdicts
+
+
+def tiny_design() -> bar.Design:
+    """Two matches of twelve units, half pressed, in possessions of two."""
+    n = 24
+    return bar.Design(
+        (1, 2),
+        np.repeat(np.arange(2), 12).astype(np.int64),
+        ("s",) * n,
+        np.array([i % 2 == 0 for i in range(n)]),
+        tuple(f"p{i // 2}" for i in range(n)),
+    )
+
+
+def tiny_units() -> dict[int, list[power.Unit]]:
+    return {
+        m: [power.Unit(k, "s", k % 2 == 0, f"p{k // 2}", float(k % 3), True) for k in range(12)]
+        for m in (1, 2)
+    }
+
+
+def a_phase(mt: match_module.MatchData) -> probe_s3.Phase:
+    return probe_s3.Phase(0, int(mt.period[0]), int(mt.frame[0]), int(mt.team[0]), None, None)
 
 
 def s3_inputs(m: int) -> probe_s3.MatchInputs:
@@ -293,6 +330,96 @@ FUNCTION_ROUTES: dict[str, Route] = {
     "ac2fb.defence.probe_s3.write_s3_report": by_match(
         lambda m: served(m, probe_s3.write_s3_report([m], Path(OUT)).is_file())
     ),
+    "ac2fb.defence.bar.bar_probability": without_match(
+        lambda: bar.bar_probability(bar.prepare(tiny_design()), np.zeros((2, 24)), 0.0, False)
+    ),
+    "ac2fb.defence.bar.draw_noise": without_match(
+        lambda: bar.draw_noise(bar.prepare(tiny_design()), [0.0, 0.0], 2, np.random.default_rng(0))
+    ),
+    "ac2fb.defence.bar.full_passes": without_match(
+        lambda: bar.full_passes(
+            bar.prepare(tiny_design()),
+            np.zeros((2, 24)),
+            0.0,
+            True,
+            bar.null_draws(bar.prepare(tiny_design()), True, np.random.default_rng(0), 5),
+        )
+    ),
+    "ac2fb.defence.bar.mde80": without_match(
+        lambda: bar.mde80(tiny_design(), [0.0, 0.0], False, (1,), replicates=2)
+    ),
+    "ac2fb.defence.bar.null_draws": without_match(
+        lambda: bar.null_draws(bar.prepare(tiny_design()), False, np.random.default_rng(0), 3)
+    ),
+    "ac2fb.defence.bar.pass_probability": without_match(
+        lambda: bar.pass_probability(np.array([3.0]))
+    ),
+    "ac2fb.defence.bar.pass_rates": without_match(
+        lambda: bar.pass_rates(tiny_design(), [0.0, 0.0], True, [0.0], (1,), replicates=2)
+    ),
+    "ac2fb.defence.bar.prepare": without_match(lambda: bar.prepare(tiny_design())),
+    "ac2fb.defence.bar.within_possession_correlation": without_match(
+        lambda: bar.within_possession_correlation([0.0, 1.0, 2.0], ["s"] * 3, ["a", "a", "b"])
+    ),
+    "ac2fb.defence.power.ball_advance": on_match(
+        lambda mt: power.ball_advance(mt, int(mt.frame[0]), 1, 0) is not None or True
+    ),
+    "ac2fb.defence.power.block_before": on_match(
+        lambda mt: (
+            power.block_before(mt, {}, a_phase(mt), 0, block.DEFINITIONS[0]) is not None or True
+        )
+    ),
+    "ac2fb.defence.power.c1_units": by_match(
+        lambda m: served(m, isinstance(power.c1_units(power.load_c1(m)), tuple))
+    ),
+    "ac2fb.defence.power.c3_units": by_match(
+        lambda m: served(m, isinstance(power.c3_units(power.load_c3(m), "width", True), list))
+    ),
+    "ac2fb.defence.power.candidate_power": without_match(
+        lambda: power.candidate_power(tiny_units(), "routes", False, replicates=2)
+    ),
+    "ac2fb.defence.power.cp1_rule": without_match(
+        lambda: power.cp1_rule({"C1": True, "C2": False, "C3": True}, {})
+    ),
+    "ac2fb.defence.power.design_of": without_match(lambda: power.design_of(tiny_units(), "V1")),
+    "ac2fb.defence.power.load_c1": by_match(
+        lambda m: served(m, power.load_c1(m).s1.match.player.size > 0)
+    ),
+    "ac2fb.defence.power.load_c3": by_match(
+        lambda m: served(m, power.load_c3(m).s3.match.player.size > 0)
+    ),
+    "ac2fb.defence.power.phase_runs": without_match(lambda: power.phase_runs([])),
+    "ac2fb.defence.power.phase_stratum": on_match(
+        lambda mt: isinstance(power.phase_stratum(mt, a_phase(mt)), str)
+    ),
+    "ac2fb.defence.power.possessions_from": without_match(
+        lambda: power.possessions_from(
+            pa.table(
+                {
+                    k: pa.array([], pa.string())
+                    for k in ("native_family", "native_event_id", "possession_id")
+                }
+            )
+        )
+    ),
+    "ac2fb.defence.power.power_report": by_match(
+        lambda m: served(m, "candidates" in power.power_report([m], REPORTS))
+    ),
+    "ac2fb.defence.power.pressed_at": on_match(
+        lambda mt: isinstance(
+            power.pressed_at(
+                mt,
+                pressure.Reception(
+                    "e", int(mt.period[0]), int(mt.frame[0]), int(mt.team[0]), int(mt.player[0]), 1
+                ),
+            ),
+            bool,
+        )
+    ),
+    "ac2fb.defence.power.probe_verdicts": without_match(lambda: power.probe_verdicts(REPORTS)),
+    "ac2fb.defence.power.write_power_report": by_match(
+        lambda m: served(m, power.write_power_report([m], Path(OUT), REPORTS).is_file())
+    ),
     "ac2fb.defence.line.ball_extrapolated": on_match(
         lambda mt: isinstance(line.ball_extrapolated(mt, int(mt.frame[0]), int(mt.frame[0])), bool)
     ),
@@ -412,6 +539,7 @@ CLI_ROUTES: dict[tuple[str, ...], Route] = {
     ("s1",): by_match(s1_command),
     ("s2",): by_match(s2_command),
     ("s3",): by_match(s3_command),
+    ("power",): by_match(power_command),
 }
 
 

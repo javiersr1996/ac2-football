@@ -8,6 +8,7 @@ from collections.abc import Sequence
 from pathlib import Path
 
 from ac2fb import __version__
+from ac2fb.defence.power import write_power_report
 from ac2fb.defence.probe_s1 import write_s1_report
 from ac2fb.defence.probe_s2 import write_s2_report
 from ac2fb.defence.probe_s3 import write_s3_report
@@ -134,7 +135,38 @@ def build_parser() -> argparse.ArgumentParser:
         default=_REPORTS,
         help="where probe_s3.json goes (default: reports/)",
     )
+    power = commands.add_parser(
+        "power",
+        help="write reports/power.json: the power of the calibration bar per live candidate",
+        description=(
+            "Task 17: simulates the protocol's calibration bar on the real design of each "
+            "candidate alive after its probe (verdicts read from the committed probe reports), "
+            "with the within-possession correlation of the statistic before the instant t. "
+            "Computes no outcome. Reads through the guarded door. Without --match, the "
+            "calibration matches."
+        ),
+    )
+    power.add_argument(
+        "--match", type=int, action="append", metavar="ID", help="native match id (repeatable)"
+    )
+    power.add_argument(
+        "--reports-dir",
+        type=Path,
+        default=_REPORTS,
+        help="where power.json goes (default: reports/)",
+    )
     return parser
+
+
+def _power(match_ids: Sequence[int] | None, reports_dir: Path) -> int:
+    ids = list(match_ids) if match_ids else list(load_split().calibration)
+    try:
+        path = write_power_report(ids, reports_dir, _REPORTS)
+    except HeldOutLocked as exc:
+        print(f"refused: {exc}", file=sys.stderr)
+        return 2
+    print(f"wrote {path}")
+    return 0
 
 
 def _s3(match_ids: Sequence[int] | None, reports_dir: Path) -> int:
@@ -224,6 +256,8 @@ def main(argv: Sequence[str] | None = None) -> int:
         return _s2(args.match, args.reports_dir)
     if args.command == "s3":
         return _s3(args.match, args.reports_dir)
+    if args.command == "power":
+        return _power(args.match, args.reports_dir)
     return 0
 
 

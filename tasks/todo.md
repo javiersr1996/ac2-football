@@ -1347,11 +1347,15 @@ su test sintético con el fallo plantado (una sonda que no puede fallar no prote
   ver su cifra (choca con "un umbral que falla no se mueve"), con el nulo de longitud sin estratos
   (0,0018 > 0,00135) y que en V1 solo mide la anchura (MDE80 0,41). Cifras de `power.json`.
   Mutaciones: sin los arreglos fallan 4 snippets de `REJECTED`. Cerrada.
-- [ ] CP1. **[Javier] lun 2 nov.** Elige UNA pregunta con la tabla delante (por candidata:
+- [x] CP1. **[Javier] lun 2 nov.** Elige UNA pregunta con la tabla delante (por candidata:
   instrumento pasa o no, pre-tendencia dentro de estrato, fracción extrapolada que la sostiene,
   n por partido en V0 y V1, MDE80, riesgo y encaje con los 5 criterios). Va recomendada primero
   la que salga de la regla: C2 si S2 pasa y su MDE80 en V1 es ≤ 0,3 sd; si no, C1; C3 solo como
   respaldo; ninguna viva, rama B.
+  **Cerrado el 2026-10-18 (adelantado): Javier eligió C1**, la recomendada por la regla, con la
+  tabla revisada en tres pasadas delante y avisado de su riesgo: D3 en el reservado le exige
+  |efecto| > 0,447 sd en V0 (pre-tendencia agregada +0,224 sd, `power.json`), y con la vara de
+  S2 también moriría. Si cae, rama B con el negativo medido. C2 muerta en sonda; C3 descartada.
 
 ## Fase 2: protocolo y calibración (lun 2 nov a dom 15 nov)
 

@@ -301,7 +301,7 @@ y lo que no se abrió. La figura 2 enseña la muerte. Si en CP1 mueren las tres,
 
 - [ ] J1. **[Javier]** Registrarse en la Cup (región Europa) y confirmar que puede asistir a París
   el 17 Feb 2027 (las bases lo piden antes de entregar). Antes del dom 25 oct; si no, replantear.
-- [ ] J2. **[Javier]** Aprobar la decisión 7 y elegir nombres: base (`football-tracking-base`,
+- [x] J2. **[Javier]** Aprobar la decisión 7 y elegir nombres: base (`football-tracking-base`,
   `ftbase`, carpeta hermana en `C:\Users\javie\Desktop\proyectos\`; sin "ac2" ni "tracklab", que
   se lea como proyecto propio) y entrada (`ac2-football`, `ac2fb`). **Hecho el 2026-10-17:
   decisión 7 y nombres aprobados; falta cuándo se publica la base y quién crea los repos (`gh`
@@ -311,6 +311,9 @@ y lo que no se abrió. La figura 2 enseña la muerte. Si en CP1 mueren las tres,
   tracklab para fútbol queda a la vista y clonable aunque luego se vuelva privado. Antes del mar 20
   oct (recomendado); límite jue 22 oct: más tarde, 8 a 10 pasan a la semana siguiente y la fase 1
   pierde dos días, lo mínimo que se mueve.
+  **Cerrado el 2026-10-18:** Javier eligió "yo, pública al tag": Claude creó los dos repos
+  privados con `gh` (`javiersr1996/football-tracking-base`, `javiersr1996/ac2-football`) y hace
+  pública la base al cerrar la 7 (`v0.1.0`), antes de la 8, avisando al hacerlo.
 - [x] J3. **[Javier]** Aprobar este plan y las decisiones 1 a 6. Aprobado el 2026-10-17 (revisión
   de Fable, `ca5712a`); ejecución en modo mixto según las etiquetas.
 - [x] 1. `sonnet` Esqueleto: `pyproject.toml` (uv, hatchling, `ruff` línea 100 y reglas
@@ -329,13 +332,14 @@ y lo que no se abrió. La figura 2 enseña la muerte. Si en CP1 mueren las tres,
   `data/`, `LICENSE.md` MIT) y un README corto en inglés (qué es, instalar, los tres comandos, datos
   y LFS, procedencia, licencia). Aceptación: `git show --stat <import>` lista solo ficheros de la
   tabla; gate (V) en verde desde el segundo commit con un test trivial que se rompe al mutar.
-  Medido: commits `2a329d5` (importación) y `b81bf10` (esqueleto) en `football-tracking-base`; 43 ficheros
-  importados con blobs idénticos a tracklab `686508a` (43 de 43 por hash) y `docs/provenance.md` con las 43 filas;
+  Medido: commits `a3ae656` (importación) y `13b6aa8` (esqueleto) en `football-tracking-base`; 49 ficheros
+  importados con blobs idénticos a tracklab `686508a` (49 de 49 por hash) y `docs/provenance.md` con las 49 filas;
   gate en verde con 3 tests (`sync --locked`, ruff, format, mypy, pytest); mutar `prog` en `cli.py` rompe 2 de 3;
   todo `i/lf`. Desviaciones: git no tiene `user.name` global (solo el correo), el autor es `Javier Sánchez Rueda`
   fijado en local como en los commits de tracklab; no se importó `cli.py` ni `tests/conftest.py`; `test_ingest.py`
-  y `test_frozen_schemas.py` mezclan baloncesto y se importaron enteros (recorte en las tareas 3 y 4); semillas,
-  `sources/*.yml` y `quality/` no se importaron (fuera de la lista). `pipeline/` va excluido del gate (ruff
+  y `test_frozen_schemas.py` mezclan baloncesto y se importaron enteros (recorte en las tareas 3 y 4); la primera
+  importación (43) dejó fuera semillas, `silver/schema.yml`, `sources/{football,common}.yml` y la macro
+  `test_unique_combination`, que silver usa: se rehízo el commit, sin publicar, con los 6 (`quality/` no). `pipeline/` va excluido del gate (ruff
   `extend-exclude`) hasta cerrar la tarea 5: quitar esa exclusión entonces (también anotado en el README de la base).
 - [ ] 3. `sonnet` `[base]` Ingesta: manifiesto recortado a `opendata-football` (85 ficheros,
   commit `4340d27`), `fetch` sin HuggingFace ni `freeze`, `verify`, `lfs`, `manifest`, `local`

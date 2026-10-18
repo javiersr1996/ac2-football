@@ -1247,7 +1247,7 @@ su test sintético con el fallo plantado (una sonda que no puede fallar no prote
   lo tiene que mirar si se elige C3. (9) El mínimo de 100 recepciones de V1 de S2 no se revisa: C2
   murió por otro criterio. Nadie leyó el reservado; ninguna cifra de `(t, t + W]` de ninguna
   candidata.
-- [ ] 18. `opus` (subagente `revisor-adversarial`) Revisión de 11 a 17 antes de CP1, repetida
+- [x] 18. `opus` (subagente `revisor-adversarial`) Revisión de 11 a 17 antes de CP1, repetida
   sobre los arreglos hasta que no salga nada alto ni medio.
   Revisión 18, pasada 1 (2026-10-18): seis hallazgos (3 medios, 3 bajos, ningún alto), todos
   arreglados; falta la re-revisión. Las cifras salen de `reports/power.json`.
@@ -1339,6 +1339,14 @@ su test sintético con el fallo plantado (una sonda que no puede fallar no prote
   https://github.com/javiersr1996/ac2-football/actions/runs/39156486410**. Sin desviaciones
   de fondo: `probe_verdicts` recibe los informes ya leídos y vive aún en `power`. Nadie leyó el
   reservado; ninguna cifra del desenlace.
+  Revisión 18, pasada 3 (2026-10-18): sin altos ni medios; tres bajos arreglados en `f56024e`: (1) la
+  exención `status.open` del chequeo estático solo vale si no se llama (`status = Path(p);
+  status.open()` e `import io as status` ya fallan); (2) `from io import open as o` y
+  `from os import listdir as ls` se rechazan y el docstring cita `ALLOWED_FILE_SITES`; (3) la
+  recomendación y el requisito (c) dicen que elegir C3 cambia la regla de estratos o D2 después de
+  ver su cifra (choca con "un umbral que falla no se mueve"), con el nulo de longitud sin estratos
+  (0,0018 > 0,00135) y que en V1 solo mide la anchura (MDE80 0,41). Cifras de `power.json`.
+  Mutaciones: sin los arreglos fallan 4 snippets de `REJECTED`. Cerrada.
 - [ ] CP1. **[Javier] lun 2 nov.** Elige UNA pregunta con la tabla delante (por candidata:
   instrumento pasa o no, pre-tendencia dentro de estrato, fracción extrapolada que la sostiene,
   n por partido en V0 y V1, MDE80, riesgo y encaje con los 5 criterios). Va recomendada primero

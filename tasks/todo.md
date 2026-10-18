@@ -1187,8 +1187,11 @@ su test sintético con el fallo plantado (una sonda que no puede fallar no prote
   sd en V0 (`testable_v0` falso en los seis diseños, así que D2 los mataría) y no alcanzan en V1.
   Bajo frente a alto sin estratos pasa D2 (0,24 anchura y 0,25 longitud en V0) pero incumple la
   regla de estratos, su nulo de longitud da 0,0018 de tasa sin efecto (por encima de 0,00135) y D3
-  no está definida para un nivel (queda en "no aplica"). Elegir C3 obliga a CP1 a cambiar por
-  escrito la regla de estratos o D2, y a definir D3 para un nivel, antes de la 19. Sospechoso, sin
+  no está definida para un nivel (queda en "no aplica"). Sin estratos, en V1 C3 solo mide la
+  anchura (MDE80 0,41) y la longitud no llega en V1 en ningún diseño. Elegir C3 obliga a CP1 a
+  cambiar por escrito la regla de estratos o D2, y a definir D3 para un nivel, antes de la 19; y
+  como lo haría después de ver la cifra, choca con "un umbral que falla no se mueve" y con los
+  criterios inamovibles, la misma objeción que la nota 1 hace a C1. Sospechoso, sin
   confirmar (la definición no está en `docs/`): el grupo de C3 es
   `team_out_of_possession_phase_type`, una etiqueta de toda la fase que el proveedor podría fijar
   con lo posterior a `frame_start`, es decir, una lectura parcial del desenlace.
@@ -1366,7 +1369,7 @@ su test sintético con el fallo plantado (una sonda que no puede fallar no prote
   14,0 % de las unidades de V0 con un hueco de W o menos (7,3 a 11,2 % del mismo equipo), y 37,7
   a 46,2 % con 2W o menos, cuya ventana previa toca esa ventana de desenlace (31,7 a 40,1 % del
   mismo equipo; `power.json`, `candidates.C1.window_overlap`); si la 19 cambia W o las unidades,
-  la cifra se rehace; (c) C3 no tiene diseño que cumpla las reglas del plan (tabla de CP1): si CP1 la elige, antes de la 19 cambia por escrito la regla de estratos o D2 y define D3 para un nivel, y la 19 escribe el contraste resultante.
+  la cifra se rehace; (c) C3 no tiene diseño que cumpla las reglas del plan (tabla de CP1): sin estratos su nulo de longitud da 0,0018 de tasa sin efecto, por encima de 0,00135 (`power.json`), y en V1 solo mide la anchura (MDE80 0,41); si CP1 la elige, antes de la 19 cambia por escrito la regla de estratos o D2 (después de ver su cifra, lo que choca con "un umbral que falla no se mueve" y con los criterios inamovibles, como la nota 1 con C1) y define D3 para un nivel, y la 19 escribe el contraste resultante.
 - [ ] 20. `sonnet` Estimador validado con sintéticos antes de tocar datos reales: efecto plantado
   que se recupera; pre-tendencia plantada que sale por D3; confundidor plantado (presión con pase
   hacia delante y línea que sigue al balón, como m10) que el estrato anula; jugadores interpolados

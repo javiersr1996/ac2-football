@@ -8,7 +8,7 @@ writing: ``reliability.long``), or reaching a private or input module of ``pyarr
 an alias (``pa._parquet``, ``pa.ipc``); calling, importing or naming a file reader (a Parquet,
 CSV, JSON, IPC or NumPy reader, a memory map, a stream); opening or listing a file (``open``,
 ``read_text``, ``read_bytes``, ``glob``, ``listdir`` and the like) outside
-:data:`ALLOWED_FILE_CALLS`; naming the data root (``data_dir``, ``DATA_ROOT_ENV``) outside
+:data:`ALLOWED_FILE_SITES`; naming the data root (``data_dir``, ``DATA_ROOT_ENV``) outside
 :data:`ALLOWED_DATA_ROOT`; reaching a private name of the door; and any string, outside
 docstrings, that names ``ftbase``, ``duckdb``, ``silver``, ``bronze``, ``pandas``, ``polars``,
 ``jsonl`` or ``_parquet`` (the way to a dynamic import or to a data path). The one allowance
@@ -155,6 +155,7 @@ def violations(source: str, module: str, is_package: bool = False) -> list[str]:
     arrow_aliases = {"pyarrow"}
     root_allowed = module in ALLOWED_DATA_ROOT
     enclosing = _enclosing(tree)
+    called: set[int] = set()  # the attributes that are called
     permitted: set[int] = set()  # the openers of an allowed site
     found: list[str] = []
     for node in ast.walk(tree):
@@ -173,7 +174,7 @@ def violations(source: str, module: str, is_package: bool = False) -> list[str]:
                 full = f"{base}.{alias.name}"
                 if _forbidden(base) or _forbidden(full):
                     found.append(f"{line}: from {base} import {alias.name}")
-                if alias.name in READERS:
+                if alias.name in READERS or alias.name in FILE_CALLS:
                     found.append(f"{line}: imports the file reader {alias.name}")
                 if base == DOOR_MODULE and alias.name.startswith("_"):
                     found.append(f"{line}: imports the door's private {alias.name}")
@@ -186,12 +187,14 @@ def violations(source: str, module: str, is_package: bool = False) -> list[str]:
         elif isinstance(node, ast.Call):
             func = node.func
             if isinstance(func, ast.Attribute):
+                called.add(id(func))
                 site = (module, enclosing.get(id(node), ""), func.attr, ast.unparse(func.value))
                 if site in ALLOWED_FILE_SITES:
                     permitted.add(id(func))
         elif isinstance(node, ast.Attribute):
             owner_attr = (ast.unparse(node.value), node.attr)
-            if node.attr in FILE_CALLS and id(node) not in permitted and owner_attr != STATUS_FIELD:
+            exempt = owner_attr == STATUS_FIELD and id(node) not in called
+            if node.attr in FILE_CALLS and id(node) not in permitted and not exempt:
                 found.append(f"{line}: opens or lists a file with {node.attr}")
             if node.attr in READERS:
                 found.append(f"{line}: calls the file reader {node.attr}")
@@ -314,6 +317,11 @@ REJECTED = [
     "import os\nf = os.listdir\nf(path)",
     "import io\nio.open(path) ",
     "x = f'{root}/bronze/football'",
+    # Review 18, pass 3: the status flag is exempt only when read; aliased opener imports.
+    "from pathlib import Path\nstatus = Path(p)\nstatus.open().read()",
+    "import io as status\nstatus.open(p)",
+    "from io import open as o\no(path)",
+    "from os import listdir as ls\nls(path)",
 ]
 
 ACCEPTED = [

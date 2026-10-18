@@ -13,8 +13,10 @@ from (:func:`guard_status` says which part fails):
 
 1. ``protocol/protocol.json``, as committed at ``HEAD``, is in stage ``frozen`` (the single
    reading) or ``read`` (the reading is committed; from then on it is reproduced);
-2. :func:`code_tree_sha` at ``HEAD`` equals the ``code_tree_sha`` that file records, so the
-   code under ``src/ac2fb/defence`` and ``src/ac2fb/reliability`` is the frozen code;
+2. :func:`code_tree_sha` at ``HEAD`` equals the ``code_tree_sha`` that file records, so
+   everything that reaches the frozen code is frozen: the whole of ``src`` (this door and the
+   CLI included), ``pyproject.toml`` and ``uv.lock`` (the pinned base and libraries) and
+   ``.python-version`` (the interpreter);
 3. the working tree is clean: ``git status`` lists nothing, untracked files included, and no
    tracked file is hidden from it by ``assume-unchanged`` or ``skip-worktree``.
 
@@ -64,7 +66,8 @@ __all__ = [
 DATA_ROOT_ENV = "FTBASE_DATA_ROOT"
 SPLIT_PATH = "protocol/split.json"
 PROTOCOL_PATH = "protocol/protocol.json"
-GUARDED_CODE: tuple[str, ...] = ("src/ac2fb/defence", "src/ac2fb/reliability")
+# In the order of `git ls-tree`: the whole package and the three files that pin what runs it.
+GUARDED_CODE: tuple[str, ...] = (".python-version", "pyproject.toml", "src", "uv.lock")
 OPEN_STAGES: tuple[str, ...] = ("frozen", "read")
 _ID_PREFIX = "fb:"  # silver's match_id is ``fb:<native_match_id>``
 
@@ -149,19 +152,19 @@ def load_split() -> Split:
 
 
 def code_tree_sha(rev: str = "HEAD") -> str:
-    """The sha256 of ``git ls-tree <rev> -- src/ac2fb/defence src/ac2fb/reliability``.
+    """The sha256 of ``git ls-tree <rev> -- .python-version pyproject.toml src uv.lock``.
 
-    That output names the git tree of each of the two folders, so the hash changes with any
-    byte of the code under them and with nothing else. From a shell::
+    That output names the git tree of ``src`` and the blob of each of the three files, so the
+    hash changes with any byte of the package's code (``src/ac2fb`` whole: the analysis, this
+    door and the CLI), of its dependencies as pinned (``pyproject.toml`` and ``uv.lock``, where
+    the base's version lives) or of the interpreter pin, and with nothing else. From a shell::
 
-        git ls-tree HEAD -- src/ac2fb/defence src/ac2fb/reliability | sha256sum
+        git ls-tree HEAD -- .python-version pyproject.toml src uv.lock | sha256sum
     """
     listing = _git("ls-tree", rev, "--", *GUARDED_CODE)
-    entries = [line.split("\t", 1) for line in listing.decode("utf-8").splitlines()]
-    if [e[-1] for e in entries] != list(GUARDED_CODE) or any(
-        not e[0].startswith("040000 tree ") for e in entries
-    ):
-        raise RuntimeError(f"{rev} does not hold the folders {GUARDED_CODE}")
+    names = [line.split("\t", 1)[-1] for line in listing.decode("utf-8").splitlines()]
+    if names != list(GUARDED_CODE):
+        raise RuntimeError(f"{rev} does not hold all of {GUARDED_CODE}: only {names}")
     return hashlib.sha256(listing).hexdigest()
 
 

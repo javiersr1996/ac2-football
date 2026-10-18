@@ -20,9 +20,19 @@ from ftbase.fixtures import PlantedRun, write_synthetic_match
 
 ROOT = Path(__file__).resolve().parent.parent
 CAL, HELD = 1874553, 1899585  # the first id of each set in protocol/split.json
-# The two folders the plan freezes, written out here so a test never borrows the constant
-# it checks.
-GUARDED = ("src/ac2fb/defence", "src/ac2fb/reliability")
+# What the freeze covers, in the order of `git ls-tree`, written out here so a test never
+# borrows the constant it checks: `src` whole and the three files that pin what runs it.
+GUARDED = (".python-version", "pyproject.toml", "src", "uv.lock")
+# A file of each kind that reaches the frozen code; the checkout holds every one of them.
+FROZEN_FILES = (
+    ".python-version",
+    "pyproject.toml",
+    "uv.lock",
+    "src/ac2fb/cli.py",
+    "src/ac2fb/protocol/data.py",
+    "src/ac2fb/defence/__init__.py",
+    "src/ac2fb/reliability/__init__.py",
+)
 POISON = b"not a parquet file: a held-out file was opened\n"
 
 
@@ -107,7 +117,7 @@ class Checkout:
 
 
 def make_checkout(root: Path) -> Checkout:
-    """A checkout in stage ``design`` with the real split and both guarded folders."""
+    """A checkout in stage ``design`` with the real split and every frozen file."""
     checkout = Checkout(root)
     root.mkdir(parents=True)
     checkout.git("init", "-q")
@@ -120,8 +130,8 @@ def make_checkout(root: Path) -> Checkout:
         checkout.git("config", key, value)
     checkout.write("protocol/split.json", (ROOT / "protocol" / "split.json").read_text("utf-8"))
     checkout.write("protocol/protocol.json", '{"stage": "design", "code_tree_sha": null}\n')
-    for folder in GUARDED:
-        checkout.write(f"{folder}/__init__.py", f'"""{folder}"""\n')
+    for path in FROZEN_FILES:
+        checkout.write(path, f"# {path}\n")
     checkout.write("README.md", "throwaway checkout for the gate tests\n")
     checkout.commit("start")
     return checkout

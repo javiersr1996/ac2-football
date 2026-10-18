@@ -13,7 +13,7 @@ from pathlib import Path
 import pyarrow as pa
 import pytest
 from ftbase import silver
-from gate_helpers import CAL, GUARDED, HELD, ROOT, Checkout
+from gate_helpers import CAL, FROZEN_FILES, GUARDED, HELD, ROOT, Checkout
 
 from ac2fb.protocol import data
 from ac2fb.protocol.data import HeldOutLocked
@@ -76,10 +76,12 @@ def test_frozen_code_and_a_clean_tree_open_the_heldout(gate: Checkout, stage: st
     assert ids(data.read_frames([CAL, HELD], columns=["native_match_id"])) == {CAL, HELD}
 
 
-@pytest.mark.parametrize("folder", GUARDED)
-def test_a_code_change_after_the_freeze_closes_it(gate: Checkout, folder: str) -> None:
+@pytest.mark.parametrize("path", [*FROZEN_FILES, "src/ac2fb/new_module.py"])
+def test_a_code_change_after_the_freeze_closes_it(gate: Checkout, path: str) -> None:
+    # Any file that reaches the frozen code: the analysis, the door, the CLI, the pins of the
+    # base and the libraries, the interpreter pin, and a new module under src.
     gate.freeze()
-    gate.write(f"{folder}/__init__.py", '"""changed after the freeze"""\n')
+    gate.write(path, "# changed after the freeze\n")
     gate.commit("change frozen code")
     status = data.guard_status()
     # Stage frozen and a clean tree: only the code tree keeps it shut.
@@ -95,6 +97,19 @@ def test_a_change_outside_the_guarded_code_leaves_it_open(gate: Checkout) -> Non
     gate.commit("edit the readme")
     assert data.guard_status().open
     assert ids(frames(HELD)) == {HELD}
+
+
+@pytest.mark.parametrize("path", ["uv.lock", "pyproject.toml", ".python-version"])
+def test_a_checkout_without_a_frozen_file_stays_shut(gate: Checkout, path: str) -> None:
+    # Nor can it be frozen: its code_tree_sha would not cover the missing pin.
+    gate.git("rm", "-q", path)
+    gate.commit(f"drop {path}")
+    with pytest.raises(RuntimeError, match="does not hold all of"):
+        data.code_tree_sha()
+    status = data.guard_status()
+    assert not status.open and "does not hold" in status.reasons[0]
+    with pytest.raises(HeldOutLocked, match="does not hold"):
+        frames(HELD)
 
 
 def test_frozen_without_a_recorded_code_tree_sha_stays_shut(gate: Checkout) -> None:
@@ -113,7 +128,7 @@ def test_any_other_stage_stays_shut(gate: Checkout, stage: str) -> None:
 @pytest.mark.parametrize("dirt", ["modified", "staged", "untracked"])
 def test_a_dirty_tree_keeps_it_shut(gate: Checkout, dirt: str) -> None:
     gate.freeze()
-    target = f"{GUARDED[1]}/__init__.py" if dirt != "untracked" else "notes.txt"
+    target = "src/ac2fb/reliability/__init__.py" if dirt != "untracked" else "notes.txt"
     gate.write(target, "x = 1\n")
     if dirt == "staged":
         gate.git("add", target)
@@ -128,7 +143,7 @@ def test_a_dirty_tree_keeps_it_shut(gate: Checkout, dirt: str) -> None:
 @pytest.mark.parametrize("flag", ["--skip-worktree", "--assume-unchanged"])
 def test_an_edit_hidden_from_git_status_keeps_it_shut(gate: Checkout, flag: str) -> None:
     gate.freeze()
-    target = f"{GUARDED[1]}/__init__.py"
+    target = "src/ac2fb/reliability/__init__.py"
     gate.git("update-index", flag, target)
     gate.write(target, "def changed() -> None: ...\n")
     assert gate.git("status", "--porcelain", "--untracked-files=all") == ""
@@ -196,14 +211,14 @@ def test_a_folder_inside_another_checkout_is_not_a_checkout(
 # --- the definition of code_tree_sha ------------------------------------------------------------
 
 
-def test_code_tree_sha_is_the_sha256_of_git_ls_tree_of_the_two_folders(gate: Checkout) -> None:
+def test_code_tree_sha_is_the_sha256_of_git_ls_tree_of_the_frozen_paths(gate: Checkout) -> None:
     assert data.GUARDED_CODE == GUARDED
     assert data.code_tree_sha() == gate.tree_sha()
     before = data.code_tree_sha()
     gate.write("protocol/notes.md", "not code\n")
     gate.commit("outside")
     assert data.code_tree_sha() == before
-    gate.write(f"{GUARDED[0]}/metric.py", "X = 1\n")
+    gate.write("src/ac2fb/defence/metric.py", "X = 1\n")
     gate.commit("inside")
     assert data.code_tree_sha() != before
     assert data.code_tree_sha("HEAD~1") == before

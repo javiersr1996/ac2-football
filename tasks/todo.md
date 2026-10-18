@@ -819,11 +819,76 @@ su test sintético con el fallo plantado (una sonda que no puede fallar no prote
   salen de un artefacto); sin pico no se prueba que el proveedor interpole a 10 Hz, solo que ninguna
   cadencia mayor de 1 aparece con este umbral; el informe es un JSON propio y no una sección de
   `layer2.json`; la 19 toma W >= 13 frames. Nadie leyó el reservado.
-- [ ] 14. `sonnet` Sonda S1 (C1): índice de presión en la recepción; contraste de dirección
+- [x] 14. `sonnet` Sonda S1 (C1): índice de presión en la recepción; contraste de dirección
   forzada (mediana del índice creciente en los 5 niveles de `overall_pressure_start` en al menos
   9 de 10 partidos); fracción del índice que sostienen rivales extrapolados; estratos de balón
   entrante por partido (recuentos, nunca el avance posterior). Muere C1 en sonda si el contraste
   falla. Mutación: un índice sin peso por distancia debe romper el contraste en el sintético.
+  Medido (2026-10-18; todas las cifras salen de `reports/probe_s1.json`, 10 de calibración, por
+  partido): **código y regla en `e279ccf`, empujado antes de calcular el índice en ningún partido
+  real** (CI en verde, run 39137889374); el informe y este registro, en el commit siguiente. Gate
+  local en verde (`sync --locked`, ruff, format, `mypy src`, `pytest -q`: 422 pasan, eran 347; 9
+  deseleccionados, eran 7; `pytest -m realdata`: 9 de 9, con el informe confirmado byte a byte).
+  Nuevo: `defence/pressure.py` (índice, estratos), `defence/probe_s1.py` (regla, carga, informe),
+  comando `ac2fb s1 [--match ID] [--reports-dir D]` (32 s para los 10) y `protocol.data.read_bronze_events`
+  (ver desviaciones). Rutas públicas nuevas (16 funciones y el comando `s1`) cubiertas por el test de
+  la 11. **Índice y regla, escritos en los docstrings antes de leer los datos.** Cada rival del otro
+  equipo listado en `t` (el portero incluido) a distancia `d` del poseedor suma `(1 - d/10) * (1 +
+  cos(theta)) / 2` si `d <= 10`, con `theta` el ángulo en el poseedor entre el rival y el punto de
+  portería que ataca `(signo * 52,5; 0)`; el índice es la suma. Recepción `t` = `frame_start` de
+  `player_possession`; el índice usa solo el frame `t`. Contraste: por partido, la mediana del índice
+  por nivel (1 a 5, `overall_pressure_start_id`) estrictamente creciente (cada una por encima de la
+  anterior en más de 1e-9) y al menos 10 recepciones en cada nivel; **C1 sobrevive si pasan al menos
+  9 de los 10; si no, muere en la sonda**. El veredicto es sobre V0; el contraste en V1 (rivales
+  cercanos todos vistos) se imprime al lado y no decide.
+  **Veredicto: C1 sobrevive a la sonda (`verdict.c1_survives_probe` = true, 10 de 10).** Mediana del
+  índice por nivel, rango entre partidos: `no_pressure` 0,000 en los 10 (la mediana es 0: al menos la
+  mitad de esas recepciones tiene índice 0, sin rival a 10 m); `low` 0,241 a 0,302; `medium` 0,468 a 0,553; `high`
+  0,707 a 0,853; `very_high` 0,816 a 1,027. Recepciones por nivel y partido: `no` 110 a 317, `low` 109 a
+  210, `medium` 179 a 288, `high` 130 a 213, `very_high` 28 a 42 (el mínimo exigido, 10, se cumple en
+  todos). Saltos entre niveles contiguos, por partido: no a low 0,241 a 0,302; low a medium 0,169 a
+  0,288; medium a high 0,219 a 0,330; **high a very_high 0,036 a 0,274**: el escalón estrecho es el
+  último. En V1 también crece en los 10 (n de 612 a 909 por partido; `very_high` desde 23). Entran
+  todas las recepciones con etiqueta (653 a 936 por partido; sin etiqueta 80 a 130 de 757 a 1.054
+  `player_possession`) y ninguna se descarta después (`left_out` 0). Poseedor detectado en `t`: 0,976
+  a 0,999. Índice medio en V0, 0,381 a 0,559; en V1, 0,370 a 0,550.
+  **Fracción del índice que sostienen rivales extrapolados** (`extrapolated_share`): global 0,008 a
+  0,050 por partido; por nivel, `no` 0,000 a 0,045, `low` 0,001 a 0,038, `medium` 0,009 a 0,036, `high`
+  0,005 a 0,054, `very_high` 0,000 a 0,115; recepciones con algún rival cercano extrapolado, 0,019 a
+  0,093 (de 558 a 756 con algún rival a 10 m). Por la capa 2 (`sensitivity`, ventanas de un frame): fracción
+  de los jugador-frame cercanos extrapolada 0,008 a 0,046; V0 n 653 a 936 y V1 n de 612 a 909;
+  `gap_len` mediano de esos extrapolados 5,0 a 10,0 frames (p90 18,4 a 206,4; `sensitivity.gap_len`).
+  La capa 2 muerde poco en C1, como adelantaba el plan; el máximo por nivel está en `very_high`.
+  **Estratos de balón entrante** (`incoming_ball`): dirección del avance del balón en `[t - 13, t]`
+  (retrocede más de 2 m, avanza más de 2 m, lateral) por tercio del poseedor (propio, medio, final;
+  cortes a 17,5 m del centro) por longitud (recta menor o mayor de 10 m): 18 celdas, todas presentes
+  en los 10 partidos, cada una con su reparto por nivel (`strata.<celda>.by_level`); sin balón en
+  `t - 13` o `t` (`undefined`), 0 a 3 por partido. Son recuentos de lo previo; ninguna cifra de
+  después de `t` (un test cambia todo lo posterior a `t` y el índice y el estrato no se mueven).
+  Los recuentos por celda y nivel están en el JSON; son lo que usa la 17 para la potencia dentro
+  de estrato.
+  **Mutaciones** (script en el scratchpad, todo restaurado, `git status` limpio): la pedida, índice sin
+  peso por distancia (`distance_weight` constante, dentro del test): 0 de 10 partidos crecen y el
+  veredicto pasa a `false` (`test_an_index_without_distance_weight_breaks_the_contrast`); en el código
+  fuente: sin peso por distancia, sin peso hacia portería, contraste sin mínimo por nivel, regla de 8
+  de 10, índice que lee `t + 1`, balón leído en `[t, t + 13]`, ventana de 12 frames, radio de 12 m,
+  fracción extrapolada que cuenta los vistos, métrica de la capa 2 que ignora el poseedor, rivales
+  que son el propio equipo, y empate numérico (`TIE` a -1, que deja pasar el ruido de coma flotante
+  como subida): 12 de 12 matan algún test. Guarda: `read_bronze_events` sin `_admit` hace fallar el
+  barrido de rutas (1 test).
+  **Desviaciones.** (1) La puerta no tenía lector de bronce y silver no guarda la etiqueta:
+  `read_bronze_events(match_ids, columns)` (guardado con `_admit`, abre solo los ficheros de los ids
+  admitidos) se une a silver por `native_event_id` = `event_id`; en los 10 de calibración los dos
+  conjuntos de ids coinciden y cada `overall_pressure_start_id` va con su etiqueta; la carga falla si
+  no, o si dos recepciones caen en el mismo frame. (2) Los parámetros del índice (peso lineal a 10
+  m, `(1 + cos) / 2`, punto de portería a 52,5 m, portero incluido, mínimo 10 por nivel, empate 1e-9,
+  cortes de los estratos de 2 m, 17,5 m y 10 m) son convenciones mías, escritas antes de los datos;
+  ninguna salió de un artefacto, y la 19 puede redefinir el índice (el contraste de la sonda no lo
+  congela). (3) Con `no_pressure` en mediana 0,000, la primera subida (a 0,241 o más) se debe sobre todo
+  a que muchas recepciones sin presión no tienen rival a 10 m; el contraste no prueba que el índice
+  distinga dentro de un nivel. (4) La sonda no mide la correlación del índice con el desenlace
+  ni con el avance posterior, a propósito. (5) `W` = 13 (suelo de la 13) para los estratos; un test
+  lo ata a `reports/probe_cadence.json`. Nadie leyó el reservado.
 - [ ] 15. `opus` Sonda S2 (C2): (a) altura de línea propia contra `last_defensive_line_x_start`
   en la recepción (concordancia por partido; umbral fijado antes de correr, en el commit de la
   sonda); (b) contraste forzado: la línea sigue al balón entrante en `[t - W, t]` (m10, re-derivado

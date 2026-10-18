@@ -1,0 +1,3153 @@
+{
+  "about": "Probe S1 (C1): the geometric pressure index at the reception against the provider's pressure label, its extrapolated share and the incoming-ball strata. No outcome of any question: nothing after the reception frame. The rule and the index are in the docstrings of ac2fb.defence.probe_s1 and ac2fb.defence.pressure.",
+  "constants": {
+    "goal_x": 52.5,
+    "incoming_window_frames": 13,
+    "long_ball_m": 10.0,
+    "radius_m": 10.0,
+    "third_cut_m": 17.5
+  },
+  "matches": {
+    "1874553": {
+      "contrast": {
+        "evaluable": true,
+        "increasing": true,
+        "median": {
+          "high_pressure": 0.790933,
+          "low_pressure": 0.302035,
+          "medium_pressure": 0.547901,
+          "no_pressure": 0.0,
+          "very_high_pressure": 0.827187
+        },
+        "n": {
+          "high_pressure": 150,
+          "low_pressure": 157,
+          "medium_pressure": 245,
+          "no_pressure": 285,
+          "very_high_pressure": 28
+        }
+      },
+      "contrast_v1": {
+        "evaluable": true,
+        "increasing": true,
+        "median": {
+          "high_pressure": 0.787525,
+          "low_pressure": 0.30236,
+          "medium_pressure": 0.547901,
+          "no_pressure": 0.0,
+          "very_high_pressure": 0.827187
+        },
+        "n": {
+          "high_pressure": 145,
+          "low_pressure": 154,
+          "medium_pressure": 241,
+          "no_pressure": 285,
+          "very_high_pressure": 28
+        }
+      },
+      "extrapolated_share": {
+        "by_level": {
+          "high_pressure": 0.011335,
+          "low_pressure": 0.004774,
+          "medium_pressure": 0.009096,
+          "no_pressure": 0.0,
+          "very_high_pressure": 0.0
+        },
+        "overall": 0.008116,
+        "receptions_with_any": 0.018898,
+        "receptions_with_near_rival": 635
+      },
+      "incoming_ball": {
+        "strata": {
+          "backward/final/long": {
+            "by_level": {
+              "high_pressure": 5,
+              "low_pressure": 10,
+              "medium_pressure": 4,
+              "no_pressure": 3,
+              "very_high_pressure": 1
+            },
+            "n": 23
+          },
+          "backward/final/short": {
+            "by_level": {
+              "high_pressure": 11,
+              "low_pressure": 6,
+              "medium_pressure": 12,
+              "no_pressure": 6,
+              "very_high_pressure": 0
+            },
+            "n": 35
+          },
+          "backward/middle/long": {
+            "by_level": {
+              "high_pressure": 3,
+              "low_pressure": 15,
+              "medium_pressure": 10,
+              "no_pressure": 53,
+              "very_high_pressure": 1
+            },
+            "n": 82
+          },
+          "backward/middle/short": {
+            "by_level": {
+              "high_pressure": 6,
+              "low_pressure": 20,
+              "medium_pressure": 17,
+              "no_pressure": 41,
+              "very_high_pressure": 1
+            },
+            "n": 85
+          },
+          "backward/own/long": {
+            "by_level": {
+              "high_pressure": 9,
+              "low_pressure": 10,
+              "medium_pressure": 14,
+              "no_pressure": 36,
+              "very_high_pressure": 0
+            },
+            "n": 69
+          },
+          "backward/own/short": {
+            "by_level": {
+              "high_pressure": 10,
+              "low_pressure": 6,
+              "medium_pressure": 13,
+              "no_pressure": 21,
+              "very_high_pressure": 6
+            },
+            "n": 56
+          },
+          "forward/final/long": {
+            "by_level": {
+              "high_pressure": 21,
+              "low_pressure": 15,
+              "medium_pressure": 31,
+              "no_pressure": 1,
+              "very_high_pressure": 4
+            },
+            "n": 72
+          },
+          "forward/final/short": {
+            "by_level": {
+              "high_pressure": 17,
+              "low_pressure": 9,
+              "medium_pressure": 18,
+              "no_pressure": 0,
+              "very_high_pressure": 4
+            },
+            "n": 48
+          },
+          "forward/middle/long": {
+            "by_level": {
+              "high_pressure": 19,
+              "low_pressure": 31,
+              "medium_pressure": 37,
+              "no_pressure": 30,
+              "very_high_pressure": 1
+            },
+            "n": 118
+          },
+          "forward/middle/short": {
+            "by_level": {
+              "high_pressure": 20,
+              "low_pressure": 7,
+              "medium_pressure": 27,
+              "no_pressure": 7,
+              "very_high_pressure": 2
+            },
+            "n": 63
+          },
+          "forward/own/long": {
+            "by_level": {
+              "high_pressure": 0,
+              "low_pressure": 6,
+              "medium_pressure": 14,
+              "no_pressure": 20,
+              "very_high_pressure": 1
+            },
+            "n": 41
+          },
+          "forward/own/short": {
+            "by_level": {
+              "high_pressure": 11,
+              "low_pressure": 2,
+              "medium_pressure": 11,
+              "no_pressure": 8,
+              "very_high_pressure": 0
+            },
+            "n": 32
+          },
+          "lateral/final/long": {
+            "by_level": {
+              "high_pressure": 1,
+              "low_pressure": 1,
+              "medium_pressure": 2,
+              "no_pressure": 0,
+              "very_high_pressure": 0
+            },
+            "n": 4
+          },
+          "lateral/final/short": {
+            "by_level": {
+              "high_pressure": 3,
+              "low_pressure": 0,
+              "medium_pressure": 12,
+              "no_pressure": 0,
+              "very_high_pressure": 2
+            },
+            "n": 17
+          },
+          "lateral/middle/long": {
+            "by_level": {
+              "high_pressure": 0,
+              "low_pressure": 2,
+              "medium_pressure": 1,
+              "no_pressure": 25,
+              "very_high_pressure": 0
+            },
+            "n": 28
+          },
+          "lateral/middle/short": {
+            "by_level": {
+              "high_pressure": 7,
+              "low_pressure": 5,
+              "medium_pressure": 14,
+              "no_pressure": 12,
+              "very_high_pressure": 3
+            },
+            "n": 41
+          },
+          "lateral/own/long": {
+            "by_level": {
+              "high_pressure": 1,
+              "low_pressure": 5,
+              "medium_pressure": 0,
+              "no_pressure": 20,
+              "very_high_pressure": 1
+            },
+            "n": 27
+          },
+          "lateral/own/short": {
+            "by_level": {
+              "high_pressure": 6,
+              "low_pressure": 7,
+              "medium_pressure": 8,
+              "no_pressure": 2,
+              "very_high_pressure": 1
+            },
+            "n": 24
+          }
+        },
+        "undefined": 0
+      },
+      "receptions": {
+        "carrier_detected": 0.998844,
+        "labelled": 865,
+        "left_out": 0,
+        "possessions": 959,
+        "scored": 865,
+        "unlabelled": 94
+      },
+      "sensitivity": {
+        "absent_fraction": 0.0,
+        "extrapolated_fraction": 0.008276,
+        "gap_len": {
+          "max": 38,
+          "median": 9.5,
+          "n": 12,
+          "p90": 18.4
+        },
+        "match_id": 1874553,
+        "n_skipped": 0,
+        "n_units": 865,
+        "player_frames": 1450,
+        "v0": {
+          "mean": 0.403651,
+          "n": 865
+        },
+        "v1": {
+          "mean": 0.401486,
+          "n": 853
+        },
+        "v2": [
+          {
+            "detected_players": 0,
+            "mean": 0.003984,
+            "n": 231
+          },
+          {
+            "detected_players": 1,
+            "mean": 0.289862,
+            "n": 236
+          },
+          {
+            "detected_players": 2,
+            "mean": 0.521406,
+            "n": 174
+          },
+          {
+            "detected_players": 3,
+            "mean": 0.688711,
+            "n": 107
+          },
+          {
+            "detected_players": 4,
+            "mean": 0.840157,
+            "n": 71
+          },
+          {
+            "detected_players": 5,
+            "mean": 1.101793,
+            "n": 34
+          },
+          {
+            "detected_players": 6,
+            "mean": 1.633581,
+            "n": 7
+          },
+          {
+            "detected_players": 7,
+            "mean": 1.607596,
+            "n": 3
+          },
+          {
+            "detected_players": 8,
+            "mean": 1.021877,
+            "n": 2
+          }
+        ]
+      }
+    },
+    "1886347": {
+      "contrast": {
+        "evaluable": true,
+        "increasing": true,
+        "median": {
+          "high_pressure": 0.775397,
+          "low_pressure": 0.278897,
+          "medium_pressure": 0.495578,
+          "no_pressure": 0.0,
+          "very_high_pressure": 0.975755
+        },
+        "n": {
+          "high_pressure": 194,
+          "low_pressure": 195,
+          "medium_pressure": 248,
+          "no_pressure": 238,
+          "very_high_pressure": 35
+        }
+      },
+      "contrast_v1": {
+        "evaluable": true,
+        "increasing": true,
+        "median": {
+          "high_pressure": 0.777974,
+          "low_pressure": 0.270285,
+          "medium_pressure": 0.49242,
+          "no_pressure": 0.0,
+          "very_high_pressure": 0.954589
+        },
+        "n": {
+          "high_pressure": 185,
+          "low_pressure": 191,
+          "medium_pressure": 238,
+          "no_pressure": 237,
+          "very_high_pressure": 32
+        }
+      },
+      "extrapolated_share": {
+        "by_level": {
+          "high_pressure": 0.010237,
+          "low_pressure": 0.017182,
+          "medium_pressure": 0.018034,
+          "no_pressure": 0.044686,
+          "very_high_pressure": 0.021746
+        },
+        "overall": 0.016421,
+        "receptions_with_any": 0.037139,
+        "receptions_with_near_rival": 727
+      },
+      "incoming_ball": {
+        "strata": {
+          "backward/final/long": {
+            "by_level": {
+              "high_pressure": 3,
+              "low_pressure": 5,
+              "medium_pressure": 7,
+              "no_pressure": 1,
+              "very_high_pressure": 0
+            },
+            "n": 16
+          },
+          "backward/final/short": {
+            "by_level": {
+              "high_pressure": 12,
+              "low_pressure": 11,
+              "medium_pressure": 13,
+              "no_pressure": 2,
+              "very_high_pressure": 2
+            },
+            "n": 40
+          },
+          "backward/middle/long": {
+            "by_level": {
+              "high_pressure": 7,
+              "low_pressure": 23,
+              "medium_pressure": 6,
+              "no_pressure": 46,
+              "very_high_pressure": 0
+            },
+            "n": 82
+          },
+          "backward/middle/short": {
+            "by_level": {
+              "high_pressure": 14,
+              "low_pressure": 19,
+              "medium_pressure": 13,
+              "no_pressure": 34,
+              "very_high_pressure": 3
+            },
+            "n": 83
+          },
+          "backward/own/long": {
+            "by_level": {
+              "high_pressure": 5,
+              "low_pressure": 13,
+              "medium_pressure": 14,
+              "no_pressure": 23,
+              "very_high_pressure": 1
+            },
+            "n": 56
+          },
+          "backward/own/short": {
+            "by_level": {
+              "high_pressure": 20,
+              "low_pressure": 10,
+              "medium_pressure": 13,
+              "no_pressure": 20,
+              "very_high_pressure": 1
+            },
+            "n": 64
+          },
+          "forward/final/long": {
+            "by_level": {
+              "high_pressure": 15,
+              "low_pressure": 5,
+              "medium_pressure": 30,
+              "no_pressure": 0,
+              "very_high_pressure": 8
+            },
+            "n": 58
+          },
+          "forward/final/short": {
+            "by_level": {
+              "high_pressure": 23,
+              "low_pressure": 5,
+              "medium_pressure": 22,
+              "no_pressure": 0,
+              "very_high_pressure": 3
+            },
+            "n": 53
+          },
+          "forward/middle/long": {
+            "by_level": {
+              "high_pressure": 18,
+              "low_pressure": 40,
+              "medium_pressure": 33,
+              "no_pressure": 16,
+              "very_high_pressure": 5
+            },
+            "n": 112
+          },
+          "forward/middle/short": {
+            "by_level": {
+              "high_pressure": 16,
+              "low_pressure": 10,
+              "medium_pressure": 27,
+              "no_pressure": 7,
+              "very_high_pressure": 1
+            },
+            "n": 61
+          },
+          "forward/own/long": {
+            "by_level": {
+              "high_pressure": 6,
+              "low_pressure": 12,
+              "medium_pressure": 16,
+              "no_pressure": 18,
+              "very_high_pressure": 0
+            },
+            "n": 52
+          },
+          "forward/own/short": {
+            "by_level": {
+              "high_pressure": 17,
+              "low_pressure": 2,
+              "medium_pressure": 12,
+              "no_pressure": 5,
+              "very_high_pressure": 0
+            },
+            "n": 36
+          },
+          "lateral/final/long": {
+            "by_level": {
+              "high_pressure": 1,
+              "low_pressure": 1,
+              "medium_pressure": 0,
+              "no_pressure": 2,
+              "very_high_pressure": 1
+            },
+            "n": 5
+          },
+          "lateral/final/short": {
+            "by_level": {
+              "high_pressure": 10,
+              "low_pressure": 4,
+              "medium_pressure": 13,
+              "no_pressure": 0,
+              "very_high_pressure": 3
+            },
+            "n": 30
+          },
+          "lateral/middle/long": {
+            "by_level": {
+              "high_pressure": 1,
+              "low_pressure": 6,
+              "medium_pressure": 3,
+              "no_pressure": 23,
+              "very_high_pressure": 0
+            },
+            "n": 33
+          },
+          "lateral/middle/short": {
+            "by_level": {
+              "high_pressure": 15,
+              "low_pressure": 14,
+              "medium_pressure": 13,
+              "no_pressure": 14,
+              "very_high_pressure": 3
+            },
+            "n": 59
+          },
+          "lateral/own/long": {
+            "by_level": {
+              "high_pressure": 0,
+              "low_pressure": 9,
+              "medium_pressure": 3,
+              "no_pressure": 17,
+              "very_high_pressure": 0
+            },
+            "n": 29
+          },
+          "lateral/own/short": {
+            "by_level": {
+              "high_pressure": 11,
+              "low_pressure": 6,
+              "medium_pressure": 9,
+              "no_pressure": 10,
+              "very_high_pressure": 4
+            },
+            "n": 40
+          }
+        },
+        "undefined": 1
+      },
+      "receptions": {
+        "carrier_detected": 0.987912,
+        "labelled": 910,
+        "left_out": 0,
+        "possessions": 990,
+        "scored": 910,
+        "unlabelled": 80
+      },
+      "sensitivity": {
+        "absent_fraction": 0.0,
+        "extrapolated_fraction": 0.020669,
+        "gap_len": {
+          "max": 178,
+          "median": 9.5,
+          "n": 34,
+          "p90": 42.4
+        },
+        "match_id": 1886347,
+        "n_skipped": 0,
+        "n_units": 910,
+        "player_frames": 1645,
+        "v0": {
+          "mean": 0.442115,
+          "n": 910
+        },
+        "v1": {
+          "mean": 0.431296,
+          "n": 883
+        },
+        "v2": [
+          {
+            "detected_players": 0,
+            "mean": 0.009381,
+            "n": 187
+          },
+          {
+            "detected_players": 1,
+            "mean": 0.277977,
+            "n": 282
+          },
+          {
+            "detected_players": 2,
+            "mean": 0.542858,
+            "n": 177
+          },
+          {
+            "detected_players": 3,
+            "mean": 0.688935,
+            "n": 153
+          },
+          {
+            "detected_players": 4,
+            "mean": 0.97147,
+            "n": 64
+          },
+          {
+            "detected_players": 5,
+            "mean": 1.02916,
+            "n": 28
+          },
+          {
+            "detected_players": 6,
+            "mean": 1.312947,
+            "n": 15
+          },
+          {
+            "detected_players": 7,
+            "mean": 2.129841,
+            "n": 2
+          },
+          {
+            "detected_players": 8,
+            "mean": 2.871929,
+            "n": 2
+          }
+        ]
+      }
+    },
+    "1925299": {
+      "contrast": {
+        "evaluable": true,
+        "increasing": true,
+        "median": {
+          "high_pressure": 0.729371,
+          "low_pressure": 0.258572,
+          "medium_pressure": 0.510766,
+          "no_pressure": 0.0,
+          "very_high_pressure": 1.003358
+        },
+        "n": {
+          "high_pressure": 158,
+          "low_pressure": 209,
+          "medium_pressure": 216,
+          "no_pressure": 317,
+          "very_high_pressure": 36
+        }
+      },
+      "contrast_v1": {
+        "evaluable": true,
+        "increasing": true,
+        "median": {
+          "high_pressure": 0.721016,
+          "low_pressure": 0.258572,
+          "medium_pressure": 0.491919,
+          "no_pressure": 0.0,
+          "very_high_pressure": 0.963321
+        },
+        "n": {
+          "high_pressure": 148,
+          "low_pressure": 201,
+          "medium_pressure": 210,
+          "no_pressure": 316,
+          "very_high_pressure": 34
+        }
+      },
+      "extrapolated_share": {
+        "by_level": {
+          "high_pressure": 0.023148,
+          "low_pressure": 0.021219,
+          "medium_pressure": 0.008845,
+          "no_pressure": 0.002763,
+          "very_high_pressure": 0.022241
+        },
+        "overall": 0.01709,
+        "receptions_with_any": 0.038737,
+        "receptions_with_near_rival": 697
+      },
+      "incoming_ball": {
+        "strata": {
+          "backward/final/long": {
+            "by_level": {
+              "high_pressure": 2,
+              "low_pressure": 5,
+              "medium_pressure": 9,
+              "no_pressure": 5,
+              "very_high_pressure": 2
+            },
+            "n": 23
+          },
+          "backward/final/short": {
+            "by_level": {
+              "high_pressure": 6,
+              "low_pressure": 16,
+              "medium_pressure": 11,
+              "no_pressure": 6,
+              "very_high_pressure": 3
+            },
+            "n": 42
+          },
+          "backward/middle/long": {
+            "by_level": {
+              "high_pressure": 2,
+              "low_pressure": 23,
+              "medium_pressure": 9,
+              "no_pressure": 63,
+              "very_high_pressure": 0
+            },
+            "n": 97
+          },
+          "backward/middle/short": {
+            "by_level": {
+              "high_pressure": 8,
+              "low_pressure": 15,
+              "medium_pressure": 15,
+              "no_pressure": 43,
+              "very_high_pressure": 0
+            },
+            "n": 81
+          },
+          "backward/own/long": {
+            "by_level": {
+              "high_pressure": 5,
+              "low_pressure": 8,
+              "medium_pressure": 8,
+              "no_pressure": 49,
+              "very_high_pressure": 0
+            },
+            "n": 70
+          },
+          "backward/own/short": {
+            "by_level": {
+              "high_pressure": 19,
+              "low_pressure": 8,
+              "medium_pressure": 9,
+              "no_pressure": 24,
+              "very_high_pressure": 4
+            },
+            "n": 64
+          },
+          "forward/final/long": {
+            "by_level": {
+              "high_pressure": 12,
+              "low_pressure": 16,
+              "medium_pressure": 25,
+              "no_pressure": 3,
+              "very_high_pressure": 0
+            },
+            "n": 56
+          },
+          "forward/final/short": {
+            "by_level": {
+              "high_pressure": 18,
+              "low_pressure": 9,
+              "medium_pressure": 24,
+              "no_pressure": 1,
+              "very_high_pressure": 8
+            },
+            "n": 60
+          },
+          "forward/middle/long": {
+            "by_level": {
+              "high_pressure": 15,
+              "low_pressure": 47,
+              "medium_pressure": 36,
+              "no_pressure": 33,
+              "very_high_pressure": 2
+            },
+            "n": 133
+          },
+          "forward/middle/short": {
+            "by_level": {
+              "high_pressure": 23,
+              "low_pressure": 13,
+              "medium_pressure": 21,
+              "no_pressure": 16,
+              "very_high_pressure": 5
+            },
+            "n": 78
+          },
+          "forward/own/long": {
+            "by_level": {
+              "high_pressure": 3,
+              "low_pressure": 11,
+              "medium_pressure": 7,
+              "no_pressure": 15,
+              "very_high_pressure": 0
+            },
+            "n": 36
+          },
+          "forward/own/short": {
+            "by_level": {
+              "high_pressure": 9,
+              "low_pressure": 8,
+              "medium_pressure": 8,
+              "no_pressure": 5,
+              "very_high_pressure": 2
+            },
+            "n": 32
+          },
+          "lateral/final/long": {
+            "by_level": {
+              "high_pressure": 2,
+              "low_pressure": 1,
+              "medium_pressure": 2,
+              "no_pressure": 1,
+              "very_high_pressure": 1
+            },
+            "n": 7
+          },
+          "lateral/final/short": {
+            "by_level": {
+              "high_pressure": 16,
+              "low_pressure": 3,
+              "medium_pressure": 12,
+              "no_pressure": 0,
+              "very_high_pressure": 7
+            },
+            "n": 38
+          },
+          "lateral/middle/long": {
+            "by_level": {
+              "high_pressure": 0,
+              "low_pressure": 11,
+              "medium_pressure": 1,
+              "no_pressure": 24,
+              "very_high_pressure": 0
+            },
+            "n": 36
+          },
+          "lateral/middle/short": {
+            "by_level": {
+              "high_pressure": 9,
+              "low_pressure": 5,
+              "medium_pressure": 11,
+              "no_pressure": 7,
+              "very_high_pressure": 1
+            },
+            "n": 33
+          },
+          "lateral/own/long": {
+            "by_level": {
+              "high_pressure": 0,
+              "low_pressure": 8,
+              "medium_pressure": 1,
+              "no_pressure": 18,
+              "very_high_pressure": 0
+            },
+            "n": 27
+          },
+          "lateral/own/short": {
+            "by_level": {
+              "high_pressure": 9,
+              "low_pressure": 2,
+              "medium_pressure": 6,
+              "no_pressure": 3,
+              "very_high_pressure": 1
+            },
+            "n": 21
+          }
+        },
+        "undefined": 2
+      },
+      "receptions": {
+        "carrier_detected": 0.986111,
+        "labelled": 936,
+        "left_out": 0,
+        "possessions": 1054,
+        "scored": 936,
+        "unlabelled": 118
+      },
+      "sensitivity": {
+        "absent_fraction": 0.0,
+        "extrapolated_fraction": 0.019206,
+        "gap_len": {
+          "max": 101,
+          "median": 5.0,
+          "n": 30,
+          "p90": 34.4
+        },
+        "match_id": 1925299,
+        "n_skipped": 0,
+        "n_units": 936,
+        "player_frames": 1562,
+        "v0": {
+          "mean": 0.380982,
+          "n": 936
+        },
+        "v1": {
+          "mean": 0.369916,
+          "n": 909
+        },
+        "v2": [
+          {
+            "detected_players": 0,
+            "mean": 0.001753,
+            "n": 242
+          },
+          {
+            "detected_players": 1,
+            "mean": 0.245258,
+            "n": 272
+          },
+          {
+            "detected_players": 2,
+            "mean": 0.49472,
+            "n": 184
+          },
+          {
+            "detected_players": 3,
+            "mean": 0.723769,
+            "n": 127
+          },
+          {
+            "detected_players": 4,
+            "mean": 0.889759,
+            "n": 65
+          },
+          {
+            "detected_players": 5,
+            "mean": 1.00029,
+            "n": 29
+          },
+          {
+            "detected_players": 6,
+            "mean": 1.063481,
+            "n": 13
+          },
+          {
+            "detected_players": 7,
+            "mean": 1.462323,
+            "n": 4
+          }
+        ]
+      }
+    },
+    "1959846": {
+      "contrast": {
+        "evaluable": true,
+        "increasing": true,
+        "median": {
+          "high_pressure": 0.786881,
+          "low_pressure": 0.240979,
+          "medium_pressure": 0.507505,
+          "no_pressure": 0.0,
+          "very_high_pressure": 1.027308
+        },
+        "n": {
+          "high_pressure": 174,
+          "low_pressure": 154,
+          "medium_pressure": 249,
+          "no_pressure": 224,
+          "very_high_pressure": 38
+        }
+      },
+      "contrast_v1": {
+        "evaluable": true,
+        "increasing": true,
+        "median": {
+          "high_pressure": 0.802373,
+          "low_pressure": 0.239306,
+          "medium_pressure": 0.512337,
+          "no_pressure": 0.0,
+          "very_high_pressure": 0.927011
+        },
+        "n": {
+          "high_pressure": 155,
+          "low_pressure": 145,
+          "medium_pressure": 237,
+          "no_pressure": 222,
+          "very_high_pressure": 34
+        }
+      },
+      "extrapolated_share": {
+        "by_level": {
+          "high_pressure": 0.037306,
+          "low_pressure": 0.03624,
+          "medium_pressure": 0.012513,
+          "no_pressure": 0.000772,
+          "very_high_pressure": 0.048499
+        },
+        "overall": 0.029145,
+        "receptions_with_any": 0.071651,
+        "receptions_with_near_rival": 642
+      },
+      "incoming_ball": {
+        "strata": {
+          "backward/final/long": {
+            "by_level": {
+              "high_pressure": 1,
+              "low_pressure": 10,
+              "medium_pressure": 9,
+              "no_pressure": 2,
+              "very_high_pressure": 0
+            },
+            "n": 22
+          },
+          "backward/final/short": {
+            "by_level": {
+              "high_pressure": 10,
+              "low_pressure": 10,
+              "medium_pressure": 17,
+              "no_pressure": 4,
+              "very_high_pressure": 4
+            },
+            "n": 45
+          },
+          "backward/middle/long": {
+            "by_level": {
+              "high_pressure": 5,
+              "low_pressure": 12,
+              "medium_pressure": 3,
+              "no_pressure": 58,
+              "very_high_pressure": 1
+            },
+            "n": 79
+          },
+          "backward/middle/short": {
+            "by_level": {
+              "high_pressure": 15,
+              "low_pressure": 23,
+              "medium_pressure": 15,
+              "no_pressure": 25,
+              "very_high_pressure": 2
+            },
+            "n": 80
+          },
+          "backward/own/long": {
+            "by_level": {
+              "high_pressure": 8,
+              "low_pressure": 17,
+              "medium_pressure": 8,
+              "no_pressure": 30,
+              "very_high_pressure": 0
+            },
+            "n": 63
+          },
+          "backward/own/short": {
+            "by_level": {
+              "high_pressure": 12,
+              "low_pressure": 7,
+              "medium_pressure": 26,
+              "no_pressure": 10,
+              "very_high_pressure": 0
+            },
+            "n": 55
+          },
+          "forward/final/long": {
+            "by_level": {
+              "high_pressure": 28,
+              "low_pressure": 6,
+              "medium_pressure": 25,
+              "no_pressure": 0,
+              "very_high_pressure": 12
+            },
+            "n": 71
+          },
+          "forward/final/short": {
+            "by_level": {
+              "high_pressure": 21,
+              "low_pressure": 4,
+              "medium_pressure": 17,
+              "no_pressure": 0,
+              "very_high_pressure": 4
+            },
+            "n": 46
+          },
+          "forward/middle/long": {
+            "by_level": {
+              "high_pressure": 13,
+              "low_pressure": 17,
+              "medium_pressure": 48,
+              "no_pressure": 28,
+              "very_high_pressure": 4
+            },
+            "n": 110
+          },
+          "forward/middle/short": {
+            "by_level": {
+              "high_pressure": 13,
+              "low_pressure": 7,
+              "medium_pressure": 16,
+              "no_pressure": 4,
+              "very_high_pressure": 0
+            },
+            "n": 40
+          },
+          "forward/own/long": {
+            "by_level": {
+              "high_pressure": 3,
+              "low_pressure": 12,
+              "medium_pressure": 19,
+              "no_pressure": 22,
+              "very_high_pressure": 0
+            },
+            "n": 56
+          },
+          "forward/own/short": {
+            "by_level": {
+              "high_pressure": 12,
+              "low_pressure": 8,
+              "medium_pressure": 9,
+              "no_pressure": 2,
+              "very_high_pressure": 2
+            },
+            "n": 33
+          },
+          "lateral/final/long": {
+            "by_level": {
+              "high_pressure": 1,
+              "low_pressure": 1,
+              "medium_pressure": 1,
+              "no_pressure": 1,
+              "very_high_pressure": 2
+            },
+            "n": 6
+          },
+          "lateral/final/short": {
+            "by_level": {
+              "high_pressure": 9,
+              "low_pressure": 2,
+              "medium_pressure": 12,
+              "no_pressure": 0,
+              "very_high_pressure": 6
+            },
+            "n": 29
+          },
+          "lateral/middle/long": {
+            "by_level": {
+              "high_pressure": 0,
+              "low_pressure": 6,
+              "medium_pressure": 1,
+              "no_pressure": 16,
+              "very_high_pressure": 0
+            },
+            "n": 23
+          },
+          "lateral/middle/short": {
+            "by_level": {
+              "high_pressure": 5,
+              "low_pressure": 5,
+              "medium_pressure": 8,
+              "no_pressure": 7,
+              "very_high_pressure": 1
+            },
+            "n": 26
+          },
+          "lateral/own/long": {
+            "by_level": {
+              "high_pressure": 1,
+              "low_pressure": 2,
+              "medium_pressure": 6,
+              "no_pressure": 13,
+              "very_high_pressure": 0
+            },
+            "n": 22
+          },
+          "lateral/own/short": {
+            "by_level": {
+              "high_pressure": 17,
+              "low_pressure": 3,
+              "medium_pressure": 9,
+              "no_pressure": 2,
+              "very_high_pressure": 0
+            },
+            "n": 31
+          }
+        },
+        "undefined": 2
+      },
+      "receptions": {
+        "carrier_detected": 0.995232,
+        "labelled": 839,
+        "left_out": 0,
+        "possessions": 946,
+        "scored": 839,
+        "unlabelled": 107
+      },
+      "sensitivity": {
+        "absent_fraction": 0.0,
+        "extrapolated_fraction": 0.031984,
+        "gap_len": {
+          "max": 378,
+          "median": 5.0,
+          "n": 49,
+          "p90": 27.0
+        },
+        "match_id": 1959846,
+        "n_skipped": 0,
+        "n_units": 839,
+        "player_frames": 1532,
+        "v0": {
+          "mean": 0.439314,
+          "n": 839
+        },
+        "v1": {
+          "mean": 0.419633,
+          "n": 793
+        },
+        "v2": [
+          {
+            "detected_players": 0,
+            "mean": 0.007865,
+            "n": 204
+          },
+          {
+            "detected_players": 1,
+            "mean": 0.284734,
+            "n": 241
+          },
+          {
+            "detected_players": 2,
+            "mean": 0.531786,
+            "n": 163
+          },
+          {
+            "detected_players": 3,
+            "mean": 0.690524,
+            "n": 98
+          },
+          {
+            "detected_players": 4,
+            "mean": 0.886599,
+            "n": 74
+          },
+          {
+            "detected_players": 5,
+            "mean": 1.044672,
+            "n": 36
+          },
+          {
+            "detected_players": 6,
+            "mean": 1.452888,
+            "n": 17
+          },
+          {
+            "detected_players": 7,
+            "mean": 2.211292,
+            "n": 5
+          },
+          {
+            "detected_players": 9,
+            "mean": 5.03408,
+            "n": 1
+          }
+        ]
+      }
+    },
+    "1996435": {
+      "contrast": {
+        "evaluable": true,
+        "increasing": true,
+        "median": {
+          "high_pressure": 0.70742,
+          "low_pressure": 0.298717,
+          "medium_pressure": 0.468197,
+          "no_pressure": 0.0,
+          "very_high_pressure": 0.890383
+        },
+        "n": {
+          "high_pressure": 196,
+          "low_pressure": 210,
+          "medium_pressure": 288,
+          "no_pressure": 175,
+          "very_high_pressure": 29
+        }
+      },
+      "contrast_v1": {
+        "evaluable": true,
+        "increasing": true,
+        "median": {
+          "high_pressure": 0.721042,
+          "low_pressure": 0.299473,
+          "medium_pressure": 0.466798,
+          "no_pressure": 0.0,
+          "very_high_pressure": 0.790598
+        },
+        "n": {
+          "high_pressure": 186,
+          "low_pressure": 206,
+          "medium_pressure": 283,
+          "no_pressure": 174,
+          "very_high_pressure": 27
+        }
+      },
+      "extrapolated_share": {
+        "by_level": {
+          "high_pressure": 0.00502,
+          "low_pressure": 0.007642,
+          "medium_pressure": 0.012905,
+          "no_pressure": 0.004263,
+          "very_high_pressure": 0.021285
+        },
+        "overall": 0.009341,
+        "receptions_with_any": 0.029101,
+        "receptions_with_near_rival": 756
+      },
+      "incoming_ball": {
+        "strata": {
+          "backward/final/long": {
+            "by_level": {
+              "high_pressure": 3,
+              "low_pressure": 8,
+              "medium_pressure": 6,
+              "no_pressure": 2,
+              "very_high_pressure": 1
+            },
+            "n": 20
+          },
+          "backward/final/short": {
+            "by_level": {
+              "high_pressure": 12,
+              "low_pressure": 15,
+              "medium_pressure": 26,
+              "no_pressure": 3,
+              "very_high_pressure": 0
+            },
+            "n": 56
+          },
+          "backward/middle/long": {
+            "by_level": {
+              "high_pressure": 6,
+              "low_pressure": 22,
+              "medium_pressure": 6,
+              "no_pressure": 47,
+              "very_high_pressure": 0
+            },
+            "n": 81
+          },
+          "backward/middle/short": {
+            "by_level": {
+              "high_pressure": 7,
+              "low_pressure": 19,
+              "medium_pressure": 15,
+              "no_pressure": 37,
+              "very_high_pressure": 0
+            },
+            "n": 78
+          },
+          "backward/own/long": {
+            "by_level": {
+              "high_pressure": 5,
+              "low_pressure": 17,
+              "medium_pressure": 14,
+              "no_pressure": 19,
+              "very_high_pressure": 0
+            },
+            "n": 55
+          },
+          "backward/own/short": {
+            "by_level": {
+              "high_pressure": 21,
+              "low_pressure": 15,
+              "medium_pressure": 13,
+              "no_pressure": 8,
+              "very_high_pressure": 3
+            },
+            "n": 60
+          },
+          "forward/final/long": {
+            "by_level": {
+              "high_pressure": 14,
+              "low_pressure": 11,
+              "medium_pressure": 33,
+              "no_pressure": 1,
+              "very_high_pressure": 4
+            },
+            "n": 63
+          },
+          "forward/final/short": {
+            "by_level": {
+              "high_pressure": 19,
+              "low_pressure": 3,
+              "medium_pressure": 22,
+              "no_pressure": 0,
+              "very_high_pressure": 6
+            },
+            "n": 50
+          },
+          "forward/middle/long": {
+            "by_level": {
+              "high_pressure": 22,
+              "low_pressure": 35,
+              "medium_pressure": 47,
+              "no_pressure": 13,
+              "very_high_pressure": 2
+            },
+            "n": 119
+          },
+          "forward/middle/short": {
+            "by_level": {
+              "high_pressure": 20,
+              "low_pressure": 17,
+              "medium_pressure": 18,
+              "no_pressure": 4,
+              "very_high_pressure": 2
+            },
+            "n": 61
+          },
+          "forward/own/long": {
+            "by_level": {
+              "high_pressure": 12,
+              "low_pressure": 7,
+              "medium_pressure": 23,
+              "no_pressure": 6,
+              "very_high_pressure": 0
+            },
+            "n": 48
+          },
+          "forward/own/short": {
+            "by_level": {
+              "high_pressure": 14,
+              "low_pressure": 8,
+              "medium_pressure": 21,
+              "no_pressure": 8,
+              "very_high_pressure": 1
+            },
+            "n": 52
+          },
+          "lateral/final/long": {
+            "by_level": {
+              "high_pressure": 8,
+              "low_pressure": 2,
+              "medium_pressure": 2,
+              "no_pressure": 0,
+              "very_high_pressure": 0
+            },
+            "n": 12
+          },
+          "lateral/final/short": {
+            "by_level": {
+              "high_pressure": 11,
+              "low_pressure": 6,
+              "medium_pressure": 14,
+              "no_pressure": 0,
+              "very_high_pressure": 6
+            },
+            "n": 37
+          },
+          "lateral/middle/long": {
+            "by_level": {
+              "high_pressure": 0,
+              "low_pressure": 8,
+              "medium_pressure": 1,
+              "no_pressure": 9,
+              "very_high_pressure": 0
+            },
+            "n": 18
+          },
+          "lateral/middle/short": {
+            "by_level": {
+              "high_pressure": 8,
+              "low_pressure": 10,
+              "medium_pressure": 10,
+              "no_pressure": 5,
+              "very_high_pressure": 1
+            },
+            "n": 34
+          },
+          "lateral/own/long": {
+            "by_level": {
+              "high_pressure": 2,
+              "low_pressure": 4,
+              "medium_pressure": 6,
+              "no_pressure": 8,
+              "very_high_pressure": 0
+            },
+            "n": 20
+          },
+          "lateral/own/short": {
+            "by_level": {
+              "high_pressure": 12,
+              "low_pressure": 2,
+              "medium_pressure": 11,
+              "no_pressure": 4,
+              "very_high_pressure": 3
+            },
+            "n": 32
+          }
+        },
+        "undefined": 2
+      },
+      "receptions": {
+        "carrier_detected": 0.989978,
+        "labelled": 898,
+        "left_out": 0,
+        "possessions": 1005,
+        "scored": 898,
+        "unlabelled": 107
+      },
+      "sensitivity": {
+        "absent_fraction": 0.0,
+        "extrapolated_fraction": 0.012987,
+        "gap_len": {
+          "max": 293,
+          "median": 9.0,
+          "n": 22,
+          "p90": 56.8
+        },
+        "match_id": 1996435,
+        "n_skipped": 0,
+        "n_units": 898,
+        "player_frames": 1694,
+        "v0": {
+          "mean": 0.438746,
+          "n": 898
+        },
+        "v1": {
+          "mean": 0.432537,
+          "n": 876
+        },
+        "v2": [
+          {
+            "detected_players": 0,
+            "mean": 0.000438,
+            "n": 143
+          },
+          {
+            "detected_players": 1,
+            "mean": 0.27056,
+            "n": 275
+          },
+          {
+            "detected_players": 2,
+            "mean": 0.496503,
+            "n": 206
+          },
+          {
+            "detected_players": 3,
+            "mean": 0.682517,
+            "n": 165
+          },
+          {
+            "detected_players": 4,
+            "mean": 0.84426,
+            "n": 65
+          },
+          {
+            "detected_players": 5,
+            "mean": 1.081359,
+            "n": 36
+          },
+          {
+            "detected_players": 6,
+            "mean": 1.34475,
+            "n": 6
+          },
+          {
+            "detected_players": 7,
+            "mean": 1.378895,
+            "n": 2
+          }
+        ]
+      }
+    },
+    "1996436": {
+      "contrast": {
+        "evaluable": true,
+        "increasing": true,
+        "median": {
+          "high_pressure": 0.778361,
+          "low_pressure": 0.264366,
+          "medium_pressure": 0.552734,
+          "no_pressure": 0.0,
+          "very_high_pressure": 1.013539
+        },
+        "n": {
+          "high_pressure": 165,
+          "low_pressure": 125,
+          "medium_pressure": 197,
+          "no_pressure": 156,
+          "very_high_pressure": 41
+        }
+      },
+      "contrast_v1": {
+        "evaluable": true,
+        "increasing": true,
+        "median": {
+          "high_pressure": 0.766197,
+          "low_pressure": 0.265059,
+          "medium_pressure": 0.552468,
+          "no_pressure": 0.0,
+          "very_high_pressure": 0.99629
+        },
+        "n": {
+          "high_pressure": 151,
+          "low_pressure": 123,
+          "medium_pressure": 189,
+          "no_pressure": 156,
+          "very_high_pressure": 38
+        }
+      },
+      "extrapolated_share": {
+        "by_level": {
+          "high_pressure": 0.045757,
+          "low_pressure": 0.000874,
+          "medium_pressure": 0.014775,
+          "no_pressure": 0.0,
+          "very_high_pressure": 0.027628
+        },
+        "overall": 0.027362,
+        "receptions_with_any": 0.048387,
+        "receptions_with_near_rival": 558
+      },
+      "incoming_ball": {
+        "strata": {
+          "backward/final/long": {
+            "by_level": {
+              "high_pressure": 2,
+              "low_pressure": 5,
+              "medium_pressure": 7,
+              "no_pressure": 1,
+              "very_high_pressure": 2
+            },
+            "n": 17
+          },
+          "backward/final/short": {
+            "by_level": {
+              "high_pressure": 10,
+              "low_pressure": 9,
+              "medium_pressure": 16,
+              "no_pressure": 5,
+              "very_high_pressure": 1
+            },
+            "n": 41
+          },
+          "backward/middle/long": {
+            "by_level": {
+              "high_pressure": 2,
+              "low_pressure": 8,
+              "medium_pressure": 7,
+              "no_pressure": 25,
+              "very_high_pressure": 0
+            },
+            "n": 42
+          },
+          "backward/middle/short": {
+            "by_level": {
+              "high_pressure": 7,
+              "low_pressure": 21,
+              "medium_pressure": 17,
+              "no_pressure": 22,
+              "very_high_pressure": 1
+            },
+            "n": 68
+          },
+          "backward/own/long": {
+            "by_level": {
+              "high_pressure": 6,
+              "low_pressure": 5,
+              "medium_pressure": 6,
+              "no_pressure": 13,
+              "very_high_pressure": 1
+            },
+            "n": 31
+          },
+          "backward/own/short": {
+            "by_level": {
+              "high_pressure": 13,
+              "low_pressure": 5,
+              "medium_pressure": 15,
+              "no_pressure": 12,
+              "very_high_pressure": 0
+            },
+            "n": 45
+          },
+          "forward/final/long": {
+            "by_level": {
+              "high_pressure": 15,
+              "low_pressure": 9,
+              "medium_pressure": 21,
+              "no_pressure": 1,
+              "very_high_pressure": 10
+            },
+            "n": 56
+          },
+          "forward/final/short": {
+            "by_level": {
+              "high_pressure": 18,
+              "low_pressure": 4,
+              "medium_pressure": 8,
+              "no_pressure": 1,
+              "very_high_pressure": 5
+            },
+            "n": 36
+          },
+          "forward/middle/long": {
+            "by_level": {
+              "high_pressure": 13,
+              "low_pressure": 22,
+              "medium_pressure": 26,
+              "no_pressure": 15,
+              "very_high_pressure": 4
+            },
+            "n": 80
+          },
+          "forward/middle/short": {
+            "by_level": {
+              "high_pressure": 27,
+              "low_pressure": 14,
+              "medium_pressure": 22,
+              "no_pressure": 5,
+              "very_high_pressure": 5
+            },
+            "n": 73
+          },
+          "forward/own/long": {
+            "by_level": {
+              "high_pressure": 2,
+              "low_pressure": 4,
+              "medium_pressure": 8,
+              "no_pressure": 9,
+              "very_high_pressure": 2
+            },
+            "n": 25
+          },
+          "forward/own/short": {
+            "by_level": {
+              "high_pressure": 8,
+              "low_pressure": 4,
+              "medium_pressure": 11,
+              "no_pressure": 6,
+              "very_high_pressure": 4
+            },
+            "n": 33
+          },
+          "lateral/final/long": {
+            "by_level": {
+              "high_pressure": 2,
+              "low_pressure": 3,
+              "medium_pressure": 2,
+              "no_pressure": 1,
+              "very_high_pressure": 0
+            },
+            "n": 8
+          },
+          "lateral/final/short": {
+            "by_level": {
+              "high_pressure": 10,
+              "low_pressure": 1,
+              "medium_pressure": 15,
+              "no_pressure": 0,
+              "very_high_pressure": 3
+            },
+            "n": 29
+          },
+          "lateral/middle/long": {
+            "by_level": {
+              "high_pressure": 1,
+              "low_pressure": 4,
+              "medium_pressure": 0,
+              "no_pressure": 13,
+              "very_high_pressure": 0
+            },
+            "n": 18
+          },
+          "lateral/middle/short": {
+            "by_level": {
+              "high_pressure": 16,
+              "low_pressure": 5,
+              "medium_pressure": 11,
+              "no_pressure": 6,
+              "very_high_pressure": 1
+            },
+            "n": 39
+          },
+          "lateral/own/long": {
+            "by_level": {
+              "high_pressure": 0,
+              "low_pressure": 2,
+              "medium_pressure": 0,
+              "no_pressure": 11,
+              "very_high_pressure": 0
+            },
+            "n": 13
+          },
+          "lateral/own/short": {
+            "by_level": {
+              "high_pressure": 13,
+              "low_pressure": 0,
+              "medium_pressure": 5,
+              "no_pressure": 9,
+              "very_high_pressure": 2
+            },
+            "n": 29
+          }
+        },
+        "undefined": 1
+      },
+      "receptions": {
+        "carrier_detected": 0.995614,
+        "labelled": 684,
+        "left_out": 0,
+        "possessions": 786,
+        "scored": 684,
+        "unlabelled": 102
+      },
+      "sensitivity": {
+        "absent_fraction": 0.0,
+        "extrapolated_fraction": 0.023846,
+        "gap_len": {
+          "max": 332,
+          "median": 7.0,
+          "n": 31,
+          "p90": 104.0
+        },
+        "match_id": 1996436,
+        "n_skipped": 0,
+        "n_units": 684,
+        "player_frames": 1300,
+        "v0": {
+          "mean": 0.497372,
+          "n": 684
+        },
+        "v1": {
+          "mean": 0.477198,
+          "n": 657
+        },
+        "v2": [
+          {
+            "detected_players": 0,
+            "mean": 0.0195,
+            "n": 131
+          },
+          {
+            "detected_players": 1,
+            "mean": 0.281591,
+            "n": 186
+          },
+          {
+            "detected_players": 2,
+            "mean": 0.578336,
+            "n": 161
+          },
+          {
+            "detected_players": 3,
+            "mean": 0.776413,
+            "n": 115
+          },
+          {
+            "detected_players": 4,
+            "mean": 1.005493,
+            "n": 54
+          },
+          {
+            "detected_players": 5,
+            "mean": 1.131527,
+            "n": 25
+          },
+          {
+            "detected_players": 6,
+            "mean": 1.402806,
+            "n": 10
+          },
+          {
+            "detected_players": 7,
+            "mean": 2.406813,
+            "n": 1
+          },
+          {
+            "detected_players": 8,
+            "mean": 3.853112,
+            "n": 1
+          }
+        ]
+      }
+    },
+    "2007448": {
+      "contrast": {
+        "evaluable": true,
+        "increasing": true,
+        "median": {
+          "high_pressure": 0.797954,
+          "low_pressure": 0.291433,
+          "medium_pressure": 0.545316,
+          "no_pressure": 0.0,
+          "very_high_pressure": 0.9104
+        },
+        "n": {
+          "high_pressure": 130,
+          "low_pressure": 171,
+          "medium_pressure": 199,
+          "no_pressure": 220,
+          "very_high_pressure": 40
+        }
+      },
+      "contrast_v1": {
+        "evaluable": true,
+        "increasing": true,
+        "median": {
+          "high_pressure": 0.785064,
+          "low_pressure": 0.291433,
+          "medium_pressure": 0.540878,
+          "no_pressure": 0.0,
+          "very_high_pressure": 0.893499
+        },
+        "n": {
+          "high_pressure": 125,
+          "low_pressure": 167,
+          "medium_pressure": 191,
+          "no_pressure": 220,
+          "very_high_pressure": 37
+        }
+      },
+      "extrapolated_share": {
+        "by_level": {
+          "high_pressure": 0.010364,
+          "low_pressure": 0.005573,
+          "medium_pressure": 0.012277,
+          "no_pressure": 0.0,
+          "very_high_pressure": 0.015133
+        },
+        "overall": 0.010519,
+        "receptions_with_any": 0.03367,
+        "receptions_with_near_rival": 594
+      },
+      "incoming_ball": {
+        "strata": {
+          "backward/final/long": {
+            "by_level": {
+              "high_pressure": 1,
+              "low_pressure": 9,
+              "medium_pressure": 6,
+              "no_pressure": 3,
+              "very_high_pressure": 1
+            },
+            "n": 20
+          },
+          "backward/final/short": {
+            "by_level": {
+              "high_pressure": 9,
+              "low_pressure": 12,
+              "medium_pressure": 8,
+              "no_pressure": 3,
+              "very_high_pressure": 3
+            },
+            "n": 35
+          },
+          "backward/middle/long": {
+            "by_level": {
+              "high_pressure": 2,
+              "low_pressure": 19,
+              "medium_pressure": 8,
+              "no_pressure": 46,
+              "very_high_pressure": 1
+            },
+            "n": 76
+          },
+          "backward/middle/short": {
+            "by_level": {
+              "high_pressure": 8,
+              "low_pressure": 14,
+              "medium_pressure": 14,
+              "no_pressure": 36,
+              "very_high_pressure": 0
+            },
+            "n": 72
+          },
+          "backward/own/long": {
+            "by_level": {
+              "high_pressure": 6,
+              "low_pressure": 15,
+              "medium_pressure": 8,
+              "no_pressure": 31,
+              "very_high_pressure": 1
+            },
+            "n": 61
+          },
+          "backward/own/short": {
+            "by_level": {
+              "high_pressure": 14,
+              "low_pressure": 10,
+              "medium_pressure": 13,
+              "no_pressure": 18,
+              "very_high_pressure": 3
+            },
+            "n": 58
+          },
+          "forward/final/long": {
+            "by_level": {
+              "high_pressure": 12,
+              "low_pressure": 8,
+              "medium_pressure": 22,
+              "no_pressure": 1,
+              "very_high_pressure": 6
+            },
+            "n": 49
+          },
+          "forward/final/short": {
+            "by_level": {
+              "high_pressure": 10,
+              "low_pressure": 4,
+              "medium_pressure": 15,
+              "no_pressure": 1,
+              "very_high_pressure": 13
+            },
+            "n": 43
+          },
+          "forward/middle/long": {
+            "by_level": {
+              "high_pressure": 17,
+              "low_pressure": 20,
+              "medium_pressure": 31,
+              "no_pressure": 14,
+              "very_high_pressure": 1
+            },
+            "n": 83
+          },
+          "forward/middle/short": {
+            "by_level": {
+              "high_pressure": 15,
+              "low_pressure": 21,
+              "medium_pressure": 18,
+              "no_pressure": 8,
+              "very_high_pressure": 2
+            },
+            "n": 64
+          },
+          "forward/own/long": {
+            "by_level": {
+              "high_pressure": 3,
+              "low_pressure": 11,
+              "medium_pressure": 13,
+              "no_pressure": 11,
+              "very_high_pressure": 0
+            },
+            "n": 38
+          },
+          "forward/own/short": {
+            "by_level": {
+              "high_pressure": 8,
+              "low_pressure": 1,
+              "medium_pressure": 8,
+              "no_pressure": 4,
+              "very_high_pressure": 3
+            },
+            "n": 24
+          },
+          "lateral/final/long": {
+            "by_level": {
+              "high_pressure": 1,
+              "low_pressure": 4,
+              "medium_pressure": 3,
+              "no_pressure": 1,
+              "very_high_pressure": 3
+            },
+            "n": 12
+          },
+          "lateral/final/short": {
+            "by_level": {
+              "high_pressure": 16,
+              "low_pressure": 2,
+              "medium_pressure": 7,
+              "no_pressure": 0,
+              "very_high_pressure": 1
+            },
+            "n": 26
+          },
+          "lateral/middle/long": {
+            "by_level": {
+              "high_pressure": 0,
+              "low_pressure": 5,
+              "medium_pressure": 2,
+              "no_pressure": 16,
+              "very_high_pressure": 0
+            },
+            "n": 23
+          },
+          "lateral/middle/short": {
+            "by_level": {
+              "high_pressure": 3,
+              "low_pressure": 13,
+              "medium_pressure": 12,
+              "no_pressure": 14,
+              "very_high_pressure": 1
+            },
+            "n": 43
+          },
+          "lateral/own/long": {
+            "by_level": {
+              "high_pressure": 0,
+              "low_pressure": 2,
+              "medium_pressure": 4,
+              "no_pressure": 10,
+              "very_high_pressure": 0
+            },
+            "n": 16
+          },
+          "lateral/own/short": {
+            "by_level": {
+              "high_pressure": 5,
+              "low_pressure": 1,
+              "medium_pressure": 7,
+              "no_pressure": 3,
+              "very_high_pressure": 1
+            },
+            "n": 17
+          }
+        },
+        "undefined": 0
+      },
+      "receptions": {
+        "carrier_detected": 0.997368,
+        "labelled": 760,
+        "left_out": 0,
+        "possessions": 863,
+        "scored": 760,
+        "unlabelled": 103
+      },
+      "sensitivity": {
+        "absent_fraction": 0.0,
+        "extrapolated_fraction": 0.014881,
+        "gap_len": {
+          "max": 251,
+          "median": 10.0,
+          "n": 20,
+          "p90": 206.4
+        },
+        "match_id": 2007448,
+        "n_skipped": 0,
+        "n_units": 760,
+        "player_frames": 1344,
+        "v0": {
+          "mean": 0.443232,
+          "n": 760
+        },
+        "v1": {
+          "mean": 0.426629,
+          "n": 740
+        },
+        "v2": [
+          {
+            "detected_players": 0,
+            "mean": 0.001198,
+            "n": 167
+          },
+          {
+            "detected_players": 1,
+            "mean": 0.266859,
+            "n": 231
+          },
+          {
+            "detected_players": 2,
+            "mean": 0.564903,
+            "n": 162
+          },
+          {
+            "detected_players": 3,
+            "mean": 0.721613,
+            "n": 107
+          },
+          {
+            "detected_players": 4,
+            "mean": 0.851233,
+            "n": 58
+          },
+          {
+            "detected_players": 5,
+            "mean": 1.271067,
+            "n": 18
+          },
+          {
+            "detected_players": 6,
+            "mean": 1.363293,
+            "n": 8
+          },
+          {
+            "detected_players": 7,
+            "mean": 1.206209,
+            "n": 3
+          },
+          {
+            "detected_players": 8,
+            "mean": 1.771568,
+            "n": 1
+          },
+          {
+            "detected_players": 9,
+            "mean": 3.351737,
+            "n": 2
+          },
+          {
+            "detected_players": 10,
+            "mean": 3.903642,
+            "n": 2
+          },
+          {
+            "detected_players": 11,
+            "mean": 3.22678,
+            "n": 1
+          }
+        ]
+      }
+    },
+    "2010085": {
+      "contrast": {
+        "evaluable": true,
+        "increasing": true,
+        "median": {
+          "high_pressure": 0.835627,
+          "low_pressure": 0.274867,
+          "medium_pressure": 0.5209,
+          "no_pressure": 0.0,
+          "very_high_pressure": 0.904095
+        },
+        "n": {
+          "high_pressure": 138,
+          "low_pressure": 185,
+          "medium_pressure": 197,
+          "no_pressure": 295,
+          "very_high_pressure": 29
+        }
+      },
+      "contrast_v1": {
+        "evaluable": true,
+        "increasing": true,
+        "median": {
+          "high_pressure": 0.833959,
+          "low_pressure": 0.278248,
+          "medium_pressure": 0.514952,
+          "no_pressure": 0.0,
+          "very_high_pressure": 0.916076
+        },
+        "n": {
+          "high_pressure": 130,
+          "low_pressure": 181,
+          "medium_pressure": 189,
+          "no_pressure": 292,
+          "very_high_pressure": 26
+        }
+      },
+      "extrapolated_share": {
+        "by_level": {
+          "high_pressure": 0.012954,
+          "low_pressure": 0.008307,
+          "medium_pressure": 0.024219,
+          "no_pressure": 0.015334,
+          "very_high_pressure": 0.038954
+        },
+        "overall": 0.018055,
+        "receptions_with_any": 0.042208,
+        "receptions_with_near_rival": 616
+      },
+      "incoming_ball": {
+        "strata": {
+          "backward/final/long": {
+            "by_level": {
+              "high_pressure": 2,
+              "low_pressure": 13,
+              "medium_pressure": 2,
+              "no_pressure": 6,
+              "very_high_pressure": 0
+            },
+            "n": 23
+          },
+          "backward/final/short": {
+            "by_level": {
+              "high_pressure": 9,
+              "low_pressure": 14,
+              "medium_pressure": 14,
+              "no_pressure": 4,
+              "very_high_pressure": 0
+            },
+            "n": 41
+          },
+          "backward/middle/long": {
+            "by_level": {
+              "high_pressure": 3,
+              "low_pressure": 20,
+              "medium_pressure": 6,
+              "no_pressure": 87,
+              "very_high_pressure": 1
+            },
+            "n": 117
+          },
+          "backward/middle/short": {
+            "by_level": {
+              "high_pressure": 6,
+              "low_pressure": 24,
+              "medium_pressure": 15,
+              "no_pressure": 33,
+              "very_high_pressure": 2
+            },
+            "n": 80
+          },
+          "backward/own/long": {
+            "by_level": {
+              "high_pressure": 5,
+              "low_pressure": 13,
+              "medium_pressure": 10,
+              "no_pressure": 43,
+              "very_high_pressure": 1
+            },
+            "n": 72
+          },
+          "backward/own/short": {
+            "by_level": {
+              "high_pressure": 8,
+              "low_pressure": 7,
+              "medium_pressure": 14,
+              "no_pressure": 16,
+              "very_high_pressure": 4
+            },
+            "n": 49
+          },
+          "forward/final/long": {
+            "by_level": {
+              "high_pressure": 17,
+              "low_pressure": 7,
+              "medium_pressure": 28,
+              "no_pressure": 6,
+              "very_high_pressure": 5
+            },
+            "n": 63
+          },
+          "forward/final/short": {
+            "by_level": {
+              "high_pressure": 17,
+              "low_pressure": 9,
+              "medium_pressure": 10,
+              "no_pressure": 1,
+              "very_high_pressure": 2
+            },
+            "n": 39
+          },
+          "forward/middle/long": {
+            "by_level": {
+              "high_pressure": 8,
+              "low_pressure": 24,
+              "medium_pressure": 40,
+              "no_pressure": 21,
+              "very_high_pressure": 2
+            },
+            "n": 95
+          },
+          "forward/middle/short": {
+            "by_level": {
+              "high_pressure": 17,
+              "low_pressure": 13,
+              "medium_pressure": 16,
+              "no_pressure": 11,
+              "very_high_pressure": 4
+            },
+            "n": 61
+          },
+          "forward/own/long": {
+            "by_level": {
+              "high_pressure": 6,
+              "low_pressure": 4,
+              "medium_pressure": 9,
+              "no_pressure": 15,
+              "very_high_pressure": 0
+            },
+            "n": 34
+          },
+          "forward/own/short": {
+            "by_level": {
+              "high_pressure": 10,
+              "low_pressure": 2,
+              "medium_pressure": 9,
+              "no_pressure": 1,
+              "very_high_pressure": 3
+            },
+            "n": 25
+          },
+          "lateral/final/long": {
+            "by_level": {
+              "high_pressure": 2,
+              "low_pressure": 1,
+              "medium_pressure": 1,
+              "no_pressure": 2,
+              "very_high_pressure": 0
+            },
+            "n": 6
+          },
+          "lateral/final/short": {
+            "by_level": {
+              "high_pressure": 7,
+              "low_pressure": 7,
+              "medium_pressure": 6,
+              "no_pressure": 1,
+              "very_high_pressure": 3
+            },
+            "n": 24
+          },
+          "lateral/middle/long": {
+            "by_level": {
+              "high_pressure": 0,
+              "low_pressure": 10,
+              "medium_pressure": 1,
+              "no_pressure": 25,
+              "very_high_pressure": 0
+            },
+            "n": 36
+          },
+          "lateral/middle/short": {
+            "by_level": {
+              "high_pressure": 15,
+              "low_pressure": 7,
+              "medium_pressure": 8,
+              "no_pressure": 5,
+              "very_high_pressure": 0
+            },
+            "n": 35
+          },
+          "lateral/own/long": {
+            "by_level": {
+              "high_pressure": 0,
+              "low_pressure": 5,
+              "medium_pressure": 3,
+              "no_pressure": 16,
+              "very_high_pressure": 0
+            },
+            "n": 24
+          },
+          "lateral/own/short": {
+            "by_level": {
+              "high_pressure": 6,
+              "low_pressure": 5,
+              "medium_pressure": 5,
+              "no_pressure": 2,
+              "very_high_pressure": 2
+            },
+            "n": 20
+          }
+        },
+        "undefined": 0
+      },
+      "receptions": {
+        "carrier_detected": 0.994076,
+        "labelled": 844,
+        "left_out": 0,
+        "possessions": 935,
+        "scored": 844,
+        "unlabelled": 91
+      },
+      "sensitivity": {
+        "absent_fraction": 0.0,
+        "extrapolated_fraction": 0.021529,
+        "gap_len": {
+          "max": 96,
+          "median": 9.0,
+          "n": 29,
+          "p90": 44.8
+        },
+        "match_id": 2010085,
+        "n_skipped": 0,
+        "n_units": 844,
+        "player_frames": 1347,
+        "v0": {
+          "mean": 0.394662,
+          "n": 844
+        },
+        "v1": {
+          "mean": 0.381519,
+          "n": 818
+        },
+        "v2": [
+          {
+            "detected_players": 0,
+            "mean": 0.004054,
+            "n": 234
+          },
+          {
+            "detected_players": 1,
+            "mean": 0.262065,
+            "n": 226
+          },
+          {
+            "detected_players": 2,
+            "mean": 0.562534,
+            "n": 188
+          },
+          {
+            "detected_players": 3,
+            "mean": 0.724066,
+            "n": 113
+          },
+          {
+            "detected_players": 4,
+            "mean": 0.919155,
+            "n": 54
+          },
+          {
+            "detected_players": 5,
+            "mean": 1.034908,
+            "n": 18
+          },
+          {
+            "detected_players": 6,
+            "mean": 1.280558,
+            "n": 8
+          },
+          {
+            "detected_players": 7,
+            "mean": 2.034226,
+            "n": 1
+          },
+          {
+            "detected_players": 8,
+            "mean": 2.401131,
+            "n": 2
+          }
+        ]
+      }
+    },
+    "2011166": {
+      "contrast": {
+        "evaluable": true,
+        "increasing": true,
+        "median": {
+          "high_pressure": 0.852701,
+          "low_pressure": 0.255835,
+          "medium_pressure": 0.523156,
+          "no_pressure": 0.0,
+          "very_high_pressure": 0.993914
+        },
+        "n": {
+          "high_pressure": 213,
+          "low_pressure": 109,
+          "medium_pressure": 179,
+          "no_pressure": 110,
+          "very_high_pressure": 42
+        }
+      },
+      "contrast_v1": {
+        "evaluable": true,
+        "increasing": true,
+        "median": {
+          "high_pressure": 0.853609,
+          "low_pressure": 0.261342,
+          "medium_pressure": 0.521402,
+          "no_pressure": 0.0,
+          "very_high_pressure": 0.983647
+        },
+        "n": {
+          "high_pressure": 197,
+          "low_pressure": 106,
+          "medium_pressure": 165,
+          "no_pressure": 108,
+          "very_high_pressure": 36
+        }
+      },
+      "extrapolated_share": {
+        "by_level": {
+          "high_pressure": 0.028018,
+          "low_pressure": 0.002715,
+          "medium_pressure": 0.035552,
+          "no_pressure": 0.027638,
+          "very_high_pressure": 0.051802
+        },
+        "overall": 0.030356,
+        "receptions_with_any": 0.073477,
+        "receptions_with_near_rival": 558
+      },
+      "incoming_ball": {
+        "strata": {
+          "backward/final/long": {
+            "by_level": {
+              "high_pressure": 4,
+              "low_pressure": 8,
+              "medium_pressure": 9,
+              "no_pressure": 4,
+              "very_high_pressure": 1
+            },
+            "n": 26
+          },
+          "backward/final/short": {
+            "by_level": {
+              "high_pressure": 12,
+              "low_pressure": 7,
+              "medium_pressure": 16,
+              "no_pressure": 1,
+              "very_high_pressure": 3
+            },
+            "n": 39
+          },
+          "backward/middle/long": {
+            "by_level": {
+              "high_pressure": 1,
+              "low_pressure": 18,
+              "medium_pressure": 6,
+              "no_pressure": 27,
+              "very_high_pressure": 0
+            },
+            "n": 52
+          },
+          "backward/middle/short": {
+            "by_level": {
+              "high_pressure": 17,
+              "low_pressure": 9,
+              "medium_pressure": 15,
+              "no_pressure": 10,
+              "very_high_pressure": 5
+            },
+            "n": 56
+          },
+          "backward/own/long": {
+            "by_level": {
+              "high_pressure": 9,
+              "low_pressure": 10,
+              "medium_pressure": 8,
+              "no_pressure": 20,
+              "very_high_pressure": 2
+            },
+            "n": 49
+          },
+          "backward/own/short": {
+            "by_level": {
+              "high_pressure": 18,
+              "low_pressure": 3,
+              "medium_pressure": 14,
+              "no_pressure": 6,
+              "very_high_pressure": 2
+            },
+            "n": 43
+          },
+          "forward/final/long": {
+            "by_level": {
+              "high_pressure": 12,
+              "low_pressure": 4,
+              "medium_pressure": 18,
+              "no_pressure": 1,
+              "very_high_pressure": 6
+            },
+            "n": 41
+          },
+          "forward/final/short": {
+            "by_level": {
+              "high_pressure": 28,
+              "low_pressure": 5,
+              "medium_pressure": 12,
+              "no_pressure": 0,
+              "very_high_pressure": 6
+            },
+            "n": 51
+          },
+          "forward/middle/long": {
+            "by_level": {
+              "high_pressure": 18,
+              "low_pressure": 16,
+              "medium_pressure": 19,
+              "no_pressure": 8,
+              "very_high_pressure": 3
+            },
+            "n": 64
+          },
+          "forward/middle/short": {
+            "by_level": {
+              "high_pressure": 22,
+              "low_pressure": 8,
+              "medium_pressure": 17,
+              "no_pressure": 1,
+              "very_high_pressure": 4
+            },
+            "n": 52
+          },
+          "forward/own/long": {
+            "by_level": {
+              "high_pressure": 11,
+              "low_pressure": 4,
+              "medium_pressure": 12,
+              "no_pressure": 9,
+              "very_high_pressure": 1
+            },
+            "n": 37
+          },
+          "forward/own/short": {
+            "by_level": {
+              "high_pressure": 12,
+              "low_pressure": 2,
+              "medium_pressure": 3,
+              "no_pressure": 0,
+              "very_high_pressure": 1
+            },
+            "n": 18
+          },
+          "lateral/final/long": {
+            "by_level": {
+              "high_pressure": 1,
+              "low_pressure": 1,
+              "medium_pressure": 1,
+              "no_pressure": 1,
+              "very_high_pressure": 0
+            },
+            "n": 4
+          },
+          "lateral/final/short": {
+            "by_level": {
+              "high_pressure": 13,
+              "low_pressure": 2,
+              "medium_pressure": 11,
+              "no_pressure": 0,
+              "very_high_pressure": 4
+            },
+            "n": 30
+          },
+          "lateral/middle/long": {
+            "by_level": {
+              "high_pressure": 0,
+              "low_pressure": 3,
+              "medium_pressure": 0,
+              "no_pressure": 10,
+              "very_high_pressure": 0
+            },
+            "n": 13
+          },
+          "lateral/middle/short": {
+            "by_level": {
+              "high_pressure": 18,
+              "low_pressure": 4,
+              "medium_pressure": 14,
+              "no_pressure": 3,
+              "very_high_pressure": 2
+            },
+            "n": 41
+          },
+          "lateral/own/long": {
+            "by_level": {
+              "high_pressure": 0,
+              "low_pressure": 4,
+              "medium_pressure": 2,
+              "no_pressure": 6,
+              "very_high_pressure": 0
+            },
+            "n": 12
+          },
+          "lateral/own/short": {
+            "by_level": {
+              "high_pressure": 17,
+              "low_pressure": 1,
+              "medium_pressure": 0,
+              "no_pressure": 2,
+              "very_high_pressure": 2
+            },
+            "n": 22
+          }
+        },
+        "undefined": 3
+      },
+      "receptions": {
+        "carrier_detected": 0.980092,
+        "labelled": 653,
+        "left_out": 0,
+        "possessions": 757,
+        "scored": 653,
+        "unlabelled": 104
+      },
+      "sensitivity": {
+        "absent_fraction": 0.0,
+        "extrapolated_fraction": 0.031944,
+        "gap_len": {
+          "max": 133,
+          "median": 7.5,
+          "n": 46,
+          "p90": 68.5
+        },
+        "match_id": 2011166,
+        "n_skipped": 0,
+        "n_units": 653,
+        "player_frames": 1440,
+        "v0": {
+          "mean": 0.558807,
+          "n": 653
+        },
+        "v1": {
+          "mean": 0.549668,
+          "n": 612
+        },
+        "v2": [
+          {
+            "detected_players": 0,
+            "mean": 0.030246,
+            "n": 103
+          },
+          {
+            "detected_players": 1,
+            "mean": 0.294459,
+            "n": 174
+          },
+          {
+            "detected_players": 2,
+            "mean": 0.591433,
+            "n": 121
+          },
+          {
+            "detected_players": 3,
+            "mean": 0.764509,
+            "n": 117
+          },
+          {
+            "detected_players": 4,
+            "mean": 1.023362,
+            "n": 83
+          },
+          {
+            "detected_players": 5,
+            "mean": 1.049784,
+            "n": 41
+          },
+          {
+            "detected_players": 6,
+            "mean": 1.512629,
+            "n": 9
+          },
+          {
+            "detected_players": 7,
+            "mean": 1.481476,
+            "n": 4
+          },
+          {
+            "detected_players": 8,
+            "mean": 2.018973,
+            "n": 1
+          }
+        ]
+      }
+    },
+    "2015213": {
+      "contrast": {
+        "evaluable": true,
+        "increasing": true,
+        "median": {
+          "high_pressure": 0.729606,
+          "low_pressure": 0.271857,
+          "medium_pressure": 0.488281,
+          "no_pressure": 0.0,
+          "very_high_pressure": 0.816408
+        },
+        "n": {
+          "high_pressure": 160,
+          "low_pressure": 165,
+          "medium_pressure": 215,
+          "no_pressure": 182,
+          "very_high_pressure": 31
+        }
+      },
+      "contrast_v1": {
+        "evaluable": true,
+        "increasing": true,
+        "median": {
+          "high_pressure": 0.713405,
+          "low_pressure": 0.258154,
+          "medium_pressure": 0.47081,
+          "no_pressure": 0.0,
+          "very_high_pressure": 0.774025
+        },
+        "n": {
+          "high_pressure": 133,
+          "low_pressure": 159,
+          "medium_pressure": 203,
+          "no_pressure": 180,
+          "very_high_pressure": 23
+        }
+      },
+      "extrapolated_share": {
+        "by_level": {
+          "high_pressure": 0.05445,
+          "low_pressure": 0.038413,
+          "medium_pressure": 0.033751,
+          "no_pressure": 0.033161,
+          "very_high_pressure": 0.115321
+        },
+        "overall": 0.049712,
+        "receptions_with_any": 0.092905,
+        "receptions_with_near_rival": 592
+      },
+      "incoming_ball": {
+        "strata": {
+          "backward/final/long": {
+            "by_level": {
+              "high_pressure": 1,
+              "low_pressure": 2,
+              "medium_pressure": 5,
+              "no_pressure": 0,
+              "very_high_pressure": 0
+            },
+            "n": 8
+          },
+          "backward/final/short": {
+            "by_level": {
+              "high_pressure": 3,
+              "low_pressure": 3,
+              "medium_pressure": 14,
+              "no_pressure": 0,
+              "very_high_pressure": 0
+            },
+            "n": 20
+          },
+          "backward/middle/long": {
+            "by_level": {
+              "high_pressure": 0,
+              "low_pressure": 13,
+              "medium_pressure": 7,
+              "no_pressure": 48,
+              "very_high_pressure": 1
+            },
+            "n": 69
+          },
+          "backward/middle/short": {
+            "by_level": {
+              "high_pressure": 20,
+              "low_pressure": 24,
+              "medium_pressure": 25,
+              "no_pressure": 17,
+              "very_high_pressure": 3
+            },
+            "n": 89
+          },
+          "backward/own/long": {
+            "by_level": {
+              "high_pressure": 5,
+              "low_pressure": 30,
+              "medium_pressure": 14,
+              "no_pressure": 44,
+              "very_high_pressure": 2
+            },
+            "n": 95
+          },
+          "backward/own/short": {
+            "by_level": {
+              "high_pressure": 14,
+              "low_pressure": 12,
+              "medium_pressure": 13,
+              "no_pressure": 11,
+              "very_high_pressure": 0
+            },
+            "n": 50
+          },
+          "forward/final/long": {
+            "by_level": {
+              "high_pressure": 5,
+              "low_pressure": 3,
+              "medium_pressure": 22,
+              "no_pressure": 0,
+              "very_high_pressure": 3
+            },
+            "n": 33
+          },
+          "forward/final/short": {
+            "by_level": {
+              "high_pressure": 19,
+              "low_pressure": 4,
+              "medium_pressure": 3,
+              "no_pressure": 0,
+              "very_high_pressure": 7
+            },
+            "n": 33
+          },
+          "forward/middle/long": {
+            "by_level": {
+              "high_pressure": 26,
+              "low_pressure": 22,
+              "medium_pressure": 23,
+              "no_pressure": 8,
+              "very_high_pressure": 5
+            },
+            "n": 84
+          },
+          "forward/middle/short": {
+            "by_level": {
+              "high_pressure": 20,
+              "low_pressure": 11,
+              "medium_pressure": 27,
+              "no_pressure": 4,
+              "very_high_pressure": 7
+            },
+            "n": 69
+          },
+          "forward/own/long": {
+            "by_level": {
+              "high_pressure": 7,
+              "low_pressure": 9,
+              "medium_pressure": 20,
+              "no_pressure": 14,
+              "very_high_pressure": 0
+            },
+            "n": 50
+          },
+          "forward/own/short": {
+            "by_level": {
+              "high_pressure": 6,
+              "low_pressure": 3,
+              "medium_pressure": 5,
+              "no_pressure": 2,
+              "very_high_pressure": 0
+            },
+            "n": 16
+          },
+          "lateral/final/long": {
+            "by_level": {
+              "high_pressure": 2,
+              "low_pressure": 2,
+              "medium_pressure": 0,
+              "no_pressure": 0,
+              "very_high_pressure": 0
+            },
+            "n": 4
+          },
+          "lateral/final/short": {
+            "by_level": {
+              "high_pressure": 7,
+              "low_pressure": 0,
+              "medium_pressure": 5,
+              "no_pressure": 0,
+              "very_high_pressure": 2
+            },
+            "n": 14
+          },
+          "lateral/middle/long": {
+            "by_level": {
+              "high_pressure": 0,
+              "low_pressure": 3,
+              "medium_pressure": 1,
+              "no_pressure": 9,
+              "very_high_pressure": 0
+            },
+            "n": 13
+          },
+          "lateral/middle/short": {
+            "by_level": {
+              "high_pressure": 17,
+              "low_pressure": 8,
+              "medium_pressure": 18,
+              "no_pressure": 8,
+              "very_high_pressure": 1
+            },
+            "n": 52
+          },
+          "lateral/own/long": {
+            "by_level": {
+              "high_pressure": 0,
+              "low_pressure": 9,
+              "medium_pressure": 4,
+              "no_pressure": 15,
+              "very_high_pressure": 0
+            },
+            "n": 28
+          },
+          "lateral/own/short": {
+            "by_level": {
+              "high_pressure": 8,
+              "low_pressure": 7,
+              "medium_pressure": 9,
+              "no_pressure": 2,
+              "very_high_pressure": 0
+            },
+            "n": 26
+          }
+        },
+        "undefined": 0
+      },
+      "receptions": {
+        "carrier_detected": 0.976096,
+        "labelled": 753,
+        "left_out": 0,
+        "possessions": 883,
+        "scored": 753,
+        "unlabelled": 130
+      },
+      "sensitivity": {
+        "absent_fraction": 0.0,
+        "extrapolated_fraction": 0.045756,
+        "gap_len": {
+          "max": 238,
+          "median": 8.5,
+          "n": 62,
+          "p90": 163.6
+        },
+        "match_id": 2015213,
+        "n_skipped": 0,
+        "n_units": 753,
+        "player_frames": 1355,
+        "v0": {
+          "mean": 0.425078,
+          "n": 753
+        },
+        "v1": {
+          "mean": 0.397378,
+          "n": 698
+        },
+        "v2": [
+          {
+            "detected_players": 0,
+            "mean": 0.018922,
+            "n": 169
+          },
+          {
+            "detected_players": 1,
+            "mean": 0.261422,
+            "n": 217
+          },
+          {
+            "detected_players": 2,
+            "mean": 0.5591,
+            "n": 158
+          },
+          {
+            "detected_players": 3,
+            "mean": 0.694794,
+            "n": 115
+          },
+          {
+            "detected_players": 4,
+            "mean": 0.881302,
+            "n": 62
+          },
+          {
+            "detected_players": 5,
+            "mean": 1.145142,
+            "n": 27
+          },
+          {
+            "detected_players": 6,
+            "mean": 1.168653,
+            "n": 4
+          },
+          {
+            "detected_players": 8,
+            "mean": 1.684317,
+            "n": 1
+          }
+        ]
+      }
+    }
+  },
+  "verdict": {
+    "c1_survives_probe": true,
+    "complete": true,
+    "matches_increasing": 10,
+    "min_matches": 9,
+    "min_per_level": 10,
+    "n_matches": 10,
+    "per_match": {
+      "1874553": true,
+      "1886347": true,
+      "1925299": true,
+      "1959846": true,
+      "1996435": true,
+      "1996436": true,
+      "2007448": true,
+      "2010085": true,
+      "2011166": true,
+      "2015213": true
+    },
+    "rule": "median index strictly increasing over the five levels of overall_pressure_start, at least min_per_level receptions in each level, in at least min_matches of the calibration matches; otherwise C1 dies in the probe"
+  }
+}

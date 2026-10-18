@@ -341,13 +341,31 @@ y lo que no se abrió. La figura 2 enseña la muerte. Si en CP1 mueren las tres,
   importación (43) dejó fuera semillas, `silver/schema.yml`, `sources/{football,common}.yml` y la macro
   `test_unique_combination`, que silver usa: se rehízo el commit, sin publicar, con los 6 (`quality/` no). `pipeline/` va excluido del gate (ruff
   `extend-exclude`) hasta cerrar la tarea 5: quitar esa exclusión entonces (también anotado en el README de la base).
-- [ ] 3. `sonnet` `[base]` Ingesta: manifiesto recortado a `opendata-football` (85 ficheros,
+- [x] 3. `sonnet` `[base]` Ingesta: manifiesto recortado a `opendata-football` (85 ficheros,
   commit `4340d27`), `fetch` sin HuggingFace ni `freeze`, `verify`, `lfs`, `manifest`, `local`
   (`--from-existing`) y `--match <id>` (los 4 ficheros de un partido más `matches.json`; nuevo,
   etiquetado así). Cabecera en cada fichero copiado: origen en tracklab, commit, cambios; renombrar
   `TRACKLAB_DATA_ROOT`, `User-Agent` y metadatos `tracklab.*`. Aceptación: `ftbase ingest` verifica
   los 85 (`failed: 0`); `--match 1874553` verifica 5 y dice `PARTIAL 5/85`; tests copiados de
   `test_ingest.py` sin baloncesto; mutación anotada (un sha256 cambiado tiene que fallar).
+  Medido: commits en `football-tracking-base` `4662782` (solo mueve con `git mv`, 0 cambios de contenido), `ad7ecfe`
+  (manifiesto recortado a 85 ficheros, 322 líneas borradas y ninguna añadida, commit `4340d27`), `6de90a8` (adaptación) y
+  `c3b1a49` (tests, procedencia, README); `uv add httpx` (0.28.1), sin más dependencias. `ftbase ingest --from-existing`
+  contra `tracklab/pipeline/data/raw/opendata-football` (lectura: `ingest_local` solo hashea; el recibo va a `data/` de
+  la base; el `_receipt.json` de tracklab conserva su fecha del 15 oct): `downloaded=0 verified=85 failed=0`, exit 0, 3,7 s.
+  `ftbase ingest --match 1874553` con descarga real a un `data-dir` en el scratchpad: `downloaded=5 verified=5 failed=0
+  PARTIAL 5/85`, 95.624.493 B (tracking 90.729.279), 5,0 s. Mutación: un sha256 del manifiesto cambiado (el primer
+  agregado) da `verified=84 failed=1`, exit 1; restaurado, 85 y exit 0. Mutaciones de código (cada una rompe un test):
+  `verify_file` sin comparar hash, `select_match` sin `matches.json`, descarga sin comprobar hash, `ingest_local` que da
+  todo por bueno, sin `PARTIAL`. Gate en verde (`sync --locked`, ruff, format, `mypy --strict src`, `pytest -q`: 21
+  tests, 0 saltados); `git ls-files --eol` todo `i/lf`. Procedencia: 46 `copiado`, 4 `reescrito` (`fetch.py`, `local.py`,
+  `test_ingest.py`, `cli.py`), 1 `nuevo` (`select.py`). Desviaciones: sin argumento `source_id` en `ftbase ingest` (una
+  sola fuente); `--match` toca `fetch.py` y `local.py` (de ahí `reescrito`) y el recibo gana `match_id` y `manifest_files`;
+  manifiesto empaquetado en `src/ftbase/manifest/sources.json` (entra en el wheel, comprobado) en vez de `pipeline/manifest`;
+  JSON sin cabecera, su origen consta en `docs/provenance.md`; añadidas filas de `select.py` y `cli.py` a la tabla;
+  `lfs.py` conserva `parse_pointer` aunque `src` ya no lo llama (solo los tests); `test_ingest.py` mantiene sus tests de
+  descarga y añade 8 de `--match` y `--from-existing`; el intermedio `4662782` no pasa ruff ni mypy (imports aún de
+  tracklab); `pipeline/` sigue excluido del gate hasta la tarea 5; los metadatos `tracklab.*` viven en bronze (tarea 4).
 - [ ] 4. `sonnet` `[base]` Bronze: `common`, `tracking`, `events`, `meta`, `csvschema` y los dos
   esquemas JSON. Aceptación: `ftbase bronze` produce las tablas de fútbol con los mismos recuentos
   que tracklab (94.361 filas de eventos; tracking por partido igual) y las cabeceras congeladas

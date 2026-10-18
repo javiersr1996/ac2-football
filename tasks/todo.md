@@ -568,11 +568,32 @@ y lo que no se abrió. La figura 2 enseña la muerte. Si en CP1 mueren las tres,
   Fallos de la base: ninguno. Desviaciones: el aviso de GitHub sobre `ubuntu-latest` migrando a Ubuntu 26 el 19 oct no
   afecta; `README.md` provisional creado (no existía) con la instalación y `uv run --with-editable ../football-tracking-base`;
   la mutación del `path` se hizo sin tocar el lock (`--frozen`), no se probó `--with-editable` en ejecución.
-- [ ] 9. `sonnet` `[entrada]` Build completo de los 20 partidos con el CLI de la base y
+- [x] 9. `sonnet` `[entrada]` Build completo de los 20 partidos con el CLI de la base y
   `scripts/clean_clone_check.sh` con dos bloques (el rápido de un partido y el completo), cada uno
   el bloque literal de un README provisional, 5 comandos como máximo (la base se instala desde
   GitHub: el clon no ve la carpeta hermana), en un `mktemp -d`, recibo sin fallos, árbol sin
   cambios. Aceptación: `CLEAN CLONE OK in N s` para los dos en local; tiempo, bytes y RAM anotados.
+  Medido: commit `655bb06` en `ac2-football` (README con los dos bloques entre marcadores `clean-clone:<modo>:start/end` y
+  `scripts/clean_clone_check.sh <quick|full>`), CI en verde (run 39128404085). El script extrae el bloque del README, lo
+  ejecuta en un `mktemp -d` (respeta `TMPDIR`), comprueba recibo (`failed: []`, `verified` 5 con `match_id` y 85 de manifiesto,
+  o 85 sin `match_id`), un Parquet de silver por partido (1 o 20) y `git status --porcelain` vacío, e imprime `CLEAN CLONE OK in N s`.
+  Mientras el repo sea privado, `AC2_REPO=<ruta local>` sustituye solo la URL del `git clone` (clona el estado confirmado, así
+  que hay que hacer commit antes) y lo dice en la salida. Local, con descarga real y una vez cada uno: **`CLEAN CLONE OK in 29 s`**
+  (rápido: `downloaded=5 verified=5 failed=0 PARTIAL 5/85`, 95.624.493 B, 64 de 64 comprobaciones de silver) y **`CLEAN CLONE OK
+  in 335 s`** (completo: `downloaded=85 verified=85 failed=0`, 1.919.842.163 B sumando los 85 `downloaded:` del log; bronze
+  166,2 s, silver 53,4 s, 64 de 64). RAM: pico por muestreo cada 0,2 s con `psutil` de los procesos python/uv/ftbase bajo el
+  directorio temporal (script en el scratchpad, no en el repo): rápido 447.004.672 B de suma y 405.614.592 B de un proceso;
+  completo 1.844.088.832 B de suma y 1.802.645.504 B de un proceso (silver ya midió 1,8 GB en la 5).
+  Los temporales se borran al salir (`trap`); no quedó nada en el directorio temporal. Mutaciones: id de partido inexistente
+  (9999999) en una copia del README: `ftbase: unknown match 9999999`, exit 1, sin `OK`; un `echo junk > stray.txt` añadido al
+  bloque: `FAIL: the clone is not clean: ?? stray.txt`, exit 1, sin `OK`. Gate local en verde (`sync --locked`, ruff, format,
+  `mypy src`, `pytest -q`: 7 pasan); `README.md` y el script `i/lf`. Fallos de la base: ninguno. Desviaciones: el `TMPDIR` del
+  scratchpad (266 caracteres en el peor fichero) supera el MAX_PATH de 260 de Windows y silver falla con `ftbase: 2`
+  (`FileNotFoundError` sobre `assert_football_possessions_do_not_overlap.sql`, que existe), así que se usó
+  `C:\Users\javie\AppData\Local\Temp\cc`; no es un fallo de la base, pero un juez en Windows con una ruta larga lo vería (para
+  el README final); el rápido bajó 95,6 MB cuatro veces (un intento con el `TMPDIR` largo, uno bueno, dos mutaciones) y el
+  completo una; los bloques usan `uv run ftbase ...` con el `--data-dir` por defecto (`data/` del clon, ignorado); los bytes
+  salen de la línea `match ...: 5 files, N bytes` (rápido) y del log (completo), el recibo no los guarda.
 - [ ] 10. `haiku` `[entrada]` kloppy: con la versión fijada, cargar el sintético de la base y ver si
   `is_detected` sobrevive; si no, borrador de un issue (no se publica: es de Javier).
 

@@ -475,7 +475,7 @@ y lo que no se abrió. La figura 2 enseña la muerte. Si en CP1 mueren las tres,
   también en local; `ci.yml` no está en la tabla de procedencia (va en la prosa); aviso de GitHub: `ubuntu-latest` pasa a Ubuntu 26
   desde el 19 oct 2026. Para la 8 y la 12: `write_synthetic_match(dir)` da `bundle/` y `manifest.json`, con `PlantedRun(player_id,
   period, start_frame, length)` como verdad de `gap_len`.
-- [ ] 7. `haiku` `[base]` Procedencia y tag: completar `docs/provenance.md` (fichero, ruta y commit
+- [x] 7. `haiku` `[base]` Procedencia y tag: completar `docs/provenance.md` (fichero, ruta y commit
   en tracklab, estado `copiado`/`reescrito`/`nuevo`, líneas copiadas, líneas cambiadas) y `ftbase
   provenance` que imprime y escribe `reports/provenance.json` (líneas por estado). Tag `v0.1.0`
   en el commit que pasa el gate. Aceptación: el recuento del JSON coincide con `wc -l`; test que
@@ -525,6 +525,21 @@ y lo que no se abrió. La figura 2 enseña la muerte. Si en CP1 mueren las tres,
   `frame_possession.sql` (`b07511e`). (6) Cifras medidas en tracklab fuera de comentarios y docstrings de `src/`, solo queda la
   explicación cualitativa (`94d7ce7`). (7) `provenance.json` y tabla regenerados con `--tracklab` (`dbf3fa0`, `f963684`). Gate
   local en verde (125 pasan, 22 `realdata` pasan). CI en verde: https://github.com/javiersr1996/football-tracking-base/actions/runs/39125630235
+  Historia reescrita (2026-10-18, decisiones de Javier: copia literal con baloncesto, cifra previa
+  retirada, correo noreply): `git-filter-repo` con autor y committer a noreply, la frase del README a
+  "extrapolated", dos mensajes neutros y, en la importación, retirados los comentarios con mediciones
+  de tracklab de `frames.sql` (6 líneas por 2) y una frase de `schema.yml`: 47 de 49 ficheros idénticos
+  por hash, declarado en `docs/provenance.md`. El repo viejo (con `refs/pull/1/head`, que no se borra)
+  quedó privado como `football-tracking-base-old`; **los shas de la base citados de la tarea 2 a la
+  revisión 2 son de esa historia vieja.** Mapa: importación `a3ae656` → `ed43731`, esqueleto `13b6aa8` →
+  `0f74d2e`, arreglos de la revisión 2 → `c1f44ca..c8a398a`. `ac2-football` también a noreply (push
+  forzado al repo privado, árbol idéntico). Revisión adversarial 3: nada alto ni medio; dos bajos
+  arreglados (`fetch-depth: 0` para que la CI recuente la procedencia; texto de la regla de
+  reutilización), uno aceptado (9 menciones a tareas del plan en commits viejos, sin la Cup ni la entrada).
+  **Tag `v0.1.0` en `53080bc`, CI verde
+  (https://github.com/javiersr1996/football-tracking-base/actions/runs/39127612460) y base pública desde
+  el 2026-10-18; clon anónimo comprobado.** Procedencia en el tag: 63 ficheros, 10.562 líneas (6.730
+  copiadas, 3.832 cambiadas).
 - [ ] 8. `sonnet` `[entrada]` Dependencia fijada: `git rm -r src/ac2fb/base/`; `ftbase` en
   `dependencies` con `[tool.uv.sources] ftbase = { git = "<URL pública>", tag = "v0.1.0" }`; nunca
   una fuente `path`: para probar cambios de la base sin tag, `uv run --with-editable

@@ -393,6 +393,10 @@ FUNCTION_ROUTES: dict[str, Route] = {
         lambda m: served(m, power.load_c3(m).s3.match.player.size > 0)
     ),
     "ac2fb.defence.power.phase_runs": without_match(lambda: power.phase_runs([])),
+    "ac2fb.defence.power.phase_types_by_third": by_match(
+        lambda m: served(m, isinstance(power.phase_types_by_third(power.load_c3(m)), dict))
+    ),
+    "ac2fb.defence.power.window_overlap": without_match(lambda: power.window_overlap([])),
     "ac2fb.defence.power.phase_stratum": on_match(
         lambda mt: isinstance(power.phase_stratum(mt, a_phase(mt)), str)
     ),

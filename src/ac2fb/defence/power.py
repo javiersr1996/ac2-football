@@ -21,7 +21,13 @@ index). Strata: the 18 incoming-ball strata of probe S1. Team possession: the ba
 flag, and every period break). Statistic before ``t``: the ball's advance along the attack over
 ``[t - W, t]``. V1: every rival within 10 m of the carrier detected at ``t`` (probe S1's V1). The
 pre-trend within stratum (pressed minus free of that statistic, in sd, pooled as in probe S2) is
-reported per match: probe S1 did not measure it.
+reported per match: probe S1 did not measure it. Per variant, it is also pooled over every
+(match, stratum) cell with the bar's weights (the plan's D3 takes it "pooled by stratum"), with
+the effect D3 lets through: D3 kills when ``|pre-trend| >= D3_RATIO |effect|``, so the effect
+must exceed ``|pre-trend| / D3_RATIO``; and with the count of matches over probe S2's bar for
+a pre-trend, which C1's probe did not have. Per match, :func:`window_overlap` counts the units
+whose instant falls in the outcome window of the unit before (design, not outcome: instants
+only).
 
 **C3** (phases of probe S3 whose block is measured at ``frame_start`` under the definition probe
 S3 chose, :data:`C3_DEFINITION`). The plan does not fix C3's contrast; for the power it is the
@@ -35,6 +41,14 @@ possession inside a period. Statistic before ``t``: the same block measured at `
 pre-trend is computed for C3: its outcome is a level at ``t``, and the level at ``t - W`` is
 nearly the outcome itself.
 
+The low and the high block never share a third of the ball (:func:`phase_types_by_third`
+counts the phase types by third), so inside the strata that contrast has no cell by
+construction. :data:`C3_CONTIGUOUS` adds the two contrasts of neighbouring blocks that do share
+one, each restricted to its third (the deeper block first): low against medium with the ball in
+the middle third, medium against high with the ball in the own third of the team in
+possession. Same strata, bar, correlation and null as the low against high contrast. Which
+contrast C3 would use is CP1's choice; this module only gives each one's power.
+
 **The correlation and the null.** Per match and variant,
 :func:`ac2fb.defence.bar.within_possession_correlation` of the statistic before ``t`` over every
 unit with it (for C3 every phase type, not only the two of the contrast). The noise of a match
@@ -46,7 +60,8 @@ twenty estimates, which noise alone pushes over the threshold.
 
 **The rule of CP1** (the plan's, applied in :func:`cp1_rule`): C2 first if it survived S2 and its
 MDE80 in V1 is at most :data:`MDE_LIMIT`; otherwise C1 if alive; C3 only as a backup; none alive,
-branch B. It recommends; CP1 decides.
+branch B. It recommends; CP1 decides. ``testable_v0`` lists every design simulated within the
+strata (C1, and each contrast and outcome of C3).
 """
 
 from __future__ import annotations
@@ -61,7 +76,7 @@ import numpy as np
 import pyarrow as pa
 import pyarrow.compute as pc
 
-from ac2fb.defence import bar, line, pressure, probe_s1, probe_s3
+from ac2fb.defence import bar, line, pressure, probe_s1, probe_s2, probe_s3
 from ac2fb.defence.block import DEFINITIONS, Block, Definition, measure, name_of
 from ac2fb.defence.pressure import INCOMING_WINDOW as W
 from ac2fb.defence.pressure import Reception
@@ -72,8 +87,10 @@ from ac2fb.reliability.report import render_report
 from ac2fb.reliability.visibility import goalkeepers
 
 __all__ = [
+    "C3_CONTIGUOUS",
     "C3_CONTRAST",
     "C3_DEFINITION",
+    "D3_RATIO",
     "MDE_LIMIT",
     "MIN_RHO_PAIRS",
     "REPORT_NAME",
@@ -93,10 +110,12 @@ __all__ = [
     "load_c3",
     "phase_runs",
     "phase_stratum",
+    "phase_types_by_third",
     "possessions_from",
     "power_report",
     "pressed_at",
     "probe_verdicts",
+    "window_overlap",
     "write_power_report",
 ]
 
@@ -107,6 +126,13 @@ MIN_RHO_PAIRS = 30  # pairs a V1 correlation needs before the noise may take it
 MDE_LIMIT = 0.3  # sd: the plan's testability limit (D2, and CP1's rule for C2)
 C3_DEFINITION = "with_gk_extremes_listed"  # chosen_definition of reports/probe_s3.json
 C3_CONTRAST: tuple[str, str] = ("low_block", "high_block")  # the pressed group first
+# Neighbouring blocks that share a third of the ball: (deeper, higher, third of the ball).
+C3_CONTIGUOUS: dict[str, tuple[str, str, str]] = {
+    "low_vs_medium_in_middle": ("low_block", "medium_block", "middle"),
+    "medium_vs_high_in_own": ("medium_block", "high_block", "own"),
+}
+D3_RATIO = 0.5  # D3: |pre-trend| >= D3_RATIO |effect| in V0, pooled by stratum, kills
+_THIRDS = ("own", "middle", "final", "undefined")
 _PROBES = {"C1": "probe_s1.json", "C2": "probe_s2.json", "C3": "probe_s3.json"}
 
 
@@ -223,6 +249,48 @@ def phase_runs(phases: Sequence[Phase]) -> dict[int, str]:
     return runs
 
 
+def phase_types_by_third(inputs: C3Inputs) -> dict[str, dict[str, int]]:
+    """Every phase of a match by its out-of-possession type and the third of the ball at its start.
+
+    The third is the one of :func:`phase_stratum` (along the attack of the team in possession);
+    a phase without a type counts as ``none``. Instants and labels only: no block is measured.
+    """
+    counts: dict[str, dict[str, int]] = {}
+    for phase in inputs.s3.phases:
+        stratum = phase_stratum(inputs.s3.match, phase)
+        third = "undefined" if stratum == "undefined" else stratum.split("/")[1]
+        kind = inputs.types.get(phase.index) or "none"
+        counts.setdefault(kind, dict.fromkeys(_THIRDS, 0))[third] += 1
+    return dict(sorted(counts.items()))
+
+
+def window_overlap(receptions: Sequence[Reception]) -> dict[str, float | int | None]:
+    """How often a unit's instant falls close after the instant of the unit before it.
+
+    The units are sorted by period and frame; ``g`` is the frames from the unit before in the
+    same period (the first of a period has none). ``within_w`` counts the units with
+    ``g <= W``: their instant ``t``, so their cause and the end of their window before, lies in
+    ``(t_prev, t_prev + W]``, the outcome window of the unit before. ``within_2w`` counts those
+    with ``g <= 2 W``: their window before, ``[t - W, t]``, meets that outcome window.
+    ``*_same_team``: and the unit before is of the same team. Shares are over every unit.
+    """
+    ordered = sorted(receptions, key=lambda r: (r.period, r.frame))
+    counts = dict.fromkeys(
+        ("within_w", "within_w_same_team", "within_2w", "within_2w_same_team"), 0
+    )
+    for before, after in zip(ordered, ordered[1:], strict=False):
+        if before.period != after.period:
+            continue
+        gap = after.frame - before.frame
+        for key, limit in (("within_w", W), ("within_2w", 2 * W)):
+            if gap <= limit:
+                counts[key] += 1
+                counts[f"{key}_same_team"] += before.team == after.team
+    n = len(ordered)
+    shares = {f"{k}_share": (c / n if n else None) for k, c in counts.items()}
+    return {"units": n, **counts, **shares}
+
+
 # --- the units ---------------------------------------------------------------------------------
 
 
@@ -265,14 +333,24 @@ def _definition() -> Definition:
     return next(d for d in DEFINITIONS if name_of(d) == C3_DEFINITION)
 
 
-def c3_units(inputs: C3Inputs, outcome: str, stratified: bool) -> list[Unit]:
+def c3_units(
+    inputs: C3Inputs,
+    outcome: str,
+    stratified: bool,
+    contrast: tuple[str, str] = C3_CONTRAST,
+    third: str | None = None,
+) -> list[Unit]:
     """The units of C3 for one outcome (``width`` or ``length``) in one match.
 
     Every phase whose block is measured at its start, of any type (``group`` is ``None`` outside
-    :data:`C3_CONTRAST`); with ``stratified`` false every phase is in one stratum, ``all``.
+    ``contrast``, whose first type is the cause group, and outside ``third`` when one is given:
+    the third of the ball in the stratum); with ``stratified`` false every phase is in one
+    stratum, ``all``, and no third can be asked for.
     """
     if outcome not in ("width", "length"):
         raise ValueError(f"unknown outcome {outcome!r}")
+    if third is not None and not stratified:
+        raise ValueError("a third of the ball needs the incoming-ball strata")
     match = inputs.s3.match
     keepers = goalkeepers(match)
     definition = _definition()
@@ -287,7 +365,9 @@ def c3_units(inputs: C3Inputs, outcome: str, stratified: bool) -> list[Unit]:
         if stratum == "undefined":
             continue
         kind = inputs.types.get(phase.index)
-        group = True if kind == C3_CONTRAST[0] else False if kind == C3_CONTRAST[1] else None
+        group = True if kind == contrast[0] else False if kind == contrast[1] else None
+        if third is not None and stratum.split("/")[1] != third:
+            group = None
         rows = players_at(match, phase.frame)
         detected = dict(
             zip(match.player[rows].tolist(), match.detected[rows].tolist(), strict=True)
@@ -371,6 +451,41 @@ def _pretrend(units: Sequence[Unit], variant: str) -> float | None:
     return None if sd is None else float(sd)  # type: ignore[arg-type]
 
 
+def _pretrend_pooled(
+    units: Mapping[int, Sequence[Unit]], variant: str, mde80: float | None
+) -> dict[str, object]:
+    """The pre-trend pooled over every (match, stratum) cell, D3's floor and probe S2's bar.
+
+    D3 kills when ``|pre-trend| >= D3_RATIO |effect|``: the effect must exceed, in absolute
+    value, ``|pre-trend| / D3_RATIO``. Probe S2's bar: more than ``MAX_OVER`` matches with a
+    pre-trend over ``MAX_PRETREND_SD`` in absolute value.
+    """
+    pick = [
+        (m, u) for m in units for u in units[m] if u.group is not None and (variant == "V0" or u.v1)
+    ]
+    sd = line.within_strata(
+        [float(u.pre) for _, u in pick],  # type: ignore[arg-type]
+        [bool(u.group) for _, u in pick],
+        [f"{m}/{u.stratum}" for m, u in pick],
+        bar.MIN_CELL,
+    )["sd"]
+    pooled = None if sd is None else float(sd)  # type: ignore[arg-type]
+    by_match = [_pretrend(units[m], variant) for m in units]
+    over = sum(p is not None and abs(p) > probe_s2.MAX_PRETREND_SD for p in by_match)
+    floor = None if pooled is None else abs(pooled) / D3_RATIO
+    return {
+        "pooled_sd": pooled,
+        "d3_abs_effect_must_exceed_sd": floor,
+        "d3_floor_over_mde80": None if floor is None or not mde80 else floor / mde80,
+        "s2_bar": {
+            "limit_sd": probe_s2.MAX_PRETREND_SD,
+            "matches_over": over,
+            "max_over": probe_s2.MAX_OVER,
+            "would_die": over > probe_s2.MAX_OVER,
+        },
+    }
+
+
 def candidate_power(
     units: Mapping[int, Sequence[Unit]],
     label: str,
@@ -432,6 +547,7 @@ def candidate_power(
             },
             "replicates": power.replicates,
             "seed": [SEED, zlib.crc32(f"{label}/{v}".encode())],
+            **({"pretrend": _pretrend_pooled(units, v, power.mde80)} if with_pretrend else {}),
         }
     return {"blocked": blocked, "rho_v0_pooled": pooled, "variants": variants}
 
@@ -455,7 +571,8 @@ def cp1_rule(alive: Mapping[str, bool], mde80_v0: Mapping[str, float | None]) ->
     """The plan's rule of CP1 on the verdicts and the V0 MDE80s: what goes first, and why.
 
     C2 never reaches here alive (its power is not written). ``mde80_v0`` holds the simulated
-    candidates; ``testable_v0`` says whether their V0 MDE80 is at most :data:`MDE_LIMIT`.
+    designs, keyed by candidate (and, for C3, by contrast and outcome); ``testable_v0`` says
+    whether their V0 MDE80 is at most :data:`MDE_LIMIT`. Which contrast C3 would use is CP1's.
     """
     if alive.get("C2"):
         raise NotImplementedError("C2 survived probe S2: its power is not written")
@@ -466,7 +583,8 @@ def cp1_rule(alive: Mapping[str, bool], mde80_v0: Mapping[str, float | None]) ->
         "testable_v0": {k: (v is not None and v <= MDE_LIMIT) for k, v in sorted(mde80_v0.items())},
         "rule": (
             "C2 first if it survived probe S2 and its V1 MDE80 is at most mde_limit; otherwise "
-            "C1 if alive; C3 only as a backup; none alive, branch B. CP1 decides."
+            "C1 if alive; C3 only as a backup; none alive, branch B. CP1 decides, also which "
+            "contrast C3 would use."
         ),
     }
 
@@ -481,13 +599,20 @@ def power_report(match_ids: Sequence[int], probes_dir: Path) -> dict[str, object
     counts: dict[str, object] = {}
     if alive["C1"]:
         c1: dict[int, list[Unit]] = {}
+        overlap: dict[str, object] = {}
         for m in match_ids:
-            c1[m], counts[str(m)] = c1_units(load_c1(m))
+            loaded = load_c1(m)
+            c1[m], counts[str(m)] = c1_units(loaded)
+            frames = {u.frame for u in c1[m]}  # one reception per frame (probe S1's load)
+            if len(frames) != len(c1[m]):
+                raise ValueError(f"two units of match {m} share a frame")
+            overlap[str(m)] = window_overlap([r for r in loaded.s1.receptions if r.frame in frames])
         result = candidate_power(c1, "C1/ball_advance/incoming_ball", with_pretrend=True)
         candidates["C1"] = {
             "outcomes": {"ball_advance": {"incoming_ball": result}},
             "probe_counts": counts,
             "status": "simulated",
+            "window_overlap": overlap,
         }
         mde["C1"] = result["variants"]["V0"]["mde80_sd"]  # type: ignore[index]
     else:
@@ -504,8 +629,36 @@ def power_report(match_ids: Sequence[int], probes_dir: Path) -> dict[str, object
                 strata: candidate_power(units, f"C3/{outcome}/{strata}", with_pretrend=False)
                 for strata, units in (("incoming_ball", stratified), ("none", every[outcome]))
             }
+            mde[f"C3/low_vs_high/{outcome}"] = outcomes[outcome]["incoming_ball"]["variants"][  # type: ignore[index]
+                "V0"
+            ]["mde80_sd"]
+        contiguous: dict[str, object] = {}
+        for name, (deeper, higher, third) in C3_CONTIGUOUS.items():
+            by_outcome: dict[str, object] = {}
+            for outcome in ("width", "length"):
+                units = {
+                    m: c3_units(i, outcome, True, contrast=(deeper, higher), third=third)
+                    for m, i in inputs.items()
+                }
+                by_outcome[outcome] = candidate_power(
+                    units, f"C3/{name}/{outcome}", with_pretrend=False
+                )
+                mde[f"C3/{name}/{outcome}"] = by_outcome[outcome]["variants"]["V0"]["mde80_sd"]  # type: ignore[index]
+            contiguous[name] = {
+                "contrast": [deeper, higher],
+                "outcomes": by_outcome,
+                "third": third,
+            }
+        types = {str(m): phase_types_by_third(i) for m, i in inputs.items()}
+        total: dict[str, dict[str, int]] = {}
+        for per_match in types.values():
+            for kind, thirds in per_match.items():
+                for third, n in thirds.items():
+                    total.setdefault(kind, dict.fromkeys(_THIRDS, 0))[third] += n
         candidates["C3"] = {
+            "contiguous": contiguous,
             "outcomes": outcomes,
+            "phase_types_by_third": {"matches": types, "total": dict(sorted(total.items()))},
             "probe_counts": {
                 str(m): {
                     "measured": len(every["width"][m]),
@@ -516,7 +669,6 @@ def power_report(match_ids: Sequence[int], probes_dir: Path) -> dict[str, object
             },
             "status": "simulated",
         }
-        mde["C3"] = outcomes["width"]["incoming_ball"]["variants"]["V0"]["mde80_sd"]  # type: ignore[index]
     else:
         candidates["C3"] = {"status": "died_in_probe"}
     return {
@@ -533,10 +685,12 @@ def power_report(match_ids: Sequence[int], probes_dir: Path) -> dict[str, object
             "bar_p": bar.BAR_P,
             "bar_same_sign": bar.BAR_SAME_SIGN,
             "block_rho": bar.BLOCK_RHO,
+            "c3_contiguous": {k: list(v) for k, v in C3_CONTIGUOUS.items()},
             "c3_contrast": list(C3_CONTRAST),
             "c3_definition": C3_DEFINITION,
             "chunk": bar.CHUNK,
             "coarse_step_sd": bar.COARSE_STEP,
+            "d3_ratio": D3_RATIO,
             "fine_step_sd": bar.FINE_STEP,
             "max_effect_sd": bar.MAX_EFFECT,
             "mde_limit_sd": MDE_LIMIT,

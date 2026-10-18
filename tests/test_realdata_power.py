@@ -49,3 +49,42 @@ def test_the_units_are_the_probes_units() -> None:
         assert c3["measured"] == fixers["width"]["v0"]["n"] == fixers["length"]["v0"]["n"]
         assert c3["v1_width"] == fixers["width"]["v1"]["n"]
         assert c3["v1_length"] == fixers["length"]["v1"]["n"]
+        # Every phase of probe S3 is counted once by type and third.
+        types = got["candidates"]["C3"]["phase_types_by_third"]["matches"][m]
+        assert sum(sum(t.values()) for t in types.values()) == s3["matches"][m]["counts"]["phases"]
+        # The window overlap is over C1's V0 units.
+        overlap = got["candidates"]["C1"]["window_overlap"][m]
+        assert overlap["units"] == v0["V0"]["matches"][m]["n"]
+
+
+def test_the_pooled_pretrend_is_the_weighted_mean_of_the_matches() -> None:
+    # Review 18: the figure D3 judges, recomputed from the per-match figures and the bar's
+    # weights, and probe S2's count of matches over its bar.
+    c1 = report(power.REPORT_NAME)["candidates"]["C1"]["outcomes"]["ball_advance"]
+    for variant in c1["incoming_ball"]["variants"].values():
+        matches, pre = variant["matches"].values(), variant["pretrend"]
+        mean = sum(x["weight"] * x["pretrend_sd"] for x in matches) / sum(
+            x["weight"] for x in matches
+        )
+        assert pre["pooled_sd"] == pytest.approx(mean, abs=2e-6)
+        assert pre["d3_abs_effect_must_exceed_sd"] == pytest.approx(2 * abs(mean), abs=4e-6)
+        over = sum(abs(x["pretrend_sd"]) > 0.15 for x in matches)
+        assert pre["s2_bar"]["matches_over"] == over
+
+
+def test_the_contiguous_contrasts_keep_to_their_third_and_block_the_null() -> None:
+    c3 = report(power.REPORT_NAME)["candidates"]["C3"]
+    types = c3["phase_types_by_third"]["matches"]
+    # Low and high never share enough of a third: that contrast has no cell within strata.
+    for outcome in ("width", "length"):
+        for variant in c3["outcomes"][outcome]["incoming_ball"]["variants"].values():
+            assert all(x["cells_used"] == 0 for x in variant["matches"].values())
+    for name, (deeper, higher, third) in power.C3_CONTIGUOUS.items():
+        design = c3["contiguous"][name]
+        assert (design["contrast"], design["third"]) == ([deeper, higher], third)
+        for outcome in ("width", "length"):
+            result = design["outcomes"][outcome]
+            assert result["blocked"] is True
+            for m, x in result["variants"]["V0"]["matches"].items():
+                assert x["pressed"] <= types[m][deeper][third]
+                assert x["free"] <= types[m][higher][third]

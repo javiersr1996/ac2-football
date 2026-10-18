@@ -15,6 +15,15 @@ Every expected number is planted here. Mutations, each annotated with the test t
   ``test_phase_runs_break_on_team_and_period``;
 * a null that never blocks, or that blocks below the threshold:
   ``test_the_null_is_blocked_above_the_threshold``.
+
+Review 18 (pass 1):
+
+* a pooled pre-trend without the bar's weights, with the cells of two matches merged, or D3's
+  floor without the absolute value or with the ratio the wrong way:
+  ``test_the_pooled_pretrend_and_d3s_floor_by_hand``;
+* a contiguous contrast that ignores its third: ``test_a_c3_contrast_keeps_to_its_third``;
+* a window overlap with ``<`` for ``<=``, across periods, or blind to the team:
+  ``test_window_overlap_by_hand``.
 """
 
 from __future__ import annotations
@@ -211,6 +220,39 @@ def test_c3_units_carry_the_planted_design() -> None:
         power.c3_units(inputs, "area", stratified=False)
 
 
+def test_a_c3_contrast_keeps_to_its_third() -> None:
+    # Every planted phase has the ball in the middle third (see the strata above).
+    inputs = c3_world(PLANS)
+    middle = power.c3_units(inputs, "width", True, ("low_block", "medium_block"), "middle")
+    assert [u.group for u in middle] == [True, None, False, None, None]
+    own = power.c3_units(inputs, "length", True, ("medium_block", "high_block"), "own")
+    assert [u.group for u in own] == [None] * 5
+    # Outside the contrast, the units stay: the correlation is measured on every phase.
+    assert [u.pre for u in own] == pytest.approx([37.0, 49.0, 42.0, 47.0, 44.0])
+    with pytest.raises(ValueError, match="third of the ball needs"):
+        power.c3_units(inputs, "width", False, ("low_block", "medium_block"), "middle")
+
+
+def test_phase_types_by_third_counts_every_phase() -> None:
+    zero = dict.fromkeys(("own", "middle", "final", "undefined"), 0)
+    assert power.phase_types_by_third(c3_world(PLANS)) == {
+        "high_block": zero | {"middle": 2},
+        "low_block": zero | {"middle": 1},
+        "medium_block": zero | {"middle": 1},
+        "none": zero | {"middle": 1},
+    }
+
+
+def test_the_contiguous_contrasts_are_neighbours_in_one_third() -> None:
+    order = ("low_block", "medium_block", "high_block")
+    assert set(power.C3_CONTIGUOUS.values()) == {
+        ("low_block", "medium_block", "middle"),
+        ("medium_block", "high_block", "own"),
+    }
+    for deeper, higher, _ in power.C3_CONTIGUOUS.values():
+        assert order.index(higher) - order.index(deeper) == 1
+
+
 @pytest.mark.parametrize("outcome", ["width", "length"])
 @pytest.mark.parametrize("stratified", [False, True])
 def test_nothing_after_t_moves_a_c3_unit(outcome: str, stratified: bool) -> None:
@@ -240,6 +282,57 @@ def test_phase_runs_break_on_team_and_period() -> None:
         4: "run:3",
         5: "run:4",
     }
+
+
+def test_window_overlap_by_hand() -> None:
+    # Gaps in period 1: 10 (same team), 13 (other team), 17 (same team), 60; period 2 starts
+    # 5 frames after the last unit of period 1, which never counts.
+    plan = [(1, 100, 1), (1, 110, 1), (1, 123, 2), (1, 140, 2), (1, 200, 1), (2, 205, 1)]
+    receptions = [Reception(f"e{k}", p, t, team, 7, 3) for k, (p, t, team) in enumerate(plan)]
+    got = power.window_overlap(list(reversed(receptions)))
+    assert W == 13
+    assert (got["within_w"], got["within_w_same_team"]) == (2, 1)
+    assert (got["within_2w"], got["within_2w_same_team"]) == (3, 2)
+    assert got["units"] == 6 and got["within_w_share"] == pytest.approx(2 / 6)
+    assert power.window_overlap([])["within_w_share"] is None
+
+
+def unit(stratum: str, group: bool, pre: float, k: int) -> power.Unit:
+    return power.Unit(k, stratum, group, f"p{k}", pre, True)
+
+
+def test_the_pooled_pretrend_and_d3s_floor_by_hand() -> None:
+    # Match 1001, one cell: pressed 2..6 against free 0..4. Match 1002: pressed 0..9 against
+    # free 1..10, and a cell "b" with 4 pressed, under the minimum of 5, that never enters.
+    one = [unit("a", True, v, k) for k, v in enumerate([2, 3, 4, 5, 6])]
+    one += [unit("a", False, v, 10 + k) for k, v in enumerate([0, 1, 2, 3, 4])]
+    two = [unit("a", True, v, k) for k, v in enumerate(range(10))]
+    two += [unit("a", False, v, 10 + k) for k, v in enumerate(range(1, 11))]
+    two += [unit("b", True, 50.0, 30 + k) for k in range(4)]
+    two += [unit("b", False, 0.0, 40 + k) for k in range(6)]
+    z1 = 2.0 / np.std([2, 3, 4, 5, 6, 0, 1, 2, 3, 4], ddof=1)
+    z2 = -1.0 / np.std([*range(10), *range(1, 11)], ddof=1)
+    pooled = (2.5 * z1 + 5.0 * z2) / 7.5  # weights n_p n_f / (n_p + n_f): 2.5 and 5
+    for sign in (1, -1):  # the planted pre-trend, and the same with the groups swapped
+        units = {
+            m: [power.Unit(u.frame, u.stratum, u.group == (sign == 1), u.possession, u.pre, True)
+                for u in us]
+            for m, us in ((1001, one), (1002, two))
+        }  # fmt: skip
+        v0 = power.candidate_power(units, "d3", True, replicates=20)["variants"]["V0"]  # type: ignore[index]
+        assert v0["matches"]["1001"]["pretrend_sd"] == pytest.approx(sign * z1)
+        assert v0["matches"]["1002"]["pretrend_sd"] == pytest.approx(sign * z2)
+        got = v0["pretrend"]
+        assert got["pooled_sd"] == pytest.approx(sign * pooled)
+        assert got["d3_abs_effect_must_exceed_sd"] == pytest.approx(abs(pooled) / 0.5)
+        assert got["d3_abs_effect_must_exceed_sd"] > 0
+        assert got["s2_bar"] == {
+            "limit_sd": 0.15,
+            "matches_over": 2,  # |z1| 1.10 and |z2| 0.33
+            "max_over": 2,
+            "would_die": False,
+        }
+        assert got["d3_floor_over_mde80"] is None  # two matches never pass a bar of 8 of 10
 
 
 def test_possessions_from_reads_the_player_possessions() -> None:
@@ -295,6 +388,8 @@ def test_the_null_is_blocked_above_the_threshold(rho: float, blocked: bool) -> N
     assert one["rho"]["value"] == pytest.approx(rho, abs=0.15)
     assert one["rho"]["pairs"] == 180 and "pretrend_sd" in one
     assert v0["mde80_sd"] is not None and v0["null_pass_rate"] < 0.01
+    floor = v0["pretrend"]["d3_abs_effect_must_exceed_sd"]
+    assert v0["pretrend"]["d3_floor_over_mde80"] == pytest.approx(floor / v0["mde80_sd"])
     assert result["variants"]["V1"]["matches"]["1000"]["n"] == 120  # type: ignore[index]
 
 

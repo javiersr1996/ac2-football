@@ -220,6 +220,17 @@
                   "1.95": 1.0,
                   "2.00": 1.0
                 },
+                "pretrend": {
+                  "d3_abs_effect_must_exceed_sd": 0.447023,
+                  "d3_floor_over_mde80": 3.725188,
+                  "pooled_sd": 0.223511,
+                  "s2_bar": {
+                    "limit_sd": 0.15,
+                    "matches_over": 9,
+                    "max_over": 2,
+                    "would_die": true
+                  }
+                },
                 "replicates": 2500,
                 "seed": [
                   20261018,
@@ -438,6 +449,17 @@
                   "1.95": 1.0,
                   "2.00": 1.0
                 },
+                "pretrend": {
+                  "d3_abs_effect_must_exceed_sd": 0.432721,
+                  "d3_floor_over_mde80": 3.606009,
+                  "pooled_sd": 0.216361,
+                  "s2_bar": {
+                    "limit_sd": 0.15,
+                    "matches_over": 9,
+                    "max_over": 2,
+                    "would_die": true
+                  }
+                },
                 "replicates": 2500,
                 "seed": [
                   20261018,
@@ -500,12 +522,1816 @@
           "v1_scored": 698
         }
       },
-      "status": "simulated"
+      "status": "simulated",
+      "window_overlap": {
+        "1874553": {
+          "units": 865,
+          "within_2w": 329,
+          "within_2w_same_team": 289,
+          "within_2w_same_team_share": 0.334104,
+          "within_2w_share": 0.380347,
+          "within_w": 86,
+          "within_w_same_team": 74,
+          "within_w_same_team_share": 0.085549,
+          "within_w_share": 0.099422
+        },
+        "1886347": {
+          "units": 909,
+          "within_2w": 392,
+          "within_2w_same_team": 346,
+          "within_2w_same_team_share": 0.380638,
+          "within_2w_share": 0.431243,
+          "within_w": 112,
+          "within_w_same_team": 91,
+          "within_w_same_team_share": 0.10011,
+          "within_w_share": 0.123212
+        },
+        "1925299": {
+          "units": 934,
+          "within_2w": 381,
+          "within_2w_same_team": 332,
+          "within_2w_same_team_share": 0.35546,
+          "within_2w_share": 0.407923,
+          "within_w": 83,
+          "within_w_same_team": 68,
+          "within_w_same_team_share": 0.072805,
+          "within_w_share": 0.088865
+        },
+        "1959846": {
+          "units": 837,
+          "within_2w": 349,
+          "within_2w_same_team": 300,
+          "within_2w_same_team_share": 0.358423,
+          "within_2w_share": 0.416965,
+          "within_w": 99,
+          "within_w_same_team": 85,
+          "within_w_same_team_share": 0.101553,
+          "within_w_share": 0.11828
+        },
+        "1996435": {
+          "units": 896,
+          "within_2w": 414,
+          "within_2w_same_team": 359,
+          "within_2w_same_team_share": 0.40067,
+          "within_2w_share": 0.462054,
+          "within_w": 125,
+          "within_w_same_team": 100,
+          "within_w_same_team_share": 0.111607,
+          "within_w_share": 0.139509
+        },
+        "1996436": {
+          "units": 683,
+          "within_2w": 261,
+          "within_2w_same_team": 225,
+          "within_2w_same_team_share": 0.329429,
+          "within_2w_share": 0.382138,
+          "within_w": 86,
+          "within_w_same_team": 71,
+          "within_w_same_team_share": 0.103953,
+          "within_w_share": 0.125915
+        },
+        "2007448": {
+          "units": 760,
+          "within_2w": 303,
+          "within_2w_same_team": 276,
+          "within_2w_same_team_share": 0.363158,
+          "within_2w_share": 0.398684,
+          "within_w": 78,
+          "within_w_same_team": 68,
+          "within_w_same_team_share": 0.089474,
+          "within_w_share": 0.102632
+        },
+        "2010085": {
+          "units": 844,
+          "within_2w": 340,
+          "within_2w_same_team": 316,
+          "within_2w_same_team_share": 0.374408,
+          "within_2w_share": 0.402844,
+          "within_w": 82,
+          "within_w_same_team": 70,
+          "within_w_same_team_share": 0.082938,
+          "within_w_share": 0.097156
+        },
+        "2011166": {
+          "units": 650,
+          "within_2w": 247,
+          "within_2w_same_team": 206,
+          "within_2w_same_team_share": 0.316923,
+          "within_2w_share": 0.38,
+          "within_w": 73,
+          "within_w_same_team": 60,
+          "within_w_same_team_share": 0.092308,
+          "within_w_share": 0.112308
+        },
+        "2015213": {
+          "units": 753,
+          "within_2w": 284,
+          "within_2w_same_team": 239,
+          "within_2w_same_team_share": 0.317397,
+          "within_2w_share": 0.377158,
+          "within_w": 78,
+          "within_w_same_team": 62,
+          "within_w_same_team_share": 0.082337,
+          "within_w_share": 0.103586
+        }
+      }
     },
     "C2": {
       "status": "died_in_probe"
     },
     "C3": {
+      "contiguous": {
+        "low_vs_medium_in_middle": {
+          "contrast": [
+            "low_block",
+            "medium_block"
+          ],
+          "outcomes": {
+            "length": {
+              "blocked": true,
+              "rho_v0_pooled": 0.208046,
+              "variants": {
+                "V0": {
+                  "matches": {
+                    "1874553": {
+                      "cells_used": 3,
+                      "free": 66,
+                      "n": 96,
+                      "possessions": 60,
+                      "pressed": 30,
+                      "rho": {
+                        "carried": 0.125028,
+                        "pairs": 374,
+                        "units": 392,
+                        "value": 0.125028
+                      },
+                      "units_used": 68,
+                      "weight": 13.673077
+                    },
+                    "1886347": {
+                      "cells_used": 2,
+                      "free": 82,
+                      "n": 123,
+                      "possessions": 67,
+                      "pressed": 41,
+                      "rho": {
+                        "carried": 0.19952,
+                        "pairs": 635,
+                        "units": 417,
+                        "value": 0.19952
+                      },
+                      "units_used": 70,
+                      "weight": 12.741667
+                    },
+                    "1925299": {
+                      "cells_used": 4,
+                      "free": 89,
+                      "n": 142,
+                      "possessions": 75,
+                      "pressed": 53,
+                      "rho": {
+                        "carried": 0.137101,
+                        "pairs": 577,
+                        "units": 450,
+                        "value": 0.137101
+                      },
+                      "units_used": 108,
+                      "weight": 20.990132
+                    },
+                    "1959846": {
+                      "cells_used": 3,
+                      "free": 75,
+                      "n": 112,
+                      "possessions": 55,
+                      "pressed": 37,
+                      "rho": {
+                        "carried": 0.156044,
+                        "pairs": 647,
+                        "units": 431,
+                        "value": 0.156044
+                      },
+                      "units_used": 68,
+                      "weight": 13.691407
+                    },
+                    "1996435": {
+                      "cells_used": 1,
+                      "free": 72,
+                      "n": 98,
+                      "possessions": 54,
+                      "pressed": 26,
+                      "rho": {
+                        "carried": 0.353611,
+                        "pairs": 547,
+                        "units": 416,
+                        "value": 0.353611
+                      },
+                      "units_used": 22,
+                      "weight": 4.363636
+                    },
+                    "1996436": {
+                      "cells_used": 2,
+                      "free": 63,
+                      "n": 98,
+                      "possessions": 54,
+                      "pressed": 35,
+                      "rho": {
+                        "carried": 0.175674,
+                        "pairs": 348,
+                        "units": 360,
+                        "value": 0.175674
+                      },
+                      "units_used": 46,
+                      "weight": 8.861111
+                    },
+                    "2007448": {
+                      "cells_used": 1,
+                      "free": 71,
+                      "n": 108,
+                      "possessions": 58,
+                      "pressed": 37,
+                      "rho": {
+                        "carried": 0.212729,
+                        "pairs": 586,
+                        "units": 390,
+                        "value": 0.212729
+                      },
+                      "units_used": 26,
+                      "weight": 6.153846
+                    },
+                    "2010085": {
+                      "cells_used": 2,
+                      "free": 82,
+                      "n": 115,
+                      "possessions": 62,
+                      "pressed": 33,
+                      "rho": {
+                        "carried": 0.213118,
+                        "pairs": 580,
+                        "units": 396,
+                        "value": 0.213118
+                      },
+                      "units_used": 40,
+                      "weight": 8.141414
+                    },
+                    "2011166": {
+                      "cells_used": 3,
+                      "free": 69,
+                      "n": 101,
+                      "possessions": 56,
+                      "pressed": 32,
+                      "rho": {
+                        "carried": 0.307477,
+                        "pairs": 415,
+                        "units": 393,
+                        "value": 0.307477
+                      },
+                      "units_used": 69,
+                      "weight": 13.660294
+                    },
+                    "2015213": {
+                      "cells_used": 2,
+                      "free": 93,
+                      "n": 118,
+                      "possessions": 75,
+                      "pressed": 25,
+                      "rho": {
+                        "carried": 0.198192,
+                        "pairs": 433,
+                        "units": 463,
+                        "value": 0.198192
+                      },
+                      "units_used": 52,
+                      "weight": 10.406723
+                    }
+                  },
+                  "mde80_sd": 0.41,
+                  "null_pass_rate": 0.000876,
+                  "pass_rate": {
+                    "0.00": 0.000876,
+                    "0.05": 0.002851,
+                    "0.10": 0.012976,
+                    "0.15": 0.041333,
+                    "0.20": 0.108869,
+                    "0.25": 0.237813,
+                    "0.30": 0.415682,
+                    "0.35": 0.604418,
+                    "0.40": 0.776374,
+                    "0.41": 0.804932,
+                    "0.42": 0.831503,
+                    "0.43": 0.85366,
+                    "0.44": 0.875062,
+                    "0.45": 0.893877,
+                    "0.50": 0.954799,
+                    "0.55": 0.984339,
+                    "0.60": 0.993494,
+                    "0.65": 0.998228,
+                    "0.70": 0.999595,
+                    "0.75": 1.0,
+                    "0.80": 1.0,
+                    "0.85": 1.0,
+                    "0.90": 1.0,
+                    "0.95": 1.0,
+                    "1.00": 1.0,
+                    "1.05": 1.0,
+                    "1.10": 1.0,
+                    "1.15": 1.0,
+                    "1.20": 1.0,
+                    "1.25": 1.0,
+                    "1.30": 1.0,
+                    "1.35": 1.0,
+                    "1.40": 1.0,
+                    "1.45": 1.0,
+                    "1.50": 1.0,
+                    "1.55": 1.0,
+                    "1.60": 1.0,
+                    "1.65": 1.0,
+                    "1.70": 1.0,
+                    "1.75": 1.0,
+                    "1.80": 1.0,
+                    "1.85": 1.0,
+                    "1.90": 1.0,
+                    "1.95": 1.0,
+                    "2.00": 1.0
+                  },
+                  "replicates": 2500,
+                  "seed": [
+                    20261018,
+                    2711891919
+                  ]
+                },
+                "V1": {
+                  "matches": {
+                    "1874553": {
+                      "cells_used": 0,
+                      "free": 0,
+                      "n": 1,
+                      "possessions": 1,
+                      "pressed": 1,
+                      "rho": {
+                        "carried": 0.125028,
+                        "pairs": 0,
+                        "units": 12,
+                        "value": null
+                      },
+                      "units_used": 0,
+                      "weight": 0.0
+                    },
+                    "1886347": {
+                      "cells_used": 0,
+                      "free": 0,
+                      "n": 1,
+                      "possessions": 1,
+                      "pressed": 1,
+                      "rho": {
+                        "carried": 0.19952,
+                        "pairs": 3,
+                        "units": 12,
+                        "value": 0.122406
+                      },
+                      "units_used": 0,
+                      "weight": 0.0
+                    },
+                    "1925299": {
+                      "cells_used": 0,
+                      "free": 4,
+                      "n": 8,
+                      "possessions": 6,
+                      "pressed": 4,
+                      "rho": {
+                        "carried": 0.137101,
+                        "pairs": 3,
+                        "units": 28,
+                        "value": -0.670296
+                      },
+                      "units_used": 0,
+                      "weight": 0.0
+                    },
+                    "1959846": {
+                      "cells_used": 0,
+                      "free": 8,
+                      "n": 14,
+                      "possessions": 11,
+                      "pressed": 6,
+                      "rho": {
+                        "carried": 0.156044,
+                        "pairs": 23,
+                        "units": 38,
+                        "value": 0.416002
+                      },
+                      "units_used": 0,
+                      "weight": 0.0
+                    },
+                    "1996435": {
+                      "cells_used": 0,
+                      "free": 5,
+                      "n": 9,
+                      "possessions": 6,
+                      "pressed": 4,
+                      "rho": {
+                        "carried": 0.353611,
+                        "pairs": 9,
+                        "units": 27,
+                        "value": -0.088019
+                      },
+                      "units_used": 0,
+                      "weight": 0.0
+                    },
+                    "1996436": {
+                      "cells_used": 0,
+                      "free": 0,
+                      "n": 0,
+                      "possessions": 0,
+                      "pressed": 0,
+                      "rho": {
+                        "carried": 0.175674,
+                        "pairs": 1,
+                        "units": 11,
+                        "value": -0.043359
+                      },
+                      "units_used": 0,
+                      "weight": 0.0
+                    },
+                    "2007448": {
+                      "cells_used": 0,
+                      "free": 0,
+                      "n": 1,
+                      "possessions": 1,
+                      "pressed": 1,
+                      "rho": {
+                        "carried": 0.212729,
+                        "pairs": 5,
+                        "units": 19,
+                        "value": -0.302214
+                      },
+                      "units_used": 0,
+                      "weight": 0.0
+                    },
+                    "2010085": {
+                      "cells_used": 0,
+                      "free": 5,
+                      "n": 6,
+                      "possessions": 6,
+                      "pressed": 1,
+                      "rho": {
+                        "carried": 0.213118,
+                        "pairs": 5,
+                        "units": 27,
+                        "value": 0.645452
+                      },
+                      "units_used": 0,
+                      "weight": 0.0
+                    },
+                    "2011166": {
+                      "cells_used": 0,
+                      "free": 0,
+                      "n": 0,
+                      "possessions": 0,
+                      "pressed": 0,
+                      "rho": {
+                        "carried": 0.307477,
+                        "pairs": 4,
+                        "units": 14,
+                        "value": 0.135028
+                      },
+                      "units_used": 0,
+                      "weight": 0.0
+                    },
+                    "2015213": {
+                      "cells_used": 0,
+                      "free": 8,
+                      "n": 10,
+                      "possessions": 8,
+                      "pressed": 2,
+                      "rho": {
+                        "carried": 0.198192,
+                        "pairs": 4,
+                        "units": 21,
+                        "value": 0.510792
+                      },
+                      "units_used": 0,
+                      "weight": 0.0
+                    }
+                  },
+                  "mde80_sd": null,
+                  "null_pass_rate": 0.0,
+                  "pass_rate": {
+                    "0.00": 0.0,
+                    "0.05": 0.0,
+                    "0.10": 0.0,
+                    "0.15": 0.0,
+                    "0.20": 0.0,
+                    "0.25": 0.0,
+                    "0.30": 0.0,
+                    "0.35": 0.0,
+                    "0.40": 0.0,
+                    "0.45": 0.0,
+                    "0.50": 0.0,
+                    "0.55": 0.0,
+                    "0.60": 0.0,
+                    "0.65": 0.0,
+                    "0.70": 0.0,
+                    "0.75": 0.0,
+                    "0.80": 0.0,
+                    "0.85": 0.0,
+                    "0.90": 0.0,
+                    "0.95": 0.0,
+                    "1.00": 0.0,
+                    "1.05": 0.0,
+                    "1.10": 0.0,
+                    "1.15": 0.0,
+                    "1.20": 0.0,
+                    "1.25": 0.0,
+                    "1.30": 0.0,
+                    "1.35": 0.0,
+                    "1.40": 0.0,
+                    "1.45": 0.0,
+                    "1.50": 0.0,
+                    "1.55": 0.0,
+                    "1.60": 0.0,
+                    "1.65": 0.0,
+                    "1.70": 0.0,
+                    "1.75": 0.0,
+                    "1.80": 0.0,
+                    "1.85": 0.0,
+                    "1.90": 0.0,
+                    "1.95": 0.0,
+                    "2.00": 0.0
+                  },
+                  "replicates": 2500,
+                  "seed": [
+                    20261018,
+                    3601014617
+                  ]
+                }
+              }
+            },
+            "width": {
+              "blocked": true,
+              "rho_v0_pooled": 0.126112,
+              "variants": {
+                "V0": {
+                  "matches": {
+                    "1874553": {
+                      "cells_used": 3,
+                      "free": 66,
+                      "n": 96,
+                      "possessions": 60,
+                      "pressed": 30,
+                      "rho": {
+                        "carried": 0.091203,
+                        "pairs": 374,
+                        "units": 392,
+                        "value": 0.091203
+                      },
+                      "units_used": 68,
+                      "weight": 13.673077
+                    },
+                    "1886347": {
+                      "cells_used": 2,
+                      "free": 82,
+                      "n": 123,
+                      "possessions": 67,
+                      "pressed": 41,
+                      "rho": {
+                        "carried": 0.148952,
+                        "pairs": 635,
+                        "units": 417,
+                        "value": 0.148952
+                      },
+                      "units_used": 70,
+                      "weight": 12.741667
+                    },
+                    "1925299": {
+                      "cells_used": 4,
+                      "free": 89,
+                      "n": 142,
+                      "possessions": 75,
+                      "pressed": 53,
+                      "rho": {
+                        "carried": 0.174214,
+                        "pairs": 577,
+                        "units": 450,
+                        "value": 0.174214
+                      },
+                      "units_used": 108,
+                      "weight": 20.990132
+                    },
+                    "1959846": {
+                      "cells_used": 3,
+                      "free": 75,
+                      "n": 112,
+                      "possessions": 55,
+                      "pressed": 37,
+                      "rho": {
+                        "carried": 0.141651,
+                        "pairs": 647,
+                        "units": 431,
+                        "value": 0.141651
+                      },
+                      "units_used": 68,
+                      "weight": 13.691407
+                    },
+                    "1996435": {
+                      "cells_used": 1,
+                      "free": 72,
+                      "n": 98,
+                      "possessions": 54,
+                      "pressed": 26,
+                      "rho": {
+                        "carried": 0.094864,
+                        "pairs": 547,
+                        "units": 416,
+                        "value": 0.094864
+                      },
+                      "units_used": 22,
+                      "weight": 4.363636
+                    },
+                    "1996436": {
+                      "cells_used": 2,
+                      "free": 63,
+                      "n": 98,
+                      "possessions": 54,
+                      "pressed": 35,
+                      "rho": {
+                        "carried": 0.125454,
+                        "pairs": 348,
+                        "units": 360,
+                        "value": 0.125454
+                      },
+                      "units_used": 46,
+                      "weight": 8.861111
+                    },
+                    "2007448": {
+                      "cells_used": 1,
+                      "free": 71,
+                      "n": 108,
+                      "possessions": 58,
+                      "pressed": 37,
+                      "rho": {
+                        "carried": 0.114407,
+                        "pairs": 586,
+                        "units": 390,
+                        "value": 0.114407
+                      },
+                      "units_used": 26,
+                      "weight": 6.153846
+                    },
+                    "2010085": {
+                      "cells_used": 2,
+                      "free": 82,
+                      "n": 115,
+                      "possessions": 62,
+                      "pressed": 33,
+                      "rho": {
+                        "carried": 0.079814,
+                        "pairs": 580,
+                        "units": 396,
+                        "value": 0.079814
+                      },
+                      "units_used": 40,
+                      "weight": 8.141414
+                    },
+                    "2011166": {
+                      "cells_used": 3,
+                      "free": 69,
+                      "n": 101,
+                      "possessions": 56,
+                      "pressed": 32,
+                      "rho": {
+                        "carried": 0.061301,
+                        "pairs": 415,
+                        "units": 393,
+                        "value": 0.061301
+                      },
+                      "units_used": 69,
+                      "weight": 13.660294
+                    },
+                    "2015213": {
+                      "cells_used": 2,
+                      "free": 93,
+                      "n": 118,
+                      "possessions": 75,
+                      "pressed": 25,
+                      "rho": {
+                        "carried": 0.215435,
+                        "pairs": 433,
+                        "units": 463,
+                        "value": 0.215435
+                      },
+                      "units_used": 52,
+                      "weight": 10.406723
+                    }
+                  },
+                  "mde80_sd": 0.41,
+                  "null_pass_rate": 0.000898,
+                  "pass_rate": {
+                    "0.00": 0.000898,
+                    "0.05": 0.00218,
+                    "0.10": 0.00947,
+                    "0.15": 0.03652,
+                    "0.20": 0.10031,
+                    "0.25": 0.232625,
+                    "0.30": 0.414063,
+                    "0.35": 0.606076,
+                    "0.40": 0.773025,
+                    "0.41": 0.80341,
+                    "0.42": 0.828722,
+                    "0.43": 0.851511,
+                    "0.44": 0.872385,
+                    "0.45": 0.891254,
+                    "0.50": 0.952032,
+                    "0.55": 0.98557,
+                    "0.60": 0.995272,
+                    "0.65": 0.998681,
+                    "0.70": 0.999197,
+                    "0.75": 0.9996,
+                    "0.80": 0.9996,
+                    "0.85": 1.0,
+                    "0.90": 1.0,
+                    "0.95": 1.0,
+                    "1.00": 1.0,
+                    "1.05": 1.0,
+                    "1.10": 1.0,
+                    "1.15": 1.0,
+                    "1.20": 1.0,
+                    "1.25": 1.0,
+                    "1.30": 1.0,
+                    "1.35": 1.0,
+                    "1.40": 1.0,
+                    "1.45": 1.0,
+                    "1.50": 1.0,
+                    "1.55": 1.0,
+                    "1.60": 1.0,
+                    "1.65": 1.0,
+                    "1.70": 1.0,
+                    "1.75": 1.0,
+                    "1.80": 1.0,
+                    "1.85": 1.0,
+                    "1.90": 1.0,
+                    "1.95": 1.0,
+                    "2.00": 1.0
+                  },
+                  "replicates": 2500,
+                  "seed": [
+                    20261018,
+                    793394490
+                  ]
+                },
+                "V1": {
+                  "matches": {
+                    "1874553": {
+                      "cells_used": 0,
+                      "free": 18,
+                      "n": 34,
+                      "possessions": 27,
+                      "pressed": 16,
+                      "rho": {
+                        "carried": 0.091203,
+                        "pairs": 39,
+                        "units": 145,
+                        "value": -0.080259
+                      },
+                      "units_used": 0,
+                      "weight": 0.0
+                    },
+                    "1886347": {
+                      "cells_used": 2,
+                      "free": 54,
+                      "n": 87,
+                      "possessions": 49,
+                      "pressed": 33,
+                      "rho": {
+                        "carried": 0.148952,
+                        "pairs": 245,
+                        "units": 236,
+                        "value": 0.121899
+                      },
+                      "units_used": 52,
+                      "weight": 10.684848
+                    },
+                    "1925299": {
+                      "cells_used": 2,
+                      "free": 40,
+                      "n": 75,
+                      "possessions": 47,
+                      "pressed": 35,
+                      "rho": {
+                        "carried": 0.174214,
+                        "pairs": 112,
+                        "units": 174,
+                        "value": 0.172033
+                      },
+                      "units_used": 32,
+                      "weight": 7.375
+                    },
+                    "1959846": {
+                      "cells_used": 1,
+                      "free": 47,
+                      "n": 73,
+                      "possessions": 37,
+                      "pressed": 26,
+                      "rho": {
+                        "carried": 0.141651,
+                        "pairs": 156,
+                        "units": 182,
+                        "value": 0.108469
+                      },
+                      "units_used": 17,
+                      "weight": 3.882353
+                    },
+                    "1996435": {
+                      "cells_used": 1,
+                      "free": 56,
+                      "n": 81,
+                      "possessions": 43,
+                      "pressed": 25,
+                      "rho": {
+                        "carried": 0.109611,
+                        "pairs": 259,
+                        "units": 246,
+                        "value": 0.109611
+                      },
+                      "units_used": 16,
+                      "weight": 3.4375
+                    },
+                    "1996436": {
+                      "cells_used": 1,
+                      "free": 42,
+                      "n": 72,
+                      "possessions": 41,
+                      "pressed": 30,
+                      "rho": {
+                        "carried": 0.129753,
+                        "pairs": 119,
+                        "units": 211,
+                        "value": 0.129753
+                      },
+                      "units_used": 19,
+                      "weight": 4.421053
+                    },
+                    "2007448": {
+                      "cells_used": 0,
+                      "free": 29,
+                      "n": 49,
+                      "possessions": 34,
+                      "pressed": 20,
+                      "rho": {
+                        "carried": 0.114407,
+                        "pairs": 84,
+                        "units": 153,
+                        "value": 0.008725
+                      },
+                      "units_used": 0,
+                      "weight": 0.0
+                    },
+                    "2010085": {
+                      "cells_used": 0,
+                      "free": 21,
+                      "n": 39,
+                      "possessions": 28,
+                      "pressed": 18,
+                      "rho": {
+                        "carried": 0.172163,
+                        "pairs": 77,
+                        "units": 133,
+                        "value": 0.172163
+                      },
+                      "units_used": 0,
+                      "weight": 0.0
+                    },
+                    "2011166": {
+                      "cells_used": 0,
+                      "free": 21,
+                      "n": 32,
+                      "possessions": 27,
+                      "pressed": 11,
+                      "rho": {
+                        "carried": 0.061301,
+                        "pairs": 33,
+                        "units": 131,
+                        "value": -0.075212
+                      },
+                      "units_used": 0,
+                      "weight": 0.0
+                    },
+                    "2015213": {
+                      "cells_used": 0,
+                      "free": 44,
+                      "n": 59,
+                      "possessions": 40,
+                      "pressed": 15,
+                      "rho": {
+                        "carried": 0.215435,
+                        "pairs": 113,
+                        "units": 193,
+                        "value": 0.212316
+                      },
+                      "units_used": 0,
+                      "weight": 0.0
+                    }
+                  },
+                  "mde80_sd": null,
+                  "null_pass_rate": 0.0,
+                  "pass_rate": {
+                    "0.00": 0.0,
+                    "0.05": 0.0,
+                    "0.10": 0.0,
+                    "0.15": 0.0,
+                    "0.20": 0.0,
+                    "0.25": 0.0,
+                    "0.30": 0.0,
+                    "0.35": 0.0,
+                    "0.40": 0.0,
+                    "0.45": 0.0,
+                    "0.50": 0.0,
+                    "0.55": 0.0,
+                    "0.60": 0.0,
+                    "0.65": 0.0,
+                    "0.70": 0.0,
+                    "0.75": 0.0,
+                    "0.80": 0.0,
+                    "0.85": 0.0,
+                    "0.90": 0.0,
+                    "0.95": 0.0,
+                    "1.00": 0.0,
+                    "1.05": 0.0,
+                    "1.10": 0.0,
+                    "1.15": 0.0,
+                    "1.20": 0.0,
+                    "1.25": 0.0,
+                    "1.30": 0.0,
+                    "1.35": 0.0,
+                    "1.40": 0.0,
+                    "1.45": 0.0,
+                    "1.50": 0.0,
+                    "1.55": 0.0,
+                    "1.60": 0.0,
+                    "1.65": 0.0,
+                    "1.70": 0.0,
+                    "1.75": 0.0,
+                    "1.80": 0.0,
+                    "1.85": 0.0,
+                    "1.90": 0.0,
+                    "1.95": 0.0,
+                    "2.00": 0.0
+                  },
+                  "replicates": 2500,
+                  "seed": [
+                    20261018,
+                    1481444780
+                  ]
+                }
+              }
+            }
+          },
+          "third": "middle"
+        },
+        "medium_vs_high_in_own": {
+          "contrast": [
+            "medium_block",
+            "high_block"
+          ],
+          "outcomes": {
+            "length": {
+              "blocked": true,
+              "rho_v0_pooled": 0.208046,
+              "variants": {
+                "V0": {
+                  "matches": {
+                    "1874553": {
+                      "cells_used": 2,
+                      "free": 50,
+                      "n": 107,
+                      "possessions": 61,
+                      "pressed": 57,
+                      "rho": {
+                        "carried": 0.125028,
+                        "pairs": 374,
+                        "units": 392,
+                        "value": 0.125028
+                      },
+                      "units_used": 49,
+                      "weight": 9.558621
+                    },
+                    "1886347": {
+                      "cells_used": 2,
+                      "free": 61,
+                      "n": 124,
+                      "possessions": 63,
+                      "pressed": 63,
+                      "rho": {
+                        "carried": 0.19952,
+                        "pairs": 635,
+                        "units": 417,
+                        "value": 0.19952
+                      },
+                      "units_used": 50,
+                      "weight": 7.970779
+                    },
+                    "1925299": {
+                      "cells_used": 1,
+                      "free": 65,
+                      "n": 123,
+                      "possessions": 65,
+                      "pressed": 58,
+                      "rho": {
+                        "carried": 0.137101,
+                        "pairs": 577,
+                        "units": 450,
+                        "value": 0.137101
+                      },
+                      "units_used": 29,
+                      "weight": 4.758621
+                    },
+                    "1959846": {
+                      "cells_used": 1,
+                      "free": 60,
+                      "n": 117,
+                      "possessions": 54,
+                      "pressed": 57,
+                      "rho": {
+                        "carried": 0.156044,
+                        "pairs": 647,
+                        "units": 431,
+                        "value": 0.156044
+                      },
+                      "units_used": 19,
+                      "weight": 3.684211
+                    },
+                    "1996435": {
+                      "cells_used": 2,
+                      "free": 70,
+                      "n": 141,
+                      "possessions": 74,
+                      "pressed": 71,
+                      "rho": {
+                        "carried": 0.353611,
+                        "pairs": 547,
+                        "units": 416,
+                        "value": 0.353611
+                      },
+                      "units_used": 51,
+                      "weight": 8.58871
+                    },
+                    "1996436": {
+                      "cells_used": 2,
+                      "free": 33,
+                      "n": 74,
+                      "possessions": 48,
+                      "pressed": 41,
+                      "rho": {
+                        "carried": 0.175674,
+                        "pairs": 348,
+                        "units": 360,
+                        "value": 0.175674
+                      },
+                      "units_used": 33,
+                      "weight": 7.276923
+                    },
+                    "2007448": {
+                      "cells_used": 0,
+                      "free": 56,
+                      "n": 99,
+                      "possessions": 53,
+                      "pressed": 43,
+                      "rho": {
+                        "carried": 0.212729,
+                        "pairs": 586,
+                        "units": 390,
+                        "value": 0.212729
+                      },
+                      "units_used": 0,
+                      "weight": 0.0
+                    },
+                    "2010085": {
+                      "cells_used": 1,
+                      "free": 56,
+                      "n": 101,
+                      "possessions": 55,
+                      "pressed": 45,
+                      "rho": {
+                        "carried": 0.213118,
+                        "pairs": 580,
+                        "units": 396,
+                        "value": 0.213118
+                      },
+                      "units_used": 27,
+                      "weight": 4.074074
+                    },
+                    "2011166": {
+                      "cells_used": 0,
+                      "free": 46,
+                      "n": 86,
+                      "possessions": 50,
+                      "pressed": 40,
+                      "rho": {
+                        "carried": 0.307477,
+                        "pairs": 415,
+                        "units": 393,
+                        "value": 0.307477
+                      },
+                      "units_used": 0,
+                      "weight": 0.0
+                    },
+                    "2015213": {
+                      "cells_used": 1,
+                      "free": 72,
+                      "n": 129,
+                      "possessions": 71,
+                      "pressed": 57,
+                      "rho": {
+                        "carried": 0.198192,
+                        "pairs": 433,
+                        "units": 463,
+                        "value": 0.198192
+                      },
+                      "units_used": 28,
+                      "weight": 4.107143
+                    }
+                  },
+                  "mde80_sd": 0.83,
+                  "null_pass_rate": 0.000231,
+                  "pass_rate": {
+                    "0.00": 0.000231,
+                    "0.05": 0.000385,
+                    "0.10": 0.001078,
+                    "0.15": 0.004183,
+                    "0.20": 0.010826,
+                    "0.25": 0.0254,
+                    "0.30": 0.046244,
+                    "0.35": 0.08259,
+                    "0.40": 0.142129,
+                    "0.45": 0.221884,
+                    "0.50": 0.313105,
+                    "0.55": 0.40904,
+                    "0.60": 0.498303,
+                    "0.65": 0.580894,
+                    "0.70": 0.650764,
+                    "0.75": 0.723036,
+                    "0.80": 0.772714,
+                    "0.81": 0.780176,
+                    "0.82": 0.791436,
+                    "0.83": 0.800871,
+                    "0.84": 0.812191,
+                    "0.85": 0.824232,
+                    "0.90": 0.863314,
+                    "0.95": 0.89495,
+                    "1.00": 0.917566,
+                    "1.05": 0.940792,
+                    "1.10": 0.955199,
+                    "1.15": 0.9684,
+                    "1.20": 0.9768,
+                    "1.25": 0.9816,
+                    "1.30": 0.9844,
+                    "1.35": 0.9884,
+                    "1.40": 0.9924,
+                    "1.45": 0.9936,
+                    "1.50": 0.9972,
+                    "1.55": 0.998,
+                    "1.60": 0.9984,
+                    "1.65": 0.9984,
+                    "1.70": 0.9996,
+                    "1.75": 0.9996,
+                    "1.80": 0.9996,
+                    "1.85": 1.0,
+                    "1.90": 1.0,
+                    "1.95": 1.0,
+                    "2.00": 1.0
+                  },
+                  "replicates": 2500,
+                  "seed": [
+                    20261018,
+                    2119132209
+                  ]
+                },
+                "V1": {
+                  "matches": {
+                    "1874553": {
+                      "cells_used": 0,
+                      "free": 0,
+                      "n": 0,
+                      "possessions": 0,
+                      "pressed": 0,
+                      "rho": {
+                        "carried": 0.125028,
+                        "pairs": 0,
+                        "units": 12,
+                        "value": null
+                      },
+                      "units_used": 0,
+                      "weight": 0.0
+                    },
+                    "1886347": {
+                      "cells_used": 0,
+                      "free": 0,
+                      "n": 0,
+                      "possessions": 0,
+                      "pressed": 0,
+                      "rho": {
+                        "carried": 0.19952,
+                        "pairs": 3,
+                        "units": 12,
+                        "value": 0.122406
+                      },
+                      "units_used": 0,
+                      "weight": 0.0
+                    },
+                    "1925299": {
+                      "cells_used": 0,
+                      "free": 0,
+                      "n": 0,
+                      "possessions": 0,
+                      "pressed": 0,
+                      "rho": {
+                        "carried": 0.137101,
+                        "pairs": 3,
+                        "units": 28,
+                        "value": -0.670296
+                      },
+                      "units_used": 0,
+                      "weight": 0.0
+                    },
+                    "1959846": {
+                      "cells_used": 0,
+                      "free": 0,
+                      "n": 0,
+                      "possessions": 0,
+                      "pressed": 0,
+                      "rho": {
+                        "carried": 0.156044,
+                        "pairs": 23,
+                        "units": 38,
+                        "value": 0.416002
+                      },
+                      "units_used": 0,
+                      "weight": 0.0
+                    },
+                    "1996435": {
+                      "cells_used": 0,
+                      "free": 0,
+                      "n": 0,
+                      "possessions": 0,
+                      "pressed": 0,
+                      "rho": {
+                        "carried": 0.353611,
+                        "pairs": 9,
+                        "units": 27,
+                        "value": -0.088019
+                      },
+                      "units_used": 0,
+                      "weight": 0.0
+                    },
+                    "1996436": {
+                      "cells_used": 0,
+                      "free": 0,
+                      "n": 0,
+                      "possessions": 0,
+                      "pressed": 0,
+                      "rho": {
+                        "carried": 0.175674,
+                        "pairs": 1,
+                        "units": 11,
+                        "value": -0.043359
+                      },
+                      "units_used": 0,
+                      "weight": 0.0
+                    },
+                    "2007448": {
+                      "cells_used": 0,
+                      "free": 0,
+                      "n": 0,
+                      "possessions": 0,
+                      "pressed": 0,
+                      "rho": {
+                        "carried": 0.212729,
+                        "pairs": 5,
+                        "units": 19,
+                        "value": -0.302214
+                      },
+                      "units_used": 0,
+                      "weight": 0.0
+                    },
+                    "2010085": {
+                      "cells_used": 0,
+                      "free": 0,
+                      "n": 0,
+                      "possessions": 0,
+                      "pressed": 0,
+                      "rho": {
+                        "carried": 0.213118,
+                        "pairs": 5,
+                        "units": 27,
+                        "value": 0.645452
+                      },
+                      "units_used": 0,
+                      "weight": 0.0
+                    },
+                    "2011166": {
+                      "cells_used": 0,
+                      "free": 0,
+                      "n": 0,
+                      "possessions": 0,
+                      "pressed": 0,
+                      "rho": {
+                        "carried": 0.307477,
+                        "pairs": 4,
+                        "units": 14,
+                        "value": 0.135028
+                      },
+                      "units_used": 0,
+                      "weight": 0.0
+                    },
+                    "2015213": {
+                      "cells_used": 0,
+                      "free": 0,
+                      "n": 0,
+                      "possessions": 0,
+                      "pressed": 0,
+                      "rho": {
+                        "carried": 0.198192,
+                        "pairs": 4,
+                        "units": 21,
+                        "value": 0.510792
+                      },
+                      "units_used": 0,
+                      "weight": 0.0
+                    }
+                  },
+                  "mde80_sd": null,
+                  "null_pass_rate": 0.0,
+                  "pass_rate": {
+                    "0.00": 0.0,
+                    "0.05": 0.0,
+                    "0.10": 0.0,
+                    "0.15": 0.0,
+                    "0.20": 0.0,
+                    "0.25": 0.0,
+                    "0.30": 0.0,
+                    "0.35": 0.0,
+                    "0.40": 0.0,
+                    "0.45": 0.0,
+                    "0.50": 0.0,
+                    "0.55": 0.0,
+                    "0.60": 0.0,
+                    "0.65": 0.0,
+                    "0.70": 0.0,
+                    "0.75": 0.0,
+                    "0.80": 0.0,
+                    "0.85": 0.0,
+                    "0.90": 0.0,
+                    "0.95": 0.0,
+                    "1.00": 0.0,
+                    "1.05": 0.0,
+                    "1.10": 0.0,
+                    "1.15": 0.0,
+                    "1.20": 0.0,
+                    "1.25": 0.0,
+                    "1.30": 0.0,
+                    "1.35": 0.0,
+                    "1.40": 0.0,
+                    "1.45": 0.0,
+                    "1.50": 0.0,
+                    "1.55": 0.0,
+                    "1.60": 0.0,
+                    "1.65": 0.0,
+                    "1.70": 0.0,
+                    "1.75": 0.0,
+                    "1.80": 0.0,
+                    "1.85": 0.0,
+                    "1.90": 0.0,
+                    "1.95": 0.0,
+                    "2.00": 0.0
+                  },
+                  "replicates": 2500,
+                  "seed": [
+                    20261018,
+                    155735207
+                  ]
+                }
+              }
+            },
+            "width": {
+              "blocked": true,
+              "rho_v0_pooled": 0.126112,
+              "variants": {
+                "V0": {
+                  "matches": {
+                    "1874553": {
+                      "cells_used": 2,
+                      "free": 50,
+                      "n": 107,
+                      "possessions": 61,
+                      "pressed": 57,
+                      "rho": {
+                        "carried": 0.091203,
+                        "pairs": 374,
+                        "units": 392,
+                        "value": 0.091203
+                      },
+                      "units_used": 49,
+                      "weight": 9.558621
+                    },
+                    "1886347": {
+                      "cells_used": 2,
+                      "free": 61,
+                      "n": 124,
+                      "possessions": 63,
+                      "pressed": 63,
+                      "rho": {
+                        "carried": 0.148952,
+                        "pairs": 635,
+                        "units": 417,
+                        "value": 0.148952
+                      },
+                      "units_used": 50,
+                      "weight": 7.970779
+                    },
+                    "1925299": {
+                      "cells_used": 1,
+                      "free": 65,
+                      "n": 123,
+                      "possessions": 65,
+                      "pressed": 58,
+                      "rho": {
+                        "carried": 0.174214,
+                        "pairs": 577,
+                        "units": 450,
+                        "value": 0.174214
+                      },
+                      "units_used": 29,
+                      "weight": 4.758621
+                    },
+                    "1959846": {
+                      "cells_used": 1,
+                      "free": 60,
+                      "n": 117,
+                      "possessions": 54,
+                      "pressed": 57,
+                      "rho": {
+                        "carried": 0.141651,
+                        "pairs": 647,
+                        "units": 431,
+                        "value": 0.141651
+                      },
+                      "units_used": 19,
+                      "weight": 3.684211
+                    },
+                    "1996435": {
+                      "cells_used": 2,
+                      "free": 70,
+                      "n": 141,
+                      "possessions": 74,
+                      "pressed": 71,
+                      "rho": {
+                        "carried": 0.094864,
+                        "pairs": 547,
+                        "units": 416,
+                        "value": 0.094864
+                      },
+                      "units_used": 51,
+                      "weight": 8.58871
+                    },
+                    "1996436": {
+                      "cells_used": 2,
+                      "free": 33,
+                      "n": 74,
+                      "possessions": 48,
+                      "pressed": 41,
+                      "rho": {
+                        "carried": 0.125454,
+                        "pairs": 348,
+                        "units": 360,
+                        "value": 0.125454
+                      },
+                      "units_used": 33,
+                      "weight": 7.276923
+                    },
+                    "2007448": {
+                      "cells_used": 0,
+                      "free": 56,
+                      "n": 99,
+                      "possessions": 53,
+                      "pressed": 43,
+                      "rho": {
+                        "carried": 0.114407,
+                        "pairs": 586,
+                        "units": 390,
+                        "value": 0.114407
+                      },
+                      "units_used": 0,
+                      "weight": 0.0
+                    },
+                    "2010085": {
+                      "cells_used": 1,
+                      "free": 56,
+                      "n": 101,
+                      "possessions": 55,
+                      "pressed": 45,
+                      "rho": {
+                        "carried": 0.079814,
+                        "pairs": 580,
+                        "units": 396,
+                        "value": 0.079814
+                      },
+                      "units_used": 27,
+                      "weight": 4.074074
+                    },
+                    "2011166": {
+                      "cells_used": 0,
+                      "free": 46,
+                      "n": 86,
+                      "possessions": 50,
+                      "pressed": 40,
+                      "rho": {
+                        "carried": 0.061301,
+                        "pairs": 415,
+                        "units": 393,
+                        "value": 0.061301
+                      },
+                      "units_used": 0,
+                      "weight": 0.0
+                    },
+                    "2015213": {
+                      "cells_used": 1,
+                      "free": 72,
+                      "n": 129,
+                      "possessions": 71,
+                      "pressed": 57,
+                      "rho": {
+                        "carried": 0.215435,
+                        "pairs": 433,
+                        "units": 463,
+                        "value": 0.215435
+                      },
+                      "units_used": 28,
+                      "weight": 4.107143
+                    }
+                  },
+                  "mde80_sd": 0.85,
+                  "null_pass_rate": 0.000323,
+                  "pass_rate": {
+                    "0.00": 0.000323,
+                    "0.05": 0.001403,
+                    "0.10": 0.002371,
+                    "0.15": 0.004787,
+                    "0.20": 0.010758,
+                    "0.25": 0.024749,
+                    "0.30": 0.047177,
+                    "0.35": 0.085917,
+                    "0.40": 0.1416,
+                    "0.45": 0.211007,
+                    "0.50": 0.292841,
+                    "0.55": 0.383856,
+                    "0.60": 0.469099,
+                    "0.65": 0.556739,
+                    "0.70": 0.62997,
+                    "0.75": 0.697842,
+                    "0.80": 0.759227,
+                    "0.81": 0.771794,
+                    "0.82": 0.781913,
+                    "0.83": 0.78832,
+                    "0.84": 0.797758,
+                    "0.85": 0.807498,
+                    "0.90": 0.855086,
+                    "0.95": 0.885734,
+                    "1.00": 0.91154,
+                    "1.05": 0.932792,
+                    "1.10": 0.946799,
+                    "1.15": 0.959999,
+                    "1.20": 0.97,
+                    "1.25": 0.9792,
+                    "1.30": 0.9848,
+                    "1.35": 0.9892,
+                    "1.40": 0.9924,
+                    "1.45": 0.994,
+                    "1.50": 0.9968,
+                    "1.55": 0.9976,
+                    "1.60": 0.998,
+                    "1.65": 0.9992,
+                    "1.70": 0.9996,
+                    "1.75": 0.9996,
+                    "1.80": 0.9996,
+                    "1.85": 0.9996,
+                    "1.90": 1.0,
+                    "1.95": 1.0,
+                    "2.00": 1.0
+                  },
+                  "replicates": 2500,
+                  "seed": [
+                    20261018,
+                    2767061142
+                  ]
+                },
+                "V1": {
+                  "matches": {
+                    "1874553": {
+                      "cells_used": 0,
+                      "free": 10,
+                      "n": 25,
+                      "possessions": 20,
+                      "pressed": 15,
+                      "rho": {
+                        "carried": 0.091203,
+                        "pairs": 39,
+                        "units": 145,
+                        "value": -0.080259
+                      },
+                      "units_used": 0,
+                      "weight": 0.0
+                    },
+                    "1886347": {
+                      "cells_used": 0,
+                      "free": 20,
+                      "n": 49,
+                      "possessions": 33,
+                      "pressed": 29,
+                      "rho": {
+                        "carried": 0.148952,
+                        "pairs": 245,
+                        "units": 236,
+                        "value": 0.121899
+                      },
+                      "units_used": 0,
+                      "weight": 0.0
+                    },
+                    "1925299": {
+                      "cells_used": 0,
+                      "free": 10,
+                      "n": 27,
+                      "possessions": 19,
+                      "pressed": 17,
+                      "rho": {
+                        "carried": 0.174214,
+                        "pairs": 112,
+                        "units": 174,
+                        "value": 0.172033
+                      },
+                      "units_used": 0,
+                      "weight": 0.0
+                    },
+                    "1959846": {
+                      "cells_used": 0,
+                      "free": 15,
+                      "n": 32,
+                      "possessions": 24,
+                      "pressed": 17,
+                      "rho": {
+                        "carried": 0.141651,
+                        "pairs": 156,
+                        "units": 182,
+                        "value": 0.108469
+                      },
+                      "units_used": 0,
+                      "weight": 0.0
+                    },
+                    "1996435": {
+                      "cells_used": 0,
+                      "free": 27,
+                      "n": 53,
+                      "possessions": 36,
+                      "pressed": 26,
+                      "rho": {
+                        "carried": 0.109611,
+                        "pairs": 259,
+                        "units": 246,
+                        "value": 0.109611
+                      },
+                      "units_used": 0,
+                      "weight": 0.0
+                    },
+                    "1996436": {
+                      "cells_used": 0,
+                      "free": 10,
+                      "n": 22,
+                      "possessions": 19,
+                      "pressed": 12,
+                      "rho": {
+                        "carried": 0.129753,
+                        "pairs": 119,
+                        "units": 211,
+                        "value": 0.129753
+                      },
+                      "units_used": 0,
+                      "weight": 0.0
+                    },
+                    "2007448": {
+                      "cells_used": 0,
+                      "free": 19,
+                      "n": 30,
+                      "possessions": 22,
+                      "pressed": 11,
+                      "rho": {
+                        "carried": 0.114407,
+                        "pairs": 84,
+                        "units": 153,
+                        "value": 0.008725
+                      },
+                      "units_used": 0,
+                      "weight": 0.0
+                    },
+                    "2010085": {
+                      "cells_used": 0,
+                      "free": 14,
+                      "n": 21,
+                      "possessions": 16,
+                      "pressed": 7,
+                      "rho": {
+                        "carried": 0.172163,
+                        "pairs": 77,
+                        "units": 133,
+                        "value": 0.172163
+                      },
+                      "units_used": 0,
+                      "weight": 0.0
+                    },
+                    "2011166": {
+                      "cells_used": 0,
+                      "free": 7,
+                      "n": 15,
+                      "possessions": 12,
+                      "pressed": 8,
+                      "rho": {
+                        "carried": 0.061301,
+                        "pairs": 33,
+                        "units": 131,
+                        "value": -0.075212
+                      },
+                      "units_used": 0,
+                      "weight": 0.0
+                    },
+                    "2015213": {
+                      "cells_used": 0,
+                      "free": 27,
+                      "n": 46,
+                      "possessions": 30,
+                      "pressed": 19,
+                      "rho": {
+                        "carried": 0.215435,
+                        "pairs": 113,
+                        "units": 193,
+                        "value": 0.212316
+                      },
+                      "units_used": 0,
+                      "weight": 0.0
+                    }
+                  },
+                  "mde80_sd": null,
+                  "null_pass_rate": 0.0,
+                  "pass_rate": {
+                    "0.00": 0.0,
+                    "0.05": 0.0,
+                    "0.10": 0.0,
+                    "0.15": 0.0,
+                    "0.20": 0.0,
+                    "0.25": 0.0,
+                    "0.30": 0.0,
+                    "0.35": 0.0,
+                    "0.40": 0.0,
+                    "0.45": 0.0,
+                    "0.50": 0.0,
+                    "0.55": 0.0,
+                    "0.60": 0.0,
+                    "0.65": 0.0,
+                    "0.70": 0.0,
+                    "0.75": 0.0,
+                    "0.80": 0.0,
+                    "0.85": 0.0,
+                    "0.90": 0.0,
+                    "0.95": 0.0,
+                    "1.00": 0.0,
+                    "1.05": 0.0,
+                    "1.10": 0.0,
+                    "1.15": 0.0,
+                    "1.20": 0.0,
+                    "1.25": 0.0,
+                    "1.30": 0.0,
+                    "1.35": 0.0,
+                    "1.40": 0.0,
+                    "1.45": 0.0,
+                    "1.50": 0.0,
+                    "1.55": 0.0,
+                    "1.60": 0.0,
+                    "1.65": 0.0,
+                    "1.70": 0.0,
+                    "1.75": 0.0,
+                    "1.80": 0.0,
+                    "1.85": 0.0,
+                    "1.90": 0.0,
+                    "1.95": 0.0,
+                    "2.00": 0.0
+                  },
+                  "replicates": 2500,
+                  "seed": [
+                    20261018,
+                    3555274752
+                  ]
+                }
+              }
+            }
+          },
+          "third": "own"
+        }
+      },
       "outcomes": {
         "length": {
           "incoming_ball": {
@@ -2180,6 +4006,560 @@
           }
         }
       },
+      "phase_types_by_third": {
+        "matches": {
+          "1874553": {
+            "chaotic": {
+              "final": 12,
+              "middle": 38,
+              "own": 33,
+              "undefined": 4
+            },
+            "defending_direct": {
+              "final": 0,
+              "middle": 7,
+              "own": 22,
+              "undefined": 3
+            },
+            "defending_quick_break": {
+              "final": 0,
+              "middle": 5,
+              "own": 0,
+              "undefined": 0
+            },
+            "defending_set_play": {
+              "final": 11,
+              "middle": 1,
+              "own": 0,
+              "undefined": 3
+            },
+            "defending_transition": {
+              "final": 0,
+              "middle": 1,
+              "own": 6,
+              "undefined": 0
+            },
+            "high_block": {
+              "final": 0,
+              "middle": 0,
+              "own": 50,
+              "undefined": 5
+            },
+            "low_block": {
+              "final": 51,
+              "middle": 30,
+              "own": 0,
+              "undefined": 1
+            },
+            "medium_block": {
+              "final": 3,
+              "middle": 66,
+              "own": 57,
+              "undefined": 14
+            }
+          },
+          "1886347": {
+            "chaotic": {
+              "final": 8,
+              "middle": 35,
+              "own": 30,
+              "undefined": 9
+            },
+            "defending_direct": {
+              "final": 0,
+              "middle": 9,
+              "own": 15,
+              "undefined": 1
+            },
+            "defending_quick_break": {
+              "final": 2,
+              "middle": 2,
+              "own": 0,
+              "undefined": 0
+            },
+            "defending_set_play": {
+              "final": 15,
+              "middle": 2,
+              "own": 0,
+              "undefined": 4
+            },
+            "defending_transition": {
+              "final": 0,
+              "middle": 1,
+              "own": 0,
+              "undefined": 0
+            },
+            "high_block": {
+              "final": 0,
+              "middle": 0,
+              "own": 61,
+              "undefined": 5
+            },
+            "low_block": {
+              "final": 51,
+              "middle": 41,
+              "own": 0,
+              "undefined": 2
+            },
+            "medium_block": {
+              "final": 0,
+              "middle": 82,
+              "own": 63,
+              "undefined": 11
+            }
+          },
+          "1925299": {
+            "chaotic": {
+              "final": 10,
+              "middle": 38,
+              "own": 44,
+              "undefined": 4
+            },
+            "defending_direct": {
+              "final": 0,
+              "middle": 7,
+              "own": 22,
+              "undefined": 13
+            },
+            "defending_quick_break": {
+              "final": 2,
+              "middle": 7,
+              "own": 0,
+              "undefined": 0
+            },
+            "defending_set_play": {
+              "final": 9,
+              "middle": 1,
+              "own": 0,
+              "undefined": 3
+            },
+            "defending_transition": {
+              "final": 0,
+              "middle": 1,
+              "own": 1,
+              "undefined": 0
+            },
+            "high_block": {
+              "final": 0,
+              "middle": 0,
+              "own": 65,
+              "undefined": 1
+            },
+            "low_block": {
+              "final": 41,
+              "middle": 53,
+              "own": 0,
+              "undefined": 1
+            },
+            "medium_block": {
+              "final": 3,
+              "middle": 89,
+              "own": 58,
+              "undefined": 10
+            }
+          },
+          "1959846": {
+            "chaotic": {
+              "final": 12,
+              "middle": 31,
+              "own": 46,
+              "undefined": 6
+            },
+            "defending_direct": {
+              "final": 0,
+              "middle": 4,
+              "own": 18,
+              "undefined": 4
+            },
+            "defending_quick_break": {
+              "final": 1,
+              "middle": 5,
+              "own": 0,
+              "undefined": 0
+            },
+            "defending_set_play": {
+              "final": 12,
+              "middle": 1,
+              "own": 0,
+              "undefined": 4
+            },
+            "defending_transition": {
+              "final": 0,
+              "middle": 2,
+              "own": 12,
+              "undefined": 0
+            },
+            "high_block": {
+              "final": 0,
+              "middle": 0,
+              "own": 60,
+              "undefined": 9
+            },
+            "low_block": {
+              "final": 58,
+              "middle": 37,
+              "own": 0,
+              "undefined": 1
+            },
+            "medium_block": {
+              "final": 2,
+              "middle": 75,
+              "own": 57,
+              "undefined": 11
+            }
+          },
+          "1996435": {
+            "chaotic": {
+              "final": 13,
+              "middle": 33,
+              "own": 24,
+              "undefined": 2
+            },
+            "defending_direct": {
+              "final": 0,
+              "middle": 2,
+              "own": 17,
+              "undefined": 2
+            },
+            "defending_quick_break": {
+              "final": 2,
+              "middle": 1,
+              "own": 0,
+              "undefined": 0
+            },
+            "defending_set_play": {
+              "final": 15,
+              "middle": 1,
+              "own": 0,
+              "undefined": 3
+            },
+            "defending_transition": {
+              "final": 0,
+              "middle": 3,
+              "own": 4,
+              "undefined": 0
+            },
+            "high_block": {
+              "final": 1,
+              "middle": 1,
+              "own": 70,
+              "undefined": 9
+            },
+            "low_block": {
+              "final": 58,
+              "middle": 26,
+              "own": 0,
+              "undefined": 1
+            },
+            "medium_block": {
+              "final": 2,
+              "middle": 72,
+              "own": 71,
+              "undefined": 9
+            }
+          },
+          "1996436": {
+            "chaotic": {
+              "final": 14,
+              "middle": 37,
+              "own": 34,
+              "undefined": 5
+            },
+            "defending_direct": {
+              "final": 0,
+              "middle": 3,
+              "own": 22,
+              "undefined": 3
+            },
+            "defending_quick_break": {
+              "final": 1,
+              "middle": 2,
+              "own": 0,
+              "undefined": 0
+            },
+            "defending_set_play": {
+              "final": 22,
+              "middle": 4,
+              "own": 0,
+              "undefined": 2
+            },
+            "defending_transition": {
+              "final": 0,
+              "middle": 5,
+              "own": 4,
+              "undefined": 0
+            },
+            "high_block": {
+              "final": 0,
+              "middle": 0,
+              "own": 33,
+              "undefined": 3
+            },
+            "low_block": {
+              "final": 38,
+              "middle": 35,
+              "own": 0,
+              "undefined": 3
+            },
+            "medium_block": {
+              "final": 3,
+              "middle": 63,
+              "own": 41,
+              "undefined": 6
+            }
+          },
+          "2007448": {
+            "chaotic": {
+              "final": 9,
+              "middle": 29,
+              "own": 32,
+              "undefined": 5
+            },
+            "defending_direct": {
+              "final": 0,
+              "middle": 7,
+              "own": 32,
+              "undefined": 2
+            },
+            "defending_quick_break": {
+              "final": 1,
+              "middle": 2,
+              "own": 0,
+              "undefined": 0
+            },
+            "defending_set_play": {
+              "final": 15,
+              "middle": 2,
+              "own": 0,
+              "undefined": 2
+            },
+            "defending_transition": {
+              "final": 0,
+              "middle": 3,
+              "own": 7,
+              "undefined": 0
+            },
+            "high_block": {
+              "final": 0,
+              "middle": 0,
+              "own": 56,
+              "undefined": 0
+            },
+            "low_block": {
+              "final": 43,
+              "middle": 37,
+              "own": 0,
+              "undefined": 2
+            },
+            "medium_block": {
+              "final": 5,
+              "middle": 71,
+              "own": 43,
+              "undefined": 12
+            }
+          },
+          "2010085": {
+            "chaotic": {
+              "final": 10,
+              "middle": 38,
+              "own": 36,
+              "undefined": 3
+            },
+            "defending_direct": {
+              "final": 0,
+              "middle": 7,
+              "own": 21,
+              "undefined": 10
+            },
+            "defending_quick_break": {
+              "final": 0,
+              "middle": 2,
+              "own": 0,
+              "undefined": 0
+            },
+            "defending_set_play": {
+              "final": 8,
+              "middle": 2,
+              "own": 0,
+              "undefined": 2
+            },
+            "defending_transition": {
+              "final": 0,
+              "middle": 4,
+              "own": 4,
+              "undefined": 0
+            },
+            "high_block": {
+              "final": 0,
+              "middle": 1,
+              "own": 56,
+              "undefined": 4
+            },
+            "low_block": {
+              "final": 44,
+              "middle": 33,
+              "own": 0,
+              "undefined": 1
+            },
+            "medium_block": {
+              "final": 3,
+              "middle": 82,
+              "own": 45,
+              "undefined": 7
+            }
+          },
+          "2011166": {
+            "chaotic": {
+              "final": 14,
+              "middle": 42,
+              "own": 47,
+              "undefined": 4
+            },
+            "defending_direct": {
+              "final": 0,
+              "middle": 6,
+              "own": 19,
+              "undefined": 11
+            },
+            "defending_quick_break": {
+              "final": 2,
+              "middle": 7,
+              "own": 0,
+              "undefined": 0
+            },
+            "defending_set_play": {
+              "final": 16,
+              "middle": 0,
+              "own": 0,
+              "undefined": 6
+            },
+            "defending_transition": {
+              "final": 0,
+              "middle": 2,
+              "own": 6,
+              "undefined": 0
+            },
+            "high_block": {
+              "final": 0,
+              "middle": 0,
+              "own": 46,
+              "undefined": 5
+            },
+            "low_block": {
+              "final": 44,
+              "middle": 32,
+              "own": 0,
+              "undefined": 5
+            },
+            "medium_block": {
+              "final": 3,
+              "middle": 69,
+              "own": 40,
+              "undefined": 15
+            }
+          },
+          "2015213": {
+            "chaotic": {
+              "final": 13,
+              "middle": 62,
+              "own": 41,
+              "undefined": 5
+            },
+            "defending_direct": {
+              "final": 0,
+              "middle": 10,
+              "own": 30,
+              "undefined": 2
+            },
+            "defending_quick_break": {
+              "final": 1,
+              "middle": 6,
+              "own": 0,
+              "undefined": 0
+            },
+            "defending_set_play": {
+              "final": 8,
+              "middle": 3,
+              "own": 0,
+              "undefined": 1
+            },
+            "defending_transition": {
+              "final": 0,
+              "middle": 4,
+              "own": 5,
+              "undefined": 0
+            },
+            "high_block": {
+              "final": 0,
+              "middle": 0,
+              "own": 72,
+              "undefined": 4
+            },
+            "low_block": {
+              "final": 34,
+              "middle": 25,
+              "own": 0,
+              "undefined": 1
+            },
+            "medium_block": {
+              "final": 1,
+              "middle": 93,
+              "own": 57,
+              "undefined": 12
+            }
+          }
+        },
+        "total": {
+          "chaotic": {
+            "final": 115,
+            "middle": 383,
+            "own": 367,
+            "undefined": 47
+          },
+          "defending_direct": {
+            "final": 0,
+            "middle": 62,
+            "own": 218,
+            "undefined": 51
+          },
+          "defending_quick_break": {
+            "final": 12,
+            "middle": 39,
+            "own": 0,
+            "undefined": 0
+          },
+          "defending_set_play": {
+            "final": 131,
+            "middle": 17,
+            "own": 0,
+            "undefined": 30
+          },
+          "defending_transition": {
+            "final": 0,
+            "middle": 26,
+            "own": 49,
+            "undefined": 0
+          },
+          "high_block": {
+            "final": 1,
+            "middle": 2,
+            "own": 569,
+            "undefined": 45
+          },
+          "low_block": {
+            "final": 462,
+            "middle": 349,
+            "own": 0,
+            "undefined": 18
+          },
+          "medium_block": {
+            "final": 25,
+            "middle": 762,
+            "own": 532,
+            "undefined": 107
+          }
+        }
+      },
       "probe_counts": {
         "1874553": {
           "measured": 405,
@@ -2240,6 +4620,18 @@
     "bar_p": 0.00135,
     "bar_same_sign": 8,
     "block_rho": 0.1,
+    "c3_contiguous": {
+      "low_vs_medium_in_middle": [
+        "low_block",
+        "medium_block",
+        "middle"
+      ],
+      "medium_vs_high_in_own": [
+        "medium_block",
+        "high_block",
+        "own"
+      ]
+    },
     "c3_contrast": [
       "low_block",
       "high_block"
@@ -2247,6 +4639,7 @@
     "c3_definition": "with_gk_extremes_listed",
     "chunk": 250,
     "coarse_step_sd": 0.05,
+    "d3_ratio": 0.5,
     "fine_step_sd": 0.01,
     "max_effect_sd": 2.0,
     "mde_limit_sd": 0.3,
@@ -2262,10 +4655,15 @@
   "cp1_rule": {
     "backup": "C3",
     "recommended_first": "C1",
-    "rule": "C2 first if it survived probe S2 and its V1 MDE80 is at most mde_limit; otherwise C1 if alive; C3 only as a backup; none alive, branch B. CP1 decides.",
+    "rule": "C2 first if it survived probe S2 and its V1 MDE80 is at most mde_limit; otherwise C1 if alive; C3 only as a backup; none alive, branch B. CP1 decides, also which contrast C3 would use.",
     "testable_v0": {
       "C1": true,
-      "C3": false
+      "C3/low_vs_high/length": false,
+      "C3/low_vs_high/width": false,
+      "C3/low_vs_medium_in_middle/length": false,
+      "C3/low_vs_medium_in_middle/width": false,
+      "C3/medium_vs_high_in_own/length": false,
+      "C3/medium_vs_high_in_own/width": false
     }
   },
   "matches": [

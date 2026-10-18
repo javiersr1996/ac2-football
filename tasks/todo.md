@@ -594,8 +594,15 @@ y lo que no se abrió. La figura 2 enseña la muerte. Si en CP1 mueren las tres,
   el README final); el rápido bajó 95,6 MB cuatro veces (un intento con el `TMPDIR` largo, uno bueno, dos mutaciones) y el
   completo una; los bloques usan `uv run ftbase ...` con el `--data-dir` por defecto (`data/` del clon, ignorado); los bytes
   salen de la línea `match ...: 5 files, N bytes` (rápido) y del log (completo), el recibo no los guarda.
-- [ ] 10. `haiku` `[entrada]` kloppy: con la versión fijada, cargar el sintético de la base y ver si
+- [x] 10. `haiku` `[entrada]` kloppy: con la versión fijada, cargar el sintético de la base y ver si
   `is_detected` sobrevive; si no, borrador de un issue (no se publica: es de Javier).
+  Medido (2026-10-18, fuera del repo y luego copiado): kloppy 3.19.1 (última en PyPI ese día);
+  `ftbase` instalado desde git como un tercero (`v0.1.0` → `53080bc`) sin problemas. `is_detected` se
+  pierde: `kloppy/infra/serializers/tracking/skillcorner.py:224-233` crea `PlayerData(coordinates=...)`
+  sin leerlo, `:215` igual con el balón, `:185` y `:241` dejan `other_data={}`; `grep -rn is_detected`
+  sobre el paquete (sin `tests/files`) vacío. Las 37 filas jugador-frame plantadas con `is_detected`
+  falso siguen en el dataset de kloppy con coordenadas y sin ningún indicador. Borrador del issue en
+  `docs/kloppy_issue_draft.md` (reproducción sintética de dos frames, sin datos reales; no publicado: J5).
 
 ## Fase 1: capa 2 y sondas (lun 26 oct a dom 1 nov)
 

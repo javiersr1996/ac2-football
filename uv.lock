@@ -12,6 +12,7 @@ version = "0.1.0"
 source = { editable = "." }
 dependencies = [
     { name = "ftbase" },
+    { name = "pyarrow" },
 ]
 
 [package.dev-dependencies]
@@ -22,7 +23,10 @@ dev = [
 ]
 
 [package.metadata]
-requires-dist = [{ name = "ftbase", git = "https://github.com/javiersr1996/football-tracking-base?tag=v0.1.0" }]
+requires-dist = [
+    { name = "ftbase", git = "https://github.com/javiersr1996/football-tracking-base?tag=v0.1.0" },
+    { name = "pyarrow", specifier = ">=26.0.0" },
+]
 
 [package.metadata.requires-dev]
 dev = [

@@ -5,6 +5,7 @@ description = "Football entry to the SkillCorner Analytics Cup 2.0."
 requires-python = ">=3.13"
 dependencies = [
     "ftbase",
+    "pyarrow>=26.0.0",
 ]
 
 [project.scripts]
@@ -38,5 +39,12 @@ select = ["E", "F", "I", "UP", "B"]
 strict = true
 files = ["src"]
 
+[[tool.mypy.overrides]]
+module = ["pyarrow.*"]
+ignore_missing_imports = true  # pyarrow ships no stubs and no py.typed marker
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+# Tests on the real matches are deselected here (not skipped): `pytest -m realdata`.
+addopts = "-m 'not realdata'"
+markers = ["realdata: needs the real matches built under $FTBASE_DATA_ROOT or data/"]

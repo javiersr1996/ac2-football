@@ -9,6 +9,7 @@ from pathlib import Path
 
 from ac2fb import __version__
 from ac2fb.defence.probe_s1 import write_s1_report
+from ac2fb.defence.probe_s2 import write_s2_report
 from ac2fb.protocol.data import (
     GUARDED_CODE,
     HeldOutLocked,
@@ -92,7 +93,38 @@ def build_parser() -> argparse.ArgumentParser:
         default=_REPORTS,
         help="where probe_s1.json goes (default: reports/)",
     )
+    s2 = commands.add_parser(
+        "s2",
+        help="write reports/probe_s2.json: the last line at the reception and its pre-trend",
+        description=(
+            "Probe S2 (candidate C2), descriptive: does the last line agree with the provider's "
+            "and follow the incoming ball, how large is its pre-trend within incoming-ball "
+            "strata, and how many receptions keep the whole line in view. No position after "
+            "the reception enters a figure. Reads through the guarded door. Without --match, the "
+            "calibration matches."
+        ),
+    )
+    s2.add_argument(
+        "--match", type=int, action="append", metavar="ID", help="native match id (repeatable)"
+    )
+    s2.add_argument(
+        "--reports-dir",
+        type=Path,
+        default=_REPORTS,
+        help="where probe_s2.json goes (default: reports/)",
+    )
     return parser
+
+
+def _s2(match_ids: Sequence[int] | None, reports_dir: Path) -> int:
+    ids = list(match_ids) if match_ids else list(load_split().calibration)
+    try:
+        path = write_s2_report(ids, reports_dir)
+    except HeldOutLocked as exc:
+        print(f"refused: {exc}", file=sys.stderr)
+        return 2
+    print(f"wrote {path}")
+    return 0
 
 
 def _s1(match_ids: Sequence[int] | None, reports_dir: Path) -> int:
@@ -156,6 +188,8 @@ def main(argv: Sequence[str] | None = None) -> int:
         return _cadence(args.match, args.reports_dir)
     if args.command == "s1":
         return _s1(args.match, args.reports_dir)
+    if args.command == "s2":
+        return _s2(args.match, args.reports_dir)
     return 0
 
 

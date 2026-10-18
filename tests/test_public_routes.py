@@ -35,7 +35,7 @@ from gate_helpers import CAL, HELD, POISON, Checkout
 
 import ac2fb
 from ac2fb import cli
-from ac2fb.defence import pressure, probe_s1
+from ac2fb.defence import line, m10, pressure, probe_s1, probe_s2
 from ac2fb.protocol import data
 from ac2fb.protocol.data import HeldOutLocked
 from ac2fb.reliability import cadence, inventory, long, report, runs, visibility
@@ -120,6 +120,21 @@ def s1_command(m: int) -> pa.Table:
     return served(m, True)
 
 
+def s2_command(m: int) -> pa.Table:
+    """The ``s2`` command for one match: exit 2 and a refusal on stderr is a refusal."""
+    err = io.StringIO()
+    with contextlib.redirect_stderr(err), contextlib.redirect_stdout(io.StringIO()):
+        code = cli.main(["s2", "--match", str(m), "--reports-dir", OUT])
+    if code == 2 and "held-out" in err.getvalue():
+        raise HeldOutLocked(err.getvalue())
+    assert code == 0, err.getvalue()
+    return served(m, True)
+
+
+def s2_inputs(m: int) -> probe_s2.MatchInputs:
+    return probe_s2.load_inputs(m)
+
+
 def one_unit(window: WindowFrames) -> Reading | None:
     return Reading(0.0, ())
 
@@ -194,6 +209,46 @@ FUNCTION_ROUTES: dict[str, Route] = {
     "ac2fb.defence.probe_s1.verdict": without_match(lambda: probe_s1.verdict({})),
     "ac2fb.defence.probe_s1.write_s1_report": by_match(
         lambda m: served(m, probe_s1.write_s1_report([m], Path(OUT)).is_file())
+    ),
+    "ac2fb.defence.line.ball_extrapolated": on_match(
+        lambda mt: isinstance(line.ball_extrapolated(mt, int(mt.frame[0]), int(mt.frame[0])), bool)
+    ),
+    "ac2fb.defence.line.build_units": by_match(
+        lambda m: served(m, isinstance(line.build_units(s2_inputs(m).match, [], (13,)), tuple))
+    ),
+    "ac2fb.defence.line.concordance": without_match(lambda: line.concordance([], [])),
+    "ac2fb.defence.line.seen_through": on_match(
+        lambda mt: (
+            line.seen_through(mt, [int(mt.player[0])], int(mt.frame[0]), int(mt.frame[0])) >= 0
+        )
+    ),
+    "ac2fb.defence.line.within_strata": without_match(lambda: line.within_strata([], [], [], 5)),
+    "ac2fb.defence.m10.ball_carrier": by_match(
+        lambda m: served(m, m10.ball_carrier(s2_inputs(m).match, s2_inputs(m).receptions)["n"] >= 0)
+    ),
+    "ac2fb.defence.m10.compare": without_match(lambda: m10.compare({}, None)),
+    "ac2fb.defence.m10.direction": without_match(lambda: m10.direction(3.0)),
+    "ac2fb.defence.m10.m10_units": without_match(lambda: m10.m10_units([])),
+    "ac2fb.defence.m10.match_figures": without_match(lambda: m10.match_figures([])),
+    "ac2fb.defence.m10.pooled_figures": without_match(lambda: m10.pooled_figures([], 0)),
+    "ac2fb.defence.probe_s2.line_receptions": without_match(
+        lambda: probe_s2.line_receptions(
+            pa.table({k: pa.array([], pa.string()) for k in ("native_family",)}),
+            pa.table({k: pa.array([], pa.string()) for k in ("event_id", "event_type")}),
+        )
+    ),
+    "ac2fb.defence.probe_s2.load_inputs": by_match(
+        lambda m: served(m, s2_inputs(m).match.player.size > 0)
+    ),
+    "ac2fb.defence.probe_s2.match_report": by_match(
+        lambda m: served(m, "instrument" in probe_s2.match_report(s2_inputs(m)))
+    ),
+    "ac2fb.defence.probe_s2.s2_report": by_match(
+        lambda m: served(m, "verdict" in probe_s2.s2_report([s2_inputs(m)]))
+    ),
+    "ac2fb.defence.probe_s2.verdict": without_match(lambda: probe_s2.verdict({}, {}, {})),
+    "ac2fb.defence.probe_s2.write_s2_report": by_match(
+        lambda m: served(m, probe_s2.write_s2_report([m], Path(OUT)).is_file())
     ),
     "ac2fb.reliability.cadence.cadence_of": without_match(
         lambda: cadence.cadence_of(np.array([2, 2, 3], dtype=np.int64))
@@ -272,6 +327,7 @@ CLI_ROUTES: dict[tuple[str, ...], Route] = {
     ("layer2",): by_match(layer2_command),
     ("cadence",): by_match(cadence_command),
     ("s1",): by_match(s1_command),
+    ("s2",): by_match(s2_command),
 }
 
 

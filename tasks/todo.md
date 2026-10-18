@@ -320,7 +320,7 @@ y lo que no se abrió. La figura 2 enseña la muerte. Si en CP1 mueren las tres,
   (split, guard, congelación), `cli.py`. Aceptación: `uv sync --locked` y el gate (V) en verde con
   un test trivial que se rompe al mutar.
   Medido: gate en verde con 3 tests; mutar `prog` en `cli.py` rompe 2 de 3; todo `i/lf`.
-- [ ] 2. `sonnet` `[base]` Repo base con `git init` nuevo (sin historia de tracklab, para no
+- [x] 2. `sonnet` `[base]` Repo base con `git init` nuevo (sin historia de tracklab, para no
   filtrar el resto del repo privado). **Primer commit, solo la copia literal** de los ficheros de
   tracklab `686508a` listados en `docs/provenance.md` (fichero, ruta en tracklab, estado
   `copiado`), mensaje "Import football base from tracklab@686508a (author's prior work, MIT)".
@@ -329,6 +329,14 @@ y lo que no se abrió. La figura 2 enseña la muerte. Si en CP1 mueren las tres,
   `data/`, `LICENSE.md` MIT) y un README corto en inglés (qué es, instalar, los tres comandos, datos
   y LFS, procedencia, licencia). Aceptación: `git show --stat <import>` lista solo ficheros de la
   tabla; gate (V) en verde desde el segundo commit con un test trivial que se rompe al mutar.
+  Medido: commits `2a329d5` (importación) y `b81bf10` (esqueleto) en `football-tracking-base`; 43 ficheros
+  importados con blobs idénticos a tracklab `686508a` (43 de 43 por hash) y `docs/provenance.md` con las 43 filas;
+  gate en verde con 3 tests (`sync --locked`, ruff, format, mypy, pytest); mutar `prog` en `cli.py` rompe 2 de 3;
+  todo `i/lf`. Desviaciones: git no tiene `user.name` global (solo el correo), el autor es `Javier Sánchez Rueda`
+  fijado en local como en los commits de tracklab; no se importó `cli.py` ni `tests/conftest.py`; `test_ingest.py`
+  y `test_frozen_schemas.py` mezclan baloncesto y se importaron enteros (recorte en las tareas 3 y 4); semillas,
+  `sources/*.yml` y `quality/` no se importaron (fuera de la lista). `pipeline/` va excluido del gate (ruff
+  `extend-exclude`) hasta cerrar la tarea 5: quitar esa exclusión entonces (también anotado en el README de la base).
 - [ ] 3. `sonnet` `[base]` Ingesta: manifiesto recortado a `opendata-football` (85 ficheros,
   commit `4340d27`), `fetch` sin HuggingFace ni `freeze`, `verify`, `lfs`, `manifest`, `local`
   (`--from-existing`) y `--match <id>` (los 4 ficheros de un partido más `matches.json`; nuevo,

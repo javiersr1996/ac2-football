@@ -480,6 +480,22 @@ y lo que no se abrió. La figura 2 enseña la muerte. Si en CP1 mueren las tres,
   provenance` que imprime y escribe `reports/provenance.json` (líneas por estado). Tag `v0.1.0`
   en el commit que pasa el gate. Aceptación: el recuento del JSON coincide con `wc -l`; test que
   falla si un fichero de `src/ftbase/` no está en la tabla; `--check` compara con el JSON escrito.
+  Medido: commit `4c08ba0` en `football-tracking-base` (sobre `ded3a56`, empujado a `main`; sin tag, tag pendiente de la
+  revisión adversarial). Gate local en verde (`uv sync --locked`, ruff, format, `mypy src`, `pytest -q`: 114 pasan, 0
+  saltados, 22 deseleccionados; eran 109) y `ftbase provenance --check` exit 0. **CI en verde:
+  https://github.com/javiersr1996/football-tracking-base/actions/runs/39121055070** (último paso: `ftbase provenance --check`).
+  Alcance: 63 ficheros de `src/ftbase/` y `tests/` (`__pycache__` fuera), todos con fila. Recuento contra tracklab
+  `686508a`: copiado 31 ficheros, 5.661 líneas, 5.424 copiadas, 237 cambiadas; reescrito 18, 2.431 líneas, 1.354 copiadas,
+  1.077 cambiadas; nuevo 14, 1.986 líneas, todas cambiadas. Total 10.078 líneas, 6.778 copiadas, 3.300 cambiadas. La suma
+  de líneas del JSON es igual a `wc -l` sobre los 63. Mutaciones (cada una restaurada y comprobada): borrar la fila de
+  `paths.py` (test de cobertura falla y `--check` sale 1); `lines_total` +1 en el JSON (test de `wc -l` falla, `--check`
+  sale 1); editar `paths.py` sin regenerar (`--check` sale 1 con JSON y tabla); una cifra de la tabla +1 a mano (`--check`
+  sale 1); `count_copied` que devuelve 0 (2 tests fallan). Desviaciones: `py.typed` y `tests/test_cli.py` no tenían fila
+  (`nuevo`: tracklab `686508a` no los tiene), se añadieron con `provenance.py` y `test_provenance.py`; `ftbase provenance`
+  sin `--check` exige `--tracklab` cuando hay filas `copiado` o `reescrito`; el conjunto de ficheros sale del sistema de
+  ficheros, no de `git ls-files`; los dos originales de `checks.py` y `build.py` se concatenan en el orden de la tabla;
+  `--check` sin tracklab compara las copiadas con el JSON pero no las recuenta (lo hace `--check --tracklab`); `ci.yml`
+  queda fuera del alcance; el README no lista el nuevo subcomando.
 - [ ] 8. `sonnet` `[entrada]` Dependencia fijada: `git rm -r src/ac2fb/base/`; `ftbase` en
   `dependencies` con `[tool.uv.sources] ftbase = { git = "<URL pública>", tag = "v0.1.0" }`; nunca
   una fuente `path`: para probar cambios de la base sin tag, `uv run --with-editable

@@ -496,6 +496,24 @@ y lo que no se abrió. La figura 2 enseña la muerte. Si en CP1 mueren las tres,
   ficheros, no de `git ls-files`; los dos originales de `checks.py` y `build.py` se concatenan en el orden de la tabla;
   `--check` sin tracklab compara las copiadas con el JSON pero no las recuenta (lo hace `--check --tracklab`); `ci.yml`
   queda fuera del alcance; el README no lista el nuevo subcomando.
+  Revisión adversarial 1 (2026-10-18): nueve hallazgos, todos arreglados en `football-tracking-base` (`4c08ba0` a `920b943`,
+  empujados; sin tag). (1) README y comentarios sin afirmaciones analíticas: solo "conserva `is_detected` del proveedor", con
+  "extrapolated" como palabra suya (`4629e57`). (2) `ingest --match` seguido de `bronze` reventaba: `bronze` aplica `select_match`
+  con el `match_id` del recibo (`789b31a`); test de extremo a extremo con dos partidos en el manifiesto, el segundo borrado del
+  disco; mutación (quitar `select_match`) rompe el test; con datos reales, partido 1874553: `ingest --from-existing --match`
+  0,6 s, `bronze` 5,7 s, `silver` 2,1 s (64 de 64 comprobaciones), exit 0 los tres. (3) `ftbase provenance` sin `--tracklab`
+  funciona para `nuevo`, para sha256 sin cambios (reutiliza el JSON) y para `copiado`/`reescrito` editados (recuenta contra el
+  commit de importación del propio repo, localizado por mensaje) con error claro si no está (clon superficial o `cli.py`,
+  `orientation.py`, `test_silver_orientation.py`, cuyo origen no está en la importación); 4 mutaciones rompen sus tests
+  (`7197bf1`, documentado en `docs/provenance.md`). (4) README sin "not tagged yet" ni "where the code was first written", con
+  los cinco subcomandos y remisión a la procedencia (`920b943`, `9634b04`). (5) Cabeceras y tabla de acuerdo, con test nuevo
+  (mutación: una cabecera cambiada lo rompe); `manifest_helper.py` pasa a `copiado` con su origen; la tabla dice qué orígenes no
+  están en la importación y que `surface_spec.csv` quedó fuera; JSON regenerado (`920b943`). (6) 29 referencias a tareas o
+  decisiones y 8 a `docs/formats/football.md` fuera (`4629e57`). (7) "about 91 MB" fuera: `ingest --match` imprime ficheros y
+  bytes (95.624.493 B para 1874553, test con suma independiente; `9634b04`). (8) `source_path` absoluto y en POSIX, test
+  (`5cf445d`). (9) Test de lectores con ficheros del otro partido corruptos: un lector que abre todos y filtra falla (mutación
+  comprobada; el test anterior no la veía; `0a5d2f7`). Gate local y clon limpio en verde (122 pasan, 22 `realdata` pasan con
+  datos reales). CI en verde: https://github.com/javiersr1996/football-tracking-base/actions/runs/39123326191
 - [ ] 8. `sonnet` `[entrada]` Dependencia fijada: `git rm -r src/ac2fb/base/`; `ftbase` en
   `dependencies` con `[tool.uv.sources] ftbase = { git = "<URL pública>", tag = "v0.1.0" }`; nunca
   una fuente `path`: para probar cambios de la base sin tag, `uv run --with-editable

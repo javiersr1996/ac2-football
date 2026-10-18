@@ -35,7 +35,7 @@ from gate_helpers import CAL, HELD, POISON, Checkout
 
 import ac2fb
 from ac2fb import cli
-from ac2fb.defence import line, m10, pressure, probe_s1, probe_s2
+from ac2fb.defence import block, line, m10, pressure, probe_s1, probe_s2, probe_s3
 from ac2fb.protocol import data
 from ac2fb.protocol.data import HeldOutLocked
 from ac2fb.reliability import cadence, inventory, long, report, runs, visibility
@@ -131,6 +131,21 @@ def s2_command(m: int) -> pa.Table:
     return served(m, True)
 
 
+def s3_command(m: int) -> pa.Table:
+    """The ``s3`` command for one match: exit 2 and a refusal on stderr is a refusal."""
+    err = io.StringIO()
+    with contextlib.redirect_stderr(err), contextlib.redirect_stdout(io.StringIO()):
+        code = cli.main(["s3", "--match", str(m), "--reports-dir", OUT])
+    if code == 2 and "held-out" in err.getvalue():
+        raise HeldOutLocked(err.getvalue())
+    assert code == 0, err.getvalue()
+    return served(m, True)
+
+
+def s3_inputs(m: int) -> probe_s3.MatchInputs:
+    return probe_s3.load_inputs(m)
+
+
 def s2_inputs(m: int) -> probe_s2.MatchInputs:
     return probe_s2.load_inputs(m)
 
@@ -164,6 +179,10 @@ FUNCTION_ROUTES: dict[str, Route] = {
     "ac2fb.protocol.data.read_bronze_events": by_match(
         lambda m: served(m, data.read_bronze_events([m], columns=["event_id"]).num_rows > 0),
         lambda m: served(m, data.read_bronze_events([m]).num_rows > 0),
+    ),
+    "ac2fb.protocol.data.read_bronze_phases": by_match(
+        lambda m: served(m, data.read_bronze_phases([m], columns=["frame_start"]).num_rows > 0),
+        lambda m: served(m, data.read_bronze_phases([m]).num_rows > 0),
     ),
     "ac2fb.protocol.data.read_dim": by_match(
         *[lambda m, name=name: data.read_dim(name, [m]) for name in DIMS]
@@ -209,6 +228,70 @@ FUNCTION_ROUTES: dict[str, Route] = {
     "ac2fb.defence.probe_s1.verdict": without_match(lambda: probe_s1.verdict({})),
     "ac2fb.defence.probe_s1.write_s1_report": by_match(
         lambda m: served(m, probe_s1.write_s1_report([m], Path(OUT)).is_file())
+    ),
+    "ac2fb.defence.block.measure": without_match(
+        lambda: block.measure(
+            np.zeros(5),
+            np.arange(5.0),
+            np.ones(5, dtype=bool),
+            np.arange(5, dtype=np.int64),
+            None,
+            block.DEFINITIONS[0],
+        )
+    ),
+    "ac2fb.defence.block.name_of": without_match(lambda: block.name_of(block.DEFINITIONS[0])),
+    "ac2fb.defence.block.spearman": without_match(
+        lambda: block.spearman(np.arange(4.0), np.arange(4.0))
+    ),
+    "ac2fb.defence.probe_s3.definition_stats": by_match(
+        lambda m: served(
+            m,
+            "reproduces"
+            in probe_s3.definition_stats(
+                probe_s3.observe(s3_inputs(m).match, s3_inputs(m).phases), block.DEFINITIONS[0]
+            ),
+        )
+    ),
+    "ac2fb.defence.probe_s3.load_inputs": by_match(
+        lambda m: served(m, s3_inputs(m).match.player.size > 0)
+    ),
+    "ac2fb.defence.probe_s3.make_metric": by_match(
+        lambda m: served(
+            m,
+            callable(
+                probe_s3.make_metric(
+                    s3_inputs(m).match, s3_inputs(m).phases, block.DEFINITIONS[0], "width"
+                )
+            ),
+        )
+    ),
+    "ac2fb.defence.probe_s3.match_figures": by_match(
+        lambda m: served(m, "fixers" in probe_s3.match_figures(s3_inputs(m), block.DEFINITIONS[0]))
+    ),
+    "ac2fb.defence.probe_s3.observe": by_match(
+        lambda m: served(m, len(probe_s3.observe(s3_inputs(m).match, s3_inputs(m).phases)) > 0)
+    ),
+    "ac2fb.defence.probe_s3.phases_from": without_match(
+        lambda: probe_s3.phases_from(
+            pa.table({k: pa.array([], pa.int64()) for k in ("index", "period", "frame_start")})
+        )
+    ),
+    "ac2fb.defence.probe_s3.s3_report": by_match(
+        lambda m: served(m, "verdict" in probe_s3.s3_report([s3_inputs(m)]))
+    ),
+    "ac2fb.defence.probe_s3.select_definition": without_match(
+        lambda: probe_s3.select_definition(
+            {
+                0: {
+                    block.name_of(d): {"reproduces": False, "abs_diff_sum": None}
+                    for d in block.DEFINITIONS
+                }
+            }
+        )
+    ),
+    "ac2fb.defence.probe_s3.verdict": without_match(lambda: probe_s3.verdict({})),
+    "ac2fb.defence.probe_s3.write_s3_report": by_match(
+        lambda m: served(m, probe_s3.write_s3_report([m], Path(OUT)).is_file())
     ),
     "ac2fb.defence.line.ball_extrapolated": on_match(
         lambda mt: isinstance(line.ball_extrapolated(mt, int(mt.frame[0]), int(mt.frame[0])), bool)
@@ -328,6 +411,7 @@ CLI_ROUTES: dict[tuple[str, ...], Route] = {
     ("cadence",): by_match(cadence_command),
     ("s1",): by_match(s1_command),
     ("s2",): by_match(s2_command),
+    ("s3",): by_match(s3_command),
 }
 
 

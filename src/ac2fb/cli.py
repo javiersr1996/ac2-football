@@ -10,6 +10,7 @@ from pathlib import Path
 from ac2fb import __version__
 from ac2fb.defence.probe_s1 import write_s1_report
 from ac2fb.defence.probe_s2 import write_s2_report
+from ac2fb.defence.probe_s3 import write_s3_report
 from ac2fb.protocol.data import (
     GUARDED_CODE,
     HeldOutLocked,
@@ -113,7 +114,38 @@ def build_parser() -> argparse.ArgumentParser:
         default=_REPORTS,
         help="where probe_s2.json goes (default: reports/)",
     )
+    s3 = commands.add_parser(
+        "s3",
+        help="write reports/probe_s3.json: the block's width and length against the provider's",
+        description=(
+            "Probe S3 (candidate C3), descriptive: which definition of the block reproduces the "
+            "provider's width and length at the start of a phase, how much of the players that "
+            "fix its ends the camera saw, and whether the block looks wider when more of it is "
+            "seen. Nothing after the phase's start frame enters a figure. Reads through the "
+            "guarded door. Without --match, the calibration matches."
+        ),
+    )
+    s3.add_argument(
+        "--match", type=int, action="append", metavar="ID", help="native match id (repeatable)"
+    )
+    s3.add_argument(
+        "--reports-dir",
+        type=Path,
+        default=_REPORTS,
+        help="where probe_s3.json goes (default: reports/)",
+    )
     return parser
+
+
+def _s3(match_ids: Sequence[int] | None, reports_dir: Path) -> int:
+    ids = list(match_ids) if match_ids else list(load_split().calibration)
+    try:
+        path = write_s3_report(ids, reports_dir)
+    except HeldOutLocked as exc:
+        print(f"refused: {exc}", file=sys.stderr)
+        return 2
+    print(f"wrote {path}")
+    return 0
 
 
 def _s2(match_ids: Sequence[int] | None, reports_dir: Path) -> int:
@@ -190,6 +222,8 @@ def main(argv: Sequence[str] | None = None) -> int:
         return _s1(args.match, args.reports_dir)
     if args.command == "s2":
         return _s2(args.match, args.reports_dir)
+    if args.command == "s3":
+        return _s3(args.match, args.reports_dir)
     return 0
 
 

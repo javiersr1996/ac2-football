@@ -767,11 +767,58 @@ su test sintÃ©tico con el fallo plantado (una sonda que no puede fallar no prote
   usa como referencia los detectados en conjunto y por longitud de su propio tramo; el suelo de
   redondeo es una simulaciÃ³n (`linear_rounding_floor`, semilla 0), no una medida. Nadie leyÃ³ el
   reservado: ningÃºn comando ni test tocÃ³ un partido suyo.
-- [ ] 13. `sonnet` Cadencia en fÃºtbol: segundas diferencias de jugadores detectados con un umbral
+- [x] 13. `sonnet` Cadencia en fútbol: segundas diferencias de jugadores detectados con un umbral
   por encima del ruido de redondeo de la rejilla de 1 cm (justificado en la tarea), hueco entre
-  quiebros en los 10 de calibraciÃ³n. AceptaciÃ³n: `reports/probe_cadence.json`; decide la ventana
-  mÃ¡s corta admisible (W mÃ­nimo) y lo escribe; sintÃ©tico con cadencia plantada de 5 frames que
-  el estimador tiene que recuperar.
+  quiebros en los 10 de calibración. Aceptación: `reports/probe_cadence.json`; decide la ventana
+  más corta admisible (W mínimo) y lo escribe; sintético con cadencia plantada de 5 frames que
+  el estimador tiene que recuperar, varias semillas; mutación anotada.
+  Medido (2026-10-18; todas las cifras salen de `reports/probe_cadence.json`, 10 de calibración,
+  por partido): código `2f6f53c`, empujado, **CI en verde** (run 39136726588, 38 s). Gate local en
+  verde (`sync --locked`, ruff, format, `mypy src`, `pytest -q`: 347 pasan, eran 267; 7
+  deseleccionados; `pytest -m realdata`: 7 de 7, eran 6, con el informe confirmado byte a byte).
+  Nuevo: `reliability/cadence.py`, comando `ac2fb cadence [--match ID] [--reports-dir D]` y
+  `runs.second_differences` (la segunda diferencia que `acceleration_summary` calculaba dentro, sin
+  duplicarla: `layer2.json` sale igual byte a byte). Rutas públicas nuevas cubiertas por el test de
+  la 11 (7 funciones y el comando `cadence`).
+  **Umbral.** Una recta redondeada a 1 cm se desvía como mucho 0,005 por coordenada, la segunda
+  diferencia 0,005 x (1 + 2 + 1) = 0,02 y la de dos dimensiones 0,02 x raíz de 2 = 0,0283 m por
+  frame al cuadrado (`threshold.rounding_bound`). Umbral de quiebro: **0,03**, por encima de ese
+  máximo exacto, así que el redondeo solo nunca da un quiebro (un test lo comprueba con 100.000
+  rectas). El artefacto imprime también el suelo simulado de la 12 (`simulated_floor`: p50 0,010,
+  p90 y p99 0,0141).
+  **Regla de W mínimo, escrita en el docstring de `cadence.py` antes de leer los datos:** cadencia
+  de un partido = el hueco más frecuente entre quiebros (el menor en un empate); cadencia del
+  conjunto = la mayor de los 10; G = el mayor de los 10 del percentil 90 del hueco; **W mínimo =
+  máx(2 x cadencia, G) frames**. Razón: un desenlace "desplazamiento en `[t, t + W]` menos lo que
+  predecía la velocidad en `t`" vale cero para un camino que no gira, así que la ventana tiene que
+  poder contener un giro en la mayoría de los casos (G) y al menos tres actualizaciones reales
+  (2 x cadencia). Es un suelo: la 19 puede elegir una ventana mayor, nunca menor.
+  **Resultado: cadencia 1 frame en 10 de 10 partidos (no hay cadencia oculta), G = 13, W mínimo = 13
+  frames = 1,3 s** (`decision`). Por partido: el hueco p50 es 1 a 2 frames; p90 9 a 13; el hueco de 1
+  frame es el 49,9 a 55,1 % de los huecos y el de 2 el 21,2 a 22,7 %; quiebros en el 11,1 a 14,4 %
+  de los centros detectados (58.036 a 74.302 huecos por partido); el histograma cae sin pico (la
+  primera subida respecto al hueco anterior, `first_rise`, está entre el hueco 9 y el 23, en colas
+  de menos de 1 %). Sin umbral, el 96,9 a 97,3 % de los centros son quiebros (cadencia 1); con el
+  p99 del suelo, 37,0 a 42,0 % (cadencia 1, p90 de 4 a 5): el umbral cae dentro del ruido de redondeo
+  y de movimiento real, como adelantó m7 (57,6 a 59,8 % de huecos de 1 frame con otro umbral y
+  otra definición de hueco: no son comparables). Los huecos solo se cuentan dentro de tramos
+  detectados sin interrupción, así que los largos están infrarrepresentados (censura por la
+  derecha); los de más de 30 frames son el 3,3 a 4,9 % (`histogram.gap_gt_30`).
+  **Sintético** (`tests/test_cadence.py`): caminos con un vértice cada `c` frames (cambio de
+  velocidad de al menos 0,1 m por frame, redondeo a 1 cm), 8 jugadores x 600 frames, **5 semillas
+  (1 a 5) x c = 3, 5 y 8**: el estimador recupera `c` en las 15; con c = 5 todos los huecos son
+  múltiplos de 5, más del 90 % valen 5, el informe da cadencia 5, G 5 y W mínimo 10 frames; la
+  primera subida del histograma cae en `c`; un camino recto no da ningún quiebro con 0,03 y miles
+  con 0. Los huecos se contrastan con una referencia de fuerza bruta sobre diccionarios, con
+  frames sin listar y tramos extrapolados, 5 semillas x 3 umbrales. **Mutaciones (7, restauradas;
+  script en el scratchpad), tests que fallan de 60:** sin umbral 42; umbral dentro del ruido (p50
+  del suelo, 0,010) 32; hueco que cruza interrupciones 56; ventana sin G 1; ventana sin 2 x
+  cadencia 6; cadencia = hueco mayor 11; umbral en el p99 del suelo (0,0142) **solo 1**: el test de
+  la cota (0,0141 < 0,0283 < 0,03), porque con un 1 % de falsos quiebros la moda sigue en 5.
+  Desviaciones: G como percentil 90 y el factor 2 son una convención (la regla las declara; no
+  salen de un artefacto); sin pico no se prueba que el proveedor interpole a 10 Hz, solo que ninguna
+  cadencia mayor de 1 aparece con este umbral; el informe es un JSON propio y no una sección de
+  `layer2.json`; la 19 toma W >= 13 frames. Nadie leyó el reservado.
 - [ ] 14. `sonnet` Sonda S1 (C1): Ã­ndice de presiÃ³n en la recepciÃ³n; contraste de direcciÃ³n
   forzada (mediana del Ã­ndice creciente en los 5 niveles de `overall_pressure_start` en al menos
   9 de 10 partidos); fracciÃ³n del Ã­ndice que sostienen rivales extrapolados; estratos de balÃ³n

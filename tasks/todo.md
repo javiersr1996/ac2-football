@@ -514,6 +514,17 @@ y lo que no se abrió. La figura 2 enseña la muerte. Si en CP1 mueren las tres,
   (`5cf445d`). (9) Test de lectores con ficheros del otro partido corruptos: un lector que abre todos y filtra falla (mutación
   comprobada; el test anterior no la veía; `0a5d2f7`). Gate local y clon limpio en verde (122 pasan, 22 `realdata` pasan con
   datos reales). CI en verde: https://github.com/javiersr1996/football-tracking-base/actions/runs/39123326191
+  Revisión adversarial 2 (2026-10-18): hallazgo alto, el historial: lo resuelve la reescritura, no un arreglo en HEAD.
+  Medios y bajos arreglados en `football-tracking-base` (`22d403b` a `f963684`, empujados; sin tag). (1) `checks.py` da una razón
+  de integridad del dato (`22d403b`). (2) `provenance` solo reutiliza el recuento guardado si coinciden sha256, orígenes, commit y
+  estado, y recuenta siempre contra el commit de importación cuando este tiene los orígenes; test del caso de cambiar el origen
+  en la tabla, test del recuento editado a mano en JSON y tabla; mutación (reutilizar por sha256 solo) rompe ambos
+  (`22a00b3`; docs en `dbf3fa0`). (3) `silver` respeta el `match_id` del recibo como `bronze`: build completo, luego
+  `--match` de uno, silver con un solo partido; mutación (ignorar el recibo) rompe el test (`36b1f36`); sin recibo, build completo
+  (`f963684`, lo cazó la suite). (4) Cifras de tamaño de `select.py` fuera (`926a1d4`). (5) Nota del plan interno fuera de
+  `frame_possession.sql` (`b07511e`). (6) Cifras medidas en tracklab fuera de comentarios y docstrings de `src/`, solo queda la
+  explicación cualitativa (`94d7ce7`). (7) `provenance.json` y tabla regenerados con `--tracklab` (`dbf3fa0`, `f963684`). Gate
+  local en verde (125 pasan, 22 `realdata` pasan). CI en verde: https://github.com/javiersr1996/football-tracking-base/actions/runs/39125630235
 - [ ] 8. `sonnet` `[entrada]` Dependencia fijada: `git rm -r src/ac2fb/base/`; `ftbase` en
   `dependencies` con `[tool.uv.sources] ftbase = { git = "<URL pública>", tag = "v0.1.0" }`; nunca
   una fuente `path`: para probar cambios de la base sin tag, `uv run --with-editable

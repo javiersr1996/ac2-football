@@ -41,7 +41,7 @@ import pyarrow as pa
 import pytest
 from layer2_helpers import Row, frames_table, make_match
 
-from ac2fb.defence import block, probe_s3
+from ac2fb.defence import probe_s3
 from ac2fb.defence.block import DEFINITIONS, Definition, measure, name_of, spearman
 from ac2fb.defence.probe_s3 import MatchInputs, Phase
 from ac2fb.reliability.long import long_table
@@ -365,10 +365,10 @@ def test_measure_keeper_and_detection() -> None:
 
 
 def test_measure_needs_enough_players_and_finite_coordinates() -> None:
-    x, y, det, ids = arrays(range(block.MIN_PLAYERS - 1), range(block.MIN_PLAYERS - 1))
+    x, y, det, ids = arrays(range(4), range(4))  # literals: a block needs 5 players
     d = Definition(True, "extremes", "listed")
     assert measure(x, y, det, ids, None, d) is None
-    x, y, det, ids = arrays(range(block.MIN_PLAYERS), range(block.MIN_PLAYERS))
+    x, y, det, ids = arrays(range(5), range(5))
     assert measure(x, y, det, ids, None, d) is not None
     assert measure(x, y, det, ids, int(ids[0]), Definition(False, "extremes", "listed")) is None
     y[0] = np.nan

@@ -367,10 +367,34 @@ y lo que no se abrió. La figura 2 enseña la muerte. Si en CP1 mueren las tres,
   `lfs.py` conserva `parse_pointer` aunque `src` ya no lo llama (solo los tests); `test_ingest.py` mantiene sus tests de
   descarga y añade 8 de `--match` y `--from-existing`; el intermedio `4662782` no pasa ruff ni mypy (imports aún de
   tracklab); `pipeline/` sigue excluido del gate hasta la tarea 5; los metadatos `tracklab.*` viven en bronze (tarea 4).
-- [ ] 4. `sonnet` `[base]` Bronze: `common`, `tracking`, `events`, `meta`, `csvschema` y los dos
+- [x] 4. `sonnet` `[base]` Bronze: `common`, `tracking`, `events`, `meta`, `csvschema` y los dos
   esquemas JSON. Aceptación: `ftbase bronze` produce las tablas de fútbol con los mismos recuentos
   que tracklab (94.361 filas de eventos; tracking por partido igual) y las cabeceras congeladas
   (`header_sha256`); tests de contrato copiados y recortados; mutación anotada.
+  Medido: commits en `football-tracking-base` `3b926ed` (solo `git mv`, 17 renombres, 0 cambios de contenido), `19324fc`
+  (fuente: `ftbase.*`, metadatos Parquet `ftbase.*`, `ftbase bronze`, `uv add duckdb pyarrow` = 1.5.6 y 26.0.0, override de
+  mypy para pyarrow), `3c307bf` (tests) y `ad627e9` (procedencia y README), empujados. `ftbase ingest --from-existing` contra
+  `tracklab/pipeline/data/raw/opendata-football` (`verified=85 failed=0`) y `ftbase bronze` con `FTBASE_DATA_ROOT` en el
+  scratchpad: 72,0 s. Comparación de solo lectura (`compare_bronze.py` en el scratchpad, DuckDB en memoria sobre Parquet de
+  ambos) contra el bronze de tracklab, por partido y tabla: filas, esquema Arrow y `EXCEPT ALL` en los dos sentidos. Las 7
+  tablas por partido coinciden en los 20 de 20 (0 diferencias): `dynamic_events` 94.361 (4.142 a 5.656 por partido),
+  `phases_of_play` 8.834, `tracking_frames` 1.244.814, `tracking_objects` 19.334.986, `match` 20, `match_periods` 40,
+  `match_players` 719; `matches` (fichero de temporada) 20 filas idénticas. Solo difieren los metadatos de pie de Parquet
+  (`ftbase.*` en vez de `tracklab.*`), que la comparación excluye a propósito. Gate en verde (`sync --locked`, ruff, format,
+  `mypy --strict src`, `pytest -q`: 59 pasan, 0 saltados, 17 deseleccionados); con datos reales `pytest -m realdata`: 17 de 17.
+  Mutación: un byte de la cabecera de un CSV de eventos (`frame_start` a `frame_stars`, copia en el scratchpad) da exit 1 con
+  `header does not match frozen dynamic_events`; una letra en una celda numérica da exit 1; restaurado, exit 0. Un dígito del
+  `header_sha256` de un esquema JSON rompe `test_header_sha256_is_the_hash_of_the_frozen_column_names`, y renombrar una columna
+  del esquema rompe el mismo test; recortar una fila del Parquet de un partido rompe 3 tests de contrato reales. Procedencia: 44
+  `copiado`, 6 `reescrito` (`fetch.py`, `local.py`, `test_ingest.py`, `cli.py`, `test_frozen_schemas.py`,
+  `test_football_events_bronze.py`), 2 `nuevo` (`select.py`, `manifest_helper.py`). Desviaciones: los tests de contrato leen el
+  bundle real y no pueden correr en el gate sin datos, así que llevan el marcador `realdata` y `addopts = -m 'not realdata'`
+  (deseleccionados, no saltados); `ftbase bronze` no lleva argumento de deporte y acepta `--tables tracking,meta,events`;
+  `save_manifest` (quitado en la 3) se sustituye en los tests por `tests/unit/manifest_helper.py`; `common.py` conserva
+  `build_season_csv_table` y las líneas de temporada (sin llamador hasta que haya agregados); quedan dos menciones históricas a
+  `bronze/basketball/*` en los docstrings de `meta.py` y `tracking.py`; no se construyen `aggregates_*` ni `bodypose_*` de
+  tracklab (fuera de la 4); `test_frozen_schemas.py` pasa de 28 esquemas a los 2 de fútbol; `pipeline/` solo conserva `dbt/` y
+  `src/tracklab/__init__.py`, y sigue excluido del gate hasta la 5.
 - [ ] 5. `opus` `[base]` Silver sin dbt: orientación de fútbol desde `match.home_team_side`
   (reescrita, unas 250 líneas), dims, `frames` (**sin `gap_len`**: es capa 2, tarea 12), `events` y
   la vista `frames_attacking`, desde Python en orden; los 6 tests dbt de fútbol como aserciones SQL

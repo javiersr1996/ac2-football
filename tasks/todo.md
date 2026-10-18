@@ -103,11 +103,55 @@ partido" = mínimo a máximo (mediana entre paréntesis).
   el hueco; aquí la posición aterriza en la readquirida: **el proveedor interpola con el futuro
   visto** (paso dentro de huecos largos 0,137 m, más suave). Posiciones extrapoladas por hueco, por
   partido: ≤ 1 s 0,3 a 0,6 %; 1 a 5 s 15,8 a 19,5; 5 a 20 s 40,6 a 46,8; **más de 20 s 34,9 a
-  40,3 %**. Consecuencia (hipótesis hasta la 12): una trayectoria interpolada casi sin aceleración
-  da residuo sobre velocidad cero por construcción: toda métrica de REACCIÓN defensiva lee cero en
-  los jugadores extrapolados.
+  40,3 %**. Consecuencia: la 12 la matiza (corrección abajo): lo extrapolado es más suave que lo
+  detectado y su mediana está en el suelo de redondeo, pero no es una recta.
 - Cadencia (m7, exploratoria): el hueco entre quiebros de detectados es 1 frame en el 57,6 a
   59,8 % y decae sin pico; el umbral cae dentro del ruido de redondeo de 1 cm. Lo cierra la 13.
+- **Corrección de la tarea 12 (2026-10-18; todas las cifras de este bloque salen de
+  `reports/layer2.json`, 10 de calibración, por partido: `matches`, `summary` y `inventory`).**
+  - *m3 a m6 y m9 se reproducen en lo comparable.* Los 22 rangos de 20 partidos contienen los
+    valores de los 10 de calibración (22 de 22; sus medianas son de otro conjunto y no se
+    comparan). Un valor, los rivales detectados a 20 m (0,8765 en un partido), queda 0,0005 bajo
+    el 87,7 % del plan: doble redondeo del plan (la sonda imprimía 0,8765), no un dato distinto.
+    Tramos extrapolados (m6): los 10 suman 48.798, mediana 47, p90 181, p99 592 frente a 98.487, 47,
+    175 y 587 de los 20: mismo orden, no comparables uno a uno.
+  - *m11 se reproduce en 85 de 100 celdas por partido y en los pooled de ≤ 1 s y > 20 s; las
+    demás difieren por la sonda, no por el código.* Iguales a tres decimales: paso detectado a
+    detectado (mediana y p90), mediana del salto en ≤ 1 s y > 20 s, p90 del salto en > 20 s, y el
+    número de huecos > 20 s (10 de 10 partidos); pooled de ≤ 1 s (2.601 huecos) y > 20 s (4.058)
+    enteros (n, mediana, p90, p99, paso interior). Difieren la fracción de posiciones por banda (15
+    de 40 celdas, hasta 0,012) y el número de huecos de 1 a 5 s y de 5 a 20 s del pooled (+17 y +5
+    de 23.091 y 18.844; medianas y percentiles iguales). Causa: m11 etiquetaba cada tramo con
+    `any_value(det)`, que no es determinista cuando un tramo mezcla clases (ver abajo); con la
+    clase de la última fila salen los huecos largos de los 10 partidos, no las fracciones. Valen
+    las bandas de `reacquisition` del artefacto: fracción de posiciones por hueco, por partido, ≤ 1
+    s 0,3 a 0,6 %; 1 a 5 s 15,9 a 19,5; 5 a 20 s 40,6 a 46,6; > 20 s 35,1 a 39,7 %.
+  - *Un "tramo" de m6 y m11 une trozos separados por frames que el proveedor no lista.* Por
+    partido hay 1.068 a 1.553 trozos sin filas dentro de un periodo (mediana de 126 a 209 frames;
+    1.048 a 1.553 de más de 50) y en 1.054 a 1.553 de ellos hay frames extrapolados a ambos lados
+    (`unlisted`): el jugador desaparece de la lista entre dos extrapolaciones. Las sondas los
+    pegaban. Con el tramo cortado en el frame sin fila (`runs`, por defecto en `ac2fb`) salen 5.335
+    a 7.057 tramos extrapolados por partido (m11: 3.801 a 5.715); de los de ≤ 1 s, con detección a
+    ambos lados solo 148 a 352 de 1.078 a 1.346 (el resto son reentradas), y de los 281 a 496 de
+    más de 20 s lo son 138 a 309. Solo esos huecos cerrados dicen cuánto cuesta un hueco: salto
+    mediano por banda, ≤ 1 s 0,179 a 0,258 m; 1 a 5 s 0,165 a 0,219; 5 a 20 s 0,150 a 0,207; > 20 s
+    0,205 a 0,257 (paso detectado a detectado 0,184 a 0,214). **El salto no crece con el hueco como
+    lo haría un predictor, pero en los huecos largos cerrados es algo mayor (mediana entre partidos
+    0,217 m frente a 0,198 detectado)**: "interpolado con el futuro visto" aguanta, sin "casi
+    exacto". Fracción de posiciones extrapoladas en huecos > 20 s: 28,9 a 35,5 % (no 34,9 a 40,3).
+  - *La hipótesis "residuo cero por construcción" se confirma a medias.* Segunda diferencia (m por
+    frame²): extrapolados p50 0,010, p90 0,022, p99 0,041; detectados p50 0,014, p90 0,032, p99
+    0,051; una recta a velocidad constante redondeada a 1 cm da p50 0,010, p90 0,014 y p99 0,014
+    (simulada, semilla fija). Mediana de lo extrapolado en el suelo de redondeo (también por banda
+    de hueco, salvo ≤ 1 s con 0,014), pero colas de 1,6 y 2,9 veces el suelo: lo extrapolado es más
+    suave que lo detectado, no una recta. Una métrica de reacción no lee cero exacto en esos
+    jugadores: se trata con V1 y V2, no por supuesto.
+  - *Definiciones que la 12 fija.* `gap_len` mide números de frame hasta la detección más cercana
+    del mismo periodo (nulo si el jugador no tiene ninguna). El silver no trae el rol: el portero
+    de la línea es un proxy (el jugador cuya posición media está más cerca de su portería, por
+    periodo y equipo) que coincide con el portero del reparto en los 40 pares (periodo, equipo) de
+    los 10 partidos (test `realdata`). La puerta sirve silver, no bronce: las sondas se re-derivan
+    de los eventos del silver (`native_family`), sin `frame_physical_start`.
 
 **La recepción y la línea, solo calibración (m10; 9.178 posesiones, 8.959 con línea de 4,
 presión y balón en `t` y `t - 1 s`). Signo: + es la línea retrocediendo hacia su portería.**
@@ -669,7 +713,7 @@ su test sintético con el fallo plantado (una sonda que no puede fallar no prote
   (el sintético con su id por defecto no pasa); solo sirve desde su checkout git, fuera da
   `RuntimeError`; `pyarrow>=26.0.0` como dependencia directa (misma versión del lock), override de mypy
   y `addopts = -m 'not realdata'` como en la base; `ac2fb status` nuevo (da el sha que pedirá la 23).
-- [ ] 12. `sonnet` Núcleo de la capa 2 (`reliability/`): `gap_len` (frames hasta la detección
+- [x] 12. `sonnet` Núcleo de la capa 2 (`reliability/`): `gap_len` (frames hasta la detección
   más cercana, 0 si detectado) calculado sobre el silver de la base y escrito en el Parquet largo
   de la decisión 4, nunca en la base; detección por partido, por distancia al balón, de la línea
   y del bloque; tramos extrapolados con su longitud y salto al readquirir por
@@ -680,6 +724,49 @@ su test sintético con el fallo plantado (una sonda que no puede fallar no prote
   en los 10 de calibración (iguales o este plan se corrige); sintético con extrapolación plantada,
   5 semillas; mutación: una `sensitivity` que ignora `is_detected` da V0 = V1 y el test falla;
   `gap_len` plantado en un sintético con huecos de longitud conocida.
+  Medido (2026-10-18): commit `7d08dfa` (código, tests y `reports/layer2.json`, empujado). **CI en
+  verde: https://github.com/javiersr1996/ac2-football/actions/runs/39135819850, 36 s.** Gate local en
+  verde (`sync --locked`, ruff, format, `mypy src`, `pytest -q`: 267 pasan, eran 95; 0 saltados; 6
+  deseleccionados, eran 2); `pytest -m realdata`: 6 de 6 (2 de la 11 y 4 nuevos: `gap_len` en un
+  partido real, m11 del primero, informe confirmado byte a byte contra el recalculado, portero).
+  Módulos de `reliability/`: `long` (`gap_len` y el Parquet largo de la decisión 4 en
+  `data/layer2/frames_long/<id>.parquet`: `match_id` (`fb:<id>`), `period`, `frame`, `player_id` y
+  `team_id` (nulos en el balón), `x`, `y`, `is_detected`, `gap_len`), `match`, `runs`,
+  `visibility`, `sensitivity`, `inventory`, `report`; comando `ac2fb layer2 [--match ID]
+  [--reports-dir D]` (sin `--match`, la calibración; un id del reservado sale con 2 y el motivo en
+  stderr). Dependencia nueva: numpy 2.5.4. Tiempos: `ac2fb layer2` sobre los 10 de calibración, 37 a
+  46 s (lectura de unos 2 s por partido); 10 Parquet de 5,0 a 6,4 MB; gate local 182 s (las rutas
+  públicas pasan de 4 s a unos 2 min porque cada ruta carga el sintético por la puerta); CI 36 s.
+  Sintéticos (5 semillas, 1 a 5, de la base con 12 tramos plantados: los 7 de la base más 5 de
+  longitudes 1, 3, 8, 12 y 15, uno en el primer frame de un periodo): `gap_len` esperado por fuerza
+  bruta desde las `PlantedRun` (nunca de la salida) en las 720 filas de jugador; tramos recuperados
+  = plantados (jugador, inicio, longitud); salto contra las filas leídas aparte; V0 (10 unidades), V1
+  (4) y estratos de V2, fracción extrapolada y `gap_len` (mediana, p90, máximo) contra la verdad, y
+  medias contra las filas; `gap_len` contra fuerza bruta en series aleatorias con frames sin listar
+  (5 semillas); partidos hechos a mano (aceleración con 5 semillas, pasos, tramos y trozos sin fila,
+  jugador comprometido, recepción, línea con portero). **Mutaciones (11, todas matan algún test,
+  restauradas; script en el scratchpad):** `sensitivity` que ignora `is_detected` (V1 = V0: falla el
+  recuento de V1, 4 frente a 10); que no cuenta los frames extrapolados; `gap_len` +1; `gap_len` que
+  cruza la frontera de serie; `gap_len` solo hacia atrás; tramos que unen frames sin fila por
+  defecto; salto leído en el frame equivocado; aceleración que ignora la clase del frame; portero
+  dentro de la línea (sobrevivía a la primera versión del test, con el portero visto: se rehízo con
+  el portero no visto); línea con los más adelantados; rivales que incluyen al propio equipo. Control
+  permanente de la pedida: con `is_detected` forzado a verdadero V1 = V0 y la fracción extrapolada es
+  0, con las banderas reales no. **Cifras: 22 de 22 rangos de m3 a m6 y m9 contienen los 10 de
+  calibración; m11, 85 de 100 celdas por partido y 2 de 4 pooled iguales a tres decimales; el resto
+  difiere por la sonda y se corrige en el inventario ("Corrección de la tarea 12").** Desviaciones:
+  la puerta sirve silver y no bronce, así que m3 a m9 se re-derivan de eventos del silver y sin
+  `frame_physical_start`; el portero es un proxy (40 de 40 pares igual al reparto, test `realdata` que
+  lee `match_players` de los 10 de calibración con duckdb dentro del test, nada en `src`);
+  `sensitivity(metric, frames, windows=None)` toma la tabla larga y ventanas opcionales (sin ellas,
+  cada frame es una unidad: lento en un partido real); la definición de tramo de m6 y m11 queda
+  como `bridge_holes=True` para reproducir y la de `ac2fb` corta en el frame sin fila; los Parquet
+  largos se escriben pero no se releen en `src` (la puerta prohíbe lectores de Parquet fuera de ella:
+  el análisis recalcula desde `protocol.data`); `reports/layer2.json` es un solo informe con la
+  sección `inventory` (comparación con el plan) en vez de un JSON por sonda; la aceleración por banda
+  usa como referencia los detectados en conjunto y por longitud de su propio tramo; el suelo de
+  redondeo es una simulación (`linear_rounding_floor`, semilla 0), no una medida. Nadie leyó el
+  reservado: ningún comando ni test tocó un partido suyo.
 - [ ] 13. `sonnet` Cadencia en fútbol: segundas diferencias de jugadores detectados con un umbral
   por encima del ruido de redondeo de la rejilla de 1 cm (justificado en la tarea), hueco entre
   quiebros en los 10 de calibración. Aceptación: `reports/probe_cadence.json`; decide la ventana

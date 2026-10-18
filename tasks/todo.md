@@ -301,6 +301,7 @@ y lo que no se abrió. La figura 2 enseña la muerte. Si en CP1 mueren las tres,
 
 - [ ] J1. **[Javier]** Registrarse en la Cup (región Europa) y confirmar que puede asistir a París
   el 17 Feb 2027 (las bases lo piden antes de entregar). Antes del dom 25 oct; si no, replantear.
+  **Registro hecho (Javier, 2026-10-18); París sin confirmar.**
 - [x] J2. **[Javier]** Aprobar la decisión 7 y elegir nombres: base (`football-tracking-base`,
   `ftbase`, carpeta hermana en `C:\Users\javie\Desktop\proyectos\`; sin "ac2" ni "tracklab", que
   se lea como proyecto propio) y entrada (`ac2-football`, `ac2fb`). **Hecho el 2026-10-17:

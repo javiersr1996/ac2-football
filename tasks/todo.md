@@ -1090,12 +1090,127 @@ su test sintético con el fallo plantado (una sonda que no puede fallar no prote
   lee banderas de detección de otros frames (capa 2, declarado desde la 14); ninguna posición
   posterior al `frame_start`. (7) No se calcula nada del desenlace de C3 (diferencias de
   compacidad entre tipos de fase). Nadie leyó el reservado.
-- [ ] 17. `opus` Potencia por candidata con los tamaños medidos en 14 a 16, en sd: simula el bar
+- [x] 17. `opus` Potencia por candidata con los tamaños medidos en 14 a 16, en sd: simula el bar
   exacto (mismo signo en al menos 8 de 10 y p de permutación agrupado ≤ 0,00135, 2.500 réplicas)
   con n por estrato y partido y la correlación dentro de la posesión de equipo medida con la
   estadística PREVIA (`[t - W, t]`, nunca el desenlace), para V0 y V1. Aceptación:
   `reports/power.json`; tabla de CP1; test que contrasta la aproximación con la permutación
   completa en un conjunto pequeño (diferencia < 0,025).
+  Medido (2026-10-18; las cifras salen de `reports/power.json` salvo las que citan otra sonda; 10
+  de calibración, por partido, rangos entre partidos): **código en `68731fa`, empujado antes de
+  calcular ninguna potencia en un partido real** (CI en verde, run 39147956002); el informe y este
+  registro, en el commit siguiente. Antes del código se miró en el scratchpad la correlación dentro
+  de la posesión de la estadística previa (solo `[t - W, t]`) para saber si el bloqueo hacía falta;
+  no movió ningún umbral. Gate local en verde (`sync --locked`, ruff, format, `mypy src`, `pytest
+  -q`: 679 pasan, eran 589; 13 deseleccionados, eran 11; `pytest -m realdata`: 13 de 13, con el
+  informe confirmado byte a byte y las unidades atadas a las de S1 y S3). Nuevo: `defence/bar.py`
+  (el bar, sus dos nulos, la aproximación, la simulación, el MDE80 y la correlación por pares),
+  `defence/power.py` (unidades de C1 y C3, lectores previos, informe y regla de CP1) y el comando
+  `ac2fb power [--match ID] [--reports-dir D]` (44 s para los 10). Rutas públicas nuevas (25
+  funciones y el comando `power`) cubiertas por el test de la 11.
+  **Diseño, escrito en los docstrings antes de calcular.** *Estadístico:* en cada celda (partido,
+  estrato) con al menos 5 unidades de cada grupo, `z` = media de la causa menos la del resto sobre
+  la sd de la celda; por partido y agregado, media de `z` ponderada por `n_p n_f / (n_p + n_f)` (la
+  de `within_strata`). *Bar:* el agregado tiene el signo de al menos 8 de los 10 partidos (uno sin
+  celda nunca cuenta) y el p bilateral de 2.000 nulos, `(1 + cuenta) / 2.001`, es ≤ 0,00135: a lo
+  sumo 1 nulo tan extremo (`bar_count_at_most`). "Agrupado" se lee como un solo estadístico
+  agregado sobre los 10 partidos. *Nulo:* sin bloquear, la etiqueta de causa permutada dentro de
+  partido y celda; bloqueado, el signo de la contribución de cada posesión entera invertido al azar
+  (el nulo por bloques de P5). *Aproximación:* varianza exacta del nulo (`1 / suma w` sin bloquear,
+  `suma S_k²` bloqueado), la cuenta como Binomial(2.000, 2 Φ(−|Z|)) y la probabilidad de que sea
+  ≤ 1; potencia = media de esa probabilidad por la condición de signo en 2.500 réplicas, ruido
+  común a todos los efectos, semilla 20261018 con una corriente por candidata, desenlace, estratos
+  y variante. *Ruido:* varianza 1, una parte compartida por posesión con la correlación `rho` del
+  partido; efecto en sd del ruido. *MDE80:* el menor efecto con tasa ≥ 0,8, rejilla de 0,05 hasta 2
+  sd refinada a 0,01; "no alcanzable" es más de 2 sd o imposible por diseño. *Correlación:* por
+  pares de unidades de una posesión, de la estadística previa estandarizada dentro de cada estrato,
+  por partido y variante; el ruido lleva la mayor de 0, la de V0 y la de V1 si se apoya en 30 pares
+  o más; se bloquea si la de V0 agregada (media por pares) pasa de 0,1, como pide la 19. *C1:* las
+  recepciones de S1 con estrato definido; causa, un rival a 5 m o menos en `t` (proxy de m10 y
+  S2); los 18 estratos de S1; posesión, el `possession_id` de la base; estadística previa, el
+  avance del balón en `[t − 13, t]`; V1, la de S1. *C3:* las fases de S3 medidas con
+  `with_gk_extremes_listed`; contraste `low_block` (causa) frente a `high_block`
+  (`team_out_of_possession_phase_type`); dos desenlaces, anchura y longitud, con su V1 (los
+  fijadores de sus dos extremos vistos en `t`); estratos del balón entrante con el balón en lugar
+  del poseedor y, como cota, sin estratos; posesión, una racha de fases del mismo equipo en un
+  periodo; estadística previa, el mismo bloque en `t − 13`; sin pre-tendencia (el desenlace es un
+  nivel en `t`, y en `t − 13` sería casi el desenlace).
+  **C1** (`candidates.C1`): V0 650 a 934 recepciones por partido (presionadas 311 a 385, libres
+  279 a 586; 551 a 864 en 12 a 16 celdas usadas; 149 a 201 posesiones), V1 610 a 907. Correlación
+  dentro de la posesión en V0 −0,027 a +0,015 (2.007 a 6.026 pares), agregada −0,005: **nulo sin
+  bloquear**; en V1 −0,035 a +0,016. **MDE80 0,12 sd en V0 y en V1** (tasa 0,887 y 0,873 en 0,12;
+  0,797 y 0,782 en 0,11); tasa sin efecto 0,00005 y 0,0013. **Pre-tendencia dentro de estrato**
+  (nueva: S1 no la medía), presionada menos libre del avance del balón en `[t − 13, t]` en sd de la
+  celda: V0 +0,081 a +0,371, positiva en 10 de 10 y por encima de 0,15 en 9; V1 +0,081 a +0,348. La
+  presionada recibe tras más avance del balón que la libre dentro de la misma celda: el confundidor
+  de m10 que los estratos de S1 no absorben del todo. La regla de S1 no la tenía, así que no mata a
+  C1 en sonda; es la cifra que D3 juzgará contra el efecto.
+  **C3** (`candidates.C3`): fases medidas 374 a 473 por partido (V1 de anchura 137 a 249, de
+  longitud 15 a 43: las de S3). En el contraste, sin estratos, V0 110 a 162 (bajo 60 a 96, alto 34
+  a 74). **Con los estratos del plan, 0 celdas con 5 de cada grupo en los 10 partidos** (bajo y
+  alto no comparten tercio del balón): MDE80 no alcanzable en V0 ni V1, anchura ni longitud. Sin
+  estratos (cota inferior): **anchura 0,24 en V0 y 0,41 en V1** (V1: bajo 28 a 68, alto 7 a 28);
+  **longitud 0,25 en V0 y no alcanzable en V1** (V1 2 a 18, ninguna de bloque alto: sus dos
+  fijadores de `x` nunca se ven a la vez). Correlación agregada de V0: anchura 0,126 con estratos y
+  0,129 sin ellos, longitud 0,208 y 0,383: **nulo bloqueado** en las cuatro; por partido, sin
+  estratos, anchura 0,064 a 0,229 y longitud 0,245 a 0,536. Tasa sin efecto 0,0008 en la anchura y
+  0,0018 en la longitud (sin estratos), esta por encima de 0,00135.
+  **C2**: muerta en S2 por la pre-tendencia (`probe_s2.json`, `verdict.criteria.pretrend` false);
+  no se simula.
+  **Tabla de CP1** (rangos por partido; riesgo y encaje, del bloque de candidatas de este plan):
+
+  | | C1 | C2 | C3 |
+  |---|---|---|---|
+  | Instrumento | pasa S1, 10 de 10 (`probe_s1.json`) | pasa, 10 de 10 (`probe_s2.json`) | pasa S3, 10 de 10 (`probe_s3.json`) |
+  | Pre-tendencia dentro de estrato (sd) | V0 +0,081 a +0,371; > 0,15 en 9 de 10 (`power.json`) | bruta −0,272 a +0,002, residual −0,305 a −0,106; > 0,15 en 7 de 10: **muerta en S2** | no aplica (nivel); con los estratos del plan, 0 celdas |
+  | Fracción que lo extrapolado sostiene | 0,008 a 0,050 del índice (`probe_s1.json`) | línea detectada en `t` 0,444 a 0,697 (`layer2.json`); el resto, extrapolada | fijadores de la anchura 0,271 a 0,455, de la longitud 0,524 a 0,633 (`probe_s3.json`) |
+  | n por partido, V0 / V1 | 650 a 934 / 610 a 907 | 733 a 1.037 / 138 a 477 (`probe_s2.json`) | bajo y alto 110 a 162 / anchura 44 a 90, longitud 2 a 18 |
+  | MDE80 (sd), V0 / V1 | 0,12 / 0,12 | no simulada | con estratos: no alcanzable; sin ellos, anchura 0,24 / 0,41, longitud 0,25 / no alcanzable |
+  | Riesgo | medio; D3 por la pre-tendencia | murió | bajo como medida, alto como hallazgo |
+  | Encaje (R, M, O, C, OS) | alta, media-alta, **baja**, alta, media | muy alta, alta, alta, alta, alta | muy alta, media, media-alta, alta, alta |
+
+  **Lo que sale de la regla de CP1 (recomienda; decide Javier).** C2 murió en S2, así que la regla
+  da **C1 primero** y C3 como respaldo descriptivo (`cp1_rule`: `recommended_first` C1, `backup`
+  C3; `testable_v0` C1 sí, C3 no). El MDE80 de C1, 0,12 sd en V0 y en V1, queda muy por debajo del
+  0,3 de D2 en la mitad de calibración: la potencia no es razón para la rama B. El riesgo de C1
+  está en D3: con una pre-tendencia por partido de +0,08 a +0,37 sd, positiva en 10 de 10 (de signo
+  contrario al efecto que C1 busca: la presión reduciría el avance), D3 pedirá un efecto de más
+  del doble de la pre-tendencia agregada en V0; y su originalidad es baja. C3 no sirve como
+  pregunta causal dentro de los estratos del plan y en V1 solo mide la anchura (0,41 sd).
+  **Mutaciones** (22 sobre el código, script en el scratchpad, todo restaurado; todas matan algún
+  test, entre paréntesis cuántos): las pedidas, ruido que ignora la correlación dentro de la
+  posesión, que infla la potencia (2: `test_ignoring_the_possession_correlation_inflates_the_power`
+  y `test_the_noise_carries_the_planted_correlation`), y leer el desenlace en vez de la estadística
+  previa, imposible por construcción porque `ball_advance` y `block_before` rehúsan un retardo
+  negativo (`test_the_readers_refuse_a_lag_after_t`), con el avance leído después de `t` (5), el
+  bloque leído después de `t` (1; el test de "nada después de `t`" ponía a todos los jugadores en
+  un punto, la anchura salía 0 con los dos valores y no lo veía: ahora se reparten y lo mata con 4)
+  y el retardo negativo admitido (1). Además: aproximación sin la raíz (4), bloqueada con la
+  varianza sin bloquear (4), q unilateral (7), parte compartida por unidad y no por posesión (3),
+  regla de 7 de 10 (4), partido sin celda que cuenta (1), celdas bajo el mínimo (2), correlación
+  sin estandarizar (5) o con cada unidad emparejada consigo misma (7), cota de 2 nulos (2), nulo
+  completo fuera de la celda (4), causa a 10 m (2), V1 de C1 sin los rivales (1), grupos de C3
+  cambiados (1), V1 de la longitud con los fijadores de la anchura (1), rachas que no cortan por
+  equipo (2), nulo que nunca bloquea (1) o que bloquea con cualquier correlación (1). El contraste
+  de la aproximación (`test_the_approximation_matches_the_full_permutation`: 10 partidos x 2
+  estratos x 24 unidades, 3.000 réplicas, 3 semillas, sin bloquear y bloqueado con `rho` 0,3 y
+  grupos por posesión, efectos 0, 0,3, 0,45 y 0,6) exige menos de 0,025 con la permutación completa
+  sobre los mismos conjuntos.
+  **Desviaciones.** (1) La causa de C1 es el proxy de 5 m, no un corte del índice: el plan no lo
+  fija; si la 19 lo cambia, se rehace la potencia. (2) El contraste de C3 (bajo frente a alto), sus
+  estratos con el balón en lugar del poseedor y la versión sin estratos son convenciones mías. (3)
+  El nulo bloqueado invierte el signo por posesión (P5), no permuta etiquetas por bloques (no
+  definido cuando una posesión tiene los dos grupos); la 19 tiene que escribir el mismo o rehacer
+  la potencia. (4) Se bloquea con la correlación agregada de V0 y no con el máximo por partido: el
+  máximo de 20 estimaciones con correlación 0 pasaba de 0,1 en el sintético; en estos datos la
+  decisión es la misma con las dos reglas (C1 no pasa de 0,016 en ningún partido ni variante; C3
+  pasa de 0,1 en algún partido en las cuatro combinaciones). (5) La pre-tendencia de C1 se mide aquí y la de C3 no. (6) La
+  correlación de C3 se mide en todas las fases medidas, no solo bajo y alto. (7) Es la potencia de
+  la mitad de calibración: la del reservado (D2, "en alguna mitad") no se puede medir sin abrirlo.
+  (8) La tasa sin efecto del nulo bloqueado en la longitud de C3 (0,0018) pasa de 0,00135: la 19
+  lo tiene que mirar si se elige C3. (9) El mínimo de 100 recepciones de V1 de S2 no se revisa: C2
+  murió por otro criterio. Nadie leyó el reservado; ninguna cifra de `(t, t + W]` de ninguna
+  candidata.
 - [ ] 18. `opus` (subagente `revisor-adversarial`) Revisión de 11 a 17 antes de CP1, repetida
   sobre los arreglos hasta que no salga nada alto ni medio.
 - [ ] CP1. **[Javier] lun 2 nov.** Elige UNA pregunta con la tabla delante (por candidata:

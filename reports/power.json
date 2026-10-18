@@ -1,0 +1,2288 @@
+{
+  "about": "Task 17: power of the calibration bar (same sign in at least 8 of 10 matches and a two-sided permutation p at most 0.00135 over 2000 null draws) for each candidate alive after its probe, simulated on the real design of the calibration matches with the within-possession correlation of the statistic before t ([t - W, t]). Effects in sd of the noise. No outcome of any candidate is computed. Definitions in the docstrings of ac2fb.defence.power and ac2fb.defence.bar.",
+  "candidates": {
+    "C1": {
+      "outcomes": {
+        "ball_advance": {
+          "incoming_ball": {
+            "blocked": false,
+            "rho_v0_pooled": -0.004934,
+            "variants": {
+              "V0": {
+                "matches": {
+                  "1874553": {
+                    "cells_used": 14,
+                    "free": 515,
+                    "n": 865,
+                    "possessions": 175,
+                    "pressed": 350,
+                    "pretrend_sd": 0.167993,
+                    "rho": {
+                      "carried": 0.008043,
+                      "pairs": 3939,
+                      "units": 865,
+                      "value": 0.008043
+                    },
+                    "units_used": 789,
+                    "weight": 169.569765
+                  },
+                  "1886347": {
+                    "cells_used": 15,
+                    "free": 535,
+                    "n": 909,
+                    "possessions": 169,
+                    "pressed": 374,
+                    "pretrend_sd": 0.203378,
+                    "rho": {
+                      "carried": 0.0,
+                      "pairs": 4427,
+                      "units": 909,
+                      "value": -0.013627
+                    },
+                    "units_used": 842,
+                    "weight": 179.595568
+                  },
+                  "1925299": {
+                    "cells_used": 15,
+                    "free": 586,
+                    "n": 934,
+                    "possessions": 183,
+                    "pressed": 348,
+                    "pretrend_sd": 0.247812,
+                    "rho": {
+                      "carried": 0.0,
+                      "pairs": 4616,
+                      "units": 934,
+                      "value": -0.009066
+                    },
+                    "units_used": 864,
+                    "weight": 169.34449
+                  },
+                  "1959846": {
+                    "cells_used": 14,
+                    "free": 467,
+                    "n": 837,
+                    "possessions": 167,
+                    "pressed": 370,
+                    "pretrend_sd": 0.190064,
+                    "rho": {
+                      "carried": 0.0,
+                      "pairs": 3735,
+                      "units": 837,
+                      "value": -0.003492
+                    },
+                    "units_used": 757,
+                    "weight": 149.476041
+                  },
+                  "1996435": {
+                    "cells_used": 15,
+                    "free": 511,
+                    "n": 896,
+                    "possessions": 182,
+                    "pressed": 385,
+                    "pretrend_sd": 0.266132,
+                    "rho": {
+                      "carried": 0.005439,
+                      "pairs": 3867,
+                      "units": 896,
+                      "value": 0.005439
+                    },
+                    "units_used": 846,
+                    "weight": 179.146467
+                  },
+                  "1996436": {
+                    "cells_used": 15,
+                    "free": 337,
+                    "n": 683,
+                    "possessions": 169,
+                    "pressed": 346,
+                    "pretrend_sd": 0.218921,
+                    "rho": {
+                      "carried": 0.0,
+                      "pairs": 2311,
+                      "units": 683,
+                      "value": -0.023086
+                    },
+                    "units_used": 644,
+                    "weight": 142.025219
+                  },
+                  "2007448": {
+                    "cells_used": 16,
+                    "free": 441,
+                    "n": 760,
+                    "possessions": 149,
+                    "pressed": 319,
+                    "pretrend_sd": 0.370653,
+                    "rho": {
+                      "carried": 0.015239,
+                      "pairs": 3902,
+                      "units": 760,
+                      "value": 0.015239
+                    },
+                    "units_used": 721,
+                    "weight": 148.874423
+                  },
+                  "2010085": {
+                    "cells_used": 14,
+                    "free": 533,
+                    "n": 844,
+                    "possessions": 149,
+                    "pressed": 311,
+                    "pretrend_sd": 0.200708,
+                    "rho": {
+                      "carried": 0.0,
+                      "pairs": 6026,
+                      "units": 844,
+                      "value": -0.004107
+                    },
+                    "units_used": 755,
+                    "weight": 145.856335
+                  },
+                  "2011166": {
+                    "cells_used": 12,
+                    "free": 279,
+                    "n": 650,
+                    "possessions": 177,
+                    "pressed": 371,
+                    "pretrend_sd": 0.081265,
+                    "rho": {
+                      "carried": 0.0,
+                      "pairs": 2007,
+                      "units": 650,
+                      "value": -0.027111
+                    },
+                    "units_used": 551,
+                    "weight": 113.414968
+                  },
+                  "2015213": {
+                    "cells_used": 12,
+                    "free": 428,
+                    "n": 753,
+                    "possessions": 201,
+                    "pressed": 325,
+                    "pretrend_sd": 0.258644,
+                    "rho": {
+                      "carried": 0.0,
+                      "pairs": 2275,
+                      "units": 753,
+                      "value": -0.020896
+                    },
+                    "units_used": 666,
+                    "weight": 127.633717
+                  }
+                },
+                "mde80_sd": 0.12,
+                "null_pass_rate": 4.9e-05,
+                "pass_rate": {
+                  "0.00": 4.9e-05,
+                  "0.05": 0.083187,
+                  "0.10": 0.674393,
+                  "0.11": 0.796791,
+                  "0.12": 0.887408,
+                  "0.13": 0.94257,
+                  "0.14": 0.970293,
+                  "0.15": 0.987806,
+                  "0.20": 1.0,
+                  "0.25": 1.0,
+                  "0.30": 1.0,
+                  "0.35": 1.0,
+                  "0.40": 1.0,
+                  "0.45": 1.0,
+                  "0.50": 1.0,
+                  "0.55": 1.0,
+                  "0.60": 1.0,
+                  "0.65": 1.0,
+                  "0.70": 1.0,
+                  "0.75": 1.0,
+                  "0.80": 1.0,
+                  "0.85": 1.0,
+                  "0.90": 1.0,
+                  "0.95": 1.0,
+                  "1.00": 1.0,
+                  "1.05": 1.0,
+                  "1.10": 1.0,
+                  "1.15": 1.0,
+                  "1.20": 1.0,
+                  "1.25": 1.0,
+                  "1.30": 1.0,
+                  "1.35": 1.0,
+                  "1.40": 1.0,
+                  "1.45": 1.0,
+                  "1.50": 1.0,
+                  "1.55": 1.0,
+                  "1.60": 1.0,
+                  "1.65": 1.0,
+                  "1.70": 1.0,
+                  "1.75": 1.0,
+                  "1.80": 1.0,
+                  "1.85": 1.0,
+                  "1.90": 1.0,
+                  "1.95": 1.0,
+                  "2.00": 1.0
+                },
+                "replicates": 2500,
+                "seed": [
+                  20261018,
+                  3410667890
+                ]
+              },
+              "V1": {
+                "matches": {
+                  "1874553": {
+                    "cells_used": 14,
+                    "free": 510,
+                    "n": 853,
+                    "possessions": 173,
+                    "pressed": 343,
+                    "pretrend_sd": 0.170883,
+                    "rho": {
+                      "carried": 0.008043,
+                      "pairs": 3881,
+                      "units": 853,
+                      "value": 0.006784
+                    },
+                    "units_used": 778,
+                    "weight": 166.707307
+                  },
+                  "1886347": {
+                    "cells_used": 15,
+                    "free": 525,
+                    "n": 882,
+                    "possessions": 166,
+                    "pressed": 357,
+                    "pretrend_sd": 0.204714,
+                    "rho": {
+                      "carried": 0.0,
+                      "pairs": 4174,
+                      "units": 882,
+                      "value": -0.01358
+                    },
+                    "units_used": 816,
+                    "weight": 173.726879
+                  },
+                  "1925299": {
+                    "cells_used": 15,
+                    "free": 577,
+                    "n": 907,
+                    "possessions": 178,
+                    "pressed": 330,
+                    "pretrend_sd": 0.223834,
+                    "rho": {
+                      "carried": 0.0,
+                      "pairs": 4399,
+                      "units": 907,
+                      "value": -0.007342
+                    },
+                    "units_used": 839,
+                    "weight": 162.76643
+                  },
+                  "1959846": {
+                    "cells_used": 14,
+                    "free": 450,
+                    "n": 791,
+                    "possessions": 161,
+                    "pressed": 341,
+                    "pretrend_sd": 0.18191,
+                    "rho": {
+                      "carried": 0.0,
+                      "pairs": 3465,
+                      "units": 791,
+                      "value": -0.014626
+                    },
+                    "units_used": 714,
+                    "weight": 140.988017
+                  },
+                  "1996435": {
+                    "cells_used": 15,
+                    "free": 505,
+                    "n": 874,
+                    "possessions": 178,
+                    "pressed": 369,
+                    "pretrend_sd": 0.272244,
+                    "rho": {
+                      "carried": 0.005439,
+                      "pairs": 3752,
+                      "units": 874,
+                      "value": 0.002495
+                    },
+                    "units_used": 824,
+                    "weight": 173.895115
+                  },
+                  "1996436": {
+                    "cells_used": 15,
+                    "free": 332,
+                    "n": 656,
+                    "possessions": 165,
+                    "pressed": 324,
+                    "pretrend_sd": 0.227405,
+                    "rho": {
+                      "carried": 0.0,
+                      "pairs": 2190,
+                      "units": 656,
+                      "value": -0.02348
+                    },
+                    "units_used": 618,
+                    "weight": 137.13557
+                  },
+                  "2007448": {
+                    "cells_used": 15,
+                    "free": 437,
+                    "n": 740,
+                    "possessions": 147,
+                    "pressed": 303,
+                    "pretrend_sd": 0.348291,
+                    "rho": {
+                      "carried": 0.016033,
+                      "pairs": 3630,
+                      "units": 740,
+                      "value": 0.016033
+                    },
+                    "units_used": 683,
+                    "weight": 141.271178
+                  },
+                  "2010085": {
+                    "cells_used": 14,
+                    "free": 526,
+                    "n": 818,
+                    "possessions": 144,
+                    "pressed": 292,
+                    "pretrend_sd": 0.186869,
+                    "rho": {
+                      "carried": 0.0,
+                      "pairs": 5758,
+                      "units": 818,
+                      "value": -0.006531
+                    },
+                    "units_used": 731,
+                    "weight": 140.457415
+                  },
+                  "2011166": {
+                    "cells_used": 12,
+                    "free": 267,
+                    "n": 610,
+                    "possessions": 168,
+                    "pressed": 343,
+                    "pretrend_sd": 0.081072,
+                    "rho": {
+                      "carried": 0.0,
+                      "pairs": 1783,
+                      "units": 610,
+                      "value": -0.034638
+                    },
+                    "units_used": 518,
+                    "weight": 105.18124
+                  },
+                  "2015213": {
+                    "cells_used": 12,
+                    "free": 415,
+                    "n": 698,
+                    "possessions": 189,
+                    "pressed": 283,
+                    "pretrend_sd": 0.231409,
+                    "rho": {
+                      "carried": 0.0,
+                      "pairs": 2057,
+                      "units": 698,
+                      "value": -0.017273
+                    },
+                    "units_used": 615,
+                    "weight": 116.090323
+                  }
+                },
+                "mde80_sd": 0.12,
+                "null_pass_rate": 0.001265,
+                "pass_rate": {
+                  "0.00": 0.001265,
+                  "0.05": 0.071395,
+                  "0.10": 0.658857,
+                  "0.11": 0.782495,
+                  "0.12": 0.87268,
+                  "0.13": 0.932892,
+                  "0.14": 0.971327,
+                  "0.15": 0.986963,
+                  "0.20": 0.999593,
+                  "0.25": 1.0,
+                  "0.30": 1.0,
+                  "0.35": 1.0,
+                  "0.40": 1.0,
+                  "0.45": 1.0,
+                  "0.50": 1.0,
+                  "0.55": 1.0,
+                  "0.60": 1.0,
+                  "0.65": 1.0,
+                  "0.70": 1.0,
+                  "0.75": 1.0,
+                  "0.80": 1.0,
+                  "0.85": 1.0,
+                  "0.90": 1.0,
+                  "0.95": 1.0,
+                  "1.00": 1.0,
+                  "1.05": 1.0,
+                  "1.10": 1.0,
+                  "1.15": 1.0,
+                  "1.20": 1.0,
+                  "1.25": 1.0,
+                  "1.30": 1.0,
+                  "1.35": 1.0,
+                  "1.40": 1.0,
+                  "1.45": 1.0,
+                  "1.50": 1.0,
+                  "1.55": 1.0,
+                  "1.60": 1.0,
+                  "1.65": 1.0,
+                  "1.70": 1.0,
+                  "1.75": 1.0,
+                  "1.80": 1.0,
+                  "1.85": 1.0,
+                  "1.90": 1.0,
+                  "1.95": 1.0,
+                  "2.00": 1.0
+                },
+                "replicates": 2500,
+                "seed": [
+                  20261018,
+                  3159202276
+                ]
+              }
+            }
+          }
+        }
+      },
+      "probe_counts": {
+        "1874553": {
+          "scored": 865,
+          "stratum_undefined": 0,
+          "v1_scored": 853
+        },
+        "1886347": {
+          "scored": 910,
+          "stratum_undefined": 1,
+          "v1_scored": 883
+        },
+        "1925299": {
+          "scored": 936,
+          "stratum_undefined": 2,
+          "v1_scored": 909
+        },
+        "1959846": {
+          "scored": 839,
+          "stratum_undefined": 2,
+          "v1_scored": 793
+        },
+        "1996435": {
+          "scored": 898,
+          "stratum_undefined": 2,
+          "v1_scored": 876
+        },
+        "1996436": {
+          "scored": 684,
+          "stratum_undefined": 1,
+          "v1_scored": 657
+        },
+        "2007448": {
+          "scored": 760,
+          "stratum_undefined": 0,
+          "v1_scored": 740
+        },
+        "2010085": {
+          "scored": 844,
+          "stratum_undefined": 0,
+          "v1_scored": 818
+        },
+        "2011166": {
+          "scored": 653,
+          "stratum_undefined": 3,
+          "v1_scored": 612
+        },
+        "2015213": {
+          "scored": 753,
+          "stratum_undefined": 0,
+          "v1_scored": 698
+        }
+      },
+      "status": "simulated"
+    },
+    "C2": {
+      "status": "died_in_probe"
+    },
+    "C3": {
+      "outcomes": {
+        "length": {
+          "incoming_ball": {
+            "blocked": true,
+            "rho_v0_pooled": 0.208046,
+            "variants": {
+              "V0": {
+                "matches": {
+                  "1874553": {
+                    "cells_used": 0,
+                    "free": 50,
+                    "n": 131,
+                    "possessions": 94,
+                    "pressed": 81,
+                    "rho": {
+                      "carried": 0.125028,
+                      "pairs": 374,
+                      "units": 392,
+                      "value": 0.125028
+                    },
+                    "units_used": 0,
+                    "weight": 0.0
+                  },
+                  "1886347": {
+                    "cells_used": 0,
+                    "free": 61,
+                    "n": 153,
+                    "possessions": 87,
+                    "pressed": 92,
+                    "rho": {
+                      "carried": 0.19952,
+                      "pairs": 635,
+                      "units": 417,
+                      "value": 0.19952
+                    },
+                    "units_used": 0,
+                    "weight": 0.0
+                  },
+                  "1925299": {
+                    "cells_used": 0,
+                    "free": 65,
+                    "n": 159,
+                    "possessions": 96,
+                    "pressed": 94,
+                    "rho": {
+                      "carried": 0.137101,
+                      "pairs": 577,
+                      "units": 450,
+                      "value": 0.137101
+                    },
+                    "units_used": 0,
+                    "weight": 0.0
+                  },
+                  "1959846": {
+                    "cells_used": 0,
+                    "free": 60,
+                    "n": 155,
+                    "possessions": 88,
+                    "pressed": 95,
+                    "rho": {
+                      "carried": 0.156044,
+                      "pairs": 647,
+                      "units": 431,
+                      "value": 0.156044
+                    },
+                    "units_used": 0,
+                    "weight": 0.0
+                  },
+                  "1996435": {
+                    "cells_used": 0,
+                    "free": 72,
+                    "n": 156,
+                    "possessions": 102,
+                    "pressed": 84,
+                    "rho": {
+                      "carried": 0.353611,
+                      "pairs": 547,
+                      "units": 416,
+                      "value": 0.353611
+                    },
+                    "units_used": 0,
+                    "weight": 0.0
+                  },
+                  "1996436": {
+                    "cells_used": 0,
+                    "free": 33,
+                    "n": 106,
+                    "possessions": 76,
+                    "pressed": 73,
+                    "rho": {
+                      "carried": 0.175674,
+                      "pairs": 348,
+                      "units": 360,
+                      "value": 0.175674
+                    },
+                    "units_used": 0,
+                    "weight": 0.0
+                  },
+                  "2007448": {
+                    "cells_used": 0,
+                    "free": 56,
+                    "n": 136,
+                    "possessions": 86,
+                    "pressed": 80,
+                    "rho": {
+                      "carried": 0.212729,
+                      "pairs": 586,
+                      "units": 390,
+                      "value": 0.212729
+                    },
+                    "units_used": 0,
+                    "weight": 0.0
+                  },
+                  "2010085": {
+                    "cells_used": 0,
+                    "free": 57,
+                    "n": 134,
+                    "possessions": 83,
+                    "pressed": 77,
+                    "rho": {
+                      "carried": 0.213118,
+                      "pairs": 580,
+                      "units": 396,
+                      "value": 0.213118
+                    },
+                    "units_used": 0,
+                    "weight": 0.0
+                  },
+                  "2011166": {
+                    "cells_used": 0,
+                    "free": 46,
+                    "n": 122,
+                    "possessions": 84,
+                    "pressed": 76,
+                    "rho": {
+                      "carried": 0.307477,
+                      "pairs": 415,
+                      "units": 393,
+                      "value": 0.307477
+                    },
+                    "units_used": 0,
+                    "weight": 0.0
+                  },
+                  "2015213": {
+                    "cells_used": 0,
+                    "free": 72,
+                    "n": 131,
+                    "possessions": 99,
+                    "pressed": 59,
+                    "rho": {
+                      "carried": 0.198192,
+                      "pairs": 433,
+                      "units": 463,
+                      "value": 0.198192
+                    },
+                    "units_used": 0,
+                    "weight": 0.0
+                  }
+                },
+                "mde80_sd": null,
+                "null_pass_rate": 0.0,
+                "pass_rate": {
+                  "0.00": 0.0,
+                  "0.05": 0.0,
+                  "0.10": 0.0,
+                  "0.15": 0.0,
+                  "0.20": 0.0,
+                  "0.25": 0.0,
+                  "0.30": 0.0,
+                  "0.35": 0.0,
+                  "0.40": 0.0,
+                  "0.45": 0.0,
+                  "0.50": 0.0,
+                  "0.55": 0.0,
+                  "0.60": 0.0,
+                  "0.65": 0.0,
+                  "0.70": 0.0,
+                  "0.75": 0.0,
+                  "0.80": 0.0,
+                  "0.85": 0.0,
+                  "0.90": 0.0,
+                  "0.95": 0.0,
+                  "1.00": 0.0,
+                  "1.05": 0.0,
+                  "1.10": 0.0,
+                  "1.15": 0.0,
+                  "1.20": 0.0,
+                  "1.25": 0.0,
+                  "1.30": 0.0,
+                  "1.35": 0.0,
+                  "1.40": 0.0,
+                  "1.45": 0.0,
+                  "1.50": 0.0,
+                  "1.55": 0.0,
+                  "1.60": 0.0,
+                  "1.65": 0.0,
+                  "1.70": 0.0,
+                  "1.75": 0.0,
+                  "1.80": 0.0,
+                  "1.85": 0.0,
+                  "1.90": 0.0,
+                  "1.95": 0.0,
+                  "2.00": 0.0
+                },
+                "replicates": 2500,
+                "seed": [
+                  20261018,
+                  3754117500
+                ]
+              },
+              "V1": {
+                "matches": {
+                  "1874553": {
+                    "cells_used": 0,
+                    "free": 0,
+                    "n": 3,
+                    "possessions": 3,
+                    "pressed": 3,
+                    "rho": {
+                      "carried": 0.125028,
+                      "pairs": 0,
+                      "units": 12,
+                      "value": null
+                    },
+                    "units_used": 0,
+                    "weight": 0.0
+                  },
+                  "1886347": {
+                    "cells_used": 0,
+                    "free": 0,
+                    "n": 7,
+                    "possessions": 7,
+                    "pressed": 7,
+                    "rho": {
+                      "carried": 0.19952,
+                      "pairs": 3,
+                      "units": 12,
+                      "value": 0.122406
+                    },
+                    "units_used": 0,
+                    "weight": 0.0
+                  },
+                  "1925299": {
+                    "cells_used": 0,
+                    "free": 0,
+                    "n": 11,
+                    "possessions": 11,
+                    "pressed": 11,
+                    "rho": {
+                      "carried": 0.137101,
+                      "pairs": 3,
+                      "units": 28,
+                      "value": -0.670296
+                    },
+                    "units_used": 0,
+                    "weight": 0.0
+                  },
+                  "1959846": {
+                    "cells_used": 0,
+                    "free": 0,
+                    "n": 18,
+                    "possessions": 16,
+                    "pressed": 18,
+                    "rho": {
+                      "carried": 0.156044,
+                      "pairs": 23,
+                      "units": 38,
+                      "value": 0.416002
+                    },
+                    "units_used": 0,
+                    "weight": 0.0
+                  },
+                  "1996435": {
+                    "cells_used": 0,
+                    "free": 0,
+                    "n": 11,
+                    "possessions": 10,
+                    "pressed": 11,
+                    "rho": {
+                      "carried": 0.353611,
+                      "pairs": 9,
+                      "units": 27,
+                      "value": -0.088019
+                    },
+                    "units_used": 0,
+                    "weight": 0.0
+                  },
+                  "1996436": {
+                    "cells_used": 0,
+                    "free": 0,
+                    "n": 2,
+                    "possessions": 2,
+                    "pressed": 2,
+                    "rho": {
+                      "carried": 0.175674,
+                      "pairs": 1,
+                      "units": 11,
+                      "value": -0.043359
+                    },
+                    "units_used": 0,
+                    "weight": 0.0
+                  },
+                  "2007448": {
+                    "cells_used": 0,
+                    "free": 0,
+                    "n": 6,
+                    "possessions": 5,
+                    "pressed": 6,
+                    "rho": {
+                      "carried": 0.212729,
+                      "pairs": 5,
+                      "units": 19,
+                      "value": -0.302214
+                    },
+                    "units_used": 0,
+                    "weight": 0.0
+                  },
+                  "2010085": {
+                    "cells_used": 0,
+                    "free": 0,
+                    "n": 10,
+                    "possessions": 10,
+                    "pressed": 10,
+                    "rho": {
+                      "carried": 0.213118,
+                      "pairs": 5,
+                      "units": 27,
+                      "value": 0.645452
+                    },
+                    "units_used": 0,
+                    "weight": 0.0
+                  },
+                  "2011166": {
+                    "cells_used": 0,
+                    "free": 0,
+                    "n": 4,
+                    "possessions": 4,
+                    "pressed": 4,
+                    "rho": {
+                      "carried": 0.307477,
+                      "pairs": 4,
+                      "units": 14,
+                      "value": 0.135028
+                    },
+                    "units_used": 0,
+                    "weight": 0.0
+                  },
+                  "2015213": {
+                    "cells_used": 0,
+                    "free": 0,
+                    "n": 3,
+                    "possessions": 3,
+                    "pressed": 3,
+                    "rho": {
+                      "carried": 0.198192,
+                      "pairs": 4,
+                      "units": 21,
+                      "value": 0.510792
+                    },
+                    "units_used": 0,
+                    "weight": 0.0
+                  }
+                },
+                "mde80_sd": null,
+                "null_pass_rate": 0.0,
+                "pass_rate": {
+                  "0.00": 0.0,
+                  "0.05": 0.0,
+                  "0.10": 0.0,
+                  "0.15": 0.0,
+                  "0.20": 0.0,
+                  "0.25": 0.0,
+                  "0.30": 0.0,
+                  "0.35": 0.0,
+                  "0.40": 0.0,
+                  "0.45": 0.0,
+                  "0.50": 0.0,
+                  "0.55": 0.0,
+                  "0.60": 0.0,
+                  "0.65": 0.0,
+                  "0.70": 0.0,
+                  "0.75": 0.0,
+                  "0.80": 0.0,
+                  "0.85": 0.0,
+                  "0.90": 0.0,
+                  "0.95": 0.0,
+                  "1.00": 0.0,
+                  "1.05": 0.0,
+                  "1.10": 0.0,
+                  "1.15": 0.0,
+                  "1.20": 0.0,
+                  "1.25": 0.0,
+                  "1.30": 0.0,
+                  "1.35": 0.0,
+                  "1.40": 0.0,
+                  "1.45": 0.0,
+                  "1.50": 0.0,
+                  "1.55": 0.0,
+                  "1.60": 0.0,
+                  "1.65": 0.0,
+                  "1.70": 0.0,
+                  "1.75": 0.0,
+                  "1.80": 0.0,
+                  "1.85": 0.0,
+                  "1.90": 0.0,
+                  "1.95": 0.0,
+                  "2.00": 0.0
+                },
+                "replicates": 2500,
+                "seed": [
+                  20261018,
+                  2831448554
+                ]
+              }
+            }
+          },
+          "none": {
+            "blocked": true,
+            "rho_v0_pooled": 0.38345,
+            "variants": {
+              "V0": {
+                "matches": {
+                  "1874553": {
+                    "cells_used": 1,
+                    "free": 52,
+                    "n": 134,
+                    "possessions": 96,
+                    "pressed": 82,
+                    "rho": {
+                      "carried": 0.329633,
+                      "pairs": 378,
+                      "units": 393,
+                      "value": 0.329633
+                    },
+                    "units_used": 134,
+                    "weight": 31.820896
+                  },
+                  "1886347": {
+                    "cells_used": 1,
+                    "free": 63,
+                    "n": 155,
+                    "possessions": 89,
+                    "pressed": 92,
+                    "rho": {
+                      "carried": 0.349342,
+                      "pairs": 635,
+                      "units": 417,
+                      "value": 0.349342
+                    },
+                    "units_used": 155,
+                    "weight": 37.393548
+                  },
+                  "1925299": {
+                    "cells_used": 1,
+                    "free": 65,
+                    "n": 160,
+                    "possessions": 97,
+                    "pressed": 95,
+                    "rho": {
+                      "carried": 0.372827,
+                      "pairs": 579,
+                      "units": 451,
+                      "value": 0.372827
+                    },
+                    "units_used": 160,
+                    "weight": 38.59375
+                  },
+                  "1959846": {
+                    "cells_used": 1,
+                    "free": 66,
+                    "n": 162,
+                    "possessions": 92,
+                    "pressed": 96,
+                    "rho": {
+                      "carried": 0.535751,
+                      "pairs": 655,
+                      "units": 433,
+                      "value": 0.535751
+                    },
+                    "units_used": 162,
+                    "weight": 39.111111
+                  },
+                  "1996435": {
+                    "cells_used": 1,
+                    "free": 74,
+                    "n": 158,
+                    "possessions": 103,
+                    "pressed": 84,
+                    "rho": {
+                      "carried": 0.397183,
+                      "pairs": 547,
+                      "units": 416,
+                      "value": 0.397183
+                    },
+                    "units_used": 158,
+                    "weight": 39.341772
+                  },
+                  "1996436": {
+                    "cells_used": 1,
+                    "free": 34,
+                    "n": 110,
+                    "possessions": 78,
+                    "pressed": 76,
+                    "rho": {
+                      "carried": 0.245191,
+                      "pairs": 351,
+                      "units": 361,
+                      "value": 0.245191
+                    },
+                    "units_used": 110,
+                    "weight": 23.490909
+                  },
+                  "2007448": {
+                    "cells_used": 1,
+                    "free": 56,
+                    "n": 138,
+                    "possessions": 87,
+                    "pressed": 82,
+                    "rho": {
+                      "carried": 0.305905,
+                      "pairs": 594,
+                      "units": 394,
+                      "value": 0.305905
+                    },
+                    "units_used": 138,
+                    "weight": 33.275362
+                  },
+                  "2010085": {
+                    "cells_used": 1,
+                    "free": 59,
+                    "n": 137,
+                    "possessions": 86,
+                    "pressed": 78,
+                    "rho": {
+                      "carried": 0.385564,
+                      "pairs": 580,
+                      "units": 396,
+                      "value": 0.385564
+                    },
+                    "units_used": 137,
+                    "weight": 33.591241
+                  },
+                  "2011166": {
+                    "cells_used": 1,
+                    "free": 47,
+                    "n": 126,
+                    "possessions": 88,
+                    "pressed": 79,
+                    "rho": {
+                      "carried": 0.470849,
+                      "pairs": 422,
+                      "units": 395,
+                      "value": 0.470849
+                    },
+                    "units_used": 126,
+                    "weight": 29.468254
+                  },
+                  "2015213": {
+                    "cells_used": 1,
+                    "free": 73,
+                    "n": 133,
+                    "possessions": 100,
+                    "pressed": 60,
+                    "rho": {
+                      "carried": 0.377413,
+                      "pairs": 437,
+                      "units": 465,
+                      "value": 0.377413
+                    },
+                    "units_used": 133,
+                    "weight": 32.932331
+                  }
+                },
+                "mde80_sd": 0.25,
+                "null_pass_rate": 0.001825,
+                "pass_rate": {
+                  "0.00": 0.001825,
+                  "0.05": 0.009053,
+                  "0.10": 0.057353,
+                  "0.15": 0.227707,
+                  "0.20": 0.53806,
+                  "0.21": 0.607531,
+                  "0.22": 0.672245,
+                  "0.23": 0.736424,
+                  "0.24": 0.793463,
+                  "0.25": 0.839755,
+                  "0.30": 0.964729,
+                  "0.35": 0.995186,
+                  "0.40": 0.99938,
+                  "0.45": 0.999999,
+                  "0.50": 1.0,
+                  "0.55": 1.0,
+                  "0.60": 1.0,
+                  "0.65": 1.0,
+                  "0.70": 1.0,
+                  "0.75": 1.0,
+                  "0.80": 1.0,
+                  "0.85": 1.0,
+                  "0.90": 1.0,
+                  "0.95": 1.0,
+                  "1.00": 1.0,
+                  "1.05": 1.0,
+                  "1.10": 1.0,
+                  "1.15": 1.0,
+                  "1.20": 1.0,
+                  "1.25": 1.0,
+                  "1.30": 1.0,
+                  "1.35": 1.0,
+                  "1.40": 1.0,
+                  "1.45": 1.0,
+                  "1.50": 1.0,
+                  "1.55": 1.0,
+                  "1.60": 1.0,
+                  "1.65": 1.0,
+                  "1.70": 1.0,
+                  "1.75": 1.0,
+                  "1.80": 1.0,
+                  "1.85": 1.0,
+                  "1.90": 1.0,
+                  "1.95": 1.0,
+                  "2.00": 1.0
+                },
+                "replicates": 2500,
+                "seed": [
+                  20261018,
+                  123826454
+                ]
+              },
+              "V1": {
+                "matches": {
+                  "1874553": {
+                    "cells_used": 0,
+                    "free": 0,
+                    "n": 3,
+                    "possessions": 3,
+                    "pressed": 3,
+                    "rho": {
+                      "carried": 0.329633,
+                      "pairs": 1,
+                      "units": 16,
+                      "value": 0.068587
+                    },
+                    "units_used": 0,
+                    "weight": 0.0
+                  },
+                  "1886347": {
+                    "cells_used": 0,
+                    "free": 0,
+                    "n": 7,
+                    "possessions": 7,
+                    "pressed": 7,
+                    "rho": {
+                      "carried": 0.349342,
+                      "pairs": 5,
+                      "units": 15,
+                      "value": 0.494845
+                    },
+                    "units_used": 0,
+                    "weight": 0.0
+                  },
+                  "1925299": {
+                    "cells_used": 0,
+                    "free": 0,
+                    "n": 11,
+                    "possessions": 11,
+                    "pressed": 11,
+                    "rho": {
+                      "carried": 0.372827,
+                      "pairs": 4,
+                      "units": 32,
+                      "value": 0.335029
+                    },
+                    "units_used": 0,
+                    "weight": 0.0
+                  },
+                  "1959846": {
+                    "cells_used": 0,
+                    "free": 0,
+                    "n": 18,
+                    "possessions": 16,
+                    "pressed": 18,
+                    "rho": {
+                      "carried": 0.535751,
+                      "pairs": 24,
+                      "units": 40,
+                      "value": 0.386604
+                    },
+                    "units_used": 0,
+                    "weight": 0.0
+                  },
+                  "1996435": {
+                    "cells_used": 0,
+                    "free": 0,
+                    "n": 11,
+                    "possessions": 10,
+                    "pressed": 11,
+                    "rho": {
+                      "carried": 0.397183,
+                      "pairs": 10,
+                      "units": 29,
+                      "value": -0.195996
+                    },
+                    "units_used": 0,
+                    "weight": 0.0
+                  },
+                  "1996436": {
+                    "cells_used": 0,
+                    "free": 0,
+                    "n": 2,
+                    "possessions": 2,
+                    "pressed": 2,
+                    "rho": {
+                      "carried": 0.245191,
+                      "pairs": 1,
+                      "units": 14,
+                      "value": -0.031077
+                    },
+                    "units_used": 0,
+                    "weight": 0.0
+                  },
+                  "2007448": {
+                    "cells_used": 0,
+                    "free": 0,
+                    "n": 6,
+                    "possessions": 5,
+                    "pressed": 6,
+                    "rho": {
+                      "carried": 0.305905,
+                      "pairs": 8,
+                      "units": 22,
+                      "value": -0.31184
+                    },
+                    "units_used": 0,
+                    "weight": 0.0
+                  },
+                  "2010085": {
+                    "cells_used": 0,
+                    "free": 0,
+                    "n": 10,
+                    "possessions": 10,
+                    "pressed": 10,
+                    "rho": {
+                      "carried": 0.385564,
+                      "pairs": 5,
+                      "units": 29,
+                      "value": 0.478459
+                    },
+                    "units_used": 0,
+                    "weight": 0.0
+                  },
+                  "2011166": {
+                    "cells_used": 0,
+                    "free": 0,
+                    "n": 4,
+                    "possessions": 4,
+                    "pressed": 4,
+                    "rho": {
+                      "carried": 0.470849,
+                      "pairs": 5,
+                      "units": 16,
+                      "value": 0.119036
+                    },
+                    "units_used": 0,
+                    "weight": 0.0
+                  },
+                  "2015213": {
+                    "cells_used": 0,
+                    "free": 0,
+                    "n": 3,
+                    "possessions": 3,
+                    "pressed": 3,
+                    "rho": {
+                      "carried": 0.377413,
+                      "pairs": 4,
+                      "units": 23,
+                      "value": 0.58785
+                    },
+                    "units_used": 0,
+                    "weight": 0.0
+                  }
+                },
+                "mde80_sd": null,
+                "null_pass_rate": 0.0,
+                "pass_rate": {
+                  "0.00": 0.0,
+                  "0.05": 0.0,
+                  "0.10": 0.0,
+                  "0.15": 0.0,
+                  "0.20": 0.0,
+                  "0.25": 0.0,
+                  "0.30": 0.0,
+                  "0.35": 0.0,
+                  "0.40": 0.0,
+                  "0.45": 0.0,
+                  "0.50": 0.0,
+                  "0.55": 0.0,
+                  "0.60": 0.0,
+                  "0.65": 0.0,
+                  "0.70": 0.0,
+                  "0.75": 0.0,
+                  "0.80": 0.0,
+                  "0.85": 0.0,
+                  "0.90": 0.0,
+                  "0.95": 0.0,
+                  "1.00": 0.0,
+                  "1.05": 0.0,
+                  "1.10": 0.0,
+                  "1.15": 0.0,
+                  "1.20": 0.0,
+                  "1.25": 0.0,
+                  "1.30": 0.0,
+                  "1.35": 0.0,
+                  "1.40": 0.0,
+                  "1.45": 0.0,
+                  "1.50": 0.0,
+                  "1.55": 0.0,
+                  "1.60": 0.0,
+                  "1.65": 0.0,
+                  "1.70": 0.0,
+                  "1.75": 0.0,
+                  "1.80": 0.0,
+                  "1.85": 0.0,
+                  "1.90": 0.0,
+                  "1.95": 0.0,
+                  "2.00": 0.0
+                },
+                "replicates": 2500,
+                "seed": [
+                  20261018,
+                  1885749632
+                ]
+              }
+            }
+          }
+        },
+        "width": {
+          "incoming_ball": {
+            "blocked": true,
+            "rho_v0_pooled": 0.126112,
+            "variants": {
+              "V0": {
+                "matches": {
+                  "1874553": {
+                    "cells_used": 0,
+                    "free": 50,
+                    "n": 131,
+                    "possessions": 94,
+                    "pressed": 81,
+                    "rho": {
+                      "carried": 0.091203,
+                      "pairs": 374,
+                      "units": 392,
+                      "value": 0.091203
+                    },
+                    "units_used": 0,
+                    "weight": 0.0
+                  },
+                  "1886347": {
+                    "cells_used": 0,
+                    "free": 61,
+                    "n": 153,
+                    "possessions": 87,
+                    "pressed": 92,
+                    "rho": {
+                      "carried": 0.148952,
+                      "pairs": 635,
+                      "units": 417,
+                      "value": 0.148952
+                    },
+                    "units_used": 0,
+                    "weight": 0.0
+                  },
+                  "1925299": {
+                    "cells_used": 0,
+                    "free": 65,
+                    "n": 159,
+                    "possessions": 96,
+                    "pressed": 94,
+                    "rho": {
+                      "carried": 0.174214,
+                      "pairs": 577,
+                      "units": 450,
+                      "value": 0.174214
+                    },
+                    "units_used": 0,
+                    "weight": 0.0
+                  },
+                  "1959846": {
+                    "cells_used": 0,
+                    "free": 60,
+                    "n": 155,
+                    "possessions": 88,
+                    "pressed": 95,
+                    "rho": {
+                      "carried": 0.141651,
+                      "pairs": 647,
+                      "units": 431,
+                      "value": 0.141651
+                    },
+                    "units_used": 0,
+                    "weight": 0.0
+                  },
+                  "1996435": {
+                    "cells_used": 0,
+                    "free": 72,
+                    "n": 156,
+                    "possessions": 102,
+                    "pressed": 84,
+                    "rho": {
+                      "carried": 0.094864,
+                      "pairs": 547,
+                      "units": 416,
+                      "value": 0.094864
+                    },
+                    "units_used": 0,
+                    "weight": 0.0
+                  },
+                  "1996436": {
+                    "cells_used": 0,
+                    "free": 33,
+                    "n": 106,
+                    "possessions": 76,
+                    "pressed": 73,
+                    "rho": {
+                      "carried": 0.125454,
+                      "pairs": 348,
+                      "units": 360,
+                      "value": 0.125454
+                    },
+                    "units_used": 0,
+                    "weight": 0.0
+                  },
+                  "2007448": {
+                    "cells_used": 0,
+                    "free": 56,
+                    "n": 136,
+                    "possessions": 86,
+                    "pressed": 80,
+                    "rho": {
+                      "carried": 0.114407,
+                      "pairs": 586,
+                      "units": 390,
+                      "value": 0.114407
+                    },
+                    "units_used": 0,
+                    "weight": 0.0
+                  },
+                  "2010085": {
+                    "cells_used": 0,
+                    "free": 57,
+                    "n": 134,
+                    "possessions": 83,
+                    "pressed": 77,
+                    "rho": {
+                      "carried": 0.079814,
+                      "pairs": 580,
+                      "units": 396,
+                      "value": 0.079814
+                    },
+                    "units_used": 0,
+                    "weight": 0.0
+                  },
+                  "2011166": {
+                    "cells_used": 0,
+                    "free": 46,
+                    "n": 122,
+                    "possessions": 84,
+                    "pressed": 76,
+                    "rho": {
+                      "carried": 0.061301,
+                      "pairs": 415,
+                      "units": 393,
+                      "value": 0.061301
+                    },
+                    "units_used": 0,
+                    "weight": 0.0
+                  },
+                  "2015213": {
+                    "cells_used": 0,
+                    "free": 72,
+                    "n": 131,
+                    "possessions": 99,
+                    "pressed": 59,
+                    "rho": {
+                      "carried": 0.215435,
+                      "pairs": 433,
+                      "units": 463,
+                      "value": 0.215435
+                    },
+                    "units_used": 0,
+                    "weight": 0.0
+                  }
+                },
+                "mde80_sd": null,
+                "null_pass_rate": 0.0,
+                "pass_rate": {
+                  "0.00": 0.0,
+                  "0.05": 0.0,
+                  "0.10": 0.0,
+                  "0.15": 0.0,
+                  "0.20": 0.0,
+                  "0.25": 0.0,
+                  "0.30": 0.0,
+                  "0.35": 0.0,
+                  "0.40": 0.0,
+                  "0.45": 0.0,
+                  "0.50": 0.0,
+                  "0.55": 0.0,
+                  "0.60": 0.0,
+                  "0.65": 0.0,
+                  "0.70": 0.0,
+                  "0.75": 0.0,
+                  "0.80": 0.0,
+                  "0.85": 0.0,
+                  "0.90": 0.0,
+                  "0.95": 0.0,
+                  "1.00": 0.0,
+                  "1.05": 0.0,
+                  "1.10": 0.0,
+                  "1.15": 0.0,
+                  "1.20": 0.0,
+                  "1.25": 0.0,
+                  "1.30": 0.0,
+                  "1.35": 0.0,
+                  "1.40": 0.0,
+                  "1.45": 0.0,
+                  "1.50": 0.0,
+                  "1.55": 0.0,
+                  "1.60": 0.0,
+                  "1.65": 0.0,
+                  "1.70": 0.0,
+                  "1.75": 0.0,
+                  "1.80": 0.0,
+                  "1.85": 0.0,
+                  "1.90": 0.0,
+                  "1.95": 0.0,
+                  "2.00": 0.0
+                },
+                "replicates": 2500,
+                "seed": [
+                  20261018,
+                  182400211
+                ]
+              },
+              "V1": {
+                "matches": {
+                  "1874553": {
+                    "cells_used": 0,
+                    "free": 10,
+                    "n": 55,
+                    "possessions": 49,
+                    "pressed": 45,
+                    "rho": {
+                      "carried": 0.091203,
+                      "pairs": 39,
+                      "units": 145,
+                      "value": -0.080259
+                    },
+                    "units_used": 0,
+                    "weight": 0.0
+                  },
+                  "1886347": {
+                    "cells_used": 0,
+                    "free": 20,
+                    "n": 88,
+                    "possessions": 58,
+                    "pressed": 68,
+                    "rho": {
+                      "carried": 0.148952,
+                      "pairs": 245,
+                      "units": 236,
+                      "value": 0.121899
+                    },
+                    "units_used": 0,
+                    "weight": 0.0
+                  },
+                  "1925299": {
+                    "cells_used": 0,
+                    "free": 10,
+                    "n": 67,
+                    "possessions": 51,
+                    "pressed": 57,
+                    "rho": {
+                      "carried": 0.174214,
+                      "pairs": 112,
+                      "units": 174,
+                      "value": 0.172033
+                    },
+                    "units_used": 0,
+                    "weight": 0.0
+                  },
+                  "1959846": {
+                    "cells_used": 0,
+                    "free": 15,
+                    "n": 66,
+                    "possessions": 49,
+                    "pressed": 51,
+                    "rho": {
+                      "carried": 0.141651,
+                      "pairs": 156,
+                      "units": 182,
+                      "value": 0.108469
+                    },
+                    "units_used": 0,
+                    "weight": 0.0
+                  },
+                  "1996435": {
+                    "cells_used": 0,
+                    "free": 28,
+                    "n": 90,
+                    "possessions": 66,
+                    "pressed": 62,
+                    "rho": {
+                      "carried": 0.109611,
+                      "pairs": 259,
+                      "units": 246,
+                      "value": 0.109611
+                    },
+                    "units_used": 0,
+                    "weight": 0.0
+                  },
+                  "1996436": {
+                    "cells_used": 0,
+                    "free": 10,
+                    "n": 66,
+                    "possessions": 52,
+                    "pressed": 56,
+                    "rho": {
+                      "carried": 0.129753,
+                      "pairs": 119,
+                      "units": 211,
+                      "value": 0.129753
+                    },
+                    "units_used": 0,
+                    "weight": 0.0
+                  },
+                  "2007448": {
+                    "cells_used": 0,
+                    "free": 19,
+                    "n": 59,
+                    "possessions": 53,
+                    "pressed": 40,
+                    "rho": {
+                      "carried": 0.114407,
+                      "pairs": 84,
+                      "units": 153,
+                      "value": 0.008725
+                    },
+                    "units_used": 0,
+                    "weight": 0.0
+                  },
+                  "2010085": {
+                    "cells_used": 0,
+                    "free": 14,
+                    "n": 62,
+                    "possessions": 49,
+                    "pressed": 48,
+                    "rho": {
+                      "carried": 0.172163,
+                      "pairs": 77,
+                      "units": 133,
+                      "value": 0.172163
+                    },
+                    "units_used": 0,
+                    "weight": 0.0
+                  },
+                  "2011166": {
+                    "cells_used": 0,
+                    "free": 7,
+                    "n": 43,
+                    "possessions": 37,
+                    "pressed": 36,
+                    "rho": {
+                      "carried": 0.061301,
+                      "pairs": 33,
+                      "units": 131,
+                      "value": -0.075212
+                    },
+                    "units_used": 0,
+                    "weight": 0.0
+                  },
+                  "2015213": {
+                    "cells_used": 0,
+                    "free": 27,
+                    "n": 55,
+                    "possessions": 44,
+                    "pressed": 28,
+                    "rho": {
+                      "carried": 0.215435,
+                      "pairs": 113,
+                      "units": 193,
+                      "value": 0.212316
+                    },
+                    "units_used": 0,
+                    "weight": 0.0
+                  }
+                },
+                "mde80_sd": null,
+                "null_pass_rate": 0.0,
+                "pass_rate": {
+                  "0.00": 0.0,
+                  "0.05": 0.0,
+                  "0.10": 0.0,
+                  "0.15": 0.0,
+                  "0.20": 0.0,
+                  "0.25": 0.0,
+                  "0.30": 0.0,
+                  "0.35": 0.0,
+                  "0.40": 0.0,
+                  "0.45": 0.0,
+                  "0.50": 0.0,
+                  "0.55": 0.0,
+                  "0.60": 0.0,
+                  "0.65": 0.0,
+                  "0.70": 0.0,
+                  "0.75": 0.0,
+                  "0.80": 0.0,
+                  "0.85": 0.0,
+                  "0.90": 0.0,
+                  "0.95": 0.0,
+                  "1.00": 0.0,
+                  "1.05": 0.0,
+                  "1.10": 0.0,
+                  "1.15": 0.0,
+                  "1.20": 0.0,
+                  "1.25": 0.0,
+                  "1.30": 0.0,
+                  "1.35": 0.0,
+                  "1.40": 0.0,
+                  "1.45": 0.0,
+                  "1.50": 0.0,
+                  "1.55": 0.0,
+                  "1.60": 0.0,
+                  "1.65": 0.0,
+                  "1.70": 0.0,
+                  "1.75": 0.0,
+                  "1.80": 0.0,
+                  "1.85": 0.0,
+                  "1.90": 0.0,
+                  "1.95": 0.0,
+                  "2.00": 0.0
+                },
+                "replicates": 2500,
+                "seed": [
+                  20261018,
+                  2111308869
+                ]
+              }
+            }
+          },
+          "none": {
+            "blocked": true,
+            "rho_v0_pooled": 0.129433,
+            "variants": {
+              "V0": {
+                "matches": {
+                  "1874553": {
+                    "cells_used": 1,
+                    "free": 52,
+                    "n": 134,
+                    "possessions": 96,
+                    "pressed": 82,
+                    "rho": {
+                      "carried": 0.072971,
+                      "pairs": 378,
+                      "units": 393,
+                      "value": 0.072971
+                    },
+                    "units_used": 134,
+                    "weight": 31.820896
+                  },
+                  "1886347": {
+                    "cells_used": 1,
+                    "free": 63,
+                    "n": 155,
+                    "possessions": 89,
+                    "pressed": 92,
+                    "rho": {
+                      "carried": 0.168999,
+                      "pairs": 635,
+                      "units": 417,
+                      "value": 0.168999
+                    },
+                    "units_used": 155,
+                    "weight": 37.393548
+                  },
+                  "1925299": {
+                    "cells_used": 1,
+                    "free": 65,
+                    "n": 160,
+                    "possessions": 97,
+                    "pressed": 95,
+                    "rho": {
+                      "carried": 0.158956,
+                      "pairs": 579,
+                      "units": 451,
+                      "value": 0.158956
+                    },
+                    "units_used": 160,
+                    "weight": 38.59375
+                  },
+                  "1959846": {
+                    "cells_used": 1,
+                    "free": 66,
+                    "n": 162,
+                    "possessions": 92,
+                    "pressed": 96,
+                    "rho": {
+                      "carried": 0.211102,
+                      "pairs": 655,
+                      "units": 433,
+                      "value": 0.211102
+                    },
+                    "units_used": 162,
+                    "weight": 39.111111
+                  },
+                  "1996435": {
+                    "cells_used": 1,
+                    "free": 74,
+                    "n": 158,
+                    "possessions": 103,
+                    "pressed": 84,
+                    "rho": {
+                      "carried": 0.097831,
+                      "pairs": 547,
+                      "units": 416,
+                      "value": 0.097831
+                    },
+                    "units_used": 158,
+                    "weight": 39.341772
+                  },
+                  "1996436": {
+                    "cells_used": 1,
+                    "free": 34,
+                    "n": 110,
+                    "possessions": 78,
+                    "pressed": 76,
+                    "rho": {
+                      "carried": 0.08704,
+                      "pairs": 351,
+                      "units": 361,
+                      "value": 0.08704
+                    },
+                    "units_used": 110,
+                    "weight": 23.490909
+                  },
+                  "2007448": {
+                    "cells_used": 1,
+                    "free": 56,
+                    "n": 138,
+                    "possessions": 87,
+                    "pressed": 82,
+                    "rho": {
+                      "carried": 0.064218,
+                      "pairs": 594,
+                      "units": 394,
+                      "value": 0.064218
+                    },
+                    "units_used": 138,
+                    "weight": 33.275362
+                  },
+                  "2010085": {
+                    "cells_used": 1,
+                    "free": 59,
+                    "n": 137,
+                    "possessions": 86,
+                    "pressed": 78,
+                    "rho": {
+                      "carried": 0.067225,
+                      "pairs": 580,
+                      "units": 396,
+                      "value": 0.067225
+                    },
+                    "units_used": 137,
+                    "weight": 33.591241
+                  },
+                  "2011166": {
+                    "cells_used": 1,
+                    "free": 47,
+                    "n": 126,
+                    "possessions": 88,
+                    "pressed": 79,
+                    "rho": {
+                      "carried": 0.103294,
+                      "pairs": 422,
+                      "units": 395,
+                      "value": 0.103294
+                    },
+                    "units_used": 126,
+                    "weight": 29.468254
+                  },
+                  "2015213": {
+                    "cells_used": 1,
+                    "free": 73,
+                    "n": 133,
+                    "possessions": 100,
+                    "pressed": 60,
+                    "rho": {
+                      "carried": 0.229306,
+                      "pairs": 437,
+                      "units": 465,
+                      "value": 0.229306
+                    },
+                    "units_used": 133,
+                    "weight": 32.932331
+                  }
+                },
+                "mde80_sd": 0.24,
+                "null_pass_rate": 0.00078,
+                "pass_rate": {
+                  "0.00": 0.00078,
+                  "0.05": 0.008556,
+                  "0.10": 0.066734,
+                  "0.15": 0.250954,
+                  "0.20": 0.575829,
+                  "0.21": 0.641155,
+                  "0.22": 0.703426,
+                  "0.23": 0.759106,
+                  "0.24": 0.809861,
+                  "0.25": 0.856121,
+                  "0.30": 0.973218,
+                  "0.35": 0.998109,
+                  "0.40": 0.999599,
+                  "0.45": 1.0,
+                  "0.50": 1.0,
+                  "0.55": 1.0,
+                  "0.60": 1.0,
+                  "0.65": 1.0,
+                  "0.70": 1.0,
+                  "0.75": 1.0,
+                  "0.80": 1.0,
+                  "0.85": 1.0,
+                  "0.90": 1.0,
+                  "0.95": 1.0,
+                  "1.00": 1.0,
+                  "1.05": 1.0,
+                  "1.10": 1.0,
+                  "1.15": 1.0,
+                  "1.20": 1.0,
+                  "1.25": 1.0,
+                  "1.30": 1.0,
+                  "1.35": 1.0,
+                  "1.40": 1.0,
+                  "1.45": 1.0,
+                  "1.50": 1.0,
+                  "1.55": 1.0,
+                  "1.60": 1.0,
+                  "1.65": 1.0,
+                  "1.70": 1.0,
+                  "1.75": 1.0,
+                  "1.80": 1.0,
+                  "1.85": 1.0,
+                  "1.90": 1.0,
+                  "1.95": 1.0,
+                  "2.00": 1.0
+                },
+                "replicates": 2500,
+                "seed": [
+                  20261018,
+                  4141956617
+                ]
+              },
+              "V1": {
+                "matches": {
+                  "1874553": {
+                    "cells_used": 1,
+                    "free": 10,
+                    "n": 55,
+                    "possessions": 49,
+                    "pressed": 45,
+                    "rho": {
+                      "carried": 0.072971,
+                      "pairs": 43,
+                      "units": 148,
+                      "value": 0.022125
+                    },
+                    "units_used": 55,
+                    "weight": 8.181818
+                  },
+                  "1886347": {
+                    "cells_used": 1,
+                    "free": 20,
+                    "n": 88,
+                    "possessions": 58,
+                    "pressed": 68,
+                    "rho": {
+                      "carried": 0.207132,
+                      "pairs": 250,
+                      "units": 238,
+                      "value": 0.207132
+                    },
+                    "units_used": 88,
+                    "weight": 15.454545
+                  },
+                  "1925299": {
+                    "cells_used": 1,
+                    "free": 10,
+                    "n": 67,
+                    "possessions": 51,
+                    "pressed": 57,
+                    "rho": {
+                      "carried": 0.216029,
+                      "pairs": 113,
+                      "units": 176,
+                      "value": 0.216029
+                    },
+                    "units_used": 67,
+                    "weight": 8.507463
+                  },
+                  "1959846": {
+                    "cells_used": 1,
+                    "free": 16,
+                    "n": 68,
+                    "possessions": 50,
+                    "pressed": 52,
+                    "rho": {
+                      "carried": 0.23305,
+                      "pairs": 159,
+                      "units": 183,
+                      "value": 0.23305
+                    },
+                    "units_used": 68,
+                    "weight": 12.235294
+                  },
+                  "1996435": {
+                    "cells_used": 1,
+                    "free": 28,
+                    "n": 90,
+                    "possessions": 66,
+                    "pressed": 62,
+                    "rho": {
+                      "carried": 0.097831,
+                      "pairs": 259,
+                      "units": 247,
+                      "value": 0.069828
+                    },
+                    "units_used": 90,
+                    "weight": 19.288889
+                  },
+                  "1996436": {
+                    "cells_used": 1,
+                    "free": 10,
+                    "n": 67,
+                    "possessions": 53,
+                    "pressed": 57,
+                    "rho": {
+                      "carried": 0.111976,
+                      "pairs": 121,
+                      "units": 212,
+                      "value": 0.111976
+                    },
+                    "units_used": 67,
+                    "weight": 8.507463
+                  },
+                  "2007448": {
+                    "cells_used": 1,
+                    "free": 19,
+                    "n": 59,
+                    "possessions": 53,
+                    "pressed": 40,
+                    "rho": {
+                      "carried": 0.064218,
+                      "pairs": 85,
+                      "units": 155,
+                      "value": -0.027098
+                    },
+                    "units_used": 59,
+                    "weight": 12.881356
+                  },
+                  "2010085": {
+                    "cells_used": 1,
+                    "free": 15,
+                    "n": 63,
+                    "possessions": 50,
+                    "pressed": 48,
+                    "rho": {
+                      "carried": 0.20048,
+                      "pairs": 77,
+                      "units": 133,
+                      "value": 0.20048
+                    },
+                    "units_used": 63,
+                    "weight": 11.428571
+                  },
+                  "2011166": {
+                    "cells_used": 1,
+                    "free": 7,
+                    "n": 44,
+                    "possessions": 38,
+                    "pressed": 37,
+                    "rho": {
+                      "carried": 0.2822,
+                      "pairs": 33,
+                      "units": 132,
+                      "value": 0.2822
+                    },
+                    "units_used": 44,
+                    "weight": 5.886364
+                  },
+                  "2015213": {
+                    "cells_used": 1,
+                    "free": 27,
+                    "n": 55,
+                    "possessions": 44,
+                    "pressed": 28,
+                    "rho": {
+                      "carried": 0.256543,
+                      "pairs": 113,
+                      "units": 194,
+                      "value": 0.256543
+                    },
+                    "units_used": 55,
+                    "weight": 13.745455
+                  }
+                },
+                "mde80_sd": 0.41,
+                "null_pass_rate": 0.00051,
+                "pass_rate": {
+                  "0.00": 0.00051,
+                  "0.05": 0.002584,
+                  "0.10": 0.011367,
+                  "0.15": 0.03733,
+                  "0.20": 0.098396,
+                  "0.25": 0.223419,
+                  "0.30": 0.396069,
+                  "0.35": 0.597048,
+                  "0.40": 0.776524,
+                  "0.41": 0.804667,
+                  "0.42": 0.828356,
+                  "0.43": 0.852958,
+                  "0.44": 0.874658,
+                  "0.45": 0.893349,
+                  "0.50": 0.958505,
+                  "0.55": 0.985816,
+                  "0.60": 0.996531,
+                  "0.65": 0.998664,
+                  "0.70": 0.998797,
+                  "0.75": 0.9996,
+                  "0.80": 1.0,
+                  "0.85": 1.0,
+                  "0.90": 1.0,
+                  "0.95": 1.0,
+                  "1.00": 1.0,
+                  "1.05": 1.0,
+                  "1.10": 1.0,
+                  "1.15": 1.0,
+                  "1.20": 1.0,
+                  "1.25": 1.0,
+                  "1.30": 1.0,
+                  "1.35": 1.0,
+                  "1.40": 1.0,
+                  "1.45": 1.0,
+                  "1.50": 1.0,
+                  "1.55": 1.0,
+                  "1.60": 1.0,
+                  "1.65": 1.0,
+                  "1.70": 1.0,
+                  "1.75": 1.0,
+                  "1.80": 1.0,
+                  "1.85": 1.0,
+                  "1.90": 1.0,
+                  "1.95": 1.0,
+                  "2.00": 1.0
+                },
+                "replicates": 2500,
+                "seed": [
+                  20261018,
+                  2179337887
+                ]
+              }
+            }
+          }
+        }
+      },
+      "probe_counts": {
+        "1874553": {
+          "measured": 405,
+          "v1_length": 17,
+          "v1_width": 155
+        },
+        "1886347": {
+          "measured": 432,
+          "v1_length": 17,
+          "v1_width": 244
+        },
+        "1925299": {
+          "measured": 459,
+          "v1_length": 32,
+          "v1_width": 177
+        },
+        "1959846": {
+          "measured": 452,
+          "v1_length": 43,
+          "v1_width": 189
+        },
+        "1996435": {
+          "measured": 423,
+          "v1_length": 31,
+          "v1_width": 249
+        },
+        "1996436": {
+          "measured": 374,
+          "v1_length": 15,
+          "v1_width": 214
+        },
+        "2007448": {
+          "measured": 404,
+          "v1_length": 23,
+          "v1_width": 156
+        },
+        "2010085": {
+          "measured": 412,
+          "v1_length": 29,
+          "v1_width": 137
+        },
+        "2011166": {
+          "measured": 416,
+          "v1_length": 18,
+          "v1_width": 137
+        },
+        "2015213": {
+          "measured": 473,
+          "v1_length": 23,
+          "v1_width": 195
+        }
+      },
+      "status": "simulated"
+    }
+  },
+  "constants": {
+    "bar_count_at_most": 1,
+    "bar_p": 0.00135,
+    "bar_same_sign": 8,
+    "block_rho": 0.1,
+    "c3_contrast": [
+      "low_block",
+      "high_block"
+    ],
+    "c3_definition": "with_gk_extremes_listed",
+    "chunk": 250,
+    "coarse_step_sd": 0.05,
+    "fine_step_sd": 0.01,
+    "max_effect_sd": 2.0,
+    "mde_limit_sd": 0.3,
+    "min_cell": 5,
+    "min_rho_pairs": 30,
+    "n_permutations": 2000,
+    "power_target": 0.8,
+    "pressed_radius_m": 5.0,
+    "replicates": 2500,
+    "seed": 20261018,
+    "window_frames": 13
+  },
+  "cp1_rule": {
+    "backup": "C3",
+    "recommended_first": "C1",
+    "rule": "C2 first if it survived probe S2 and its V1 MDE80 is at most mde_limit; otherwise C1 if alive; C3 only as a backup; none alive, branch B. CP1 decides.",
+    "testable_v0": {
+      "C1": true,
+      "C3": false
+    }
+  },
+  "matches": [
+    1874553,
+    1886347,
+    1925299,
+    1959846,
+    1996435,
+    1996436,
+    2007448,
+    2010085,
+    2011166,
+    2015213
+  ],
+  "probes": {
+    "C1": true,
+    "C2": false,
+    "C3": true
+  }
+}

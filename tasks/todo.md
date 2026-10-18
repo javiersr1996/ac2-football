@@ -439,11 +439,42 @@ y lo que no se abrió. La figura 2 enseña la muerte. Si en CP1 mueren las tres,
   tests unitarios construyen un bronze mínimo de dos partidos con solo las columnas que lee silver (no son los fixtures de
   la 6); `src/ftbase/py.typed` y `tests/test_cli.py` (de la tarea 2) siguen sin fila en la procedencia: los caza el test
   de la 7; un fichero de bronze que falte a mitad de build sale como error de DuckDB sin mensaje propio.
-- [ ] 6. `sonnet` `[base]` Fixtures sintéticos (decisión 3): `ftbase.fixtures`, partido corto
+- [x] 6. `sonnet` `[base]` Fixtures sintéticos (decisión 3): `ftbase.fixtures`, partido corto
   determinista en formato SkillCorner (JSONL, `match.json`, CSV de eventos y fases con las cabeceras
   congeladas) con tramos extrapolados plantados de longitudes conocidas; único fichero `nuevo` de la
   base. CI `ci.yml` de la base en `ubuntu-latest` (ruff, format, mypy, pytest sobre fixtures, sin
   LFS). Aceptación: CI en verde en GitHub; un skip cuenta como fallo; mutación anotada.
+  Medido: commits en `football-tracking-base` `68ab86a` (`ftbase.fixtures`, `ftbase fixtures --out`, dos `not_null` en
+  silver, test de extremo a extremo), `d40629d` (CI, `conftest.py` que convierte un skip en fallo, README y procedencia) y
+  `ded3a56` (la CI imprime cuántos `realdata` se deseleccionan), empujados. Gate local en verde: `sync --locked`, ruff, format,
+  `mypy --strict src`, `pytest -q` con 109 pasan, 0 saltados, 22 deseleccionados (eran 88: +16 de fixtures, +2 de las
+  comprobaciones nuevas, +3 del hook de skips). **CI en verde: https://github.com/javiersr1996/football-tracking-base/actions/runs/39120613764,
+  26 s** (la primera verde, `39120497745`, 26 s con el job `gate` en 22 s); `ubuntu-latest`, checkout `v7.0.1` sin LFS,
+  `astral-sh/setup-uv@v10.3.0` con uv 0.10.4, Python 3.13.12 de `.python-version`; el log imprime `22 realdata tests are deselected`.
+  **Un skip pone la CI en rojo:** PR de prueba nº 1 desde `ci-skip-probe` (un push a una rama no dispara la CI, que corre en push a
+  `main`, PR y manual), ejecución `39120566513` en rojo (`109 passed, 1 skipped`, `FAILED: 1 skipped test(s) count as failures`, exit 1);
+  PR cerrado sin fusionar y rama borrada en local y remoto (`git ls-remote --heads` solo `main`). Fixture: un partido, 130 frames a
+  10 Hz, periodos 0-59 y 70-129 (60-69 sin periodo), 3+3 jugadores, un suplente que no juega y el balón; siete rachas plantadas
+  de 4, 7, 3, 10, 6, 5 y 2 frames (dos del mismo jugador y periodo, dos que tocan el fin de un periodo, dos que empiezan con el
+  segundo); lados `[left_to_right, right_to_left]`. El generador escribe los 5 ficheros crudos más un `manifest.json` con sus sha256
+  reales, así que **el ingest real corre y no se salta** (`ingest --from-existing` verifica 5 de 5, `failed=0`), luego bronze y silver
+  (64 de 64 comprobaciones: 62 más las 2 nuevas). La verdad sale de `SyntheticMatch.runs`, no de silver; las longitudes están
+  además escritas a mano en el test. Comprueba: frames (120 en periodo x 7 entidades) y jugadores, rachas por jugador y periodo
+  idénticas a las plantadas (y ninguna otra extrapolada, balón incluido), signos `{(1,7):+1,(1,8):-1,(2,7):-1,(2,8):+1}`, las 6
+  aserciones y todas las comprobaciones a 0 filas, y un byte cambiado en el crudo hace fallar el ingest. Mutaciones (cada una
+  rompe un test, todo restaurado, `git status` limpio): longitud plantada 4 a 5 en `fixtures.py` rompe el test de longitudes a
+  mano; el escritor planta un frame menos del que declara rompe `test_the_runs_silver_recovers_are_the_planted_ones`; bronze que
+  fuerza `is_detected` a true rompe 2 tests de fixtures y el de bronze; `frames.sql` que ignora `is_detected` rompe el mismo;
+  invertir `left_to_right` en `orientation.py` hace salir a silver con 1 (fases en desacuerdo) y rompe 5 tests de fixtures; quitar
+  `not_null frames.is_detected` de `SCHEMA_CHECKS` y un `not_null` que nunca salta rompen su test de violación plantada; sin el
+  efecto del hook, 2 de los 3 tests de skips fallan. Desviaciones: `frames` no tiene `attack_sign`, vive en la vista
+  `frames_attacking` (y en `dim_team_period`), el `not_null` va sobre `frames_attacking.attack_sign`; los `nuevo` son 5 filas
+  más (fixtures, 3 ficheros de test y `conftest.py`), no un solo fichero; el generador escribe un partido por llamada (`match_id`
+  y `seed` por argumento, la semilla solo mueve coordenadas, nunca las rachas); el bronze de dos partidos de `c4ffe15` se conserva
+  (prueba los lectores con dos partidos y solo las columnas de silver; los fixtures son crudos de uno); el hook de skips vale
+  también en local; `ci.yml` no está en la tabla de procedencia (va en la prosa); aviso de GitHub: `ubuntu-latest` pasa a Ubuntu 26
+  desde el 19 oct 2026. Para la 8 y la 12: `write_synthetic_match(dir)` da `bundle/` y `manifest.json`, con `PlantedRun(player_id,
+  period, start_frame, length)` como verdad de `gap_len`.
 - [ ] 7. `haiku` `[base]` Procedencia y tag: completar `docs/provenance.md` (fichero, ruta y commit
   en tracklab, estado `copiado`/`reescrito`/`nuevo`, líneas copiadas, líneas cambiadas) y `ftbase
   provenance` que imprime y escribe `reports/provenance.json` (líneas por estado). Tag `v0.1.0`

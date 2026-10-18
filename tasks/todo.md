@@ -999,11 +999,97 @@ su test sintético con el fallo plantado (una sonda que no puede fallar no prote
   no un movimiento (declarado en el docstring). (7) Entran todas las `player_possession` con
   jugador y equipo, como en m10, no solo las etiquetadas de S1. Nadie leyó el reservado; nada
   medido en `(t, t + W]` salvo las banderas de detección de (e).
-- [ ] 16. `sonnet` Sonda S3 (C3): anchura y longitud propias contra las del proveedor al inicio
+- [x] 16. `sonnet` Sonda S3 (C3): anchura y longitud propias contra las del proveedor al inicio
   de fase (y la definición que usa el proveedor: con o sin portero, extremos o percentiles);
   fracción extrapolada de los jugadores que fijan cada extremo; correlación de rango entre
   fracción detectada y la propia métrica (sesgo de visibilidad). Muere C3 en sonda si no se
   reproduce la métrica del proveedor. Mutación: incluir al portero rompe la reproducción.
+  Medido (2026-10-18; todas las cifras salen de `reports/probe_s3.json`, 10 de calibración, por
+  partido; rangos entre partidos): **código y regla en `c8e2d49`, empujado antes de calcular nada
+  en ningún partido real** (CI en verde, run 39144469545); el informe y este registro, en el
+  commit siguiente. Gate local en verde (`sync --locked`, ruff, format, `mypy src`, `pytest -q`:
+  589 pasan, eran 490; 11 deseleccionados, eran 10; `pytest -m realdata`: 11 de 11, con el informe
+  confirmado byte a byte). Nuevo: `defence/block.py` (las 8 definiciones, `measure`, Spearman),
+  `defence/probe_s3.py` (regla, carga, informe), `protocol.data.read_bronze_phases` (ver
+  desviaciones) y el comando `ac2fb s3 [--match ID] [--reports-dir D]` (60 s para los 10). Rutas
+  públicas nuevas (14 funciones y el comando `s3`) cubiertas por el test de la 11.
+  **Definiciones y regla, escritas en los docstrings antes de leer los datos.** Ocho definiciones
+  del bloque del equipo sin balón al `frame_start` de la fase (producto de tres elecciones): con o
+  sin portero (el proxy de la 12), extremos (máximo menos mínimo) o percentiles 5 y 95, y todos los
+  jugadores listados o solo los detectados; anchura = extensión de `y`, longitud = de `x`. Una
+  definición **reproduce** en un partido si, en anchura y en longitud, hay al menos 100 fases con
+  ambos números, r de Pearson de al menos 0,95 y diferencia absoluta mediana de 1 m o menos. Se
+  elige la que reproduce en más partidos; empate por la menor media (entre partidos) de la suma de
+  las dos diferencias medianas (no calculable cuenta infinito); nuevo empate, la anterior en la
+  lista. **C3 muere en la sonda si la elegida reproduce en menos de 9 de los 10.**
+  **Veredicto: C3 sobrevive a la sonda (`verdict.c3_survives_probe` = true, 10 de 10).**
+  - *Definición del proveedor: `with_gk_extremes_listed`*, es decir, los 11 jugadores listados en
+    el `frame_start`, **portero incluido**, de extremo a extremo (el bloque es "el equipo sin
+    balón entero"). Anchura: r 0,9847 a 1,0000, diferencia absoluta mediana 0,00 a 0,30 m
+    (con signo −0,03 a +0,11); longitud: r 0,9938 a 1,0000, 0,00 a 0,345 m (−0,15 a +0,115);
+    374 a 473 fases por partido de 383 a 490 (se quedan fuera las sin jugadores listados en ese
+    frame y las sin número del proveedor). Exacta (ambas medianas 0) en 5 de 10 (1874553, 1959846,
+    1996436, 2007448, 2010085); en los otros 5, diferencias de 0,18 a 0,35 m que no se
+    investigaron. Las otras siete reproducen en 0 de 10: `with_gk_p5_p95_listed` (anchura r 0,931
+    a 0,950, 3,4 a 4,8 m; longitud 12,7 a 14,3 m), `outfield_extremes_listed` (ver mutación) y las
+    cuatro de solo detectados, las peores (suma media 29,7 a 38,7 m).
+  - *Fracción extrapolada de los jugadores que fijan cada extremo* (capa 2, `sensitivity` con una
+    ventana de un frame; `matches.<id>.chosen.fixers`, fracción de jugador-frame extrapolada):
+    `x_low` 0,520 a 0,637, `x_high` 0,527 a 0,630, `y_low` 0,250 a 0,529, `y_high` 0,288 a 0,447;
+    anchura (sus dos extremos) 0,271 a 0,455 y longitud 0,524 a 0,633. Fases con todos los
+    fijadores detectados (V1): anchura 137 a 249 de 374 a 473 (32,9 a 58,9 %); **longitud 15 a 43
+    (3,9 a 9,5 %)**. La longitud media en V1 es 17,8 a 30,1 m frente a 50,5 a 53,3 m en V0 (V1
+    menos V0, −34,5 a −21,8 m); la anchura, −2,65 a +0,71 m. `gap_len` mediano de lo extrapolado en
+    los extremos de `x`, 55 a 118 frames (p90 322 a 1.431); en los de `y`, 11 a 26 (p90 52 a 135).
+    No se midió qué jugador fija cada extremo: que el más retrasado sea el portero es lo esperable
+    con esta definición, no un dato.
+  - *Sesgo de visibilidad* (Spearman por partido, `chosen.visibility_bias`; fracción detectada del
+    bloque 0,526 a 0,692): con nuestra anchura −0,280 a −0,096 y con nuestra longitud −0,566 a
+    −0,308, **negativas en 10 de 10**; con los números del proveedor salen iguales a menos de 0,01.
+    Con la fracción detectada de los fijadores: anchura −0,194 a +0,126 (6 de 10 negativas),
+    longitud −0,270 a −0,010 (10 de 10 negativas). Cuanto más del bloque se ve, más corto y algo
+    más estrecho: los bloques que la cámara enseña son los compactos. Es el sesgo de selección de
+    m10 en el bloque, y la métrica del proveedor lo trae igual.
+  - **Lo que esto dice para C3.** Existe un instrumento (el proveedor es reproducible casi al
+    metro), pero su longitud es del portero al jugador más adelantado: un contraste de compacidad
+    del bloque sin portero es otra medida (la longitud sin portero difiere de la del proveedor en
+    20,1 a 23,8 m de mediana). La capa 2 muerde aquí más que en C1 y C2 (longitud vista entera en
+    menos del 10 % de las fases). Sobrevivir a la sonda no la elige: lo decide CP1.
+  **Mutación** (la pedida y su inversa). La definición ganadora incluye al portero, así que la
+  mutación pedida es la inversa: dejarlo fuera. En datos reales, `outfield_extremes_listed`
+  reproduce en 0 de 10: la anchura no se mueve (r 0,979 a 1,000, 0,00 a 0,32 m) y la longitud sí
+  (r 0,737 a 0,868, 20,1 a 23,8 m). En el sintético, `test_each_planted_definition_is_the_one_chosen`
+  planta cada una de las 8 con 5 semillas (40 casos, con el proveedor calculado por una referencia
+  independiente de bucles) y exige que la sonda devuelva esa, y
+  `test_the_other_goalkeeper_choice_breaks_the_reproduction` exige, para las 8, que la elección
+  contraria del portero no reproduzca (longitud a más de 1 m) en las 5 semillas. **Mutaciones de
+  código (26, script en el scratchpad, todo restaurado): portero invertido o nunca fuera,
+  percentil medido como extremo y al revés, población ignorada, anchura y longitud cambiadas,
+  percentil bajo en 10, Spearman sin empates y con el signo cambiado, selección sin la diferencia,
+  con la posición antes de la diferencia, con no calculable como cero y con menos partidos
+  primero, regla de 8 y de 10 de 10, r mínimo 0,5, límite de 5 m, mínimo de 50 pares, veredicto
+  solo con la anchura, equipo equivocado (el que tiene el balón), fase leída un frame tarde,
+  fijadores de un solo extremo, fracción de sesgo que cuenta al portero aunque se deje fuera, fases sin equipo
+  admitidas, números del proveedor cruzados y `read_bronze_phases` sin guarda: 26 de 26 matan algún
+  test.** La primera pasada dejó viva la de 50 pares: el test usaba la constante del código
+  (`MIN_PAIRS - 1`), que es tautológico; ahora usa 99 y 100 literales. Otros controles: un
+  proveedor de ruido no lo reproduce ninguna definición; unos pocos errores grandes (30 % de las
+  longitudes a 10 m) rompen la r con mediana cero y, al revés, un desplazamiento de 1,5 m rompe la
+  mediana con r 1; con filas absurdas tras el `frame_start` el informe es idéntico; el bloque que
+  se ve más ancho cuanto más se ve da Spearman 1 en el sintético.
+  **Desviaciones.** (1) El conjunto de 8 definiciones, el 5 y 95 de los percentiles, el mínimo de 5
+  jugadores, el `frame_start` exacto, anchura = `y` y longitud = `x`, y los umbrales (r 0,95, 1 m,
+  100 pares, 9 de 10) son convenciones mías escritas antes de los datos; ninguna salió de un
+  artefacto. (2) La mutación pedida (incluir al portero) es la inversa porque la definición ganadora
+  lo incluye. (3) El silver no guarda la anchura ni la longitud de las fases: `read_bronze_phases`
+  (guardado con `_admit`, cubierto por el test de rutas con 2 llamadas) las lee de bronce, y las
+  fases salen de bronce, no de los eventos del silver. (4) El portero es el proxy de la 12
+  (posición media del periodo), no el rol; reproduce al proveedor, pero el proveedor puede usar el
+  rol real. (5) Reproducir es por partido y conjunto en anchura y longitud, no solo una; la sonda no
+  investiga el residuo de 0,2 a 0,35 m de 5 partidos. (6) El `gap_len` del informe de fijadores
+  lee banderas de detección de otros frames (capa 2, declarado desde la 14); ninguna posición
+  posterior al `frame_start`. (7) No se calcula nada del desenlace de C3 (diferencias de
+  compacidad entre tipos de fase). Nadie leyó el reservado.
 - [ ] 17. `opus` Potencia por candidata con los tamaños medidos en 14 a 16, en sd: simula el bar
   exacto (mismo signo en al menos 8 de 10 y p de permutación agrupado ≤ 0,00135, 2.500 réplicas)
   con n por estrato y partido y la correlación dentro de la posesión de equipo medida con la

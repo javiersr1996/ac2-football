@@ -540,7 +540,7 @@ y lo que no se abrió. La figura 2 enseña la muerte. Si en CP1 mueren las tres,
   (https://github.com/javiersr1996/football-tracking-base/actions/runs/39127612460) y base pública desde
   el 2026-10-18; clon anónimo comprobado.** Procedencia en el tag: 63 ficheros, 10.562 líneas (6.730
   copiadas, 3.832 cambiadas).
-- [ ] 8. `sonnet` `[entrada]` Dependencia fijada: `git rm -r src/ac2fb/base/`; `ftbase` en
+- [x] 8. `sonnet` `[entrada]` Dependencia fijada: `git rm -r src/ac2fb/base/`; `ftbase` en
   `dependencies` con `[tool.uv.sources] ftbase = { git = "<URL pública>", tag = "v0.1.0" }`; nunca
   una fuente `path`: para probar cambios de la base sin tag, `uv run --with-editable
   ../football-tracking-base ...`, que no toca el lock. CI `ci.yml` de la entrada en `ubuntu-latest`
@@ -548,6 +548,26 @@ y lo que no se abrió. La figura 2 enseña la muerte. Si en CP1 mueren las tres,
   el sintético de `ftbase`. Aceptación: CI en verde en GitHub con el clon de la base en el log;
   `uv.lock` lleva URL y sha; test que falla si `[tool.uv.sources]` lleva `path`; mutación: cambiar
   el sha en `uv.lock` hace fallar `uv sync --locked`. Base privada: CI roja, no saltada, hasta J2.
+  Medido: commit `6bcb068` en `ac2-football` (sobre `77b0deb`), empujado. `git rm -r src/ac2fb/base/` (solo tenía un
+  `__init__.py` de esqueleto; nada lo referenciaba). `[tool.uv.sources] ftbase = { git = "https://github.com/javiersr1996/football-tracking-base",
+  tag = "v0.1.0" }`; `uv.lock` fija `ftbase` a `...football-tracking-base?tag=v0.1.0#53080bcc3ca1cbf7eb4fcbc8133094411a7c0d9d`
+  (el sha de `53080bc`); el venv instalado lo confirma en `direct_url.json` (`commit_id` igual). Tests nuevos (7 en total, 0
+  saltados): `tests/test_base_dependency.py` (3: sin `path` ni `editable` en `[tool.uv.sources]`, `ftbase` declarado, lock a git
+  más sha de 40 hex y tag coincidente), `tests/test_base_smoke.py` (1: sintético de `ftbase` en `tmp_path`, `ingest
+  --from-existing`, bronze y silver por el CLI de la base, y las parejas (jugador, frame) con `is_detected` falso que lee
+  `read_frames` son exactamente las de `PLANTED_RUNS`, ninguna del balón) y `tests/conftest.py` (un skip hace fallar la sesión).
+  CI `.github/workflows/ci.yml`: `ubuntu-latest`, checkout v7.0.1 sin LFS, `setup-uv` v10.3.0 con uv 0.10.4 (como la base), Python de
+  `.python-version`, `uv sync --locked -v` sin secretos ni `GITHUB_TOKEN`, `uv pip show ftbase` y el `direct_url.json`, ruff,
+  format, `mypy src`, `pytest -q`. **CI en verde: https://github.com/javiersr1996/ac2-football/actions/runs/39127916951, 18 s**;
+  el log muestra `Updating https://github.com/javiersr1996/football-tracking-base (v0.1.0)` y el clon en
+  `53080bcc3ca1cbf7eb4fcbc8133094411a7c0d9d`. Gate local en verde (`sync --locked`, ruff, format, `mypy src`, `pytest -q`: 7
+  pasan); todo `i/lf`. Mutaciones (todas restauradas): sha de `ftbase` en `uv.lock` a 40 ceros: `uv sync --locked` sale con
+  exit 1 (`not our ref`); `path = "../football-tracking-base"` en la fuente: 2 de los 3 tests de dependencia fallan; fuente del
+  lock cambiada a registro: el test del lock falla (y `uv run` no instala); un `pytest.skip` añadido: `7 passed, 1 skipped`,
+  `FAILED: 1 skipped test(s) count as failures`, exit 1; quitar la última `PlantedRun` de la comparación del humo: falla.
+  Fallos de la base: ninguno. Desviaciones: el aviso de GitHub sobre `ubuntu-latest` migrando a Ubuntu 26 el 19 oct no
+  afecta; `README.md` provisional creado (no existía) con la instalación y `uv run --with-editable ../football-tracking-base`;
+  la mutación del `path` se hizo sin tocar el lock (`--frozen`), no se probó `--with-editable` en ejecución.
 - [ ] 9. `sonnet` `[entrada]` Build completo de los 20 partidos con el CLI de la base y
   `scripts/clean_clone_check.sh` con dos bloques (el rápido de un partido y el completo), cada uno
   el bloque literal de un README provisional, 5 comandos como máximo (la base se instala desde

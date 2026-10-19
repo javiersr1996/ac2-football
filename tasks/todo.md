@@ -1419,11 +1419,58 @@ su test sintético con el fallo plantado (una sonda que no puede fallar no prote
     más balón hacia delante). Con el proxy de 5 m sobre las mismas unidades: V0 +0,221 sd, > 0,441,
     casi la de la 17 (+0,224, > 0,447). Con la vara de S2 (más de 0,15 sd en más de 2 partidos)
     moriría: 5 de 10 en V0, 7 de 10 en V1. Esa vara no es criterio de C1 y no decide nada.
-- [ ] 20. `sonnet` Estimador validado con sintéticos antes de tocar datos reales: efecto plantado
+- [x] 20. `sonnet` Estimador validado con sintéticos antes de tocar datos reales: efecto plantado
   que se recupera; pre-tendencia plantada que sale por D3; confundidor plantado (presión con pase
   hacia delante y línea que sigue al balón, como m10) que el estrato anula; jugadores interpolados
   linealmente en hueco que dan residuo cero y disparan la monotonía de V2; 5 semillas cada uno.
   Mutación: la causa en `t + 1 s` deja pasar la pre-tendencia; sin estrato pasa el confundidor.
+  Hecho (2026-10-19): **código en `26f97cf`, empujado a las 13:40 antes de calcular ningún
+  desenlace en un partido real** (CI en verde, run 39246359431). Lo escribió un subagente `sonnet` con
+  prohibición de tocar datos reales, `reports/`, el protocolo y git. Revisión posterior: diff leído
+  entero y contraste independiente en el scratchpad (mínimos cuadrados celda a celda y la
+  permutación reconstruida desde la corriente documentada), que da el mismo T, E_m, P y los 300
+  primeros nulos con diferencias de orden 1e-16, y S_k que suma T. Gate local en verde (`sync
+  --locked`, ruff, format, `mypy src`, `pytest -q`: 983 pasan, eran 864; 19 deseleccionados; `ac2fb
+  protocol --check`: 26 constantes contra el código, eran 23, y 0 números solo del protocolo).
+  Nuevo: `defence/effect.py` (el lector del desenlace, único que lee después de `t`; el
+  estadístico ajustado por lo previo, la pre-tendencia, el nulo por permutación dentro de celda y
+  su versión bloqueada por posesión, las barras de calibración y de reservado con Holm, D3, D4 y
+  V2), `tests/effect_helpers.py` y `tests/test_effect.py` (93 tests, unos 19 s); `null.seed`,
+  `bars.heldout.alpha` y `death_criteria.D4.ratio` pasan de `PROTOCOL_ONLY` a `CODE_CHECKS`. Sin
+  comando ni informe: los añade la 21.
+  - *Sintéticos, semillas 0 a 4* (umbrales de `tests/test_effect.py`). (a) Efecto plantado de
+    −0,5 sd recuperado con error menor de 0,08 y barra superada con al menos 9 de 10 partidos; sin
+    efecto, p > 0,05 y la barra no pasa. (b) Pre-tendencia sin efecto (la presionada recibe 0,8 m
+    más de balón hacia delante y el desenlace conserva 0,6): D3 mata en las 5; la diferencia simple
+    supera 0,3 sd y el coeficiente ajustado queda por debajo de un cuarto de ella. (c) Confundidor
+    por el pipeline real (`score_receptions`, `design_units`): con estratos, |T| < 0,1 y la barra
+    no pasa; con un solo estrato, T > 0,12 y la barra pasa. (d) Rivales interpolados en línea recta
+    dentro del hueco: residuo de la capa 2 (`runs.second_differences`) < 1e-9 en más de 1.000
+    filas extrapoladas y > 0,1 en las detectadas; |T| de la clase 0 mayor que 2 veces la de la 1,
+    y esta mayor que 4 veces la de 2 o más; |T_V0| < 0,8 |T_V1|. (e) Causalidad inversa (los
+    defensores cierran después de que el balón no avance): con la causa en `t`, |T| < 0,15 y la
+    barra no pasa; con el índice a `t + 10` frames, T < −1, la barra pasa en 10 de 10 y D3 no lo ve.
+  - *Mutaciones* (todas revertidas, `pressure.py` sin cambios). Causa en `t + 1 s`: falla
+    `test_a_cause_read_at_t_finds_no_effect_in_reverse_causation` (|T| de 1,60 contra < 0,15;
+    repetida aparte en la revisión). Sin estratos: falla `test_the_strata_cancel_the_confounder`.
+    Además tumban al menos un test cada una: sin covariable, ddof 0, permutar entre celdas, T = 0
+    como acuerdo, corriente sin la mitad, p sin el +1, Holm como Bonferroni, D3 estricto, pesos n,
+    contribuciones bloqueadas sin x, unidades sin ordenar, V1 con un extrapolado, pre-tendencia sin
+    estandarizar y desenlace sin signo.
+  - *Decisiones que el protocolo no fijaba* (en el docstring de `effect.py`): la celda con x
+    colineal con G queda fuera y se cuenta (`collinear_cell`); las unidades se ordenan por
+    (partido, estrato, periodo, frame) antes de sortear; empate a 1e-9; un criterio no evaluable
+    (sin celda) mata.
+  - *Para la revisión 22.* (1) Permutar G con x fija ignora la correlación entre G y x: con
+    pre-tendencia, la varianza real del coeficiente es mayor por un factor 1/(1 − r²_Gx), así que
+    el p sale algo optimista justo cuando P no es pequeño (la nota de D2 ya cita ese factor para la
+    potencia); cuantificarlo con la calibración o pasar a permutar residuos (Freedman-Lane) antes
+    de congelar. (2) `read_outcome` no comprueba el periodo de la fila de balón en `t + W` (las
+    filas de balón no lo llevan) y se apoya en que fuera de periodo no hay fila de balón (el bronze
+    de la base documenta esos frames con `ball_data` nulo). (3) `P` deja fuera las celdas con x
+    constante y `T` no: "las mismas celdas" de D3 solo es exacto con x continua. (4) "p ≤ 0,00135"
+    y "a lo sumo 1 nulo" coinciden solo con 2.000 nulos. (5) Con T_V0 = 0, D4 no mata (la barra
+    ya falla).
 - [ ] 21. `opus` Calibración: efecto por partido en los 10, las tres variantes, pre-tendencia y
   veredicto mecánico D1 a D5 en `reports/calibration.json`. Nada de este paso mueve un umbral.
 - [ ] 22. `opus` (subagente `revisor-adversarial`) Revisión del protocolo, el estimador y la

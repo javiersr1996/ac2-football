@@ -26,7 +26,9 @@ Mutations, each annotated with the test that kills it:
 * a pre-trend over the cells with a constant ``x`` or in the wrong units:
   ``test_the_pretrend_by_hand`` and ``test_the_pretrend_agrees_with_the_design_module``;
 * a window read across a period break (the ball row's period not checked at ``t - W``, ``t`` or
-  ``t + W``): ``test_no_window_crosses_a_period_break``.
+  ``t + W``): ``test_no_window_crosses_a_period_break``;
+* the outcome read without the attack sign, or with the sign of another period:
+  ``test_a_mirrored_pitch_in_the_second_period_gives_the_same_outcomes``.
 """
 
 from __future__ import annotations
@@ -200,6 +202,35 @@ def test_effect_units_keep_the_kept_units_with_their_outcome() -> None:
     assert [u.ball_detected for u in got] == [True, None]
     assert [u.pre for u in got] == [units[0].pre, units[2].pre] == [1.0, 3.0]
     assert [u.pressed for u in got] == [units[0].pressed, units[2].pressed]
+
+
+def test_a_mirrored_pitch_in_the_second_period_gives_the_same_outcomes() -> None:
+    # The carrier's team attacking -x in period 2 (+x in period 1): every x flipped, the period
+    # changed. The outcome must take the sign of the unit's own period, forward or backward.
+    inputs = tracking_match(
+        5, [Spec(2.0, out, (Rival(pos=ahead(3.0)), FAR)) for out in (7.5, -4.0)]
+    )
+    m = inputs.s1.match
+    mirrored = dataclasses.replace(
+        m,
+        x=-m.x,
+        ball_x=-m.ball_x,
+        period=np.full_like(m.period, 2),
+        ball_period=np.full_like(m.ball_period, 2),
+        attack_sign={
+            **m.attack_sign,
+            **{(2, team): -sign for (_, team), sign in m.attack_sign.items()},
+        },
+    )
+    s1 = dataclasses.replace(
+        inputs.s1,
+        match=mirrored,
+        receptions=tuple(dataclasses.replace(r, period=2) for r in inputs.s1.receptions),
+    )
+    want = effect.effect_units(design.design_units(inputs), m)
+    got = effect.effect_units(design.design_units(dataclasses.replace(inputs, s1=s1)), mirrored)
+    assert [u.outcome for u in want] == [7.5, -4.0]
+    assert [dataclasses.replace(u, period=1) for u in got] == want
 
 
 def test_the_variants_select_by_their_definition() -> None:

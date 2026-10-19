@@ -73,8 +73,8 @@ class DesignUnit:
 
     ``pressed`` is the protocol's group (index cut), ``proxy_pressed`` task 17's (5 m);
     ``extrapolated_players`` counts the carrier and the near rivals not detected at ``t``;
-    ``pre`` is the ball's advance over ``[t - W, t]`` (``None`` without a ball row at ``t - W``);
-    ``excluded`` whether the window-overlap rule drops the unit.
+    ``pre`` is the ball's advance over ``[t - W, t]`` (``None`` without a ball row at ``t - W``
+    or with it in another period); ``excluded`` whether the window-overlap rule drops the unit.
     """
 
     event_id: str

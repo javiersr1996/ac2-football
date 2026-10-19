@@ -32,7 +32,7 @@
       "the carrier has a row at t",
       "the attack direction of the carrier's team in that period is known",
       "at least one rival is listed at t",
-      "the incoming-ball stratum is defined: the ball has a row at t - W and at t"
+      "the incoming-ball stratum is defined: the ball has a row at t - W and at t, in the same period"
     ],
     "exclusion": {
       "name": "window overlap (requirement b of review 18)",
@@ -43,7 +43,7 @@
       "not_excluded": "A unit whose pre-trend window [t - W, t] meets the outcome window of the unit before (gap of 2 W or less) stays: that is a dependence between one unit's outcome and the next unit's covariate, not between two outcomes, and the permutation of labels within a cell does not need the covariates to be independent of each other. Its count is reported (within_2w).",
       "recount": "reports/design.json recounts the overlap on the design and on the kept units; on the kept units within_w is zero by construction."
     },
-    "outcome_undefined": "A kept unit without a ball row at t + W (the period ends before t + W, or the provider lists no ball there) has no outcome: it is left out of the statistic and counted per match and group.",
+    "outcome_undefined": "A kept unit without a ball row at t + W in the period of t (the period ends before t + W, or the provider lists no ball there) has no outcome: it is left out of the statistic and counted per match and group.",
     "possession": "The base's possession_id of the player_possession event (the provider's team possession): the block of the blocked null, if the null is blocked."
   },
   "cause": {
@@ -76,7 +76,7 @@
     "sign": "positive towards the goal the carrier's team attacks; negative away from it",
     "window": "[t, t + W], closed at both ends; only the two end frames enter the number",
     "ball_rows": "the ball row listed at t and at t + W, whatever its is_detected flag, in every variant; the share of units with the ball extrapolated at t or at t + W is reported per match and group, and the effect on the units with the ball detected at both ends is reported beside V0 and decides nothing",
-    "period_end": "no ball row at t + W: outcome undefined (units.outcome_undefined)",
+    "period_end": "no ball row at t + W in the period of t: outcome undefined (units.outcome_undefined)",
     "possession_change": "nothing special: a turnover or a clearance inside the window counts as the ball went, in the attack frame of the carrier's team (a ball sent back towards his own goal is a negative advance)",
     "ball_out_of_play": "nothing special: if the provider lists the ball at t + W the number stands; if not, undefined",
     "expected_sign_of_effect": "negative: pressure reduces the advance. The bar is two-sided; a pooled effect of the other sign that passes the bar is published as an effect of the other sign, not as support for the question."
@@ -99,7 +99,7 @@
       "classes": "long at cut_m or more; short otherwise"
     },
     "cells": 18,
-    "undefined": "a reception whose ball has no row at t - W or at t is not a unit (units.requirements)"
+    "undefined": "a reception whose ball has no row at t - W or at t, or has the two in different periods, is not a unit (units.requirements)"
   },
   "variants": {
     "V0": "every kept unit with an outcome, positions as listed (detected or extrapolated)",

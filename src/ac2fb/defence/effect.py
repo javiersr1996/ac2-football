@@ -10,9 +10,10 @@ judges the held-out half.
 
 **Outcome** (protocol ``outcome``). ``y = sign * (ball_x(t + W) - ball_x(t))`` in metres, the
 ball rows listed at ``t`` and ``t + W`` whatever their ``is_detected`` flag; ``None`` without a
-row at either end (:func:`read_outcome`). Whether the ball is detected at both ends travels with
-it (``ball_detected``): the effect on those units, :data:`BALL_DETECTED`, is reported beside V0
-and decides nothing. :func:`effect_units` joins the kept units of the design with their outcome.
+row at either end or with the two in different periods (:func:`read_outcome`). Whether the ball
+is detected at both ends travels with it (``ball_detected``): the effect on those units,
+:data:`BALL_DETECTED`, is reported beside V0 and decides nothing. :func:`effect_units` joins the
+kept units of the design with their outcome.
 
 **Variants** (protocol ``variants``; :func:`select_units`). V0 every unit; V1 the units with no
 extrapolated player among the carrier and the near rivals at ``t``; V2 the classes

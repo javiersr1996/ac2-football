@@ -29,7 +29,8 @@ window of ``reports/probe_cadence.json``), the ball displacement from ``t - W`` 
 split by direction of attack (backward under -2 m, forward over +2 m, else lateral), by third
 of the pitch of the carrier at ``t`` (the 35 m in the middle, the others own and final) and by
 length (the straight distance under 10 m: short; else long). A reception whose ball has no row
-at ``t - W`` or ``t`` is ``undefined``. These are counts of what came before the reception.
+at ``t - W`` or ``t``, or has the two in different periods, is ``undefined``. These are counts
+of what came before the reception.
 """
 
 from __future__ import annotations
@@ -155,8 +156,8 @@ def incoming_ball(match: MatchData, frame: int, sign: int, carrier_x: float) -> 
     )
     cut = BACKWARD_CUT + TIE
     direction = "backward" if dx < -cut else "forward" if dx > cut else "lateral"
-    depth = sign * carrier_x
-    third = "own" if depth < -THIRD_CUT - TIE else "final" if depth > THIRD_CUT + TIE else "middle"
+    depth = sign * carrier_x  # a listed x times 1 or -1: exact, so no tolerance at its cut
+    third = "own" if depth < -THIRD_CUT else "final" if depth > THIRD_CUT else "middle"
     return f"{direction}/{third}/{'long' if straight >= LONG_BALL - TIE else 'short'}"
 
 

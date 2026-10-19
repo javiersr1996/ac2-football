@@ -1473,6 +1473,17 @@ su test sintético con el fallo plantado (una sonda que no puede fallar no prote
     ya falla).
 - [ ] 21. `opus` Calibración: efecto por partido en los 10, las tres variantes, pre-tendencia y
   veredicto mecánico D1 a D5 en `reports/calibration.json`. Nada de este paso mueve un umbral.
+  **Decisión previa, tomada el 2026-10-19 antes de calcular ningún desenlace (Javier): el nulo
+  se queda como dice el protocolo** (permutar G dentro de celda con x fija), sin Freedman-Lane.
+  Punto (1) de la 20: con pre-tendencia, ese nulo subestima la varianza del coeficiente por
+  1/(1 − r²_Gx). Se midió en el scratchpad solo con G y x del diseño (nada después de `t`, las
+  mismas 133 celdas de V0 y 130 de V1 que `design.json`): varianza ×1,054 en V0 y ×1,058 en V1
+  (media ponderada por celda), así que la tasa real de la barra sería 0,0018 y no 0,00135. No
+  decide nada en C1: con `sum w` = 1.241 en V0, un efecto en el umbral de D3 (0,363 sd) tiene z de
+  12,5 ya corregido, y el p solo pesaría hacia z = 3,2 (unos 0,09 sd), donde D3 ya mata; en el
+  reservado el sesgo y el umbral de D3 nacen de la misma correlación entre G y x. **Requisito de
+  la 21:** `calibration.json` imprime ese factor por variante (media ponderada, mediana y máximo
+  por celda) como diagnóstico que no decide nada, y estas cifras se confirman con él.
 - [ ] 22. `opus` (subagente `revisor-adversarial`) Revisión del protocolo, el estimador y la
   calibración antes de congelar, hasta que no salga nada alto ni medio.
 - [ ] 23. `sonnet` Congelación en un commit propio: `stage: "frozen"`, `code_tree_sha`, semilla,

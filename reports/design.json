@@ -1,0 +1,2623 @@
+{
+  "about": "Task 19: the protocol's design on the calibration half, before any outcome. The units left after the window-overlap exclusion, grouped by the index cut; on them the correlation of the pre statistic, the blocking decision, the MDE80 and the pooled pre-trend in sd (D3's floor) and in metres; the same pre-trend under task 17's 5 m proxy beside it. Nothing after t is read. Definitions in ac2fb.defence.design and protocol/protocol.json.",
+  "constants": {
+    "causes": [
+      "index",
+      "proxy"
+    ],
+    "d3_ratio": 0.5,
+    "exclusion_gap_frames": 13,
+    "min_cell": 5,
+    "pressed_index": 0.5,
+    "proxy_radius_m": 5.0,
+    "replicates": 2500,
+    "seed": 20261018,
+    "window_frames": 13
+  },
+  "index_cause": {
+    "power": {
+      "blocked": false,
+      "rho_v0_pooled": -0.00416,
+      "variants": {
+        "V0": {
+          "matches": {
+            "1874553": {
+              "cells_used": 14,
+              "free": 523,
+              "n": 779,
+              "possessions": 169,
+              "pressed": 256,
+              "pretrend_sd": 0.054419,
+              "rho": {
+                "carried": 0.017827,
+                "pairs": 3249,
+                "units": 779,
+                "value": 0.017827
+              },
+              "units_used": 707,
+              "weight": 142.755384
+            },
+            "1886347": {
+              "cells_used": 13,
+              "free": 520,
+              "n": 797,
+              "possessions": 161,
+              "pressed": 277,
+              "pretrend_sd": 0.143804,
+              "rho": {
+                "carried": 0.0,
+                "pairs": 3451,
+                "units": 797,
+                "value": -0.010879
+              },
+              "units_used": 655,
+              "weight": 135.541379
+            },
+            "1925299": {
+              "cells_used": 13,
+              "free": 589,
+              "n": 851,
+              "possessions": 177,
+              "pressed": 262,
+              "pretrend_sd": 0.270071,
+              "rho": {
+                "carried": 0.0,
+                "pairs": 3918,
+                "units": 851,
+                "value": -0.010244
+              },
+              "units_used": 680,
+              "weight": 134.351035
+            },
+            "1959846": {
+              "cells_used": 13,
+              "free": 468,
+              "n": 738,
+              "possessions": 161,
+              "pressed": 270,
+              "pretrend_sd": 0.225463,
+              "rho": {
+                "carried": 0.002154,
+                "pairs": 3065,
+                "units": 738,
+                "value": 0.002154
+              },
+              "units_used": 618,
+              "weight": 120.367047
+            },
+            "1996435": {
+              "cells_used": 14,
+              "free": 487,
+              "n": 771,
+              "possessions": 174,
+              "pressed": 284,
+              "pretrend_sd": 0.201172,
+              "rho": {
+                "carried": 0.003296,
+                "pairs": 2875,
+                "units": 771,
+                "value": 0.003296
+              },
+              "units_used": 710,
+              "weight": 139.091404
+            },
+            "1996436": {
+              "cells_used": 14,
+              "free": 338,
+              "n": 597,
+              "possessions": 165,
+              "pressed": 259,
+              "pretrend_sd": 0.061271,
+              "rho": {
+                "carried": 0.0,
+                "pairs": 1832,
+                "units": 597,
+                "value": -0.03224
+              },
+              "units_used": 536,
+              "weight": 118.64849
+            },
+            "2007448": {
+              "cells_used": 13,
+              "free": 433,
+              "n": 682,
+              "possessions": 147,
+              "pressed": 249,
+              "pretrend_sd": 0.397045,
+              "rho": {
+                "carried": 0.009793,
+                "pairs": 3154,
+                "units": 682,
+                "value": 0.009793
+              },
+              "units_used": 519,
+              "weight": 115.290951
+            },
+            "2010085": {
+              "cells_used": 14,
+              "free": 499,
+              "n": 762,
+              "possessions": 146,
+              "pressed": 263,
+              "pretrend_sd": 0.11284,
+              "rho": {
+                "carried": 0.0,
+                "pairs": 4944,
+                "units": 762,
+                "value": -0.013588
+              },
+              "units_used": 677,
+              "weight": 123.423258
+            },
+            "2011166": {
+              "cells_used": 14,
+              "free": 299,
+              "n": 577,
+              "possessions": 171,
+              "pressed": 278,
+              "pretrend_sd": 0.102776,
+              "rho": {
+                "carried": 0.0,
+                "pairs": 1578,
+                "units": 577,
+                "value": -0.006921
+              },
+              "units_used": 534,
+              "weight": 107.888744
+            },
+            "2015213": {
+              "cells_used": 11,
+              "free": 436,
+              "n": 675,
+              "possessions": 197,
+              "pressed": 239,
+              "pretrend_sd": 0.272345,
+              "rho": {
+                "carried": 0.0,
+                "pairs": 1832,
+                "units": 675,
+                "value": -0.007876
+              },
+              "units_used": 531,
+              "weight": 103.661908
+            }
+          },
+          "mde80_sd": 0.13,
+          "null_pass_rate": 0.000904,
+          "pass_rate": {
+            "0.00": 0.000904,
+            "0.05": 0.05341,
+            "0.10": 0.526781,
+            "0.11": 0.65149,
+            "0.12": 0.763652,
+            "0.13": 0.853244,
+            "0.14": 0.916106,
+            "0.15": 0.955174,
+            "0.20": 0.999369,
+            "0.25": 1.0,
+            "0.30": 1.0,
+            "0.35": 1.0,
+            "0.40": 1.0,
+            "0.45": 1.0,
+            "0.50": 1.0,
+            "0.55": 1.0,
+            "0.60": 1.0,
+            "0.65": 1.0,
+            "0.70": 1.0,
+            "0.75": 1.0,
+            "0.80": 1.0,
+            "0.85": 1.0,
+            "0.90": 1.0,
+            "0.95": 1.0,
+            "1.00": 1.0,
+            "1.05": 1.0,
+            "1.10": 1.0,
+            "1.15": 1.0,
+            "1.20": 1.0,
+            "1.25": 1.0,
+            "1.30": 1.0,
+            "1.35": 1.0,
+            "1.40": 1.0,
+            "1.45": 1.0,
+            "1.50": 1.0,
+            "1.55": 1.0,
+            "1.60": 1.0,
+            "1.65": 1.0,
+            "1.70": 1.0,
+            "1.75": 1.0,
+            "1.80": 1.0,
+            "1.85": 1.0,
+            "1.90": 1.0,
+            "1.95": 1.0,
+            "2.00": 1.0
+          },
+          "pretrend": {
+            "d3_abs_effect_must_exceed_sd": 0.362535,
+            "d3_floor_over_mde80": 2.78873,
+            "pooled_sd": 0.181267,
+            "s2_bar": {
+              "limit_sd": 0.15,
+              "matches_over": 5,
+              "max_over": 2,
+              "would_die": true
+            }
+          },
+          "replicates": 2500,
+          "seed": [
+            20261018,
+            1181875325
+          ]
+        },
+        "V1": {
+          "matches": {
+            "1874553": {
+              "cells_used": 14,
+              "free": 520,
+              "n": 768,
+              "possessions": 167,
+              "pressed": 248,
+              "pretrend_sd": 0.061873,
+              "rho": {
+                "carried": 0.017827,
+                "pairs": 3206,
+                "units": 768,
+                "value": 0.017706
+              },
+              "units_used": 697,
+              "weight": 138.787996
+            },
+            "1886347": {
+              "cells_used": 13,
+              "free": 510,
+              "n": 763,
+              "possessions": 158,
+              "pressed": 253,
+              "pretrend_sd": 0.159932,
+              "rho": {
+                "carried": 0.0,
+                "pairs": 3204,
+                "units": 763,
+                "value": -0.013765
+              },
+              "units_used": 624,
+              "weight": 127.752371
+            },
+            "1925299": {
+              "cells_used": 13,
+              "free": 573,
+              "n": 817,
+              "possessions": 170,
+              "pressed": 244,
+              "pretrend_sd": 0.24039,
+              "rho": {
+                "carried": 0.0,
+                "pairs": 3632,
+                "units": 817,
+                "value": -0.008215
+              },
+              "units_used": 649,
+              "weight": 124.784165
+            },
+            "1959846": {
+              "cells_used": 13,
+              "free": 445,
+              "n": 692,
+              "possessions": 155,
+              "pressed": 247,
+              "pretrend_sd": 0.236411,
+              "rho": {
+                "carried": 0.002154,
+                "pairs": 2803,
+                "units": 692,
+                "value": -0.00965
+              },
+              "units_used": 577,
+              "weight": 111.945706
+            },
+            "1996435": {
+              "cells_used": 13,
+              "free": 476,
+              "n": 744,
+              "possessions": 169,
+              "pressed": 268,
+              "pretrend_sd": 0.243887,
+              "rho": {
+                "carried": 0.003296,
+                "pairs": 2773,
+                "units": 744,
+                "value": -0.003594
+              },
+              "units_used": 608,
+              "weight": 128.798854
+            },
+            "1996436": {
+              "cells_used": 14,
+              "free": 331,
+              "n": 573,
+              "possessions": 160,
+              "pressed": 242,
+              "pretrend_sd": 0.055205,
+              "rho": {
+                "carried": 0.0,
+                "pairs": 1733,
+                "units": 573,
+                "value": -0.034692
+              },
+              "units_used": 513,
+              "weight": 113.112947
+            },
+            "2007448": {
+              "cells_used": 13,
+              "free": 426,
+              "n": 662,
+              "possessions": 145,
+              "pressed": 236,
+              "pretrend_sd": 0.420912,
+              "rho": {
+                "carried": 0.013078,
+                "pairs": 2911,
+                "units": 662,
+                "value": 0.013078
+              },
+              "units_used": 501,
+              "weight": 111.315943
+            },
+            "2010085": {
+              "cells_used": 13,
+              "free": 489,
+              "n": 739,
+              "possessions": 142,
+              "pressed": 250,
+              "pretrend_sd": 0.124568,
+              "rho": {
+                "carried": 0.0,
+                "pairs": 4716,
+                "units": 739,
+                "value": -0.015605
+              },
+              "units_used": 625,
+              "weight": 115.67248
+            },
+            "2011166": {
+              "cells_used": 13,
+              "free": 281,
+              "n": 534,
+              "possessions": 161,
+              "pressed": 253,
+              "pretrend_sd": 0.161843,
+              "rho": {
+                "carried": 0.0,
+                "pairs": 1354,
+                "units": 534,
+                "value": -0.007716
+              },
+              "units_used": 470,
+              "weight": 93.060722
+            },
+            "2015213": {
+              "cells_used": 11,
+              "free": 419,
+              "n": 619,
+              "possessions": 180,
+              "pressed": 200,
+              "pretrend_sd": 0.216845,
+              "rho": {
+                "carried": 0.008124,
+                "pairs": 1666,
+                "units": 619,
+                "value": 0.008124
+              },
+              "units_used": 477,
+              "weight": 90.47309
+            }
+          },
+          "mde80_sd": 0.13,
+          "null_pass_rate": 0.000645,
+          "pass_rate": {
+            "0.00": 0.000645,
+            "0.05": 0.049953,
+            "0.10": 0.491585,
+            "0.11": 0.615965,
+            "0.12": 0.732406,
+            "0.13": 0.82656,
+            "0.14": 0.894313,
+            "0.15": 0.941817,
+            "0.20": 0.999546,
+            "0.25": 1.0,
+            "0.30": 1.0,
+            "0.35": 1.0,
+            "0.40": 1.0,
+            "0.45": 1.0,
+            "0.50": 1.0,
+            "0.55": 1.0,
+            "0.60": 1.0,
+            "0.65": 1.0,
+            "0.70": 1.0,
+            "0.75": 1.0,
+            "0.80": 1.0,
+            "0.85": 1.0,
+            "0.90": 1.0,
+            "0.95": 1.0,
+            "1.00": 1.0,
+            "1.05": 1.0,
+            "1.10": 1.0,
+            "1.15": 1.0,
+            "1.20": 1.0,
+            "1.25": 1.0,
+            "1.30": 1.0,
+            "1.35": 1.0,
+            "1.40": 1.0,
+            "1.45": 1.0,
+            "1.50": 1.0,
+            "1.55": 1.0,
+            "1.60": 1.0,
+            "1.65": 1.0,
+            "1.70": 1.0,
+            "1.75": 1.0,
+            "1.80": 1.0,
+            "1.85": 1.0,
+            "1.90": 1.0,
+            "1.95": 1.0,
+            "2.00": 1.0
+          },
+          "pretrend": {
+            "d3_abs_effect_must_exceed_sd": 0.379129,
+            "d3_floor_over_mde80": 2.916381,
+            "pooled_sd": 0.189565,
+            "s2_bar": {
+              "limit_sd": 0.15,
+              "matches_over": 7,
+              "max_over": 2,
+              "would_die": true
+            }
+          },
+          "replicates": 2500,
+          "seed": [
+            20261018,
+            829869291
+          ]
+        }
+      }
+    },
+    "pretrend": {
+      "V0": {
+        "cells_used": 133,
+        "d3_abs_effect_must_exceed_m": 1.177176,
+        "d3_abs_effect_must_exceed_sd": 0.362535,
+        "matches": {
+          "1874553": {
+            "cells_used": 14,
+            "metres": 0.302144,
+            "sd": 0.054419
+          },
+          "1886347": {
+            "cells_used": 13,
+            "metres": 0.431256,
+            "sd": 0.143804
+          },
+          "1925299": {
+            "cells_used": 13,
+            "metres": 0.736773,
+            "sd": 0.270071
+          },
+          "1959846": {
+            "cells_used": 13,
+            "metres": 0.690528,
+            "sd": 0.225463
+          },
+          "1996435": {
+            "cells_used": 14,
+            "metres": 0.455404,
+            "sd": 0.201172
+          },
+          "1996436": {
+            "cells_used": 14,
+            "metres": 0.354126,
+            "sd": 0.061271
+          },
+          "2007448": {
+            "cells_used": 13,
+            "metres": 1.532659,
+            "sd": 0.397045
+          },
+          "2010085": {
+            "cells_used": 14,
+            "metres": 0.300897,
+            "sd": 0.11284
+          },
+          "2011166": {
+            "cells_used": 14,
+            "metres": 0.255301,
+            "sd": 0.102776
+          },
+          "2015213": {
+            "cells_used": 11,
+            "metres": 0.964846,
+            "sd": 0.272345
+          }
+        },
+        "metres": 0.588588,
+        "sd": 0.181267,
+        "units_used": 6167
+      },
+      "V1": {
+        "cells_used": 130,
+        "d3_abs_effect_must_exceed_m": 1.231049,
+        "d3_abs_effect_must_exceed_sd": 0.379129,
+        "matches": {
+          "1874553": {
+            "cells_used": 14,
+            "metres": 0.332516,
+            "sd": 0.061873
+          },
+          "1886347": {
+            "cells_used": 13,
+            "metres": 0.456202,
+            "sd": 0.159932
+          },
+          "1925299": {
+            "cells_used": 13,
+            "metres": 0.653176,
+            "sd": 0.24039
+          },
+          "1959846": {
+            "cells_used": 13,
+            "metres": 0.714075,
+            "sd": 0.236411
+          },
+          "1996435": {
+            "cells_used": 13,
+            "metres": 0.661887,
+            "sd": 0.243887
+          },
+          "1996436": {
+            "cells_used": 14,
+            "metres": 0.309369,
+            "sd": 0.055205
+          },
+          "2007448": {
+            "cells_used": 13,
+            "metres": 1.662642,
+            "sd": 0.420912
+          },
+          "2010085": {
+            "cells_used": 13,
+            "metres": 0.317458,
+            "sd": 0.124568
+          },
+          "2011166": {
+            "cells_used": 13,
+            "metres": 0.372802,
+            "sd": 0.161843
+          },
+          "2015213": {
+            "cells_used": 11,
+            "metres": 0.759935,
+            "sd": 0.216845
+          }
+        },
+        "metres": 0.615525,
+        "sd": 0.189565,
+        "units_used": 5741
+      }
+    }
+  },
+  "matches": [
+    1874553,
+    1886347,
+    1925299,
+    1959846,
+    1996435,
+    1996436,
+    2007448,
+    2010085,
+    2011166,
+    2015213
+  ],
+  "proxy_cause": {
+    "pretrend": {
+      "V0": {
+        "cells_used": 140,
+        "d3_abs_effect_must_exceed_m": 1.395486,
+        "d3_abs_effect_must_exceed_sd": 0.441419,
+        "matches": {
+          "1874553": {
+            "cells_used": 14,
+            "metres": 0.435466,
+            "sd": 0.11328
+          },
+          "1886347": {
+            "cells_used": 15,
+            "metres": 0.650682,
+            "sd": 0.227852
+          },
+          "1925299": {
+            "cells_used": 15,
+            "metres": 0.701546,
+            "sd": 0.258489
+          },
+          "1959846": {
+            "cells_used": 14,
+            "metres": 0.766153,
+            "sd": 0.204046
+          },
+          "1996435": {
+            "cells_used": 15,
+            "metres": 0.81839,
+            "sd": 0.284733
+          },
+          "1996436": {
+            "cells_used": 15,
+            "metres": 0.75446,
+            "sd": 0.228963
+          },
+          "2007448": {
+            "cells_used": 15,
+            "metres": 1.297605,
+            "sd": 0.402276
+          },
+          "2010085": {
+            "cells_used": 13,
+            "metres": 0.399902,
+            "sd": 0.143935
+          },
+          "2011166": {
+            "cells_used": 12,
+            "metres": 0.325652,
+            "sd": 0.082533
+          },
+          "2015213": {
+            "cells_used": 12,
+            "metres": 0.794914,
+            "sd": 0.233497
+          }
+        },
+        "metres": 0.697743,
+        "sd": 0.22071,
+        "units_used": 6555
+      },
+      "V1": {
+        "cells_used": 136,
+        "d3_abs_effect_must_exceed_m": 1.254065,
+        "d3_abs_effect_must_exceed_sd": 0.406704,
+        "matches": {
+          "1874553": {
+            "cells_used": 14,
+            "metres": 0.439387,
+            "sd": 0.114201
+          },
+          "1886347": {
+            "cells_used": 15,
+            "metres": 0.634938,
+            "sd": 0.2267
+          },
+          "1925299": {
+            "cells_used": 14,
+            "metres": 0.496488,
+            "sd": 0.20285
+          },
+          "1959846": {
+            "cells_used": 14,
+            "metres": 0.716215,
+            "sd": 0.194424
+          },
+          "1996435": {
+            "cells_used": 15,
+            "metres": 0.737198,
+            "sd": 0.261293
+          },
+          "1996436": {
+            "cells_used": 15,
+            "metres": 0.756,
+            "sd": 0.23917
+          },
+          "2007448": {
+            "cells_used": 14,
+            "metres": 1.228106,
+            "sd": 0.376741
+          },
+          "2010085": {
+            "cells_used": 12,
+            "metres": 0.203568,
+            "sd": 0.096425
+          },
+          "2011166": {
+            "cells_used": 12,
+            "metres": 0.331302,
+            "sd": 0.097012
+          },
+          "2015213": {
+            "cells_used": 11,
+            "metres": 0.710405,
+            "sd": 0.203377
+          }
+        },
+        "metres": 0.627032,
+        "sd": 0.203352,
+        "units_used": 6154
+      }
+    }
+  },
+  "units": {
+    "1874553": {
+      "ball_extrapolated_at_t": 0.001284,
+      "by_level": {
+        "high_pressure": {
+          "kept": 127,
+          "pressed": 94,
+          "v1": 122,
+          "v1_pressed": 90
+        },
+        "low_pressure": {
+          "kept": 137,
+          "pressed": 20,
+          "v1": 135,
+          "v1_pressed": 19
+        },
+        "medium_pressure": {
+          "kept": 220,
+          "pressed": 117,
+          "v1": 216,
+          "v1_pressed": 114
+        },
+        "no_pressure": {
+          "kept": 271,
+          "pressed": 3,
+          "v1": 271,
+          "v1_pressed": 3
+        },
+        "very_high_pressure": {
+          "kept": 24,
+          "pressed": 22,
+          "v1": 24,
+          "v1_pressed": 22
+        }
+      },
+      "by_stratum": {
+        "backward/final/long": {
+          "kept": 22,
+          "pressed": 9,
+          "v1": 22,
+          "v1_pressed": 9
+        },
+        "backward/final/short": {
+          "kept": 31,
+          "pressed": 18,
+          "v1": 31,
+          "v1_pressed": 18
+        },
+        "backward/middle/long": {
+          "kept": 78,
+          "pressed": 13,
+          "v1": 74,
+          "v1_pressed": 10
+        },
+        "backward/middle/short": {
+          "kept": 62,
+          "pressed": 14,
+          "v1": 62,
+          "v1_pressed": 14
+        },
+        "backward/own/long": {
+          "kept": 68,
+          "pressed": 11,
+          "v1": 68,
+          "v1_pressed": 11
+        },
+        "backward/own/short": {
+          "kept": 51,
+          "pressed": 19,
+          "v1": 51,
+          "v1_pressed": 19
+        },
+        "forward/final/long": {
+          "kept": 68,
+          "pressed": 24,
+          "v1": 68,
+          "v1_pressed": 24
+        },
+        "forward/final/short": {
+          "kept": 42,
+          "pressed": 25,
+          "v1": 42,
+          "v1_pressed": 25
+        },
+        "forward/middle/long": {
+          "kept": 113,
+          "pressed": 35,
+          "v1": 110,
+          "v1_pressed": 33
+        },
+        "forward/middle/short": {
+          "kept": 50,
+          "pressed": 29,
+          "v1": 48,
+          "v1_pressed": 27
+        },
+        "forward/own/long": {
+          "kept": 40,
+          "pressed": 6,
+          "v1": 40,
+          "v1_pressed": 6
+        },
+        "forward/own/short": {
+          "kept": 29,
+          "pressed": 12,
+          "v1": 28,
+          "v1_pressed": 11
+        },
+        "lateral/final/long": {
+          "kept": 4,
+          "pressed": 2,
+          "v1": 4,
+          "v1_pressed": 2
+        },
+        "lateral/final/short": {
+          "kept": 14,
+          "pressed": 12,
+          "v1": 13,
+          "v1_pressed": 12
+        },
+        "lateral/middle/long": {
+          "kept": 27,
+          "pressed": 1,
+          "v1": 27,
+          "v1_pressed": 1
+        },
+        "lateral/middle/short": {
+          "kept": 32,
+          "pressed": 16,
+          "v1": 32,
+          "v1_pressed": 16
+        },
+        "lateral/own/long": {
+          "kept": 27,
+          "pressed": 2,
+          "v1": 27,
+          "v1_pressed": 2
+        },
+        "lateral/own/short": {
+          "kept": 21,
+          "pressed": 8,
+          "v1": 21,
+          "v1_pressed": 8
+        }
+      },
+      "design": 865,
+      "excluded_gap": 86,
+      "kept": 779,
+      "kept_free": 523,
+      "kept_pressed": 256,
+      "kept_v1": 768,
+      "kept_v1_free": 520,
+      "kept_v1_pressed": 248,
+      "labelled": 865,
+      "overlap_design": {
+        "units": 865,
+        "within_2w": 329,
+        "within_2w_same_team": 289,
+        "within_2w_same_team_share": 0.334104,
+        "within_2w_share": 0.380347,
+        "within_w": 86,
+        "within_w_same_team": 74,
+        "within_w_same_team_share": 0.085549,
+        "within_w_share": 0.099422
+      },
+      "overlap_kept": {
+        "units": 779,
+        "within_2w": 221,
+        "within_2w_same_team": 197,
+        "within_2w_same_team_share": 0.252888,
+        "within_2w_share": 0.283697,
+        "within_w": 0,
+        "within_w_same_team": 0,
+        "within_w_same_team_share": 0.0,
+        "within_w_share": 0.0
+      },
+      "possessions": 959,
+      "pre_undefined": 0,
+      "proxy": {
+        "agrees_with_index": 0.894737,
+        "free": 479,
+        "pressed": 300
+      },
+      "v2_classes": {
+        "0": 768,
+        "1": 11,
+        "2_or_more": 0
+      }
+    },
+    "1886347": {
+      "ball_extrapolated_at_t": 0.005019,
+      "by_level": {
+        "high_pressure": {
+          "kept": 149,
+          "pressed": 121,
+          "v1": 137,
+          "v1_pressed": 110
+        },
+        "low_pressure": {
+          "kept": 181,
+          "pressed": 31,
+          "v1": 176,
+          "v1_pressed": 29
+        },
+        "medium_pressure": {
+          "kept": 213,
+          "pressed": 93,
+          "v1": 203,
+          "v1_pressed": 87
+        },
+        "no_pressure": {
+          "kept": 221,
+          "pressed": 3,
+          "v1": 218,
+          "v1_pressed": 2
+        },
+        "very_high_pressure": {
+          "kept": 33,
+          "pressed": 29,
+          "v1": 29,
+          "v1_pressed": 25
+        }
+      },
+      "by_stratum": {
+        "backward/final/long": {
+          "kept": 16,
+          "pressed": 11,
+          "v1": 13,
+          "v1_pressed": 8
+        },
+        "backward/final/short": {
+          "kept": 35,
+          "pressed": 24,
+          "v1": 34,
+          "v1_pressed": 23
+        },
+        "backward/middle/long": {
+          "kept": 80,
+          "pressed": 11,
+          "v1": 80,
+          "v1_pressed": 11
+        },
+        "backward/middle/short": {
+          "kept": 70,
+          "pressed": 25,
+          "v1": 66,
+          "v1_pressed": 21
+        },
+        "backward/own/long": {
+          "kept": 53,
+          "pressed": 2,
+          "v1": 52,
+          "v1_pressed": 2
+        },
+        "backward/own/short": {
+          "kept": 52,
+          "pressed": 16,
+          "v1": 50,
+          "v1_pressed": 15
+        },
+        "forward/final/long": {
+          "kept": 56,
+          "pressed": 26,
+          "v1": 54,
+          "v1_pressed": 25
+        },
+        "forward/final/short": {
+          "kept": 43,
+          "pressed": 30,
+          "v1": 40,
+          "v1_pressed": 27
+        },
+        "forward/middle/long": {
+          "kept": 103,
+          "pressed": 33,
+          "v1": 97,
+          "v1_pressed": 30
+        },
+        "forward/middle/short": {
+          "kept": 43,
+          "pressed": 22,
+          "v1": 39,
+          "v1_pressed": 19
+        },
+        "forward/own/long": {
+          "kept": 50,
+          "pressed": 7,
+          "v1": 50,
+          "v1_pressed": 7
+        },
+        "forward/own/short": {
+          "kept": 30,
+          "pressed": 13,
+          "v1": 27,
+          "v1_pressed": 12
+        },
+        "lateral/final/long": {
+          "kept": 4,
+          "pressed": 1,
+          "v1": 3,
+          "v1_pressed": 0
+        },
+        "lateral/final/short": {
+          "kept": 25,
+          "pressed": 21,
+          "v1": 24,
+          "v1_pressed": 20
+        },
+        "lateral/middle/long": {
+          "kept": 33,
+          "pressed": 3,
+          "v1": 33,
+          "v1_pressed": 3
+        },
+        "lateral/middle/short": {
+          "kept": 47,
+          "pressed": 22,
+          "v1": 44,
+          "v1_pressed": 20
+        },
+        "lateral/own/long": {
+          "kept": 27,
+          "pressed": 0,
+          "v1": 27,
+          "v1_pressed": 0
+        },
+        "lateral/own/short": {
+          "kept": 30,
+          "pressed": 10,
+          "v1": 30,
+          "v1_pressed": 10
+        }
+      },
+      "design": 909,
+      "excluded_gap": 112,
+      "kept": 797,
+      "kept_free": 520,
+      "kept_pressed": 277,
+      "kept_v1": 763,
+      "kept_v1_free": 510,
+      "kept_v1_pressed": 253,
+      "labelled": 910,
+      "overlap_design": {
+        "units": 909,
+        "within_2w": 392,
+        "within_2w_same_team": 346,
+        "within_2w_same_team_share": 0.380638,
+        "within_2w_share": 0.431243,
+        "within_w": 112,
+        "within_w_same_team": 91,
+        "within_w_same_team_share": 0.10011,
+        "within_w_share": 0.123212
+      },
+      "overlap_kept": {
+        "units": 797,
+        "within_2w": 248,
+        "within_2w_same_team": 225,
+        "within_2w_same_team_share": 0.282309,
+        "within_2w_share": 0.311167,
+        "within_w": 0,
+        "within_w_same_team": 0,
+        "within_w_same_team_share": 0.0,
+        "within_w_share": 0.0
+      },
+      "possessions": 990,
+      "pre_undefined": 0,
+      "proxy": {
+        "agrees_with_index": 0.889586,
+        "free": 500,
+        "pressed": 297
+      },
+      "v2_classes": {
+        "0": 763,
+        "1": 29,
+        "2_or_more": 5
+      }
+    },
+    "1925299": {
+      "ball_extrapolated_at_t": 0.007051,
+      "by_level": {
+        "high_pressure": {
+          "kept": 139,
+          "pressed": 106,
+          "v1": 126,
+          "v1_pressed": 98
+        },
+        "low_pressure": {
+          "kept": 195,
+          "pressed": 31,
+          "v1": 184,
+          "v1_pressed": 28
+        },
+        "medium_pressure": {
+          "kept": 195,
+          "pressed": 98,
+          "v1": 187,
+          "v1_pressed": 92
+        },
+        "no_pressure": {
+          "kept": 292,
+          "pressed": 1,
+          "v1": 291,
+          "v1_pressed": 1
+        },
+        "very_high_pressure": {
+          "kept": 30,
+          "pressed": 26,
+          "v1": 29,
+          "v1_pressed": 25
+        }
+      },
+      "by_stratum": {
+        "backward/final/long": {
+          "kept": 20,
+          "pressed": 7,
+          "v1": 18,
+          "v1_pressed": 6
+        },
+        "backward/final/short": {
+          "kept": 37,
+          "pressed": 16,
+          "v1": 36,
+          "v1_pressed": 15
+        },
+        "backward/middle/long": {
+          "kept": 92,
+          "pressed": 8,
+          "v1": 90,
+          "v1_pressed": 7
+        },
+        "backward/middle/short": {
+          "kept": 67,
+          "pressed": 19,
+          "v1": 65,
+          "v1_pressed": 17
+        },
+        "backward/own/long": {
+          "kept": 69,
+          "pressed": 4,
+          "v1": 69,
+          "v1_pressed": 4
+        },
+        "backward/own/short": {
+          "kept": 57,
+          "pressed": 19,
+          "v1": 54,
+          "v1_pressed": 17
+        },
+        "forward/final/long": {
+          "kept": 56,
+          "pressed": 23,
+          "v1": 51,
+          "v1_pressed": 22
+        },
+        "forward/final/short": {
+          "kept": 55,
+          "pressed": 39,
+          "v1": 55,
+          "v1_pressed": 39
+        },
+        "forward/middle/long": {
+          "kept": 127,
+          "pressed": 29,
+          "v1": 118,
+          "v1_pressed": 24
+        },
+        "forward/middle/short": {
+          "kept": 67,
+          "pressed": 35,
+          "v1": 64,
+          "v1_pressed": 34
+        },
+        "forward/own/long": {
+          "kept": 33,
+          "pressed": 0,
+          "v1": 32,
+          "v1_pressed": 0
+        },
+        "forward/own/short": {
+          "kept": 26,
+          "pressed": 11,
+          "v1": 26,
+          "v1_pressed": 11
+        },
+        "lateral/final/long": {
+          "kept": 7,
+          "pressed": 4,
+          "v1": 7,
+          "v1_pressed": 4
+        },
+        "lateral/final/short": {
+          "kept": 33,
+          "pressed": 25,
+          "v1": 31,
+          "v1_pressed": 23
+        },
+        "lateral/middle/long": {
+          "kept": 35,
+          "pressed": 2,
+          "v1": 33,
+          "v1_pressed": 2
+        },
+        "lateral/middle/short": {
+          "kept": 24,
+          "pressed": 12,
+          "v1": 23,
+          "v1_pressed": 11
+        },
+        "lateral/own/long": {
+          "kept": 27,
+          "pressed": 0,
+          "v1": 27,
+          "v1_pressed": 0
+        },
+        "lateral/own/short": {
+          "kept": 19,
+          "pressed": 9,
+          "v1": 18,
+          "v1_pressed": 8
+        }
+      },
+      "design": 934,
+      "excluded_gap": 83,
+      "kept": 851,
+      "kept_free": 589,
+      "kept_pressed": 262,
+      "kept_v1": 817,
+      "kept_v1_free": 573,
+      "kept_v1_pressed": 244,
+      "labelled": 936,
+      "overlap_design": {
+        "units": 934,
+        "within_2w": 381,
+        "within_2w_same_team": 332,
+        "within_2w_same_team_share": 0.35546,
+        "within_2w_share": 0.407923,
+        "within_w": 83,
+        "within_w_same_team": 68,
+        "within_w_same_team_share": 0.072805,
+        "within_w_share": 0.088865
+      },
+      "overlap_kept": {
+        "units": 851,
+        "within_2w": 273,
+        "within_2w_same_team": 242,
+        "within_2w_same_team_share": 0.284371,
+        "within_2w_share": 0.320799,
+        "within_w": 0,
+        "within_w_same_team": 0,
+        "within_w_same_team_share": 0.0,
+        "within_w_share": 0.0
+      },
+      "possessions": 1054,
+      "pre_undefined": 0,
+      "proxy": {
+        "agrees_with_index": 0.886016,
+        "free": 550,
+        "pressed": 301
+      },
+      "v2_classes": {
+        "0": 817,
+        "1": 31,
+        "2_or_more": 3
+      }
+    },
+    "1959846": {
+      "ball_extrapolated_at_t": 0.004065,
+      "by_level": {
+        "high_pressure": {
+          "kept": 138,
+          "pressed": 107,
+          "v1": 119,
+          "v1_pressed": 94
+        },
+        "low_pressure": {
+          "kept": 135,
+          "pressed": 26,
+          "v1": 125,
+          "v1_pressed": 24
+        },
+        "medium_pressure": {
+          "kept": 218,
+          "pressed": 106,
+          "v1": 207,
+          "v1_pressed": 102
+        },
+        "no_pressure": {
+          "kept": 216,
+          "pressed": 2,
+          "v1": 214,
+          "v1_pressed": 2
+        },
+        "very_high_pressure": {
+          "kept": 31,
+          "pressed": 29,
+          "v1": 27,
+          "v1_pressed": 25
+        }
+      },
+      "by_stratum": {
+        "backward/final/long": {
+          "kept": 22,
+          "pressed": 6,
+          "v1": 20,
+          "v1_pressed": 6
+        },
+        "backward/final/short": {
+          "kept": 41,
+          "pressed": 24,
+          "v1": 38,
+          "v1_pressed": 22
+        },
+        "backward/middle/long": {
+          "kept": 77,
+          "pressed": 9,
+          "v1": 77,
+          "v1_pressed": 9
+        },
+        "backward/middle/short": {
+          "kept": 63,
+          "pressed": 27,
+          "v1": 59,
+          "v1_pressed": 25
+        },
+        "backward/own/long": {
+          "kept": 61,
+          "pressed": 6,
+          "v1": 60,
+          "v1_pressed": 6
+        },
+        "backward/own/short": {
+          "kept": 47,
+          "pressed": 19,
+          "v1": 45,
+          "v1_pressed": 17
+        },
+        "forward/final/long": {
+          "kept": 66,
+          "pressed": 49,
+          "v1": 60,
+          "v1_pressed": 44
+        },
+        "forward/final/short": {
+          "kept": 41,
+          "pressed": 27,
+          "v1": 40,
+          "v1_pressed": 26
+        },
+        "forward/middle/long": {
+          "kept": 104,
+          "pressed": 32,
+          "v1": 96,
+          "v1_pressed": 30
+        },
+        "forward/middle/short": {
+          "kept": 32,
+          "pressed": 11,
+          "v1": 29,
+          "v1_pressed": 10
+        },
+        "forward/own/long": {
+          "kept": 53,
+          "pressed": 4,
+          "v1": 52,
+          "v1_pressed": 4
+        },
+        "forward/own/short": {
+          "kept": 22,
+          "pressed": 8,
+          "v1": 16,
+          "v1_pressed": 6
+        },
+        "lateral/final/long": {
+          "kept": 5,
+          "pressed": 2,
+          "v1": 4,
+          "v1_pressed": 1
+        },
+        "lateral/final/short": {
+          "kept": 20,
+          "pressed": 16,
+          "v1": 18,
+          "v1_pressed": 14
+        },
+        "lateral/middle/long": {
+          "kept": 22,
+          "pressed": 3,
+          "v1": 21,
+          "v1_pressed": 3
+        },
+        "lateral/middle/short": {
+          "kept": 17,
+          "pressed": 11,
+          "v1": 16,
+          "v1_pressed": 11
+        },
+        "lateral/own/long": {
+          "kept": 20,
+          "pressed": 0,
+          "v1": 20,
+          "v1_pressed": 0
+        },
+        "lateral/own/short": {
+          "kept": 25,
+          "pressed": 16,
+          "v1": 21,
+          "v1_pressed": 13
+        }
+      },
+      "design": 837,
+      "excluded_gap": 99,
+      "kept": 738,
+      "kept_free": 468,
+      "kept_pressed": 270,
+      "kept_v1": 692,
+      "kept_v1_free": 445,
+      "kept_v1_pressed": 247,
+      "labelled": 839,
+      "overlap_design": {
+        "units": 837,
+        "within_2w": 349,
+        "within_2w_same_team": 300,
+        "within_2w_same_team_share": 0.358423,
+        "within_2w_share": 0.416965,
+        "within_w": 99,
+        "within_w_same_team": 85,
+        "within_w_same_team_share": 0.101553,
+        "within_w_share": 0.11828
+      },
+      "overlap_kept": {
+        "units": 738,
+        "within_2w": 220,
+        "within_2w_same_team": 190,
+        "within_2w_same_team_share": 0.257453,
+        "within_2w_share": 0.298103,
+        "within_w": 0,
+        "within_w_same_team": 0,
+        "within_w_same_team_share": 0.0,
+        "within_w_share": 0.0
+      },
+      "possessions": 946,
+      "pre_undefined": 0,
+      "proxy": {
+        "agrees_with_index": 0.883469,
+        "free": 442,
+        "pressed": 296
+      },
+      "v2_classes": {
+        "0": 692,
+        "1": 41,
+        "2_or_more": 5
+      }
+    },
+    "1996435": {
+      "ball_extrapolated_at_t": 0.006485,
+      "by_level": {
+        "high_pressure": {
+          "kept": 161,
+          "pressed": 113,
+          "v1": 149,
+          "v1_pressed": 105
+        },
+        "low_pressure": {
+          "kept": 180,
+          "pressed": 35,
+          "v1": 175,
+          "v1_pressed": 34
+        },
+        "medium_pressure": {
+          "kept": 249,
+          "pressed": 113,
+          "v1": 244,
+          "v1_pressed": 110
+        },
+        "no_pressure": {
+          "kept": 158,
+          "pressed": 3,
+          "v1": 158,
+          "v1_pressed": 3
+        },
+        "very_high_pressure": {
+          "kept": 23,
+          "pressed": 20,
+          "v1": 18,
+          "v1_pressed": 16
+        }
+      },
+      "by_stratum": {
+        "backward/final/long": {
+          "kept": 18,
+          "pressed": 2,
+          "v1": 18,
+          "v1_pressed": 2
+        },
+        "backward/final/short": {
+          "kept": 47,
+          "pressed": 31,
+          "v1": 43,
+          "v1_pressed": 28
+        },
+        "backward/middle/long": {
+          "kept": 77,
+          "pressed": 5,
+          "v1": 75,
+          "v1_pressed": 3
+        },
+        "backward/middle/short": {
+          "kept": 64,
+          "pressed": 24,
+          "v1": 63,
+          "v1_pressed": 23
+        },
+        "backward/own/long": {
+          "kept": 50,
+          "pressed": 6,
+          "v1": 48,
+          "v1_pressed": 6
+        },
+        "backward/own/short": {
+          "kept": 49,
+          "pressed": 17,
+          "v1": 49,
+          "v1_pressed": 17
+        },
+        "forward/final/long": {
+          "kept": 58,
+          "pressed": 28,
+          "v1": 57,
+          "v1_pressed": 27
+        },
+        "forward/final/short": {
+          "kept": 42,
+          "pressed": 27,
+          "v1": 42,
+          "v1_pressed": 27
+        },
+        "forward/middle/long": {
+          "kept": 107,
+          "pressed": 29,
+          "v1": 104,
+          "v1_pressed": 28
+        },
+        "forward/middle/short": {
+          "kept": 53,
+          "pressed": 28,
+          "v1": 48,
+          "v1_pressed": 26
+        },
+        "forward/own/long": {
+          "kept": 46,
+          "pressed": 10,
+          "v1": 44,
+          "v1_pressed": 9
+        },
+        "forward/own/short": {
+          "kept": 39,
+          "pressed": 17,
+          "v1": 39,
+          "v1_pressed": 17
+        },
+        "lateral/final/long": {
+          "kept": 10,
+          "pressed": 8,
+          "v1": 10,
+          "v1_pressed": 8
+        },
+        "lateral/final/short": {
+          "kept": 30,
+          "pressed": 24,
+          "v1": 26,
+          "v1_pressed": 21
+        },
+        "lateral/middle/long": {
+          "kept": 16,
+          "pressed": 0,
+          "v1": 16,
+          "v1_pressed": 0
+        },
+        "lateral/middle/short": {
+          "kept": 24,
+          "pressed": 13,
+          "v1": 23,
+          "v1_pressed": 12
+        },
+        "lateral/own/long": {
+          "kept": 17,
+          "pressed": 1,
+          "v1": 17,
+          "v1_pressed": 1
+        },
+        "lateral/own/short": {
+          "kept": 24,
+          "pressed": 14,
+          "v1": 22,
+          "v1_pressed": 13
+        }
+      },
+      "design": 896,
+      "excluded_gap": 125,
+      "kept": 771,
+      "kept_free": 487,
+      "kept_pressed": 284,
+      "kept_v1": 744,
+      "kept_v1_free": 476,
+      "kept_v1_pressed": 268,
+      "labelled": 898,
+      "overlap_design": {
+        "units": 896,
+        "within_2w": 414,
+        "within_2w_same_team": 359,
+        "within_2w_same_team_share": 0.40067,
+        "within_2w_share": 0.462054,
+        "within_w": 125,
+        "within_w_same_team": 100,
+        "within_w_same_team_share": 0.111607,
+        "within_w_share": 0.139509
+      },
+      "overlap_kept": {
+        "units": 771,
+        "within_2w": 254,
+        "within_2w_same_team": 225,
+        "within_2w_same_team_share": 0.291829,
+        "within_2w_share": 0.329442,
+        "within_w": 0,
+        "within_w_same_team": 0,
+        "within_w_same_team_share": 0.0,
+        "within_w_share": 0.0
+      },
+      "possessions": 1005,
+      "pre_undefined": 0,
+      "proxy": {
+        "agrees_with_index": 0.846952,
+        "free": 459,
+        "pressed": 312
+      },
+      "v2_classes": {
+        "0": 744,
+        "1": 27,
+        "2_or_more": 0
+      }
+    },
+    "1996436": {
+      "ball_extrapolated_at_t": 0.0067,
+      "by_level": {
+        "high_pressure": {
+          "kept": 133,
+          "pressed": 108,
+          "v1": 122,
+          "v1_pressed": 98
+        },
+        "low_pressure": {
+          "kept": 113,
+          "pressed": 28,
+          "v1": 111,
+          "v1_pressed": 28
+        },
+        "medium_pressure": {
+          "kept": 167,
+          "pressed": 89,
+          "v1": 158,
+          "v1_pressed": 84
+        },
+        "no_pressure": {
+          "kept": 146,
+          "pressed": 1,
+          "v1": 146,
+          "v1_pressed": 1
+        },
+        "very_high_pressure": {
+          "kept": 38,
+          "pressed": 33,
+          "v1": 36,
+          "v1_pressed": 31
+        }
+      },
+      "by_stratum": {
+        "backward/final/long": {
+          "kept": 16,
+          "pressed": 7,
+          "v1": 14,
+          "v1_pressed": 7
+        },
+        "backward/final/short": {
+          "kept": 34,
+          "pressed": 18,
+          "v1": 30,
+          "v1_pressed": 16
+        },
+        "backward/middle/long": {
+          "kept": 41,
+          "pressed": 6,
+          "v1": 41,
+          "v1_pressed": 6
+        },
+        "backward/middle/short": {
+          "kept": 55,
+          "pressed": 19,
+          "v1": 54,
+          "v1_pressed": 19
+        },
+        "backward/own/long": {
+          "kept": 29,
+          "pressed": 8,
+          "v1": 29,
+          "v1_pressed": 8
+        },
+        "backward/own/short": {
+          "kept": 36,
+          "pressed": 15,
+          "v1": 36,
+          "v1_pressed": 15
+        },
+        "forward/final/long": {
+          "kept": 53,
+          "pressed": 28,
+          "v1": 51,
+          "v1_pressed": 27
+        },
+        "forward/final/short": {
+          "kept": 28,
+          "pressed": 19,
+          "v1": 26,
+          "v1_pressed": 17
+        },
+        "forward/middle/long": {
+          "kept": 79,
+          "pressed": 28,
+          "v1": 76,
+          "v1_pressed": 25
+        },
+        "forward/middle/short": {
+          "kept": 60,
+          "pressed": 42,
+          "v1": 54,
+          "v1_pressed": 37
+        },
+        "forward/own/long": {
+          "kept": 24,
+          "pressed": 4,
+          "v1": 24,
+          "v1_pressed": 4
+        },
+        "forward/own/short": {
+          "kept": 30,
+          "pressed": 16,
+          "v1": 30,
+          "v1_pressed": 16
+        },
+        "lateral/final/long": {
+          "kept": 7,
+          "pressed": 4,
+          "v1": 6,
+          "v1_pressed": 3
+        },
+        "lateral/final/short": {
+          "kept": 24,
+          "pressed": 18,
+          "v1": 23,
+          "v1_pressed": 17
+        },
+        "lateral/middle/long": {
+          "kept": 18,
+          "pressed": 3,
+          "v1": 18,
+          "v1_pressed": 3
+        },
+        "lateral/middle/short": {
+          "kept": 28,
+          "pressed": 15,
+          "v1": 28,
+          "v1_pressed": 15
+        },
+        "lateral/own/long": {
+          "kept": 12,
+          "pressed": 1,
+          "v1": 12,
+          "v1_pressed": 1
+        },
+        "lateral/own/short": {
+          "kept": 23,
+          "pressed": 8,
+          "v1": 21,
+          "v1_pressed": 6
+        }
+      },
+      "design": 683,
+      "excluded_gap": 86,
+      "kept": 597,
+      "kept_free": 338,
+      "kept_pressed": 259,
+      "kept_v1": 573,
+      "kept_v1_free": 331,
+      "kept_v1_pressed": 242,
+      "labelled": 684,
+      "overlap_design": {
+        "units": 683,
+        "within_2w": 261,
+        "within_2w_same_team": 225,
+        "within_2w_same_team_share": 0.329429,
+        "within_2w_share": 0.382138,
+        "within_w": 86,
+        "within_w_same_team": 71,
+        "within_w_same_team_share": 0.103953,
+        "within_w_share": 0.125915
+      },
+      "overlap_kept": {
+        "units": 597,
+        "within_2w": 158,
+        "within_2w_same_team": 139,
+        "within_2w_same_team_share": 0.232831,
+        "within_2w_share": 0.264657,
+        "within_w": 0,
+        "within_w_same_team": 0,
+        "within_w_same_team_share": 0.0,
+        "within_w_share": 0.0
+      },
+      "possessions": 786,
+      "pre_undefined": 0,
+      "proxy": {
+        "agrees_with_index": 0.864322,
+        "free": 305,
+        "pressed": 292
+      },
+      "v2_classes": {
+        "0": 573,
+        "1": 21,
+        "2_or_more": 3
+      }
+    },
+    "2007448": {
+      "ball_extrapolated_at_t": 0.002933,
+      "by_level": {
+        "high_pressure": {
+          "kept": 112,
+          "pressed": 96,
+          "v1": 108,
+          "v1_pressed": 92
+        },
+        "low_pressure": {
+          "kept": 153,
+          "pressed": 28,
+          "v1": 150,
+          "v1_pressed": 27
+        },
+        "medium_pressure": {
+          "kept": 177,
+          "pressed": 91,
+          "v1": 169,
+          "v1_pressed": 86
+        },
+        "no_pressure": {
+          "kept": 205,
+          "pressed": 3,
+          "v1": 203,
+          "v1_pressed": 2
+        },
+        "very_high_pressure": {
+          "kept": 35,
+          "pressed": 31,
+          "v1": 32,
+          "v1_pressed": 29
+        }
+      },
+      "by_stratum": {
+        "backward/final/long": {
+          "kept": 19,
+          "pressed": 6,
+          "v1": 17,
+          "v1_pressed": 5
+        },
+        "backward/final/short": {
+          "kept": 35,
+          "pressed": 22,
+          "v1": 33,
+          "v1_pressed": 20
+        },
+        "backward/middle/long": {
+          "kept": 75,
+          "pressed": 4,
+          "v1": 74,
+          "v1_pressed": 3
+        },
+        "backward/middle/short": {
+          "kept": 53,
+          "pressed": 19,
+          "v1": 53,
+          "v1_pressed": 19
+        },
+        "backward/own/long": {
+          "kept": 59,
+          "pressed": 8,
+          "v1": 57,
+          "v1_pressed": 8
+        },
+        "backward/own/short": {
+          "kept": 51,
+          "pressed": 24,
+          "v1": 51,
+          "v1_pressed": 24
+        },
+        "forward/final/long": {
+          "kept": 48,
+          "pressed": 26,
+          "v1": 47,
+          "v1_pressed": 25
+        },
+        "forward/final/short": {
+          "kept": 41,
+          "pressed": 30,
+          "v1": 38,
+          "v1_pressed": 28
+        },
+        "forward/middle/long": {
+          "kept": 78,
+          "pressed": 33,
+          "v1": 72,
+          "v1_pressed": 30
+        },
+        "forward/middle/short": {
+          "kept": 54,
+          "pressed": 30,
+          "v1": 54,
+          "v1_pressed": 30
+        },
+        "forward/own/long": {
+          "kept": 36,
+          "pressed": 3,
+          "v1": 36,
+          "v1_pressed": 3
+        },
+        "forward/own/short": {
+          "kept": 22,
+          "pressed": 13,
+          "v1": 21,
+          "v1_pressed": 12
+        },
+        "lateral/final/long": {
+          "kept": 12,
+          "pressed": 6,
+          "v1": 12,
+          "v1_pressed": 6
+        },
+        "lateral/final/short": {
+          "kept": 17,
+          "pressed": 11,
+          "v1": 17,
+          "v1_pressed": 11
+        },
+        "lateral/middle/long": {
+          "kept": 21,
+          "pressed": 0,
+          "v1": 21,
+          "v1_pressed": 0
+        },
+        "lateral/middle/short": {
+          "kept": 30,
+          "pressed": 10,
+          "v1": 29,
+          "v1_pressed": 9
+        },
+        "lateral/own/long": {
+          "kept": 16,
+          "pressed": 0,
+          "v1": 16,
+          "v1_pressed": 0
+        },
+        "lateral/own/short": {
+          "kept": 15,
+          "pressed": 4,
+          "v1": 14,
+          "v1_pressed": 3
+        }
+      },
+      "design": 760,
+      "excluded_gap": 78,
+      "kept": 682,
+      "kept_free": 433,
+      "kept_pressed": 249,
+      "kept_v1": 662,
+      "kept_v1_free": 426,
+      "kept_v1_pressed": 236,
+      "labelled": 760,
+      "overlap_design": {
+        "units": 760,
+        "within_2w": 303,
+        "within_2w_same_team": 276,
+        "within_2w_same_team_share": 0.363158,
+        "within_2w_share": 0.398684,
+        "within_w": 78,
+        "within_w_same_team": 68,
+        "within_w_same_team_share": 0.089474,
+        "within_w_share": 0.102632
+      },
+      "overlap_kept": {
+        "units": 682,
+        "within_2w": 205,
+        "within_2w_same_team": 187,
+        "within_2w_same_team_share": 0.274194,
+        "within_2w_share": 0.300587,
+        "within_w": 0,
+        "within_w_same_team": 0,
+        "within_w_same_team_share": 0.0,
+        "within_w_share": 0.0
+      },
+      "possessions": 863,
+      "pre_undefined": 0,
+      "proxy": {
+        "agrees_with_index": 0.895894,
+        "free": 408,
+        "pressed": 274
+      },
+      "v2_classes": {
+        "0": 662,
+        "1": 20,
+        "2_or_more": 0
+      }
+    },
+    "2010085": {
+      "ball_extrapolated_at_t": 0.006562,
+      "by_level": {
+        "high_pressure": {
+          "kept": 122,
+          "pressed": 103,
+          "v1": 115,
+          "v1_pressed": 97
+        },
+        "low_pressure": {
+          "kept": 167,
+          "pressed": 43,
+          "v1": 161,
+          "v1_pressed": 42
+        },
+        "medium_pressure": {
+          "kept": 174,
+          "pressed": 88,
+          "v1": 169,
+          "v1_pressed": 85
+        },
+        "no_pressure": {
+          "kept": 272,
+          "pressed": 3,
+          "v1": 270,
+          "v1_pressed": 3
+        },
+        "very_high_pressure": {
+          "kept": 27,
+          "pressed": 26,
+          "v1": 24,
+          "v1_pressed": 23
+        }
+      },
+      "by_stratum": {
+        "backward/final/long": {
+          "kept": 21,
+          "pressed": 2,
+          "v1": 20,
+          "v1_pressed": 2
+        },
+        "backward/final/short": {
+          "kept": 36,
+          "pressed": 25,
+          "v1": 34,
+          "v1_pressed": 23
+        },
+        "backward/middle/long": {
+          "kept": 112,
+          "pressed": 9,
+          "v1": 110,
+          "v1_pressed": 9
+        },
+        "backward/middle/short": {
+          "kept": 67,
+          "pressed": 26,
+          "v1": 64,
+          "v1_pressed": 25
+        },
+        "backward/own/long": {
+          "kept": 69,
+          "pressed": 7,
+          "v1": 69,
+          "v1_pressed": 7
+        },
+        "backward/own/short": {
+          "kept": 43,
+          "pressed": 19,
+          "v1": 42,
+          "v1_pressed": 18
+        },
+        "forward/final/long": {
+          "kept": 60,
+          "pressed": 31,
+          "v1": 57,
+          "v1_pressed": 29
+        },
+        "forward/final/short": {
+          "kept": 33,
+          "pressed": 24,
+          "v1": 31,
+          "v1_pressed": 22
+        },
+        "forward/middle/long": {
+          "kept": 92,
+          "pressed": 26,
+          "v1": 89,
+          "v1_pressed": 25
+        },
+        "forward/middle/short": {
+          "kept": 49,
+          "pressed": 32,
+          "v1": 48,
+          "v1_pressed": 31
+        },
+        "forward/own/long": {
+          "kept": 32,
+          "pressed": 5,
+          "v1": 31,
+          "v1_pressed": 4
+        },
+        "forward/own/short": {
+          "kept": 20,
+          "pressed": 13,
+          "v1": 19,
+          "v1_pressed": 12
+        },
+        "lateral/final/long": {
+          "kept": 5,
+          "pressed": 3,
+          "v1": 5,
+          "v1_pressed": 3
+        },
+        "lateral/final/short": {
+          "kept": 19,
+          "pressed": 14,
+          "v1": 19,
+          "v1_pressed": 14
+        },
+        "lateral/middle/long": {
+          "kept": 36,
+          "pressed": 1,
+          "v1": 35,
+          "v1_pressed": 1
+        },
+        "lateral/middle/short": {
+          "kept": 30,
+          "pressed": 17,
+          "v1": 29,
+          "v1_pressed": 17
+        },
+        "lateral/own/long": {
+          "kept": 23,
+          "pressed": 0,
+          "v1": 23,
+          "v1_pressed": 0
+        },
+        "lateral/own/short": {
+          "kept": 15,
+          "pressed": 9,
+          "v1": 14,
+          "v1_pressed": 8
+        }
+      },
+      "design": 844,
+      "excluded_gap": 82,
+      "kept": 762,
+      "kept_free": 499,
+      "kept_pressed": 263,
+      "kept_v1": 739,
+      "kept_v1_free": 489,
+      "kept_v1_pressed": 250,
+      "labelled": 844,
+      "overlap_design": {
+        "units": 844,
+        "within_2w": 340,
+        "within_2w_same_team": 316,
+        "within_2w_same_team_share": 0.374408,
+        "within_2w_share": 0.402844,
+        "within_w": 82,
+        "within_w_same_team": 70,
+        "within_w_same_team_share": 0.082938,
+        "within_w_share": 0.097156
+      },
+      "overlap_kept": {
+        "units": 762,
+        "within_2w": 245,
+        "within_2w_same_team": 233,
+        "within_2w_same_team_share": 0.305774,
+        "within_2w_share": 0.321522,
+        "within_w": 0,
+        "within_w_same_team": 0,
+        "within_w_same_team_share": 0.0,
+        "within_w_share": 0.0
+      },
+      "possessions": 935,
+      "pre_undefined": 0,
+      "proxy": {
+        "agrees_with_index": 0.888451,
+        "free": 488,
+        "pressed": 274
+      },
+      "v2_classes": {
+        "0": 739,
+        "1": 21,
+        "2_or_more": 2
+      }
+    },
+    "2011166": {
+      "ball_extrapolated_at_t": 0.005199,
+      "by_level": {
+        "high_pressure": {
+          "kept": 181,
+          "pressed": 144,
+          "v1": 163,
+          "v1_pressed": 131
+        },
+        "low_pressure": {
+          "kept": 100,
+          "pressed": 20,
+          "v1": 96,
+          "v1_pressed": 20
+        },
+        "medium_pressure": {
+          "kept": 157,
+          "pressed": 83,
+          "v1": 145,
+          "v1_pressed": 75
+        },
+        "no_pressure": {
+          "kept": 104,
+          "pressed": 1,
+          "v1": 101,
+          "v1_pressed": 1
+        },
+        "very_high_pressure": {
+          "kept": 35,
+          "pressed": 30,
+          "v1": 29,
+          "v1_pressed": 26
+        }
+      },
+      "by_stratum": {
+        "backward/final/long": {
+          "kept": 25,
+          "pressed": 11,
+          "v1": 24,
+          "v1_pressed": 10
+        },
+        "backward/final/short": {
+          "kept": 35,
+          "pressed": 21,
+          "v1": 34,
+          "v1_pressed": 21
+        },
+        "backward/middle/long": {
+          "kept": 52,
+          "pressed": 8,
+          "v1": 51,
+          "v1_pressed": 7
+        },
+        "backward/middle/short": {
+          "kept": 48,
+          "pressed": 33,
+          "v1": 44,
+          "v1_pressed": 32
+        },
+        "backward/own/long": {
+          "kept": 46,
+          "pressed": 10,
+          "v1": 44,
+          "v1_pressed": 9
+        },
+        "backward/own/short": {
+          "kept": 36,
+          "pressed": 22,
+          "v1": 34,
+          "v1_pressed": 20
+        },
+        "forward/final/long": {
+          "kept": 38,
+          "pressed": 19,
+          "v1": 33,
+          "v1_pressed": 15
+        },
+        "forward/final/short": {
+          "kept": 44,
+          "pressed": 33,
+          "v1": 39,
+          "v1_pressed": 30
+        },
+        "forward/middle/long": {
+          "kept": 59,
+          "pressed": 18,
+          "v1": 55,
+          "v1_pressed": 17
+        },
+        "forward/middle/short": {
+          "kept": 44,
+          "pressed": 33,
+          "v1": 37,
+          "v1_pressed": 29
+        },
+        "forward/own/long": {
+          "kept": 36,
+          "pressed": 9,
+          "v1": 35,
+          "v1_pressed": 9
+        },
+        "forward/own/short": {
+          "kept": 15,
+          "pressed": 8,
+          "v1": 13,
+          "v1_pressed": 7
+        },
+        "lateral/final/long": {
+          "kept": 4,
+          "pressed": 1,
+          "v1": 4,
+          "v1_pressed": 1
+        },
+        "lateral/final/short": {
+          "kept": 27,
+          "pressed": 21,
+          "v1": 24,
+          "v1_pressed": 20
+        },
+        "lateral/middle/long": {
+          "kept": 12,
+          "pressed": 0,
+          "v1": 12,
+          "v1_pressed": 0
+        },
+        "lateral/middle/short": {
+          "kept": 29,
+          "pressed": 20,
+          "v1": 27,
+          "v1_pressed": 18
+        },
+        "lateral/own/long": {
+          "kept": 12,
+          "pressed": 0,
+          "v1": 12,
+          "v1_pressed": 0
+        },
+        "lateral/own/short": {
+          "kept": 15,
+          "pressed": 11,
+          "v1": 12,
+          "v1_pressed": 8
+        }
+      },
+      "design": 650,
+      "excluded_gap": 73,
+      "kept": 577,
+      "kept_free": 299,
+      "kept_pressed": 278,
+      "kept_v1": 534,
+      "kept_v1_free": 281,
+      "kept_v1_pressed": 253,
+      "labelled": 653,
+      "overlap_design": {
+        "units": 650,
+        "within_2w": 247,
+        "within_2w_same_team": 206,
+        "within_2w_same_team_share": 0.316923,
+        "within_2w_share": 0.38,
+        "within_w": 73,
+        "within_w_same_team": 60,
+        "within_w_same_team_share": 0.092308,
+        "within_w_share": 0.112308
+      },
+      "overlap_kept": {
+        "units": 577,
+        "within_2w": 165,
+        "within_2w_same_team": 135,
+        "within_2w_same_team_share": 0.233969,
+        "within_2w_share": 0.285962,
+        "within_w": 0,
+        "within_w_same_team": 0,
+        "within_w_same_team_share": 0.0,
+        "within_w_share": 0.0
+      },
+      "possessions": 757,
+      "pre_undefined": 0,
+      "proxy": {
+        "agrees_with_index": 0.889081,
+        "free": 263,
+        "pressed": 314
+      },
+      "v2_classes": {
+        "0": 534,
+        "1": 32,
+        "2_or_more": 11
+      }
+    },
+    "2015213": {
+      "ball_extrapolated_at_t": 0.008889,
+      "by_level": {
+        "high_pressure": {
+          "kept": 140,
+          "pressed": 108,
+          "v1": 112,
+          "v1_pressed": 88
+        },
+        "low_pressure": {
+          "kept": 148,
+          "pressed": 21,
+          "v1": 143,
+          "v1_pressed": 20
+        },
+        "medium_pressure": {
+          "kept": 186,
+          "pressed": 86,
+          "v1": 175,
+          "v1_pressed": 76
+        },
+        "no_pressure": {
+          "kept": 173,
+          "pressed": 3,
+          "v1": 169,
+          "v1_pressed": 2
+        },
+        "very_high_pressure": {
+          "kept": 28,
+          "pressed": 21,
+          "v1": 20,
+          "v1_pressed": 14
+        }
+      },
+      "by_stratum": {
+        "backward/final/long": {
+          "kept": 7,
+          "pressed": 5,
+          "v1": 7,
+          "v1_pressed": 5
+        },
+        "backward/final/short": {
+          "kept": 16,
+          "pressed": 13,
+          "v1": 16,
+          "v1_pressed": 13
+        },
+        "backward/middle/long": {
+          "kept": 65,
+          "pressed": 4,
+          "v1": 65,
+          "v1_pressed": 4
+        },
+        "backward/middle/short": {
+          "kept": 75,
+          "pressed": 32,
+          "v1": 69,
+          "v1_pressed": 28
+        },
+        "backward/own/long": {
+          "kept": 90,
+          "pressed": 8,
+          "v1": 86,
+          "v1_pressed": 6
+        },
+        "backward/own/short": {
+          "kept": 46,
+          "pressed": 17,
+          "v1": 43,
+          "v1_pressed": 15
+        },
+        "forward/final/long": {
+          "kept": 28,
+          "pressed": 13,
+          "v1": 28,
+          "v1_pressed": 13
+        },
+        "forward/final/short": {
+          "kept": 31,
+          "pressed": 21,
+          "v1": 24,
+          "v1_pressed": 15
+        },
+        "forward/middle/long": {
+          "kept": 78,
+          "pressed": 30,
+          "v1": 72,
+          "v1_pressed": 26
+        },
+        "forward/middle/short": {
+          "kept": 55,
+          "pressed": 39,
+          "v1": 46,
+          "v1_pressed": 31
+        },
+        "forward/own/long": {
+          "kept": 46,
+          "pressed": 6,
+          "v1": 43,
+          "v1_pressed": 5
+        },
+        "forward/own/short": {
+          "kept": 16,
+          "pressed": 6,
+          "v1": 14,
+          "v1_pressed": 6
+        },
+        "lateral/final/long": {
+          "kept": 4,
+          "pressed": 1,
+          "v1": 4,
+          "v1_pressed": 1
+        },
+        "lateral/final/short": {
+          "kept": 13,
+          "pressed": 11,
+          "v1": 12,
+          "v1_pressed": 10
+        },
+        "lateral/middle/long": {
+          "kept": 12,
+          "pressed": 0,
+          "v1": 11,
+          "v1_pressed": 0
+        },
+        "lateral/middle/short": {
+          "kept": 41,
+          "pressed": 25,
+          "v1": 30,
+          "v1_pressed": 16
+        },
+        "lateral/own/long": {
+          "kept": 27,
+          "pressed": 1,
+          "v1": 27,
+          "v1_pressed": 1
+        },
+        "lateral/own/short": {
+          "kept": 25,
+          "pressed": 7,
+          "v1": 22,
+          "v1_pressed": 5
+        }
+      },
+      "design": 753,
+      "excluded_gap": 78,
+      "kept": 675,
+      "kept_free": 436,
+      "kept_pressed": 239,
+      "kept_v1": 619,
+      "kept_v1_free": 419,
+      "kept_v1_pressed": 200,
+      "labelled": 753,
+      "overlap_design": {
+        "units": 753,
+        "within_2w": 284,
+        "within_2w_same_team": 239,
+        "within_2w_same_team_share": 0.317397,
+        "within_2w_share": 0.377158,
+        "within_w": 78,
+        "within_w_same_team": 62,
+        "within_w_same_team_share": 0.082337,
+        "within_w_share": 0.103586
+      },
+      "overlap_kept": {
+        "units": 675,
+        "within_2w": 186,
+        "within_2w_same_team": 158,
+        "within_2w_same_team_share": 0.234074,
+        "within_2w_share": 0.275556,
+        "within_w": 0,
+        "within_w_same_team": 0,
+        "within_w_same_team_share": 0.0,
+        "within_w_share": 0.0
+      },
+      "possessions": 883,
+      "pre_undefined": 0,
+      "proxy": {
+        "agrees_with_index": 0.860741,
+        "free": 396,
+        "pressed": 279
+      },
+      "v2_classes": {
+        "0": 619,
+        "1": 47,
+        "2_or_more": 9
+      }
+    }
+  }
+}

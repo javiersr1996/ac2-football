@@ -1359,7 +1359,7 @@ su test sintético con el fallo plantado (una sonda que no puede fallar no prote
 
 ## Fase 2: protocolo y calibración (lun 2 nov a dom 15 nov)
 
-- [ ] 19. `fable` Protocolo en `stage: "design"` (`protocol/protocol.json`), escrito antes de
+- [x] 19. `fable` Protocolo en `stage: "design"` (`protocol/protocol.json`), escrito antes de
   calcular un solo desenlace (fable: el protocolo se congela y el reservado se lee una vez, un
   error aquí no tiene reintento). Contenido: instante de la causa (de la sonda), ventana W (de la
   13), desenlace exacto, estratos (dirección por longitud del balón entrante por tercio, cortes
@@ -1382,6 +1382,43 @@ su test sintético con el fallo plantado (una sonda que no puede fallar no prote
   a 46,2 % con 2W o menos, cuya ventana previa toca esa ventana de desenlace (31,7 a 40,1 % del
   mismo equipo; `power.json`, `candidates.C1.window_overlap`); si la 19 cambia W o las unidades,
   la cifra se rehace; (c) C3 no tiene diseño que cumpla las reglas del plan (tabla de CP1): sin estratos su nulo de longitud da 0,0018 de tasa sin efecto, por encima de 0,00135 (`power.json`), y en V1 solo mide la anchura (MDE80 0,41); si CP1 la elige, antes de la 19 cambia por escrito la regla de estratos o D2 (después de ver su cifra, lo que choca con "un umbral que falla no se mueve" y con los criterios inamovibles, como la nota 1 con C1) y define D3 para un nivel, y la 19 escribe el contraste resultante.
+  Medido (2026-10-19; las cifras salen de `reports/design.json`, 10 de calibración, por partido;
+  rangos entre partidos, calculados por script desde el informe): **protocolo y código en
+  `8ede609`, commiteado a las 11:48:16 y antes de calcular el diseño en ningún partido real (el
+  informe se escribió a las 11:48:41); empujado después, a las 11:50:54** (CI en verde, run
+  39233113080). A diferencia de la 14 a la 17, la marca pública del push es posterior al cálculo;
+  el diseño solo lee hasta `t` y no se ha calculado ningún desenlace. Antes, `6f209f3` arregla
+  `power._pretrend` y `_pretrend_pooled`, que no dejaban fuera las unidades sin estadística previa
+  (`_correlation` sí lo hacía); ninguna unidad de la 17 la tenía vacía (habría fallado), así que
+  `power.json` no cambia, y el test de la pre-tendencia a mano fallaba sin el arreglo. Gate local
+  en verde (ruff, format, `mypy src`, `pytest -q`: 864 pasan, 19 deseleccionados; `pytest -m
+  realdata`: 19 de 19; `ac2fb protocol --check`: 89 campos de esquema, 24 reglas de coherencia, 23
+  constantes contra el código, 26 campos numéricos, todos justificados). Nuevo: `defence/design.py`,
+  `protocol/check.py`, `pressure.PRESSED_INDEX` (0,5) y los comandos `ac2fb design [--match ID]
+  [--reports-dir D]` (20 s para los 10) y `ac2fb protocol [--check]`; sus rutas públicas, cubiertas
+  por el test de la 11. Requisitos de la revisión 18: (a) D3 en sd de la celda
+  (`death_criteria.D3.why_sd`) y el efecto como coeficiente del grupo ajustado por lo previo dentro
+  de celda (`statistic.why_adjusted`); (b) se excluye la unidad posterior (`units.exclusion`); (c)
+  no aplica, CP1 eligió C1.
+  - *Unidades.* Etiquetadas 653 a 936; de diseño 650 a 934; excluidas por solape 73 a 125 (8,9 a
+    14,0 %, la cifra de la revisión 18 sobre las mismas unidades); quedan 577 a 851 (7.229 en
+    total), sin ningún instante en la ventana de desenlace de otra (`within_w` 0 en 10 de 10); con
+    la ventana previa tocando la de desenlace anterior (2W), 26,5 a 32,9 %, contadas y no
+    excluidas. Sin estadística previa: 0 en 10 de 10.
+  - *Causa.* Presionadas (índice ≥ 0,5) 239 a 284 (30,8 a 48,2 %); el proxy de 5 m coincide con el
+    índice en el 84,7 a 89,6 %. V1 (portador y rivales cercanos detectados en `t`): 534 a 817 (91,7
+    a 98,6 %), 200 a 268 presionadas. V2: clase 1, 11 a 47 unidades; 2 o más, 0 a 11 (pocas celdas,
+    como avisaba el protocolo). Balón extrapolado en `t`: 0,1 a 0,9 %.
+  - *Bloqueo.* Correlación agregada de la estadística previa en V0: −0,004, por debajo de 0,1. El
+    nulo no se bloquea, como fija `null.blocked`.
+  - *D2 en calibración.* MDE80 0,13 sd en V0 y en V1, por debajo de 0,3 (tasa sin efecto 0,0009 en
+    V0 y 0,0006 en V1, las dos ≤ 0,00135). La 21 lo reimprime.
+  - *D3, el riesgo de C1.* Pre-tendencia agregada con la causa del protocolo: V0 +0,181 sd (+0,59
+    m), así que la 21 exige |efecto| > 0,363 sd en V0 (2,8 veces el MDE80; 1,18 m); V1 +0,190
+    sd, umbral 0,379. Por partido en V0, +0,054 a +0,397: positiva en 10 de 10 (la presionada recibe tras
+    más balón hacia delante). Con el proxy de 5 m sobre las mismas unidades: V0 +0,221 sd, > 0,441,
+    casi la de la 17 (+0,224, > 0,447). Con la vara de S2 (más de 0,15 sd en más de 2 partidos)
+    moriría: 5 de 10 en V0, 7 de 10 en V1. Esa vara no es criterio de C1 y no decide nada.
 - [ ] 20. `sonnet` Estimador validado con sintéticos antes de tocar datos reales: efecto plantado
   que se recupera; pre-tendencia plantada que sale por D3; confundidor plantado (presión con pase
   hacia delante y línea que sigue al balón, como m10) que el estrato anula; jugadores interpolados

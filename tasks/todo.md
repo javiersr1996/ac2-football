@@ -1545,7 +1545,7 @@ su test sintético con el fallo plantado (una sonda que no puede fallar no prote
   40 pares (periodo, equipo) por tres fuentes; B rehízo T, P, E_m y las 133 y 130 celdas sin
   `effect.py` (diferencias ≤ 5e-7, el redondeo del informe) y los 250 primeros nulos (1e-16).
   D3 con ocho lecturas de la escala: las seis que son D3 matan, la más favorable a C1 en 0,602
-  (P en sd de y); las dos que quedan por debajo miden el sesgo que explicaría el modelo lineal y
+  (P en sd de y; 0,604 con el `calibration.json` vigente, por script); las dos que quedan por debajo miden el sesgo que explicaría el modelo lineal y
   no son D3 (adoptarlas ahora sería cambiar el criterio después de ver el desenlace).
   Arreglado en `c0eefa9` (scripts de mutación en el scratchpad, `fix22/mutate22.py`):
   - *Medio, A y B: ventanas que cruzan el descanso.* En 5 de los 10 (1886347, 1925299, 1959846,
@@ -1572,7 +1572,7 @@ su test sintético con el fallo plantado (una sonda que no puede fallar no prote
     son las de los informes.
   - *Medio, A: el signo de ataque sin test sintético.* La mutación "x sin signo" pasaba los
     1.020 tests y solo la tumbaban los `realdata` de regresión (con ella P bajaba a +0,037 y D3
-    no mataba). Test nuevo: el campo espejado (x y signos invertidos) en el periodo 2 da las
+    no mataba; +0,036 con el código vigente, según la pasada 2). Test nuevo: el campo espejado (x y signos invertidos) en el periodo 2 da las
     mismas unidades.
   - *Bajos.* Nulo de V1 sobre las unidades de V0 y "nunca bloquear" sobrevivían: tests nuevos
     (el nulo de V1 sobre todas las unidades es el de las de V1; un medio con x correlacionada
@@ -1592,7 +1592,36 @@ su test sintético con el fallo plantado (una sonda que no puede fallar no prote
   celdas y el 38 %, T +0,124 (de signo contrario) y P +0,115; lateral, 25 celdas y el 12 %, T
   −0,052 y P +0,030. El efecto agregado sale de las recepciones con el balón llegando hacia
   delante, que es también donde la pre-tendencia es mayor. No es criterio; no decide nada.
-  Falta la pasada 2 sobre `c0eefa9`.
+  Revisión 22, pasada 2 (2026-10-19), de solo lectura sobre `git diff a0a3b68..e140984`.
+  **Ningún alto; un medio, que no cambia ningún veredicto.** Los arreglos del periodo y del
+  empate están completos en la ruta de C1; los seis informes, regenerados en la carpeta del
+  revisor, salen idénticos byte a byte, y con solo el arreglo del periodo los cinco que cambiaron
+  salen iguales a los de `a0a3b68` (la descomposición de la pasada 1 es cierta). Arreglado:
+  - *Medio: el signo con el que se lee el desenlace, sin test sintético.* `effect_units` lee
+    `attack_sign[(periodo, equipo)]` y el test espejado de la pasada 1 solo pasaba por
+    `design_units`. Con el signo del periodo 1 siempre, o sin signo, pasaban todos los tests; en
+    la calibración real la primera llevaba T de −0,193 a −0,064, el acuerdo de 8 a 7 y p de
+    0,0005 a 0,024, sin cambiar el veredicto (cifras del revisor). Test nuevo: el mismo espejo en
+    el periodo 2, por `effect_units`, da los mismos desenlaces (+7,5 y −4,0). Cada una de las dos
+    mutaciones tumba ese test y solo ese (1 falla, 1.028 pasan).
+  - *Bajos.* La tolerancia del corte de tercio no se alcanza (la profundidad es una x listada por
+    1 o −1, exacta) y no tenía test: se quita, y la frase "los tres cortes" de la pasada 1 vale
+    ahora para dirección y longitud. El protocolo no decía la condición de periodo que el código
+    ya aplica: `units.requirements`, `units.outcome_undefined`, `outcome.period_end` y
+    `strata.undefined` la dicen ahora; es una aclaración del texto que no mueve ninguna unidad
+    (0 de las 8.142 recepciones etiquetadas tienen t − W o t + W en otro periodo, según el
+    revisor). Los docstrings de `pressure`, `effect` y `DesignUnit.pre`, con la misma condición.
+    Dos cifras de la pasada 1 eran de antes del arreglo del empate (0,602 y +0,037): anotadas en
+    su sitio con las vigentes.
+  - *Sospechoso, sin arreglo:* el corte del índice (`index >= PRESSED_INDEX`) y el de los rivales
+    cercanos (`weights > 0`, que decide V1 y V2) no llevan tolerancia. En calibración no deciden
+    nada (ningún índice a menos de 1e-6 de 0,5, ningún rival a menos de 1e-6 de 10 m ni de 5 m,
+    ningún peso positivo bajo 1e-9). Si la capa 2 del reservado incluye el índice
+    (`pressure.make_metric` usa los rivales cercanos), pesa allí: se decide al escribir ese
+    código, antes de abrir.
+  Gate local en verde: ruff, format, `mypy src`, `pytest -q` (1.029 pasan, eran 1.028; 26
+  deseleccionados), `pytest -m realdata` (26 de 26), `ac2fb protocol --check` OK.
+  Falta la pasada 3 sobre el arreglo de la pasada 2.
 - [ ] 23. `sonnet` Congelación en un commit propio: `stage: "frozen"`, `code_tree_sha`, semilla,
   umbrales. Aceptación: desde ese commit hasta la lectura, `git diff <congelación> -- src
   pyproject.toml uv.lock .python-version protocol/` vacío (revisión 18: el sha cubre ya todo

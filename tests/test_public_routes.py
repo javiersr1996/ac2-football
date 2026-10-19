@@ -36,7 +36,19 @@ from gate_helpers import CAL, HELD, POISON, Checkout
 
 import ac2fb
 from ac2fb import cli
-from ac2fb.defence import bar, block, line, m10, power, pressure, probe_s1, probe_s2, probe_s3
+from ac2fb.defence import (
+    bar,
+    block,
+    design,
+    line,
+    m10,
+    power,
+    pressure,
+    probe_s1,
+    probe_s2,
+    probe_s3,
+)
+from ac2fb.protocol import check as protocol_check
 from ac2fb.protocol import data
 from ac2fb.protocol.data import HeldOutLocked
 from ac2fb.reliability import cadence, inventory, long, report, runs, visibility
@@ -154,11 +166,23 @@ def power_command(m: int) -> pa.Table:
     return served(m, True)
 
 
+def design_command(m: int) -> pa.Table:
+    """The ``design`` command for one match: exit 2 and a refusal on stderr is a refusal."""
+    err = io.StringIO()
+    with contextlib.redirect_stderr(err), contextlib.redirect_stdout(io.StringIO()):
+        code = cli.main(["design", "--match", str(m), "--reports-dir", OUT])
+    if code == 2 and "held-out" in err.getvalue():
+        raise HeldOutLocked(err.getvalue())
+    assert code == 0, err.getvalue()
+    return served(m, True)
+
+
 REPORTS = Path(__file__).resolve().parent.parent / "reports"  # the committed probe verdicts
 VERDICTS = cli._probe_verdicts(REPORTS)
 PROBE_REPORTS = {
     name: json.loads((REPORTS / name).read_text(encoding="utf-8")) for name in cli._PROBE_REPORTS
 }
+PROTOCOL = cli._read_protocol(cli._PROTOCOL)
 
 
 def tiny_design() -> bar.Design:
@@ -435,6 +459,39 @@ FUNCTION_ROUTES: dict[str, Route] = {
     "ac2fb.defence.power.write_power_report": by_match(
         lambda m: served(m, power.write_power_report([m], Path(OUT), VERDICTS).is_file())
     ),
+    "ac2fb.defence.design.design_report": by_match(
+        lambda m: served(m, "units" in design.design_report([m]))
+    ),
+    "ac2fb.defence.design.design_units": by_match(
+        lambda m: served(m, isinstance(design.design_units(power.load_c1(m)), list))
+    ),
+    "ac2fb.defence.design.excluded_by_gap": without_match(lambda: design.excluded_by_gap([])),
+    "ac2fb.defence.design.match_counts": by_match(
+        lambda m: served(
+            m,
+            "kept" in design.match_counts(power.load_c1(m), design.design_units(power.load_c1(m))),
+        )
+    ),
+    "ac2fb.defence.design.pooled_pretrend": without_match(
+        lambda: design.pooled_pretrend(tiny_units(), "V0")
+    ),
+    "ac2fb.defence.design.power_units": without_match(lambda: design.power_units([], "index")),
+    "ac2fb.defence.design.write_design_report": by_match(
+        lambda m: served(m, design.write_design_report([m], Path(OUT)).is_file())
+    ),
+    "ac2fb.protocol.check.check": without_match(lambda: protocol_check.check(PROTOCOL)),
+    "ac2fb.protocol.check.code_problems": without_match(
+        lambda: protocol_check.code_problems(PROTOCOL)
+    ),
+    "ac2fb.protocol.check.coherence_problems": without_match(
+        lambda: protocol_check.coherence_problems(PROTOCOL)
+    ),
+    "ac2fb.protocol.check.numeric_leaves": without_match(
+        lambda: protocol_check.numeric_leaves(PROTOCOL)
+    ),
+    "ac2fb.protocol.check.schema_problems": without_match(
+        lambda: protocol_check.schema_problems(PROTOCOL)
+    ),
     "ac2fb.defence.line.ball_extrapolated": on_match(
         lambda mt: isinstance(line.ball_extrapolated(mt, int(mt.frame[0]), int(mt.frame[0])), bool)
     ),
@@ -555,6 +612,8 @@ CLI_ROUTES: dict[tuple[str, ...], Route] = {
     ("s2",): by_match(s2_command),
     ("s3",): by_match(s3_command),
     ("power",): by_match(power_command),
+    ("design",): by_match(design_command),
+    ("protocol",): without_match(lambda: cli.main(["protocol", "--check"])),
 }
 
 

@@ -7,12 +7,15 @@ import json
 import sys
 from collections.abc import Sequence
 from pathlib import Path
+from typing import Any
 
 from ac2fb import __version__
+from ac2fb.defence.design import write_design_report
 from ac2fb.defence.power import probe_verdicts, write_power_report
 from ac2fb.defence.probe_s1 import write_s1_report
 from ac2fb.defence.probe_s2 import write_s2_report
 from ac2fb.defence.probe_s3 import write_s3_report
+from ac2fb.protocol import check as protocol_check
 from ac2fb.protocol.data import (
     GUARDED_CODE,
     HeldOutLocked,
@@ -27,6 +30,7 @@ from ac2fb.reliability.report import layer2_report, write_report
 __all__ = ["build_parser", "main"]
 
 _REPORTS = Path(__file__).resolve().parents[2] / "reports"
+_PROTOCOL = Path(__file__).resolve().parents[2] / "protocol" / "protocol.json"
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -156,6 +160,37 @@ def build_parser() -> argparse.ArgumentParser:
         default=_REPORTS,
         help="where power.json goes (default: reports/)",
     )
+    design = commands.add_parser(
+        "design",
+        help="write reports/design.json: the protocol's units, groups, exclusions and pre-trend",
+        description=(
+            "Task 19: the protocol's design on the given matches before any outcome: units "
+            "after the window-overlap exclusion, groups by the index cut, V1, the correlation "
+            "of the statistic before t, the MDE80 and the pooled pre-trend in sd and metres. "
+            "Computes no outcome. Reads through the guarded door. Without --match, the "
+            "calibration matches."
+        ),
+    )
+    design.add_argument(
+        "--match", type=int, action="append", metavar="ID", help="native match id (repeatable)"
+    )
+    design.add_argument(
+        "--reports-dir",
+        type=Path,
+        default=_REPORTS,
+        help="where design.json goes (default: reports/)",
+    )
+    protocol = commands.add_parser(
+        "protocol",
+        help="print the protocol's stage and, with --check, validate protocol/protocol.json",
+        description=(
+            "The protocol of layer 3 (protocol/protocol.json, working tree). --check validates "
+            "its schema, its internal coherence and that every constant the code fixes equals "
+            "the one written there, and says how much it verified; exit 1 with the problems "
+            "listed. Reads the protocol file and git, never the data nor a report."
+        ),
+    )
+    protocol.add_argument("--check", action="store_true", help="validate the protocol")
     return parser
 
 
@@ -168,6 +203,48 @@ def _probe_verdicts(probes_dir: Path) -> dict[str, bool]:
         name: json.loads((probes_dir / name).read_text(encoding="utf-8")) for name in _PROBE_REPORTS
     }
     return probe_verdicts(reports)
+
+
+def _read_protocol(path: Path) -> dict[str, Any]:
+    """The one place that reads the protocol file: the working-tree copy, for its check."""
+    protocol = json.loads(path.read_text(encoding="utf-8"))
+    if not isinstance(protocol, dict):
+        raise ValueError(f"{path} does not hold a JSON object")
+    return protocol
+
+
+def _protocol(do_check: bool) -> int:
+    protocol = _read_protocol(_PROTOCOL)
+    status = guard_status()
+    print(f"protocol: {_PROTOCOL}")
+    print(f"stage in the working tree: {protocol.get('stage')}; at HEAD: {status.stage}")
+    print(f"candidate: {protocol.get('candidate')}; written: {protocol.get('date_written')}")
+    if not do_check:
+        return 0
+    report = protocol_check.check(protocol)
+    print(
+        f"verified: {report.schema_fields} schema fields, {report.coherence_rules} coherence "
+        f"rules, {report.code_constants} constants against the code, {report.derived_numbers} "
+        f"derived numbers, {report.protocol_only_numbers} protocol-only numbers; "
+        f"{report.numeric_leaves} numeric fields in all, every one accounted for"
+        if report.ok
+        else f"problems: {len(report.problems)}"
+    )
+    for problem in report.problems:
+        print(f"  - {problem}")
+    print("protocol: OK" if report.ok else "protocol: FAILED")
+    return 0 if report.ok else 1
+
+
+def _design(match_ids: Sequence[int] | None, reports_dir: Path) -> int:
+    ids = list(match_ids) if match_ids else list(load_split().calibration)
+    try:
+        path = write_design_report(ids, reports_dir)
+    except HeldOutLocked as exc:
+        print(f"refused: {exc}", file=sys.stderr)
+        return 2
+    print(f"wrote {path}")
+    return 0
 
 
 def _power(match_ids: Sequence[int] | None, reports_dir: Path) -> int:
@@ -270,6 +347,10 @@ def main(argv: Sequence[str] | None = None) -> int:
         return _s3(args.match, args.reports_dir)
     if args.command == "power":
         return _power(args.match, args.reports_dir)
+    if args.command == "design":
+        return _design(args.match, args.reports_dir)
+    if args.command == "protocol":
+        return _protocol(args.check)
     return 0
 
 

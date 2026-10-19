@@ -92,7 +92,12 @@ FILE_CALLS = frozenset(
 STATUS_FIELD = ("status", "open")  # the guard's `status.open` flag, read in `cli` and the door
 # The one allowance, by site: (module, function, call, receiver). The command line reads the
 # three probe reports there, and hands the verdicts to `power`, which opens nothing.
-ALLOWED_FILE_SITES = frozenset({("ac2fb.cli", "_probe_verdicts", "read_text", "probes_dir / name")})
+ALLOWED_FILE_SITES = frozenset(
+    {
+        ("ac2fb.cli", "_probe_verdicts", "read_text", "probes_dir / name"),
+        ("ac2fb.cli", "_read_protocol", "read_text", "path"),
+    }
+)
 DATA_ROOT_NAMES = frozenset({"DATA_ROOT_ENV", "data_dir"})
 # `cli` prints the data root; `reliability.long` writes layer 2's Parquet under it.
 ALLOWED_DATA_ROOT = frozenset({"ac2fb.cli", "ac2fb.reliability.long"})

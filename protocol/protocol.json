@@ -1,4 +1,222 @@
 {
   "stage": "design",
-  "code_tree_sha": null
+  "code_tree_sha": null,
+  "candidate": "C1",
+  "title": "Pressure the camera sees: pressure at the reception and the immediate advance of the ball",
+  "question": "Within the same incoming-ball stratum, does pressure on the carrier at the reception reduce the ball's advance towards the goal over the next W frames, and does the effect survive when the cause is measured only from players the camera detected?",
+  "written_before_any_outcome": true,
+  "date_written": "2026-10-18",
+  "about": "The protocol of layer 3 for candidate C1, chosen at CP1. Every number below is a literal written here; none is read from a results file. `ac2fb protocol --check` validates the schema, the internal coherence and that every constant the code already fixes equals the one written here. Nothing in it moves after the data of a half is read: a threshold that fails is not moved. Texts in Spanish are the plan's, quoted verbatim.",
+  "split": {
+    "file": "protocol/split.json",
+    "matches_per_half": 10,
+    "note": "Decision 1 of the plan (split A), committed before any code. The held-out opens once, through ac2fb.protocol.data, when this file is frozen (task 23) and the reading is launched (J4, task 24)."
+  },
+  "frame_rate_hz": 10,
+  "instant": {
+    "symbol": "t",
+    "definition": "The frame_start of a provider player_possession event: the reception, when the carrier touches the ball.",
+    "source": "Probe S1 (ac2fb.defence.pressure, ac2fb.defence.probe_s1): the same instant, kept.",
+    "reason": "At t the carrier and the rivals near him are what the camera sees best (plan inventory, m4 and m9); the cause is the geometry at t, which the outcome, starting at t, cannot have caused; the ball's path before t is the common cause (m10) and enters the strata and the pre-trend."
+  },
+  "window": {
+    "symbol": "W",
+    "frames": 13,
+    "seconds": 1.3,
+    "floor_source": "reports/probe_cadence.json, decision.w_min_frames (task 13): the shortest admissible window; task 19 may take a longer one, never a shorter one.",
+    "reason": "The floor itself, for three reasons written before any outcome: (1) the question is about the immediate advance; (2) the pre-trend statistic (ball advance over [t - W, t]) and the outcome (ball advance over [t, t + W]) are then the same quantity over windows of the same length, so D3 compares like with like; (3) the longer the window, the more units fall in the outcome window of the unit before (requirement b) and are excluded."
+  },
+  "units": {
+    "population": "Every player_possession event of the half with a provider pressure label (overall_pressure_start), a player and a team: the labelled receptions of probe S1. Unlabelled possessions are not units; their share per match is reported.",
+    "requirements": [
+      "the carrier has a row at t",
+      "the attack direction of the carrier's team in that period is known",
+      "at least one rival is listed at t",
+      "the incoming-ball stratum is defined: the ball has a row at t - W and at t"
+    ],
+    "exclusion": {
+      "name": "window overlap (requirement b of review 18)",
+      "rule": "A unit is excluded when its instant t lies in the outcome window of the unit before it: t - t_prev <= gap_frames_at_most, where t_prev is the instant of the immediately preceding unit of the design (the units that meet the requirements above, before this exclusion, of either team) in the same period. The first unit of a period is never excluded. The rule is applied against the preceding unit whether or not that unit is itself excluded, so it does not depend on the order of application.",
+      "gap_frames_at_most": 13,
+      "applies_to": "the later unit",
+      "reason": "Two units whose outcome windows overlap share the ball's motion over the overlap: their outcomes are partly one number, and the labels of consecutive receptions are not independent either, so the permutation null would see more independent units than there are. Excluding the later unit removes every shared outcome segment (after it, consecutive kept units are more than W apart and their windows are disjoint) and selects on nothing after the kept unit's t: the later unit is dropped for the time of the reception before it, which is before its own t. Excluding the earlier unit instead would select on its outcome (whether the ball reached a new carrier within W). Blocking consecutive units into chains was the alternative; exclusion is simpler and was the count task 17 measured (reports/power.json, candidates.C1.window_overlap, within_w).",
+      "not_excluded": "A unit whose pre-trend window [t - W, t] meets the outcome window of the unit before (gap of 2 W or less) stays: that is a dependence between one unit's outcome and the next unit's covariate, not between two outcomes, and the permutation of labels within a cell does not need the covariates to be independent of each other. Its count is reported (within_2w).",
+      "recount": "reports/design.json recounts the overlap on the design and on the kept units; on the kept units within_w is zero by construction."
+    },
+    "outcome_undefined": "A kept unit without a ball row at t + W (the period ends before t + W, or the provider lists no ball there) has no outcome: it is left out of the statistic and counted per match and group.",
+    "possession": "The base's possession_id of the player_possession event (the provider's team possession): the block of the blocked null, if the null is blocked."
+  },
+  "cause": {
+    "instrument": {
+      "name": "geometric pressure index of probe S1",
+      "definition": "Each rival of the other team listed at t (goalkeeper included) at distance d metres from the carrier adds (1 - d / radius_m) * (1 + cos(theta)) / 2 when d <= radius_m, with theta the angle at the carrier between the rival and the goal the carrier attacks, the point (sign * goal_x_m, 0). The index is the sum, in rival equivalents: a rival touching the carrier straight between him and the goal is 1; a rival straight behind weighs nothing.",
+      "radius_m": 10.0,
+      "goal_x_m": 52.5,
+      "read_at": "the frame t only, positions of every listed player (detected or extrapolated) in V0",
+      "contrast": "D1: the median index over the five levels of the provider's label must grow strictly, with at least min_per_level receptions in each level, in at least min_matches of the matches of the half (the rule of probe S1). In calibration this is probe S1's verdict (reports/probe_s1.json). In the held-out it is computed at the reading, before any outcome."
+    },
+    "treatment": {
+      "pressed_if_index_at_least": 0.5,
+      "meaning": "The index of one rival exactly radius_m / 2 metres away straight between the carrier and the goal: the 5 m proxy of m10 and probes S2 and task 17, on the goal side. One rival level with the carrier reaches it only at contact; several rivals in front add up.",
+      "reason": "The plan names the index as C1's instrument and asks the protocol to say how it becomes a treatment; task 17 simulated the power with the 5 m proxy as a stand-in and said the protocol may refine the cause from the index (reports/power.json constants.pressed_radius_m; ac2fb.defence.power docstring). The outcome is the advance towards the goal, which a rival between carrier and goal obstructs and a rival behind does not, so the goal-side weight of the index belongs in the cause. The cut is the proxy's radius carried over to the index's scale. It is written before the pre-trend under it is measured; what the proxy gives on the same units is reported beside it (reports/design.json, proxy) and the power under this cause is re-simulated there. A cut that failed D3 would not be moved.",
+      "free": "every other unit, index 0 included"
+    },
+    "label_levels": [
+      "no_pressure",
+      "low_pressure",
+      "medium_pressure",
+      "high_pressure",
+      "very_high_pressure"
+    ],
+    "label_role": "The provider's overall_pressure_start is the contrast of the instrument (D1) and nothing else: never an outcome, never a group, never a stratum."
+  },
+  "outcome": {
+    "symbol": "y",
+    "definition": "The ball's advance along the attack of the carrier's team over [t, t + W]: sign * (ball_x(t + W) - ball_x(t)) in metres, with sign the direction of x that team attacks in that period and ball_x the x of the provider's ball row, detected or extrapolated.",
+    "sign": "positive towards the goal the carrier's team attacks; negative away from it",
+    "window": "[t, t + W], closed at both ends; only the two end frames enter the number",
+    "ball_rows": "the ball row listed at t and at t + W, whatever its is_detected flag, in every variant; the share of units with the ball extrapolated at t or at t + W is reported per match and group, and the effect on the units with the ball detected at both ends is reported beside V0 and decides nothing",
+    "period_end": "no ball row at t + W: outcome undefined (units.outcome_undefined)",
+    "possession_change": "nothing special: a turnover or a clearance inside the window counts as the ball went, in the attack frame of the carrier's team (a ball sent back towards his own goal is a negative advance)",
+    "ball_out_of_play": "nothing special: if the provider lists the ball at t + W the number stands; if not, undefined",
+    "expected_sign_of_effect": "negative: pressure reduces the advance. The bar is two-sided; a pooled effect of the other sign that passes the bar is published as an effect of the other sign, not as support for the question."
+  },
+  "strata": {
+    "definition": "direction / third / length of the incoming ball, read over [t - W, t] (ac2fb.defence.pressure.incoming_ball): the common cause of m10, held fixed inside every comparison",
+    "direction": {
+      "statistic": "the ball's advance along the attack from t - W to t, in metres",
+      "cut_m": 2.0,
+      "classes": "backward below -cut_m; forward above +cut_m; lateral otherwise"
+    },
+    "third": {
+      "statistic": "the carrier's depth at t (x times the attack sign)",
+      "cut_m": 17.5,
+      "classes": "own below -cut_m; final above +cut_m; middle otherwise (the middle third of a 105 m pitch)"
+    },
+    "length": {
+      "statistic": "the straight distance the ball covered from t - W to t",
+      "cut_m": 10.0,
+      "classes": "long at cut_m or more; short otherwise"
+    },
+    "cells": 18,
+    "undefined": "a reception whose ball has no row at t - W or at t is not a unit (units.requirements)"
+  },
+  "variants": {
+    "V0": "every kept unit with an outcome, positions as listed (detected or extrapolated)",
+    "V1": "the kept units whose carrier and every near rival (a rival with a positive weight in the index at t) are detected at t: the cause measured only from what the camera saw. Declared selection: these receptions are the ones the camera follows; their share by label level and stratum is reported (reports/design.json). The ball's own flag is not part of V1 (outcome.ball_rows).",
+    "V2": "the kept units by how many of the carrier and the near rivals are extrapolated at t: 0 (V1), 1, 2 or more; the effect in each class with the same statistic, expected to shrink as the count grows if extrapolation attenuates. Reported; decides nothing. Few units carry an extrapolated near rival (reports/probe_s1.json, extrapolated_share.receptions_with_any), so the classes 1 and 2 or more may hold few cells.",
+    "note": "Decision 6 of the plan, for a cause measured at one frame: the players of the metric are the carrier and the near rivals at t."
+  },
+  "statistic": {
+    "cell": "a (match, stratum) pair of one half and one variant with at least min_per_group pressed and min_per_group free units that have an outcome and a pre statistic, and a positive sample sd of the outcome; the units of the other cells are left out and counted",
+    "min_per_group": 5,
+    "effect_in_cell": "tau_c: the least-squares coefficient of the group indicator G (1 pressed, 0 free) in y = a + b * x + tau * G fitted on the units of the cell, with x the pre statistic (pretrend.statistic): the pressed-minus-free difference of the outcome adjusted for what came before, inside the cell. If the sample sd of x in the cell is zero, b = 0 and tau is the plain difference of means.",
+    "why_adjusted": "Review 18, note 2: with E[y | x, G] = a + b x + tau G, the plain difference estimates tau + b * (pre-trend); a pre-trend of the sign the pressed group shows (it receives after more forward ball than the free group of its cell) turns into a spurious effect of either sign depending on b (persistence, b > 0, pushes the plain effect away from the expected sign; reversion to the mean, b < 0, towards it). The coefficient estimates tau in both cases. The outcome as a change from the pre statistic (y - x) is not used: it estimates tau + (b - 1) * (pre-trend), which adds a term of the expected sign for every b < 1.",
+    "scale": "z_c = tau_c / s_c, with s_c the sample sd (ddof 1) of the outcome y in the cell: effects in sd of the outcome of the cell, the scale of the bar and of the MDE80",
+    "weights": "w_c = n_p * n_f / (n_p + n_f) of the cell",
+    "match_effect": "E_m: the w-weighted mean of z_c over the cells of match m; a match with no cell has no effect and never agrees with the pooled sign",
+    "pooled_effect": "T: the w-weighted mean of z_c over every cell of the half (the plan's 'aggregated by stratum')",
+    "reported": "T, E_m per match, every cell (n_p, n_f, tau_c, b_c, s_c, z_c, w_c), in both halves, every variant"
+  },
+  "pretrend": {
+    "symbol": "x",
+    "statistic": "the ball's advance along the attack of the carrier's team over [t - W, t]: sign * (ball_x(t) - ball_x(t - W)), the outcome's statistic moved back by W (task 17's statistic before t)",
+    "in_cell": "P_c = (mean of x over the pressed units minus the mean over the free units) / sd_x,c, with sd_x,c the sample sd (ddof 1) of x in the cell; a cell with sd_x,c zero is left out of the pre-trend",
+    "pooled": "P: the w-weighted mean of P_c over the same cells and weights as the effect; also per match",
+    "role": "D3 compares |P| with |T| in V0 (death_criteria.D3). The adjustment of the effect for x does not replace D3: both apply.",
+    "metres_reported": "P in metres (the w-weighted mean of the unstandardised differences) is reported beside P in sd (reports/design.json, pretrend.metres; the calibration and held-out reports) and decides nothing."
+  },
+  "null": {
+    "kind": "permutation of the cause label within each cell: the pressed labels of a cell are reassigned at random among its units, x and y staying with their unit; tau_c, z_c, E_m and T are recomputed on every draw",
+    "draws": 2000,
+    "seed": 19,
+    "stream": "numpy.random.default_rng([seed, zlib.crc32(f'{half}/{variant}'.encode())]) with half in {calibration, heldout} and variant in {V0, V1}; one stream per (half, variant), drawn once",
+    "p_value": "two-sided: (1 + number of draws with |T*| >= |T|) / (1 + draws)",
+    "block_by_possession_if_rho_above": 0.1,
+    "rho": "the within-team-possession correlation of x standardised inside each stratum, pooled over the matches of the calibration half weighted by their pairs (ac2fb.defence.bar.within_possession_correlation; ac2fb.defence.power), measured by task 17 on x, never on y",
+    "blocked": false,
+    "blocked_basis": "The rule and the measurement decide, not the writer: the pooled V0 correlation of task 17 is below the threshold (reports/power.json, candidates.C1.outcomes.ball_advance.incoming_ball.rho_v0_pooled), so the null is not blocked. reports/design.json re-measures it on the kept units under this protocol's cause and must agree; if it did not, blocked would follow the rule, not this line.",
+    "blocked_null": "if blocked: the sign of the contribution of each team possession to T is flipped at random on every draw (the flip null of ac2fb.defence.bar), with the same draws, seed and p-value",
+    "held_out": "the same rule with the correlation of the held-out half, measured at the reading on x before any outcome"
+  },
+  "bars": {
+    "calibration": {
+      "same_sign_matches_at_least": 8,
+      "p_at_most": 0.00135,
+      "null_draws_as_extreme_at_most": 1,
+      "holm": false,
+      "applies_to": "each variant on its own, as task 17 simulated it; V0 decides (death_criteria.D5), V1 is judged by D4",
+      "definition": "T has the sign of E_m in at least same_sign_matches_at_least of the 10 matches (a match without a cell never agrees; T = 0 never passes) and the permutation p is at most p_at_most, which with draws nulls means at most null_draws_as_extreme_at_most draws as extreme as T"
+    },
+    "heldout": {
+      "same_sign_matches_at_least": 8,
+      "alpha": 0.01,
+      "holm_family": [
+        "V0",
+        "V1"
+      ],
+      "definition": "T has the sign of E_m in at least same_sign_matches_at_least of the 10 held-out matches, and the variant's permutation p is rejected by Holm over the family at level alpha: the smaller of the two p-values must be at most alpha / 2, and then the larger at most alpha. The two p-values come from one reading. Reported for V0 and for V1."
+    }
+  },
+  "death_criteria": {
+    "immovable": true,
+    "D1": {
+      "plan_text": "D1 el instrumento falla su contraste",
+      "evaluation": "In each half, the index's contrast with the provider's label (cause.instrument.contrast) fails: the median index does not grow strictly over the five levels with at least min_per_level receptions per level in at least min_matches of the half's matches. Calibration: the verdict of reports/probe_s1.json. Held-out: computed at the reading before any outcome.",
+      "min_matches": 9,
+      "min_per_level": 10
+    },
+    "D2": {
+      "plan_text": "D2 MDE80 > 0,3 sd en alguna mitad para V0 (en V1 solo etiqueta \"no comprobable en lo visto\")",
+      "evaluation": "The MDE80 of the calibration bar simulated by task 17's code (ac2fb.defence.bar.mde80 through ac2fb.defence.power.candidate_power) on the V0 design of the half (its kept units, groups, strata and possessions, with the correlation of x) exceeds mde80_at_most_sd. Calibration: reports/design.json now, re-printed by task 21. Held-out: simulated at the reading from its design, before any outcome. The simulation is of the plain difference of means; the adjusted statistic's null variance differs from it by the factor (1 - r_xy^2) / (1 - r_Gx^2) inside the cells, with r_xy the within-cell correlation of x and y and r_Gx that of G and x (the pre-trend's), so the simulated MDE80 is declared as the design's. In V1 an MDE80 above the limit only earns the label 'not testable in what was seen'.",
+      "mde80_at_most_sd": 0.3
+    },
+    "D3": {
+      "plan_text": "D3 |pre-tendencia| ≥ 50 % de |efecto| en V0, agregado por estrato",
+      "evaluation": "In each half, |P| >= ratio * |T| in V0, with P the pooled pre-trend (pretrend.pooled) and T the pooled adjusted effect (statistic.pooled_effect), both in sd of their own statistic in the cell and both pooled over the same cells with the same weights. Equivalently, the effect must exceed |P| / ratio in absolute value.",
+      "ratio": 0.5,
+      "units": "sd of the cell: P in sd of x in its cell, T in sd of y in its cell",
+      "why_sd": "Written before any outcome. The bias the pre-trend can put into the plain effect, in sd of the outcome, is at most |r_xy| * |P| with r_xy the within-cell correlation of x and y, and |r_xy| <= 1 whatever the scales of x and y: so in sd of the cell, 'pre-trend at least half the effect' means 'a within-cell correlation of one half between what came before and what came after would account for half the effect', a bound that holds for any pair of scales. In metres no such bound exists: the bias in metres is b * P_m with b = r_xy * s_y / s_x, which exceeds P_m whenever the outcome spreads more than the pre statistic and falls short of it whenever it spreads less. The effect is also tested and reported in sd (the bar and the MDE80). Task 17 measured the pre-trend in sd of the cell (reports/power.json).",
+      "other_reading": "In metres, the floor would be |P_m| / ratio in metres of advance; P_m and that floor are printed in reports/design.json (pretrend.metres) for the calibration half and decide nothing. The floor in sd under task 17's cause (the 5 m proxy) is in reports/power.json (candidates.C1, pretrend.d3_abs_effect_must_exceed_sd); under this protocol's cause and units it is in reports/design.json. Both are printed so that the choice of cause and scale can be seen not to have been made in sight of them."
+    },
+    "D4": {
+      "plan_text": "D4 en V1 el efecto cambia de signo o cae por debajo de la mitad de V0 (el efecto era modelo: muere como hallazgo táctico y se publica como hallazgo de la capa 2)",
+      "evaluation": "In each half, sign(T_V1) != sign(T_V0) or |T_V1| < ratio * |T_V0|, with the pooled adjusted effects of the two variants. The finding then dies as a tactical finding and is published as a finding of layer 2: the effect lived in the extrapolated positions.",
+      "ratio": 0.5
+    },
+    "D5": {
+      "plan_text": "D5 nada pasa en calibración, el reservado no se abre",
+      "evaluation": "Calibration passes when V0 passes the calibration bar and none of D1, D2, D3 and D4 kills on the calibration half. If it does not pass, the protocol is not frozen for a reading, the held-out stays shut, and the entry publishes the negative with its figures per match (branch B)."
+    },
+    "D6": {
+      "plan_text": "D6 el reservado no pasa, se publica así",
+      "evaluation": "The held-out passes when V0 passes the held-out bar (Holm over {V0, V1}) and none of D1, D2, D3 and D4 kills on the held-out half; whether V1 is also rejected by Holm says whether the effect is significant in what the camera saw. Whatever the result, the reading is published as it fell, per match, with the calibration result beside it."
+    }
+  },
+  "reading_order": [
+    "1. design of the half: units, requirements, exclusion, groups by the index, strata, possessions, V1 and V2 classes; D1 contrast; correlation of x and the blocking decision; MDE80 (D2); pre-trend P in sd and metres",
+    "2. outcomes y of the kept units; undefined ones counted",
+    "3. effects: cells, tau_c, z_c, E_m, T for V0, V1 and each V2 class; the ball-detected diagnostic",
+    "4. null draws, p-values, Holm in the held-out",
+    "5. D3 and D4",
+    "6. the verdict, mechanical, written to reports/calibration.json (task 21) or reports/heldout.json (task 24)"
+  ],
+  "published": [
+    "every figure per match in both halves, V0, V1 and V2",
+    "the negative beside the positive: a criterion that kills is reported with the figure that killed it",
+    "the selection of V1 (share kept by level and stratum) and the share of extrapolated ball rows in the outcome",
+    "the calibration result is not a finding: only the held-out reading is"
+  ],
+  "conventions_left_open_by_the_plan_and_decided_here": [
+    "the cause is the index at or above pressed_if_index_at_least, not the 5 m proxy of task 17 (cause.treatment.reason); the power and the pre-trend under this cause are in reports/design.json",
+    "W is the floor of task 13 (window.reason)",
+    "the overlap of requirement b is handled by excluding the later unit (units.exclusion.reason); the pre-window overlap (2 W) is counted, not excluded",
+    "V1 includes the carrier among the players of the metric (variants.V1); task 17's V1 did not, so its MDE80 is re-simulated in reports/design.json",
+    "the effect is the within-cell coefficient of the group adjusted for x (statistic.why_adjusted); D3 applies on top of it",
+    "D3 and the effect are in sd of the cell (death_criteria.D3.why_sd)",
+    "Holm applies to the held-out bar; the calibration bar is per variant as task 17 simulated it",
+    "the seed of the null and its streams (null.seed, null.stream)",
+    "a cell needs a positive sd of the outcome; a cell with a zero sd of x drops the covariate",
+    "a unit without a ball row at t + W is left out and counted"
+  ]
 }

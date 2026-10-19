@@ -1471,7 +1471,7 @@ su test sintético con el fallo plantado (una sonda que no puede fallar no prote
     constante y `T` no: "las mismas celdas" de D3 solo es exacto con x continua. (4) "p ≤ 0,00135"
     y "a lo sumo 1 nulo" coinciden solo con 2.000 nulos. (5) Con T_V0 = 0, D4 no mata (la barra
     ya falla).
-- [ ] 21. `opus` Calibración: efecto por partido en los 10, las tres variantes, pre-tendencia y
+- [x] 21. `opus` Calibración: efecto por partido en los 10, las tres variantes, pre-tendencia y
   veredicto mecánico D1 a D5 en `reports/calibration.json`. Nada de este paso mueve un umbral.
   **Decisión previa, tomada el 2026-10-19 antes de calcular ningún desenlace (Javier): el nulo
   se queda como dice el protocolo** (permutar G dentro de celda con x fija), sin Freedman-Lane.
@@ -1484,6 +1484,51 @@ su test sintético con el fallo plantado (una sonda que no puede fallar no prote
   reservado el sesgo y el umbral de D3 nacen de la misma correlación entre G y x. **Requisito de
   la 21:** `calibration.json` imprime ese factor por variante (media ponderada, mediana y máximo
   por celda) como diagnóstico que no decide nada, y estas cifras se confirman con él.
+  Hecho (2026-10-19; las cifras salen de `reports/calibration.json`, 10 de calibración, por
+  partido; rangos entre partidos, calculados por script desde el informe): **código en
+  `ee2e2c3`, commiteado a las 14:25:24 y empujado a las 14:25:26 antes de calcular ningún
+  desenlace en un partido real; el informe se escribió a las 14:25:55** (CI en verde, run
+  39251937842). Gate local en verde (`sync --locked`, ruff, format, `mypy src`, `pytest -q`: 1.020
+  pasan, eran 983; 19 deseleccionados; `pytest -m realdata`: 26 de 26, eran 19; `ac2fb protocol
+  --check`: OK, sin números nuevos). Nuevo: `defence/calibration.py` (el orden de lectura del
+  protocolo: diseño, desenlaces, efectos con su nulo y la barra, criterios), el comando `ac2fb
+  calibration [--match ID] [--reports-dir D]` (19 s para los 10), `tests/test_calibration.py`
+  (24 tests sobre medios sintéticos por el pipeline real, 5 semillas en el efecto plantado y en
+  el nulo, 3 en D1, D3 y D4) y `tests/test_realdata_calibration.py` (7); `design._LABEL` pasa a
+  `design.POWER_LABEL` para que la 21 reimprima el MDE80 con el mismo flujo. D1 se recalcula con
+  el código de la sonda S1 (no se lee `probe_s1.json`) y el realdata comprueba que coincide.
+  Contraste independiente en el scratchpad (desenlace leído de los arrays del balón con un
+  diccionario, cada celda ajustada con `np.linalg.lstsq` sobre `[1, x, G]`, factor con
+  `np.corrcoef`): T, P, E_m, celdas, acuerdo de signo y factor iguales con diferencias < 5e-7
+  (el redondeo del informe).
+  - *Veredicto mecánico: D3 mata; D5 mata; el reservado no se abre (rama B).* V0: T = −0,193 sd
+    (signo esperado, 1,48 veces el MDE80), p = 0,0005 (0 de 2.000 nulos tan extremos), mismo
+    signo en 8 de 10: **pasa la barra de calibración**. Pero la pre-tendencia agregada es
+    +0,181 sd (+0,589 m): |P| es el 94 % de |T|, por encima del 50 % de D3; el efecto tendría que
+    pasar de 0,363 sd (el umbral que ya fijaba la 19 sobre las mismas 133 celdas). D1 no mata (10
+    de 10 crecientes, como la sonda S1), D2 no mata (MDE80 0,13 sd en V0 y en V1, el de
+    `design.json`), D4 no mata (T_V1 −0,200 sd, mismo signo y más que la mitad de V0).
+  - *Por partido.* E_m en V0 de −0,364 a +0,093; negativo en 8 de 10; positivo en 2015213
+    (+0,093) y en 2010085 (+0,000477: el 8 de 10 cuelga de ese partido, que no decide nada
+    porque D3 mata igual). P por partido de +0,054 a +0,397 sd (+0,255 a +1,533 m), positiva en
+    10 de 10; |P| ≥ 50 % de |E_m| en 7 de 10 (lectura por partido, no es criterio). V1: E_m de
+    −0,373 a +0,056, negativo en 8 de 10, P +0,190 sd, |P| el 95 % de |T|. Entre 11 y 14 celdas
+    por partido; fuera por celda pequeña 166 presionadas y 896 libres en V0 (6.167 de 7.229
+    unidades usadas).
+  - *Desenlaces.* Ninguno indefinido (7.229 de 7.229). Balón extrapolado en `t` o `t + W`: 1,4 a
+    5,3 % de las presionadas y 1,7 a 3,7 % de las libres. Con el balón detectado en los dos
+    extremos (al lado, no decide): T −0,212 sd, 5.887 unidades usadas, 8 de 10.
+  - *V2.* Las clases 1 (280 unidades) y 2 o más (38) no llenan ninguna celda: solo existe la 0
+    (V1), `shrinks` nulo. Lo avisaba el protocolo.
+  - *Factor de varianza, diagnóstico.* V0: media ponderada 1,0537, mediana 1,028, máximo 1,570
+    (133 celdas); V1: 1,0575, 1,024 y 1,713 (130 celdas). Confirma el ×1,054 y ×1,058 medidos
+    antes de la 21 sobre las mismas celdas (ningún desenlace indefinido, así que las celdas del
+    efecto son las del diseño). No decide nada.
+  - *Lo que sigue según el protocolo* (D5: "the protocol is not frozen for a reading, the
+    held-out stays shut, and the entry publishes the negative with its figures per match"):
+    la 23 no congela para una lectura y J4 no se lanza; la 22 sigue siendo la revisión adversarial
+    antes de dar el veredicto por bueno; CP2 decide la rama B (y si se abre el reservado solo para
+    la capa 2, irreversible). Esto lo decide Javier, no este registro.
 - [ ] 22. `opus` (subagente `revisor-adversarial`) Revisión del protocolo, el estimador y la
   calibración antes de congelar, hasta que no salga nada alto ni medio.
 - [ ] 23. `sonnet` Congelación en un commit propio: `stage: "frozen"`, `code_tree_sha`, semilla,

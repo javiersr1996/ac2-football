@@ -304,11 +304,12 @@ def read_outcome(match: MatchData, frame: int, sign: int) -> Outcome | None:
     """The ball's advance along the attack (``sign``) from ``frame`` to ``frame + W``.
 
     The ball rows listed at both frames, detected or not; ``None`` without a row at either
-    (the period ends before ``frame + W``, or the provider lists no ball there). This is the
-    only function of the package that reads after ``t``.
+    (the provider lists no ball there) or with the two rows in different periods (the period
+    ends before ``frame + W``: the break between periods can be shorter than ``W``). This is
+    the only function of the package that reads after ``t``.
     """
     now, end = _ball_row(match, frame), _ball_row(match, frame + W)
-    if now < 0 or end < 0:
+    if now < 0 or end < 0 or match.ball_period[now] != match.ball_period[end]:
         return None
     return Outcome(
         advance=sign * float(match.ball_x[end] - match.ball_x[now]),

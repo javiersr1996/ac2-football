@@ -17,7 +17,7 @@
   "index_cause": {
     "power": {
       "blocked": false,
-      "rho_v0_pooled": -0.00416,
+      "rho_v0_pooled": -0.004831,
       "variants": {
         "V0": {
           "matches": {
@@ -27,15 +27,15 @@
               "n": 779,
               "possessions": 169,
               "pressed": 256,
-              "pretrend_sd": 0.054419,
+              "pretrend_sd": 0.062268,
               "rho": {
-                "carried": 0.017827,
+                "carried": 0.01166,
                 "pairs": 3249,
                 "units": 779,
-                "value": 0.017827
+                "value": 0.01166
               },
               "units_used": 707,
-              "weight": 142.755384
+              "weight": 142.945984
             },
             "1886347": {
               "cells_used": 13,
@@ -183,17 +183,17 @@
             }
           },
           "mde80_sd": 0.13,
-          "null_pass_rate": 0.000904,
+          "null_pass_rate": 0.000914,
           "pass_rate": {
-            "0.00": 0.000904,
-            "0.05": 0.05341,
-            "0.10": 0.526781,
-            "0.11": 0.65149,
-            "0.12": 0.763652,
-            "0.13": 0.853244,
-            "0.14": 0.916106,
-            "0.15": 0.955174,
-            "0.20": 0.999369,
+            "0.00": 0.000914,
+            "0.05": 0.053451,
+            "0.10": 0.526443,
+            "0.11": 0.65154,
+            "0.12": 0.763696,
+            "0.13": 0.85303,
+            "0.14": 0.915983,
+            "0.15": 0.955109,
+            "0.20": 0.99937,
             "0.25": 1.0,
             "0.30": 1.0,
             "0.35": 1.0,
@@ -232,9 +232,9 @@
             "2.00": 1.0
           },
           "pretrend": {
-            "d3_abs_effect_must_exceed_sd": 0.362535,
-            "d3_floor_over_mde80": 2.78873,
-            "pooled_sd": 0.181267,
+            "d3_abs_effect_must_exceed_sd": 0.364304,
+            "d3_floor_over_mde80": 2.802338,
+            "pooled_sd": 0.182152,
             "s2_bar": {
               "limit_sd": 0.15,
               "matches_over": 5,
@@ -256,15 +256,15 @@
               "n": 768,
               "possessions": 167,
               "pressed": 248,
-              "pretrend_sd": 0.061873,
+              "pretrend_sd": 0.069936,
               "rho": {
-                "carried": 0.017827,
+                "carried": 0.01166,
                 "pairs": 3206,
                 "units": 768,
-                "value": 0.017706
+                "value": 0.011504
               },
               "units_used": 697,
-              "weight": 138.787996
+              "weight": 138.978596
             },
             "1886347": {
               "cells_used": 13,
@@ -412,17 +412,17 @@
             }
           },
           "mde80_sd": 0.13,
-          "null_pass_rate": 0.000645,
+          "null_pass_rate": 0.000652,
           "pass_rate": {
-            "0.00": 0.000645,
-            "0.05": 0.049953,
-            "0.10": 0.491585,
-            "0.11": 0.615965,
-            "0.12": 0.732406,
-            "0.13": 0.82656,
-            "0.14": 0.894313,
-            "0.15": 0.941817,
-            "0.20": 0.999546,
+            "0.00": 0.000652,
+            "0.05": 0.049963,
+            "0.10": 0.492237,
+            "0.11": 0.61654,
+            "0.12": 0.732392,
+            "0.13": 0.82649,
+            "0.14": 0.894773,
+            "0.15": 0.941703,
+            "0.20": 0.999545,
             "0.25": 1.0,
             "0.30": 1.0,
             "0.35": 1.0,
@@ -461,9 +461,9 @@
             "2.00": 1.0
           },
           "pretrend": {
-            "d3_abs_effect_must_exceed_sd": 0.379129,
-            "d3_floor_over_mde80": 2.916381,
-            "pooled_sd": 0.189565,
+            "d3_abs_effect_must_exceed_sd": 0.381026,
+            "d3_floor_over_mde80": 2.930972,
+            "pooled_sd": 0.190513,
             "s2_bar": {
               "limit_sd": 0.15,
               "matches_over": 7,
@@ -482,13 +482,13 @@
     "pretrend": {
       "V0": {
         "cells_used": 133,
-        "d3_abs_effect_must_exceed_m": 1.177176,
-        "d3_abs_effect_must_exceed_sd": 0.362535,
+        "d3_abs_effect_must_exceed_m": 1.179967,
+        "d3_abs_effect_must_exceed_sd": 0.364304,
         "matches": {
           "1874553": {
             "cells_used": 14,
-            "metres": 0.302144,
-            "sd": 0.054419
+            "metres": 0.314643,
+            "sd": 0.062268
           },
           "1886347": {
             "cells_used": 13,
@@ -536,19 +536,19 @@
             "sd": 0.272345
           }
         },
-        "metres": 0.588588,
-        "sd": 0.181267,
+        "metres": 0.589984,
+        "sd": 0.182152,
         "units_used": 6167
       },
       "V1": {
         "cells_used": 130,
-        "d3_abs_effect_must_exceed_m": 1.231049,
-        "d3_abs_effect_must_exceed_sd": 0.379129,
+        "d3_abs_effect_must_exceed_m": 1.234037,
+        "d3_abs_effect_must_exceed_sd": 0.381026,
         "matches": {
           "1874553": {
             "cells_used": 14,
-            "metres": 0.332516,
-            "sd": 0.061873
+            "metres": 0.34533,
+            "sd": 0.069936
           },
           "1886347": {
             "cells_used": 13,
@@ -596,8 +596,8 @@
             "sd": 0.216845
           }
         },
-        "metres": 0.615525,
-        "sd": 0.189565,
+        "metres": 0.617019,
+        "sd": 0.190513,
         "units_used": 5741
       }
     }
@@ -618,13 +618,13 @@
     "pretrend": {
       "V0": {
         "cells_used": 140,
-        "d3_abs_effect_must_exceed_m": 1.395486,
-        "d3_abs_effect_must_exceed_sd": 0.441419,
+        "d3_abs_effect_must_exceed_m": 1.398535,
+        "d3_abs_effect_must_exceed_sd": 0.443384,
         "matches": {
           "1874553": {
             "cells_used": 14,
-            "metres": 0.435466,
-            "sd": 0.11328
+            "metres": 0.449348,
+            "sd": 0.122117
           },
           "1886347": {
             "cells_used": 15,
@@ -672,19 +672,19 @@
             "sd": 0.233497
           }
         },
-        "metres": 0.697743,
-        "sd": 0.22071,
+        "metres": 0.699267,
+        "sd": 0.221692,
         "units_used": 6555
       },
       "V1": {
         "cells_used": 136,
-        "d3_abs_effect_must_exceed_m": 1.254065,
-        "d3_abs_effect_must_exceed_sd": 0.406704,
+        "d3_abs_effect_must_exceed_m": 1.257347,
+        "d3_abs_effect_must_exceed_sd": 0.408807,
         "matches": {
           "1874553": {
             "cells_used": 14,
-            "metres": 0.439387,
-            "sd": 0.114201
+            "metres": 0.453527,
+            "sd": 0.123205
           },
           "1886347": {
             "cells_used": 15,
@@ -732,8 +732,8 @@
             "sd": 0.203377
           }
         },
-        "metres": 0.627032,
-        "sd": 0.203352,
+        "metres": 0.628674,
+        "sd": 0.204403,
         "units_used": 6154
       }
     }
@@ -793,9 +793,9 @@
           "v1_pressed": 10
         },
         "backward/middle/short": {
-          "kept": 62,
+          "kept": 61,
           "pressed": 14,
-          "v1": 62,
+          "v1": 61,
           "v1_pressed": 14
         },
         "backward/own/long": {
@@ -865,9 +865,9 @@
           "v1_pressed": 1
         },
         "lateral/middle/short": {
-          "kept": 32,
+          "kept": 33,
           "pressed": 16,
-          "v1": 32,
+          "v1": 33,
           "v1_pressed": 16
         },
         "lateral/own/long": {

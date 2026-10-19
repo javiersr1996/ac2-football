@@ -2158,9 +2158,9 @@
         "follows_ball": {
           "by_direction": {
             "backward": {
-              "mean": -1.241244,
-              "n": 392,
-              "sd": 1.705765
+              "mean": -1.237142,
+              "n": 391,
+              "sd": 1.706014
             },
             "forward": {
               "mean": 1.293433,
@@ -2168,9 +2168,9 @@
               "sd": 2.380451
             },
             "lateral": {
-              "mean": -0.116424,
-              "n": 151,
-              "sd": 1.67778
+              "mean": -0.134375,
+              "n": 152,
+              "sd": 1.686797
             }
           },
           "pass": true
@@ -2255,10 +2255,10 @@
                 "used": true
               },
               "backward/middle/short": {
-                "diff": -0.671694,
-                "n_free": 57,
+                "diff": -0.712006,
+                "n_free": 56,
                 "n_pressed": 31,
-                "sd": 1.784069,
+                "sd": 1.780977,
                 "used": true
               },
               "backward/own/long": {
@@ -2339,10 +2339,10 @@
                 "used": false
               },
               "lateral/middle/short": {
-                "diff": 0.109582,
-                "n_free": 17,
+                "diff": 0.23745,
+                "n_free": 18,
                 "n_pressed": 25,
-                "sd": 1.905227,
+                "sd": 1.916701,
                 "used": true
               },
               "lateral/own/long": {
@@ -2360,8 +2360,8 @@
                 "used": true
               }
             },
-            "m": -0.380905,
-            "sd": -0.234167,
+            "m": -0.376941,
+            "sd": -0.2323,
             "strata_used": 14,
             "units_left_out": 79,
             "units_used": 847
@@ -2396,10 +2396,10 @@
                 "used": true
               },
               "backward/middle/short": {
-                "diff": 0.209055,
-                "n_free": 57,
+                "diff": 0.22441,
+                "n_free": 56,
                 "n_pressed": 31,
-                "sd": 0.849733,
+                "sd": 0.850395,
                 "used": true
               },
               "backward/own/long": {
@@ -2480,10 +2480,10 @@
                 "used": false
               },
               "lateral/middle/short": {
-                "diff": -0.19058,
-                "n_free": 17,
+                "diff": -0.20208,
+                "n_free": 18,
                 "n_pressed": 25,
-                "sd": 0.662033,
+                "sd": 0.655927,
                 "used": true
               },
               "lateral/own/long": {
@@ -2501,8 +2501,8 @@
                 "used": true
               }
             },
-            "m": -0.108506,
-            "sd": -0.126454,
+            "m": -0.107875,
+            "sd": -0.126227,
             "strata_used": 14,
             "units_left_out": 79,
             "units_used": 847
@@ -2521,8 +2521,8 @@
           "sd": 1.967733
         },
         "within_strata": {
-          "m": -0.330951,
-          "sd": -0.25675,
+          "m": -0.327484,
+          "sd": -0.254472,
           "strata_used": 14,
           "units_left_out": 79,
           "units_used": 847
@@ -2608,7 +2608,7 @@
             "v1_pressed": 4
           },
           "backward/middle/short": {
-            "v0_free": 57,
+            "v0_free": 56,
             "v0_pressed": 31,
             "v1_free": 11,
             "v1_pressed": 2
@@ -2680,7 +2680,7 @@
             "v1_pressed": 1
           },
           "lateral/middle/short": {
-            "v0_free": 17,
+            "v0_free": 18,
             "v0_pressed": 25,
             "v1_free": 3,
             "v1_pressed": 6

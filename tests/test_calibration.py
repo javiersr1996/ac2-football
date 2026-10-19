@@ -13,7 +13,9 @@ annotated with the test that kills it:
 * D2 with ``>=``, or that lets a missing MDE80 through: ``test_d2_kills_above_the_limit_only``;
 * D5 that ignores the bar or a criterion: ``test_d5_by_hand``;
 * the null on the held-out stream: ``test_no_effect_dies_by_d5``; blocked against the rule:
-  ``test_a_planted_effect_passes_the_calibration``;
+  ``test_a_planted_effect_passes_the_calibration``; never blocked:
+  ``test_a_correlated_possession_blocks_the_null``; V1's null drawn on V0's units:
+  ``test_the_v1_null_permutes_only_the_v1_units``;
 * D3 or D4 left out of the verdict: ``test_a_pretrend_kills_by_d3``,
   ``test_an_effect_in_extrapolated_rivals_kills_by_d4``;
 * D2 fed V1's MDE80 instead of V0's: ``test_a_small_half_dies_by_d2``.
@@ -49,6 +51,7 @@ def half(
     graded: bool = True,
     shift: bool = False,
     unseen_only: bool = False,
+    paired: bool = False,
 ) -> dict[int, power.C1Inputs]:
     """Ten matches of ``n`` receptions with the rival at ``d`` uniform in 1 to 9.9 m.
 
@@ -57,6 +60,8 @@ def half(
     2.5 to 6, one forward stratum), a pre-trend the outcome does not keep; otherwise the
     incoming ball is lateral. ``unseen_only``: the rival is detected with chance one half and
     the effect acts only when it is not (the effect lives in the extrapolated positions).
+    ``paired``: the two receptions of a possession share their incoming ball (``x`` correlated
+    within the possession, so the null is blocked).
     """
     worlds: dict[int, power.C1Inputs] = {}
     for m in range(1, 11):
@@ -69,9 +74,12 @@ def half(
             seen = not unseen_only or bool(rng.random() < 0.5)
             low, high = ((6.0, 9.5) if pressed else (2.5, 6.0)) if shift else (-1.5, 1.5)
             hit = pressed and (not unseen_only or not seen)
+            in_adv = float(rng.uniform(low, high))
+            if paired and len(specs) % 2:
+                in_adv = specs[-1].in_adv
             specs.append(
                 Spec(
-                    in_adv=float(rng.uniform(low, high)),
+                    in_adv=in_adv,
                     out_adv=float(effect_m * hit + rng.normal(0.0, 2.0)),
                     rivals=(Rival(pos=ahead(d), detected=seen), FAR),
                 )
@@ -264,6 +272,23 @@ def test_an_effect_in_extrapolated_rivals_kills_by_d4(
     # V2: the class with the extrapolated rival carries the effect, so |T| does not shrink.
     assert got["beside"]["V2"]["shrinks"] is False
     assert got["verdict"]["calibration_passes"] is False
+
+
+def test_a_correlated_possession_blocks_the_null(monkeypatch: pytest.MonkeyPatch) -> None:
+    got = judged(monkeypatch, half(0, paired=True))
+    assert got["design"]["null"]["rho_v0_pooled"] > bar.BLOCK_RHO
+    assert got["design"]["null"]["blocked"] is True
+    assert all(v["null"]["blocked"] is True for v in got["variants"].values())
+
+
+def test_the_v1_null_permutes_only_the_v1_units() -> None:
+    units = kept_units(half(0, effect_m=0.0, n=60, unseen_only=True))
+    v1 = effect.select_units(units, "V1")
+    assert 0 < len(v1) < len(units)
+    for blocked in (False, True):
+        got = effect.null_effects(units, calibration.HALF, "V1", blocked, draws=200)
+        want = effect.null_effects(v1, calibration.HALF, "V1", blocked, draws=200)
+        np.testing.assert_array_equal(got.pooled, want.pooled)
 
 
 def test_a_small_half_dies_by_d2(monkeypatch: pytest.MonkeyPatch) -> None:

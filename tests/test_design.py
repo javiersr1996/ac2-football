@@ -4,7 +4,10 @@ Every expected number is planted here. Mutations, each annotated with the test t
 
 * an exclusion with ``<`` for ``<=``, across periods, only within a team, or judged against the
   kept unit before instead of the design unit before: ``test_exclusion_by_hand`` and
-  ``test_the_exclusion_ignores_a_period_break_and_the_team``;
+  ``test_the_exclusion_ignores_a_period_break_and_the_team``; judged against every labelled
+  reception instead of the design units: ``test_a_reception_that_is_not_a_unit_excludes_nothing``;
+* the pre statistic or the stratum read without the attack sign, or with the sign of another
+  period: ``test_a_mirrored_pitch_in_the_second_period_gives_the_same_units``;
 * a cut with ``>`` for ``>=`` (a unit at exactly the cut): ``test_the_cut_is_at_or_above``;
 * a V1 that ignores the carrier, or V2 classes that count the rivals outside the radius:
   ``test_v1_needs_the_carrier_and_v2_counts_the_extrapolated_players``;
@@ -18,6 +21,7 @@ Every expected number is planted here. Mutations, each annotated with the test t
 
 from __future__ import annotations
 
+import dataclasses
 import math
 
 import numpy as np
@@ -108,6 +112,20 @@ def test_the_exclusion_ignores_a_period_break_and_the_team() -> None:
     assert design.excluded_by_gap([]) == set()
 
 
+def test_a_reception_that_is_not_a_unit_excludes_nothing() -> None:
+    # The reception at 100 has no ball row at t - W: no stratum, not a design unit. The one at
+    # 110 is judged against the design unit before it (none), not against 100: it stays.
+    inputs, _ = world([plan(t, 3.0) for t in (100, 110, 200)])
+    m = inputs.s1.match
+    keep = m.ball_frame != 100 - W
+    ball = ("ball_frame", "ball_period", "ball_x", "ball_y", "ball_detected", "ball_gap")
+    m = dataclasses.replace(m, **{f: getattr(m, f)[keep] for f in ball})
+    s1 = dataclasses.replace(inputs.s1, match=m)
+    units = design.design_units(dataclasses.replace(inputs, s1=s1))
+    assert [u.frame for u in units] == [110, 200]
+    assert [u.excluded for u in units] == [False, False]
+
+
 def test_no_kept_instant_lies_in_the_window_of_another() -> None:
     rng = np.random.default_rng(19)
     for _ in range(20):
@@ -193,6 +211,33 @@ def test_nothing_after_t_moves_a_design_unit(p: Plan) -> None:
     assert design.match_counts(a, design.design_units(a)) == design.match_counts(
         b, design.design_units(b)
     )
+
+
+def test_a_mirrored_pitch_in_the_second_period_gives_the_same_units() -> None:
+    # The carrier's team attacking -x in period 2: every x flipped, the signs flipped, the
+    # period changed. Nothing the design measures may move (forward, backward, lateral ball).
+    inputs, _ = world(
+        [plan(100, 3.0), plan(200, 4.0, behind=True), plan(300, 7.0)], advances=[6.0, -5.0, 1.0]
+    )
+    m = inputs.s1.match
+    mirrored = dataclasses.replace(
+        m,
+        x=-m.x,
+        ball_x=-m.ball_x,
+        period=np.full_like(m.period, 2),
+        ball_period=np.full_like(m.ball_period, 2),
+        attack_sign={(2, team): -sign for (_, team), sign in m.attack_sign.items()},
+    )
+    s1 = dataclasses.replace(
+        inputs.s1,
+        match=mirrored,
+        receptions=tuple(dataclasses.replace(r, period=2) for r in inputs.s1.receptions),
+    )
+    want = design.design_units(inputs)
+    got = design.design_units(dataclasses.replace(inputs, s1=s1))
+    assert [u.pre for u in want] == [6.0, -5.0, 1.0]
+    assert [u.stratum.split("/")[0] for u in want] == ["forward", "backward", "lateral"]
+    assert [dataclasses.replace(u, period=1) for u in got] == want
 
 
 def test_a_unit_needs_a_possession() -> None:

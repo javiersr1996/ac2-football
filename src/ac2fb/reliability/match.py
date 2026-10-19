@@ -71,7 +71,8 @@ class MatchData:
     Player rows (``player``, ``team``, ``period``, ``frame``, ``x``, ``y``, ``detected``,
     ``gap``) are sorted by player and frame; ``gap`` is ``gap_len`` (-1: none in the period).
     ``key`` is ``player * 2**32 + frame``, sorted. ``frame_order`` lists the player rows by
-    frame and ``frame_sorted`` their frames. The ball has its own rows, sorted by frame.
+    frame and ``frame_sorted`` their frames. The ball has its own rows, sorted by frame, with
+    their period (``ball_period``: the break between periods can be shorter than a window).
     ``attack_sign`` maps ``(period, team)`` to +1 or -1: the direction of x the team attacks.
     """
 
@@ -88,6 +89,7 @@ class MatchData:
     frame_order: NDArray[np.int64]
     frame_sorted: NDArray[np.int64]
     ball_frame: NDArray[np.int64]
+    ball_period: NDArray[np.int64]
     ball_x: NDArray[np.float64]
     ball_y: NDArray[np.float64]
     ball_detected: NDArray[np.bool_]
@@ -151,6 +153,7 @@ def build_match(
         frame_order=order,
         frame_sorted=frame[order],
         ball_frame=_number(ball["frame"], np.int64),
+        ball_period=_number(ball["period"], np.int64),
         ball_x=_number(ball["x"], np.float64),
         ball_y=_number(ball["y"], np.float64),
         ball_detected=_number(ball["is_detected"], np.bool_),

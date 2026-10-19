@@ -12,9 +12,10 @@ many of each:
    of null draws follows from its p and the number of draws, the Holm family is the two
    variants, a frozen protocol records a code tree sha, ...).
 3. *The code*: every constant the code already fixes equals the one written in the protocol
-   (:data:`CODE_CHECKS`: the window, the index's radius, goal and cut, the strata cuts, the
-   label levels, the null's draws, seed and blocking threshold, the bars, the minimum per group,
-   D1 to D4's numbers, the frame rate, the size of a half, the split committed at ``HEAD``).
+   (:data:`CODE_CHECKS`: the window, the exclusion gap, the index's radius, goal and cut, the
+   strata cuts, the label levels, the null's draws, seed and blocking threshold, the bars, the
+   minimum per group, D1 to D4's numbers, the frame rate, the size of a half, the split
+   committed at ``HEAD``).
 
 Every numeric leaf of the protocol is accounted for: it is checked against the code
 (:data:`CODE_CHECKS`), derived from other fields by a coherence rule (:data:`DERIVED`), or
@@ -31,7 +32,7 @@ from collections.abc import Callable, Mapping
 from dataclasses import dataclass
 from typing import Any
 
-from ac2fb.defence import bar, effect, power, pressure, probe_s1, probe_s2
+from ac2fb.defence import bar, design, effect, power, pressure, probe_s1, probe_s2
 from ac2fb.protocol import data
 
 __all__ = [
@@ -179,6 +180,11 @@ CODE_CHECKS: tuple[CodeCheck, ...] = (
     ),
     CodeCheck(
         "window.frames", "ac2fb.defence.pressure.INCOMING_WINDOW", lambda: pressure.INCOMING_WINDOW
+    ),
+    CodeCheck(
+        "units.exclusion.gap_frames_at_most",
+        "ac2fb.defence.design.EXCLUSION_GAP",
+        lambda: design.EXCLUSION_GAP,
     ),
     CodeCheck(
         "cause.instrument.radius_m", "ac2fb.defence.pressure.RADIUS", lambda: pressure.RADIUS

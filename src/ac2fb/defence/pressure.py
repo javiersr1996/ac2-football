@@ -73,7 +73,7 @@ INCOMING_WINDOW = 13  # frames; decision.w_min_frames of reports/probe_cadence.j
 BACKWARD_CUT = 2.0  # metres of ball displacement along the attack that make it not lateral
 THIRD_CUT = 17.5  # metres from the centre line: the middle third is 35 m of 105
 LONG_BALL = 10.0  # metres of straight displacement from which the incoming ball is long
-TIE = 1e-9  # medians closer than this are equal: floating-point noise is not an increase
+TIE = 1e-9  # values closer than this are equal: floating-point noise neither grows nor cuts
 LEVELS: dict[int, str] = {
     1: "no_pressure",
     2: "low_pressure",
@@ -135,10 +135,15 @@ def rival_weights(
 
 
 def incoming_ball(match: MatchData, frame: int, sign: int, carrier_x: float) -> str:
-    """``direction/third/length`` of the ball in ``[frame - W, frame]``, or ``undefined``."""
+    """``direction/third/length`` of the ball in ``[frame - W, frame]``, or ``undefined``.
+
+    ``undefined`` without a ball row at either end or with the two rows in different periods.
+    """
     rows = np.searchsorted(match.ball_frame, [frame - INCOMING_WINDOW, frame])
-    if rows.max() >= len(match.ball_frame) or not np.array_equal(
-        match.ball_frame[rows], [frame - INCOMING_WINDOW, frame]
+    if (
+        rows.max() >= len(match.ball_frame)
+        or not np.array_equal(match.ball_frame[rows], [frame - INCOMING_WINDOW, frame])
+        or match.ball_period[rows[0]] != match.ball_period[rows[1]]
     ):
         return "undefined"
     dx = sign * float(match.ball_x[rows[1]] - match.ball_x[rows[0]])
@@ -148,10 +153,11 @@ def incoming_ball(match: MatchData, frame: int, sign: int, carrier_x: float) -> 
             match.ball_y[rows[1]] - match.ball_y[rows[0]],
         )
     )
-    direction = "backward" if dx < -BACKWARD_CUT else "forward" if dx > BACKWARD_CUT else "lateral"
+    cut = BACKWARD_CUT + TIE
+    direction = "backward" if dx < -cut else "forward" if dx > cut else "lateral"
     depth = sign * carrier_x
-    third = "own" if depth < -THIRD_CUT else "final" if depth > THIRD_CUT else "middle"
-    return f"{direction}/{third}/{'long' if straight >= LONG_BALL else 'short'}"
+    third = "own" if depth < -THIRD_CUT - TIE else "final" if depth > THIRD_CUT + TIE else "middle"
+    return f"{direction}/{third}/{'long' if straight >= LONG_BALL - TIE else 'short'}"
 
 
 def score_receptions(match: MatchData, receptions: Sequence[Reception]) -> list[Scored]:

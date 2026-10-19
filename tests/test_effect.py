@@ -24,7 +24,9 @@ Mutations, each annotated with the test that kills it:
 * the sign condition counting a match whose effect is 0 when ``T`` is 0, or p compared with ``<``:
   ``test_t_zero_never_passes``, ``test_the_calibration_bar_by_hand``;
 * a pre-trend over the cells with a constant ``x`` or in the wrong units:
-  ``test_the_pretrend_by_hand`` and ``test_the_pretrend_agrees_with_the_design_module``.
+  ``test_the_pretrend_by_hand`` and ``test_the_pretrend_agrees_with_the_design_module``;
+* a window read across a period break (the ball row's period not checked at ``t - W``, ``t`` or
+  ``t + W``): ``test_no_window_crosses_a_period_break``.
 """
 
 from __future__ import annotations
@@ -38,6 +40,7 @@ from collections.abc import Sequence
 import numpy as np
 import pytest
 from effect_helpers import (
+    FAR,
     LATE,
     Rival,
     Spec,
@@ -53,7 +56,7 @@ from effect_helpers import (
     tracking_match,
 )
 
-from ac2fb.defence import bar, design, effect, power
+from ac2fb.defence import bar, design, effect, power, pressure
 from ac2fb.defence.effect import EffectUnit
 from ac2fb.defence.pressure import INCOMING_WINDOW as W
 from ac2fb.reliability import runs
@@ -162,6 +165,23 @@ def test_the_outcome_by_hand() -> None:
     assert effect.read_outcome(match, second, -1) == effect.Outcome(4.0, True)
     assert effect.read_outcome(match, first + W, 1) is None  # no ball row at t + 2 W
     assert effect.read_outcome(match, first + 1, 1) is None  # no ball row at t itself
+
+
+def test_no_window_crosses_a_period_break() -> None:
+    # In five calibration matches the break between periods is shorter than W, so the ball row
+    # at t + W (or t - W) can belong to the other period: the period ended, nothing is read.
+    match = tracking_match(5, [Spec(2.0, 7.5, (Rival(pos=ahead(3.0)), FAR))]).s1.match
+    t = 100
+    assert effect.read_outcome(match, t, 1) == effect.Outcome(7.5, True)
+    assert power.ball_advance(match, t, 1, W) == 2.0
+    assert pressure.incoming_ball(match, t, 1, 0.0) == "lateral/middle/short"
+    after = dataclasses.replace(match, ball_period=np.where(match.ball_frame > t, 2, 1))
+    assert effect.read_outcome(after, t, 1) is None
+    assert power.ball_advance(after, t, 1, W) == 2.0  # [t - W, t] is still one period
+    before = dataclasses.replace(match, ball_period=np.where(match.ball_frame < t, 1, 2))
+    assert effect.read_outcome(before, t, 1) == effect.Outcome(7.5, True)
+    assert power.ball_advance(before, t, 1, W) is None
+    assert pressure.incoming_ball(before, t, 1, 0.0) == "undefined"
 
 
 def test_effect_units_keep_the_kept_units_with_their_outcome() -> None:
@@ -802,6 +822,7 @@ def reverse_units(seed: int) -> tuple[EffectUnit, ...]:
 def test_a_cause_read_at_t_finds_no_effect_in_reverse_causation(seed: int) -> None:
     # The defenders close in after the ball failed to advance. At t nothing has happened.
     result = effect.permutation_test(list(reverse_units(seed)), "calibration", "V0")
+    assert result.effect.t is not None and len(result.effect.cells) >= 10
     assert abs(result.effect.t or 0.0) < 0.15
     assert abs(result.effect.pretrend or 0.0) < 0.15
     assert not effect.calibration_bar(result).passed

@@ -182,12 +182,12 @@ def ball_advance(match: MatchData, frame: int, sign: int, lag: int) -> float | N
     """The ball's advance along the attack (``sign``) from ``frame - lag`` to ``frame``.
 
     ``lag`` must be 0 or more: nothing after ``frame`` can be read. ``None`` without a ball row
-    at either end.
+    at either end or with the two rows in different periods.
     """
     if lag < 0:
         raise ValueError(f"lag {lag} reads after t: only the statistic before t is measured")
     then, now = _ball_row(match, frame - lag), _ball_row(match, frame)
-    if then < 0 or now < 0:
+    if then < 0 or now < 0 or match.ball_period[then] != match.ball_period[now]:
         return None
     return sign * float(match.ball_x[now] - match.ball_x[then])
 

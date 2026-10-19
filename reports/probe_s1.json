@@ -94,10 +94,10 @@
               "high_pressure": 6,
               "low_pressure": 20,
               "medium_pressure": 17,
-              "no_pressure": 41,
+              "no_pressure": 40,
               "very_high_pressure": 1
             },
-            "n": 85
+            "n": 84
           },
           "backward/own/long": {
             "by_level": {
@@ -214,10 +214,10 @@
               "high_pressure": 7,
               "low_pressure": 5,
               "medium_pressure": 14,
-              "no_pressure": 12,
+              "no_pressure": 13,
               "very_high_pressure": 3
             },
-            "n": 41
+            "n": 42
           },
           "lateral/own/long": {
             "by_level": {

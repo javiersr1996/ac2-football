@@ -10,6 +10,7 @@ from pathlib import Path
 from typing import Any
 
 from ac2fb import __version__
+from ac2fb.defence.calibration import write_calibration_report
 from ac2fb.defence.design import write_design_report
 from ac2fb.defence.power import probe_verdicts, write_power_report
 from ac2fb.defence.probe_s1 import write_s1_report
@@ -180,6 +181,26 @@ def build_parser() -> argparse.ArgumentParser:
         default=_REPORTS,
         help="where design.json goes (default: reports/)",
     )
+    calibration = commands.add_parser(
+        "calibration",
+        help="write reports/calibration.json: effects, null, bars and the verdict D1 to D5",
+        description=(
+            "Task 21: the calibration half judged by the protocol: the design before any "
+            "outcome, then the outcomes, the effect of V0 and V1 per match with its permutation "
+            "p and the calibration bar, V2 and the ball-detected units beside them, and D1 to "
+            "D5, mechanical. Reads through the guarded door. Without --match, the calibration "
+            "matches."
+        ),
+    )
+    calibration.add_argument(
+        "--match", type=int, action="append", metavar="ID", help="native match id (repeatable)"
+    )
+    calibration.add_argument(
+        "--reports-dir",
+        type=Path,
+        default=_REPORTS,
+        help="where calibration.json goes (default: reports/)",
+    )
     protocol = commands.add_parser(
         "protocol",
         help="print the protocol's stage and, with --check, validate protocol/protocol.json",
@@ -234,6 +255,17 @@ def _protocol(do_check: bool) -> int:
         print(f"  - {problem}")
     print("protocol: OK" if report.ok else "protocol: FAILED")
     return 0 if report.ok else 1
+
+
+def _calibration(match_ids: Sequence[int] | None, reports_dir: Path) -> int:
+    ids = list(match_ids) if match_ids else list(load_split().calibration)
+    try:
+        path = write_calibration_report(ids, reports_dir)
+    except HeldOutLocked as exc:
+        print(f"refused: {exc}", file=sys.stderr)
+        return 2
+    print(f"wrote {path}")
+    return 0
 
 
 def _design(match_ids: Sequence[int] | None, reports_dir: Path) -> int:
@@ -349,6 +381,8 @@ def main(argv: Sequence[str] | None = None) -> int:
         return _power(args.match, args.reports_dir)
     if args.command == "design":
         return _design(args.match, args.reports_dir)
+    if args.command == "calibration":
+        return _calibration(args.match, args.reports_dir)
     if args.command == "protocol":
         return _protocol(args.check)
     return 0

@@ -39,6 +39,7 @@ from ac2fb import cli
 from ac2fb.defence import (
     bar,
     block,
+    calibration,
     design,
     effect,
     line,
@@ -161,6 +162,17 @@ def power_command(m: int) -> pa.Table:
     err = io.StringIO()
     with contextlib.redirect_stderr(err), contextlib.redirect_stdout(io.StringIO()):
         code = cli.main(["power", "--match", str(m), "--reports-dir", OUT])
+    if code == 2 and "held-out" in err.getvalue():
+        raise HeldOutLocked(err.getvalue())
+    assert code == 0, err.getvalue()
+    return served(m, True)
+
+
+def calibration_command(m: int) -> pa.Table:
+    """The ``calibration`` command for one match: exit 2 and a refusal on stderr is a refusal."""
+    err = io.StringIO()
+    with contextlib.redirect_stderr(err), contextlib.redirect_stdout(io.StringIO()):
+        code = cli.main(["calibration", "--match", str(m), "--reports-dir", OUT])
     if code == 2 and "held-out" in err.getvalue():
         raise HeldOutLocked(err.getvalue())
     assert code == 0, err.getvalue()
@@ -557,6 +569,25 @@ FUNCTION_ROUTES: dict[str, Route] = {
     "ac2fb.defence.effect.v2_effects": without_match(
         lambda: effect.v2_effects(tiny_effect_units())
     ),
+    "ac2fb.defence.calibration.calibration_report": by_match(
+        lambda m: served(m, "verdict" in calibration.calibration_report([m]))
+    ),
+    "ac2fb.defence.calibration.write_calibration_report": by_match(
+        lambda m: served(m, calibration.write_calibration_report([m], Path(OUT)).is_file())
+    ),
+    "ac2fb.defence.calibration.variance_factor": without_match(
+        lambda: calibration.variance_factor(effect.estimate(tiny_effect_units()))
+    ),
+    "ac2fb.defence.calibration.d1": without_match(lambda: calibration.d1({1: True})),
+    "ac2fb.defence.calibration.d2": without_match(lambda: calibration.d2(0.13)),
+    "ac2fb.defence.calibration.d5": without_match(
+        lambda: calibration.d5(
+            effect.calibration_bar(
+                effect.permutation_test(tiny_effect_units(), "calibration", "V0", draws=5)
+            ),
+            [],
+        )
+    ),
     "ac2fb.protocol.check.check": without_match(lambda: protocol_check.check(PROTOCOL)),
     "ac2fb.protocol.check.code_problems": without_match(
         lambda: protocol_check.code_problems(PROTOCOL)
@@ -691,6 +722,7 @@ CLI_ROUTES: dict[tuple[str, ...], Route] = {
     ("s3",): by_match(s3_command),
     ("power",): by_match(power_command),
     ("design",): by_match(design_command),
+    ("calibration",): by_match(calibration_command),
     ("protocol",): without_match(lambda: cli.main(["protocol", "--check"])),
 }
 

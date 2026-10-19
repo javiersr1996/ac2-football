@@ -49,6 +49,7 @@ from ac2fb.reliability.report import render_report
 __all__ = [
     "CAUSES",
     "EXCLUSION_GAP",
+    "POWER_LABEL",
     "REPORT_NAME",
     "DesignUnit",
     "design_report",
@@ -63,7 +64,7 @@ __all__ = [
 REPORT_NAME = "design.json"
 EXCLUSION_GAP = W  # frames: protocol units.exclusion.gap_frames_at_most, the window itself
 CAUSES: tuple[str, ...] = ("index", "proxy")  # the protocol's cause, and task 17's beside it
-_LABEL = "C1/design/ball_advance/incoming_ball"  # the random stream of the power simulation
+POWER_LABEL = "C1/design/ball_advance/incoming_ball"  # the random stream of the power simulation
 
 
 @dataclass(frozen=True)
@@ -270,7 +271,7 @@ def design_report(match_ids: Sequence[int]) -> dict[str, object]:
             raise ValueError(f"two units of match {m} share a frame")
     index = {m: power_units(us, "index") for m, us in units.items()}
     proxy = {m: power_units(us, "proxy") for m, us in units.items()}
-    simulated = power.candidate_power(index, _LABEL, with_pretrend=True)
+    simulated = power.candidate_power(index, POWER_LABEL, with_pretrend=True)
     return {
         "about": (
             "Task 19: the protocol's design on the calibration half, before any outcome. The "

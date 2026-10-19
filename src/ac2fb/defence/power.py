@@ -441,7 +441,9 @@ def _correlation(units: Sequence[Unit], variant: str) -> bar.Correlation:
 
 
 def _pretrend(units: Sequence[Unit], variant: str) -> float | None:
-    pick = [u for u in units if u.group is not None and (variant == "V0" or u.v1)]
+    pick = [
+        u for u in units if u.group is not None and u.pre is not None and (variant == "V0" or u.v1)
+    ]
     pooled = line.within_strata(
         [float(u.pre) for u in pick],  # type: ignore[arg-type]
         [bool(u.group) for u in pick],
@@ -462,7 +464,10 @@ def _pretrend_pooled(
     pre-trend over ``MAX_PRETREND_SD`` in absolute value.
     """
     pick = [
-        (m, u) for m in units for u in units[m] if u.group is not None and (variant == "V0" or u.v1)
+        (m, u)
+        for m in units
+        for u in units[m]
+        if u.group is not None and u.pre is not None and (variant == "V0" or u.v1)
     ]
     sd = line.within_strata(
         [float(u.pre) for _, u in pick],  # type: ignore[arg-type]

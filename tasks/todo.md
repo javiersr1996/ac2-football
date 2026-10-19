@@ -1469,8 +1469,9 @@ su test sintético con el fallo plantado (una sonda que no puede fallar no prote
     filas de balón no lo llevan) y se apoya en que fuera de periodo no hay fila de balón (el bronze
     de la base documenta esos frames con `ball_data` nulo). (3) `P` deja fuera las celdas con x
     constante y `T` no: "las mismas celdas" de D3 solo es exacto con x continua. (4) "p ≤ 0,00135"
-    y "a lo sumo 1 nulo" coinciden solo con 2.000 nulos. (5) Con T_V0 = 0, D4 no mata (la barra
-    ya falla).
+    y "a lo sumo 1 nulo" coinciden solo con 2.000 nulos. (5) Con T_V0 = 0, D4 mata si T_V1 ≠ 0
+    (cambio de signo) y no mata si T_V1 también es 0; la barra de V0 falla igual (corregido en la
+    revisión 22: decía que D4 no mataba).
 - [x] 21. `opus` Calibración: efecto por partido en los 10, las tres variantes, pre-tendencia y
   veredicto mecánico D1 a D5 en `reports/calibration.json`. Nada de este paso mueve un umbral.
   **Decisión previa, tomada el 2026-10-19 antes de calcular ningún desenlace (Javier): el nulo
@@ -1509,8 +1510,9 @@ su test sintético con el fallo plantado (una sonda que no puede fallar no prote
     de 10 crecientes, como la sonda S1), D2 no mata (MDE80 0,13 sd en V0 y en V1, el de
     `design.json`), D4 no mata (T_V1 −0,200 sd, mismo signo y más que la mitad de V0).
   - *Por partido.* E_m en V0 de −0,364 a +0,093; negativo en 8 de 10; positivo en 2015213
-    (+0,093) y en 2010085 (+0,000477: el 8 de 10 cuelga de ese partido, que no decide nada
-    porque D3 mata igual). P por partido de +0,054 a +0,397 sd (+0,255 a +1,533 m), positiva en
+    (+0,093) y en 2010085 (+0,000477; si fuera negativo serían 9 de 10). El 8 de 10 cuelga de
+    cada uno de los 8 negativos, el más débil 1959846 (−0,109), y no decide nada porque D3 mata
+    igual (corregido en la revisión 22: decía que colgaba de 2010085). P por partido de +0,054 a +0,397 sd (+0,255 a +1,533 m), positiva en
     10 de 10; |P| ≥ 50 % de |E_m| en 7 de 10 (lectura por partido, no es criterio). V1: E_m de
     −0,373 a +0,056, negativo en 8 de 10, P +0,190 sd, |P| el 95 % de |T|. Entre 11 y 14 celdas
     por partido; fuera por celda pequeña 166 presionadas y 896 libres en V0 (6.167 de 7.229
@@ -1531,6 +1533,66 @@ su test sintético con el fallo plantado (una sonda que no puede fallar no prote
     la capa 2, irreversible). Esto lo decide Javier, no este registro.
 - [ ] 22. `opus` (subagente `revisor-adversarial`) Revisión del protocolo, el estimador y la
   calibración antes de congelar, hasta que no salga nada alto ni medio.
+  **Decisión de Javier (2026-10-19), antes de la revisión: seguir la recomendación.** Primero la
+  22; en CP2, rama B; el reservado se abre solo para la capa 2, después de la 22, por código y
+  con registro (un commit público que diga que D5 mató la capa 3 antes de leer nada), y con una
+  confirmación suya justo antes de abrirlo, porque es irreversible.
+  Revisión 22, pasada 1 (2026-10-19), en dos frentes paralelos de solo lectura sobre `git diff
+  aeefafc..HEAD` (A: el diseño contra el protocolo; B: el estimador, la calibración y el
+  veredicto). **Ningún alto; el veredicto se sostiene: D3 mata, D5 mata.** Re-derivaciones
+  independientes: A rehízo las 8.131 unidades de diseño de los 10 partidos sin `design_units`
+  ni sus ayudantes (0 campos distintos; índice a 4,4e-16, x exacta) y el signo de ataque de los
+  40 pares (periodo, equipo) por tres fuentes; B rehízo T, P, E_m y las 133 y 130 celdas sin
+  `effect.py` (diferencias ≤ 5e-7, el redondeo del informe) y los 250 primeros nulos (1e-16).
+  D3 con ocho lecturas de la escala: las seis que son D3 matan, la más favorable a C1 en 0,602
+  (P en sd de y); las dos que quedan por debajo miden el sesgo que explicaría el modelo lineal y
+  no son D3 (adoptarlas ahora sería cambiar el criterio después de ver el desenlace).
+  Arreglado en `c0eefa9` (scripts de mutación en el scratchpad, `fix22/mutate22.py`):
+  - *Medio, A y B: ventanas que cruzan el descanso.* En 5 de los 10 (1886347, 1925299, 1959846,
+    1996435, 2010085) el descanso deja 10 frames sin filas, menos que W: una recepción en los 3
+    últimos frames del periodo 1 leía el desenlace del 2 (`read_outcome`) y una en los 3 primeros
+    del 2 leía x y estrato del 1 (`ball_advance`, `incoming_ball`); el protocolo lo declara
+    indefinido ("the period ends before t + W"). `MatchData` guarda `ball_period` y los tres
+    lectores rechazan la ventana que lo cruza. Ninguna unidad afectada (la recepción más cercana
+    al borde queda a 30 frames del inicio del periodo 2 y a 60 del final del 1): con este arreglo
+    solo, los seis informes salen idénticos byte a byte. La nota (2) de la 20 queda resuelta.
+  - *Medio, A: empate en un corte decidido por el float.* Partido 1874553, t = 20513: el balón
+    de x 3,15 a 5,15 con signo −1 da −2,0000000000000004 y caía en `backward`; el protocolo dice
+    "backward below −cut_m; lateral otherwise". Los tres cortes de estrato usan ahora
+    `pressure.TIE` (1e-9). Esa unidad pasa a `lateral` y se regeneran `probe_s1`, `probe_s2`,
+    `power`, `design` y `calibration` (`probe_s3` igual), sin ningún veredicto cambiado.
+    Cifras nuevas, de los informes: calibración V0 T −0,192680 (era −0,192952), P +0,182152
+    (+0,181267), |P|/|T| 0,945 (0,939), umbral de D3 0,364304 (0,362535); V1 T −0,199717, P
+    +0,190513; E_m de 1874553 −0,131169 (−0,133453); acuerdo 8 de 10, p 0,0005; con el balón
+    detectado en los dos extremos, T −0,211289. Diseño: ρ −0,004831 (−0,00416), MDE80 0,13 en
+    V0 y V1. `power.json` (C1, proxy de 5 m): pre-tendencia +0,22438 (+0,223511), umbral 0,44876
+    (0,447023). En S1 solo cambian las cuentas de dos estratos de 1874553 (una recepción pasa
+    de `backward/middle/short` a `lateral/middle/short`); S2 sigue muerta (7 de 10).
+    Las cifras de los registros de la 14 a la 21 quedan como se midieron entonces; las vigentes
+    son las de los informes.
+  - *Medio, A: el signo de ataque sin test sintético.* La mutación "x sin signo" pasaba los
+    1.020 tests y solo la tumbaban los `realdata` de regresión (con ella P bajaba a +0,037 y D3
+    no mataba). Test nuevo: el campo espejado (x y signos invertidos) en el periodo 2 da las
+    mismas unidades.
+  - *Bajos.* Nulo de V1 sobre las unidades de V0 y "nunca bloquear" sobrevivían: tests nuevos
+    (el nulo de V1 sobre todas las unidades es el de las de V1; un medio con x correlacionada
+    dentro de la posesión bloquea el nulo). La exclusión contra cualquier recepción etiquetada
+    era equivalente en los datos: test con una recepción sin estrato seguida de una unidad. El
+    test de causalidad inversa pasaba en vacío sin celdas: exige al menos 10. `protocol --check`
+    no comparaba `design.EXCLUSION_GAP`: ahora sí (27 constantes contra el código, eran 26).
+    Dos frases falsas de los registros de la 20 y la 21, corregidas en su sitio.
+  **Mutaciones (11, todas tumban su test; ficheros restaurados, huella del diff igual antes y
+  después):** desenlace, x y estrato sin el periodo del balón; corte de dirección y de longitud
+  sin la tolerancia; x sin el signo; el signo del periodo 1 siempre; exclusión contra toda
+  recepción etiquetada; nunca bloquear; nulo de V1 sobre V0; `EXCLUSION_GAP` a 12 en el código.
+  Gate local en verde: ruff, format, `mypy src`, `pytest -q` (1.028 pasan, eran 1.020; 26
+  deseleccionados), `pytest -m realdata` (26 de 26), `ac2fb protocol --check` OK.
+  *Para contar el negativo* (de `reports/calibration.json`, V0, por dirección del balón
+  entrante): hacia delante, 56 celdas y el 50 % del peso, T −0,466 y P +0,269; hacia atrás, 52
+  celdas y el 38 %, T +0,124 (de signo contrario) y P +0,115; lateral, 25 celdas y el 12 %, T
+  −0,052 y P +0,030. El efecto agregado sale de las recepciones con el balón llegando hacia
+  delante, que es también donde la pre-tendencia es mayor. No es criterio; no decide nada.
+  Falta la pasada 2 sobre `c0eefa9`.
 - [ ] 23. `sonnet` Congelación en un commit propio: `stage: "frozen"`, `code_tree_sha`, semilla,
   umbrales. Aceptación: desde ese commit hasta la lectura, `git diff <congelación> -- src
   pyproject.toml uv.lock .python-version protocol/` vacío (revisión 18: el sha cubre ya todo

@@ -40,6 +40,7 @@ from ac2fb.defence import (
     bar,
     block,
     design,
+    effect,
     line,
     m10,
     power,
@@ -202,6 +203,26 @@ def tiny_units() -> dict[int, list[power.Unit]]:
         m: [power.Unit(k, "s", k % 2 == 0, f"p{k // 2}", float(k % 3), True) for k in range(12)]
         for m in (1, 2)
     }
+
+
+def tiny_effect_units() -> list[effect.EffectUnit]:
+    """Two matches of twelve kept units, half pressed, one stratum, with an outcome."""
+    return [
+        effect.EffectUnit(
+            m,
+            1,
+            100 + 40 * k,
+            "s",
+            k % 2 == 0,
+            f"p{k // 2}",
+            float(k % 3),
+            float(k * 7 % 5 + k % 2),
+            0,
+            True,
+        )
+        for m in (1, 2)
+        for k in range(12)
+    ]
 
 
 def a_phase(mt: match_module.MatchData) -> probe_s3.Phase:
@@ -478,6 +499,63 @@ FUNCTION_ROUTES: dict[str, Route] = {
     "ac2fb.defence.design.power_units": without_match(lambda: design.power_units([], "index")),
     "ac2fb.defence.design.write_design_report": by_match(
         lambda m: served(m, design.write_design_report([m], Path(OUT)).is_file())
+    ),
+    "ac2fb.defence.effect.read_outcome": on_match(
+        lambda mt: isinstance(
+            effect.read_outcome(mt, int(mt.frame[0]), 1), effect.Outcome | type(None)
+        )
+    ),
+    "ac2fb.defence.effect.effect_units": on_match(lambda mt: effect.effect_units([], mt) == []),
+    "ac2fb.defence.effect.select_units": without_match(
+        lambda: effect.select_units(tiny_effect_units(), "V1")
+    ),
+    "ac2fb.defence.effect.estimate": without_match(lambda: effect.estimate(tiny_effect_units())),
+    "ac2fb.defence.effect.null_effects": without_match(
+        lambda: effect.null_effects(tiny_effect_units(), "calibration", "V0", draws=5),
+        lambda: effect.null_effects(tiny_effect_units(), "heldout", "V1", blocked=True, draws=5),
+    ),
+    "ac2fb.defence.effect.possession_contributions": without_match(
+        lambda: effect.possession_contributions(tiny_effect_units())
+    ),
+    "ac2fb.defence.effect.extreme_draws": without_match(
+        lambda: effect.extreme_draws(0.5, np.array([0.1, -0.7]))
+    ),
+    "ac2fb.defence.effect.p_value": without_match(
+        lambda: effect.p_value(0.5, np.array([0.1, -0.7]))
+    ),
+    "ac2fb.defence.effect.permutation_test": without_match(
+        lambda: effect.permutation_test(tiny_effect_units(), "calibration", "V0", draws=5)
+    ),
+    "ac2fb.defence.effect.sign_agreement": without_match(
+        lambda: effect.sign_agreement(effect.estimate(tiny_effect_units()))
+    ),
+    "ac2fb.defence.effect.calibration_bar": without_match(
+        lambda: effect.calibration_bar(
+            effect.permutation_test(tiny_effect_units(), "calibration", "V0", draws=5)
+        )
+    ),
+    "ac2fb.defence.effect.heldout_bars": without_match(
+        lambda: effect.heldout_bars(
+            {
+                v: effect.permutation_test(tiny_effect_units(), "heldout", v, draws=5)
+                for v in effect.VARIANTS
+            }
+        )
+    ),
+    "ac2fb.defence.effect.holm": without_match(
+        lambda: effect.holm({"V0": 0.001, "V1": None}, 0.01)
+    ),
+    "ac2fb.defence.effect.d3": without_match(
+        lambda: effect.d3(effect.estimate(tiny_effect_units()))
+    ),
+    "ac2fb.defence.effect.d4": without_match(
+        lambda: effect.d4(
+            effect.estimate(tiny_effect_units()),
+            effect.estimate(effect.select_units(tiny_effect_units(), "V1")),
+        )
+    ),
+    "ac2fb.defence.effect.v2_effects": without_match(
+        lambda: effect.v2_effects(tiny_effect_units())
     ),
     "ac2fb.protocol.check.check": without_match(lambda: protocol_check.check(PROTOCOL)),
     "ac2fb.protocol.check.code_problems": without_match(

@@ -189,6 +189,21 @@ def test_an_incoherent_protocol_fails(path: str, value: object, words: str) -> N
     assert any(words in p for p in report.problems), (path, report.problems)
 
 
+@pytest.mark.parametrize(
+    ("path", "value", "source"),
+    [
+        ("null.seed", 20, "ac2fb.defence.effect.SEED"),
+        ("bars.heldout.alpha", 0.02, "ac2fb.defence.effect.HELDOUT_ALPHA"),
+        ("death_criteria.D4.ratio", 0.6, "ac2fb.defence.effect.D4_RATIO"),
+    ],
+)
+def test_the_estimators_constants_are_checked_against_the_code(
+    path: str, value: object, source: str
+) -> None:
+    # Since task 20 the seed, the held-out level and D4's ratio are fixed by the estimator.
+    assert any(source in p for p in check.check(put(protocol(), path, value)).problems)
+
+
 def test_a_frozen_protocol_needs_a_real_sha() -> None:
     doc = put(protocol(), "stage", "frozen")
     assert any("code_tree_sha" in p for p in check.check(doc).problems)
@@ -269,11 +284,7 @@ def test_the_code_checks_come_from_the_code_not_from_a_report() -> None:
     for item in check.CODE_CHECKS:
         assert item.source.startswith(("ac2fb.", "1 / ac2fb.", "the sizes of the two sets"))
     # Every number no code fixes is declared with its reason.
-    assert set(check.PROTOCOL_ONLY) == {
-        "null.seed",
-        "bars.heldout.alpha",
-        "death_criteria.D4.ratio",
-    }
+    assert check.PROTOCOL_ONLY == {}
 
 
 def test_the_check_opens_nothing_under_reports(monkeypatch: pytest.MonkeyPatch) -> None:

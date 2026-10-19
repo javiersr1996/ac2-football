@@ -13,13 +13,14 @@ many of each:
    variants, a frozen protocol records a code tree sha, ...).
 3. *The code*: every constant the code already fixes equals the one written in the protocol
    (:data:`CODE_CHECKS`: the window, the index's radius, goal and cut, the strata cuts, the
-   label levels, the null's draws and blocking threshold, the bars, the minimum per group, D1
-   to D3's numbers, the frame rate, the size of a half, the split committed at ``HEAD``).
+   label levels, the null's draws, seed and blocking threshold, the bars, the minimum per group,
+   D1 to D4's numbers, the frame rate, the size of a half, the split committed at ``HEAD``).
 
 Every numeric leaf of the protocol is accounted for: it is checked against the code
 (:data:`CODE_CHECKS`), derived from other fields by a coherence rule (:data:`DERIVED`), or
-declared in :data:`PROTOCOL_ONLY` (numbers no code uses yet, such as the seed of the null; the
-estimator of task 20 takes them from the protocol and extends :data:`CODE_CHECKS`). A numeric
+declared in :data:`PROTOCOL_ONLY` (numbers no code uses yet; empty since the estimator of task
+20, :mod:`ac2fb.defence.effect`, fixes the seed of the null, the held-out level and D4's ratio
+and extends :data:`CODE_CHECKS`). A numeric
 leaf that is none of the three is a problem, so no number enters the protocol unaccounted for.
 """
 
@@ -30,7 +31,7 @@ from collections.abc import Callable, Mapping
 from dataclasses import dataclass
 from typing import Any
 
-from ac2fb.defence import bar, power, pressure, probe_s1, probe_s2
+from ac2fb.defence import bar, effect, power, pressure, probe_s1, probe_s2
 from ac2fb.protocol import data
 
 __all__ = [
@@ -243,6 +244,11 @@ CODE_CHECKS: tuple[CodeCheck, ...] = (
         lambda: power.MDE_LIMIT,
     ),
     CodeCheck("death_criteria.D3.ratio", "ac2fb.defence.power.D3_RATIO", lambda: power.D3_RATIO),
+    CodeCheck("null.seed", "ac2fb.defence.effect.SEED", lambda: effect.SEED),
+    CodeCheck(
+        "bars.heldout.alpha", "ac2fb.defence.effect.HELDOUT_ALPHA", lambda: effect.HELDOUT_ALPHA
+    ),
+    CodeCheck("death_criteria.D4.ratio", "ac2fb.defence.effect.D4_RATIO", lambda: effect.D4_RATIO),
 )
 
 # Numeric fields a coherence rule derives from other fields of the protocol.
@@ -255,13 +261,9 @@ DERIVED: dict[str, str] = {
     ),
 }
 
-# Numbers no code fixes yet: the protocol is their only source until the code that uses them
-# is written (task 20 onwards), which then adds a CodeCheck for each.
-PROTOCOL_ONLY: dict[str, str] = {
-    "null.seed": "the seed of the null draws; the estimator (task 20) takes it from the protocol",
-    "bars.heldout.alpha": "the level of the held-out bar; the held-out verdict (task 24)",
-    "death_criteria.D4.ratio": "the plan's 'half of V0'; the verdicts (tasks 21 and 24)",
-}
+# Numbers no code fixes: none since the estimator (task 20) took the seed, the held-out level and
+# D4's ratio. A number a later task adds to the protocol before its code exists is declared here.
+PROTOCOL_ONLY: dict[str, str] = {}
 
 
 @dataclass(frozen=True)

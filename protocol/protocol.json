@@ -78,7 +78,7 @@
     "ball_rows": "the ball row listed at t and at t + W, whatever its is_detected flag, in every variant; the share of units with the ball extrapolated at t or at t + W is reported per match and group, and the effect on the units with the ball detected at both ends is reported beside V0 and decides nothing",
     "period_end": "no ball row at t + W in the period of t: outcome undefined (units.outcome_undefined)",
     "possession_change": "nothing special: a turnover or a clearance inside the window counts as the ball went, in the attack frame of the carrier's team (a ball sent back towards his own goal is a negative advance)",
-    "ball_out_of_play": "nothing special: if the provider lists the ball at t + W the number stands; if not, undefined",
+    "ball_out_of_play": "nothing special: if the provider lists the ball at t + W in the period of t the number stands; if not, undefined",
     "expected_sign_of_effect": "negative: pressure reduces the advance. The bar is two-sided; a pooled effect of the other sign that passes the bar is published as an effect of the other sign, not as support for the question."
   },
   "strata": {
@@ -217,6 +217,6 @@
     "Holm applies to the held-out bar; the calibration bar is per variant as task 17 simulated it",
     "the seed of the null and its streams (null.seed, null.stream)",
     "a cell needs a positive sd of the outcome; a cell with a zero sd of x drops the covariate",
-    "a unit without a ball row at t + W is left out and counted"
+    "a unit without a ball row at t + W in the period of t is left out and counted"
   ]
 }

@@ -17,7 +17,8 @@ Mutations, each annotated with the test that kills it:
 * a stratum or an index that reads a frame after ``t``:
   ``test_nothing_after_the_reception_is_read``;
 * a stratum cut that lets floating-point noise decide a value exactly at the cut (2 m that is
-  -2.0000000000000004, 10 m that is 9.999999999999998): ``test_the_stratum_of_the_incoming_ball``.
+  -2.0000000000000004, 10 m that is 9.999999999999998), or a third cut that gives 17.5 m to the
+  own or the final third: ``test_the_stratum_of_the_incoming_ball``.
 """
 
 from __future__ import annotations
@@ -311,6 +312,7 @@ def with_ball(
         ((0, 0), (-2.01, 0), 0.0, 1, "backward/middle/short"),
         ((0, 0), (-6, 0), -30.0, -1, "forward/final/short"),  # a team attacking -x
         ((0, 0), (-10, 0), 17.5, -1, "forward/middle/long"),  # the third cut belongs to middle
+        ((0, 0), (10, 0), 17.5, 1, "forward/middle/long"),  # at either end
         ((0, 0), (9.99, 0), 0.0, 1, "forward/middle/short"),
         ((0, 0), (10, 0), 0.0, 1, "forward/middle/long"),
     ],

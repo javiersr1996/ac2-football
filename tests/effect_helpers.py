@@ -199,6 +199,33 @@ def through_the_pipeline(
     return out
 
 
+def moved(inputs: power.C1Inputs, period: int, team: int) -> power.C1Inputs:
+    """The same world, the carrier's team (1, attacking +x in period 1) in ``period`` as ``team``.
+
+    Period 2 turns both teams round; team 2 swaps the two labels. Every x of the players and
+    the ball is flipped when the carrier's team then attacks -x, so it sees the same pitch.
+    The signs of period 1 stay listed: a reader that takes another period's sign or another
+    team's reads a wrong sign, not a missing one.
+    """
+    m = inputs.s1.match
+    signs = {(period, k): s if period == 1 else -s for (_, k), s in m.attack_sign.items()}
+    flip = signs[(period, team)]
+    match = dataclasses.replace(
+        m,
+        team=m.team if team == 1 else 3 - m.team,
+        period=np.full_like(m.period, period),
+        x=flip * m.x,
+        ball_x=flip * m.ball_x,
+        ball_period=np.full_like(m.ball_period, period),
+        attack_sign={**m.attack_sign, **signs},
+    )
+    receptions = tuple(
+        dataclasses.replace(r, period=period, team=team) for r in inputs.s1.receptions
+    )
+    s1 = dataclasses.replace(inputs.s1, match=match, receptions=receptions)
+    return dataclasses.replace(inputs, s1=s1)
+
+
 # --- the planted worlds ------------------------------------------------------------------------
 
 # Incoming ball by stratum: (low, high) metres along the attack, mean outgoing advance (the ball

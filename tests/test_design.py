@@ -6,8 +6,9 @@ Every expected number is planted here. Mutations, each annotated with the test t
   kept unit before instead of the design unit before: ``test_exclusion_by_hand`` and
   ``test_the_exclusion_ignores_a_period_break_and_the_team``; judged against every labelled
   reception instead of the design units: ``test_a_reception_that_is_not_a_unit_excludes_nothing``;
-* the pre statistic or the stratum read without the attack sign, or with the sign of another
-  period: ``test_a_mirrored_pitch_in_the_second_period_gives_the_same_units``;
+* the pre statistic, the stratum or the index read without the attack sign, with the sign of
+  another period, or with one team's sign for every carrier:
+  ``test_the_carriers_period_and_team_do_not_move_a_unit``;
 * a cut with ``>`` for ``>=`` (a unit at exactly the cut): ``test_the_cut_is_at_or_above``;
 * a V1 that ignores the carrier, or V2 classes that count the rivals outside the radius:
   ``test_v1_needs_the_carrier_and_v2_counts_the_extrapolated_players``;
@@ -26,6 +27,7 @@ import math
 
 import numpy as np
 import pytest
+from effect_helpers import moved
 from layer2_helpers import Row, frames_table, make_match
 
 from ac2fb.defence import design, power, probe_s1
@@ -213,31 +215,18 @@ def test_nothing_after_t_moves_a_design_unit(p: Plan) -> None:
     )
 
 
-def test_a_mirrored_pitch_in_the_second_period_gives_the_same_units() -> None:
-    # The carrier's team attacking -x in period 2: every x flipped, the signs flipped, the
-    # period changed. Nothing the design measures may move (forward, backward, lateral ball).
+@pytest.mark.parametrize(("period", "team"), [(2, 1), (1, 2), (2, 2)])
+def test_the_carriers_period_and_team_do_not_move_a_unit(period: int, team: int) -> None:
+    # The carrier's team in period 2, labelled 2, or both, on a pitch flipped wherever it then
+    # attacks -x. Nothing the design measures may move (forward, backward, lateral ball).
     inputs, _ = world(
         [plan(100, 3.0), plan(200, 4.0, behind=True), plan(300, 7.0)], advances=[6.0, -5.0, 1.0]
     )
-    m = inputs.s1.match
-    mirrored = dataclasses.replace(
-        m,
-        x=-m.x,
-        ball_x=-m.ball_x,
-        period=np.full_like(m.period, 2),
-        ball_period=np.full_like(m.ball_period, 2),
-        attack_sign={(2, team): -sign for (_, team), sign in m.attack_sign.items()},
-    )
-    s1 = dataclasses.replace(
-        inputs.s1,
-        match=mirrored,
-        receptions=tuple(dataclasses.replace(r, period=2) for r in inputs.s1.receptions),
-    )
     want = design.design_units(inputs)
-    got = design.design_units(dataclasses.replace(inputs, s1=s1))
+    got = design.design_units(moved(inputs, period, team))
     assert [u.pre for u in want] == [6.0, -5.0, 1.0]
     assert [u.stratum.split("/")[0] for u in want] == ["forward", "backward", "lateral"]
-    assert [dataclasses.replace(u, period=1) for u in got] == want
+    assert [dataclasses.replace(u, period=1, team=1) for u in got] == want
 
 
 def test_a_unit_needs_a_possession() -> None:

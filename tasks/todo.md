@@ -1599,7 +1599,9 @@ su test sintético con el fallo plantado (una sonda que no puede fallar no prote
   salen iguales a los de `a0a3b68` (la descomposición de la pasada 1 es cierta). Arreglado:
   - *Medio: el signo con el que se lee el desenlace, sin test sintético.* `effect_units` lee
     `attack_sign[(periodo, equipo)]` y el test espejado de la pasada 1 solo pasaba por
-    `design_units`. Con el signo del periodo 1 siempre, o sin signo, pasaban todos los tests; en
+    `design_units`. Con el signo del periodo 1 siempre, o sin signo, pasaban todos los de `pytest
+    -q` (en `realdata`, la regresión de `calibration.json` tumba la del periodo 1: 1 falla y 25
+    pasan, según la pasada 3); en
     la calibración real la primera llevaba T de −0,193 a −0,064, el acuerdo de 8 a 7 y p de
     0,0005 a 0,024, sin cambiar el veredicto (cifras del revisor). Test nuevo: el mismo espejo en
     el periodo 2, por `effect_units`, da los mismos desenlaces (+7,5 y −4,0). Cada una de las dos
@@ -1621,7 +1623,50 @@ su test sintético con el fallo plantado (una sonda que no puede fallar no prote
     código, antes de abrir.
   Gate local en verde: ruff, format, `mypy src`, `pytest -q` (1.029 pasan, eran 1.028; 26
   deseleccionados), `pytest -m realdata` (26 de 26), `ac2fb protocol --check` OK.
-  Falta la pasada 3 sobre el arreglo de la pasada 2.
+  Revisión 22, pasada 3 (2026-10-20), de solo lectura sobre `git diff e140984..c2d8e25`.
+  **Ningún alto; un medio, en los tests y no en el código, que no cambia ningún veredicto.** Los
+  seis informes, regenerados con `299dcac` en la carpeta del revisor, salen idénticos byte a
+  byte, y las cifras del registro de la pasada 2 son las vigentes. Arreglado en `10b2820`:
+  - *Medio: el equipo del signo, sin test sintético.* Todas las recepciones sintéticas son del
+    equipo 1, así que los dos tests espejados solo fijaban el periodo de `attack_sign[(periodo,
+    equipo)]`, no el equipo. Con el signo de un mismo equipo para todo portador pasaban todos los
+    sintéticos en los tres lectores (`effect_units`, `design_units`, `score_receptions`) y solo
+    caían las regresiones de `realdata`. En la calibración real (cifras del revisor), en el
+    desenlace: T de −0,193 a +0,044, acuerdo de 8 a 6, p 0,115, D5 sigue matando; en la x del
+    pre: P de +0,182 a −0,048 con T −0,176, 8 de 10 y p 0,0005, **D3 y D5 dejarían pasar la
+    calibración**; en el índice y el estrato: T −0,076 y P +0,526, D5 mata. Los dos tests
+    espejados se parametrizan sobre (periodo, equipo) = (2, 1), (1, 2) y (2, 2) con un ayudante
+    común, `effect_helpers.moved` (el equipo del portador con otra etiqueta y el campo espejado
+    donde ataca hacia −x; los signos del periodo 1 siguen en `attack_sign`, así que un lector
+    con el periodo o el equipo equivocado lee un signo falso, no uno ausente). Pasan a llamarse
+    `test_the_carriers_period_and_team_do_not_move_an_outcome` y `..._a_unit`.
+  - *Bajos.* El borde del tercio final en +17,5 no tenía test (`depth >= THIRD_CUT` pasaba los
+    43 de estratos): caso nuevo en `test_the_stratum_of_the_incoming_ball`. En calibración
+    ninguna profundidad de S1 ni de S2 cae en el corte y una de C3 sí (el revisor). Dos frases
+    del protocolo seguían sin la condición de periodo (`outcome.ball_out_of_play` y la última
+    convención): dicen ahora "in the period of t", sin mover ninguna unidad (0 de 8.142
+    recepciones con t + W en otro periodo). La frase "pasaban todos los tests" de la pasada 2,
+    acotada en su sitio.
+  - *El sospechoso de la pasada 2, sin efecto en calibración (el revisor):* ningún índice a
+    menos de 2,4e-4 de 0,5, ningún rival a menos de 1,3e-4 de 10 m ni de 5,7e-4 de 5 m; mover
+    cada corte ±1e-9 no cambia ningún grupo. Para la capa 2: el peso positivo mínimo, 1,1156e-9,
+    es geometría y no ruido (un rival detectado a 4,5 m casi justo detrás); con `> 1e-8`
+    cambiarían 3 conjuntos de rivales cercanos y con `> 1e-6`, 15, sin mover V1 (todos están
+    detectados). Se decide al escribir ese código, antes de abrir.
+  **Mutaciones (11 tumban su test; en memoria, con el plugin del revisor, sin tocar `src`):** con
+  el signo de un mismo equipo para todo portador, en el desenlace caen los casos (1, 2) y (2, 2)
+  del test del desenlace; en la x del pre y en el índice y el estrato caen además los mismos dos
+  del test de diseño. En la suite completa, solo esos: 2 fallan y 1.032 pasan; 4 y 1.030; 4 y
+  1.030. Signo del periodo 1, +1, del otro equipo, negado, negado solo en
+  el periodo 2: caen en el test del desenlace. x del pre sin signo: caen (2, 1) y (1, 2) de los
+  dos tests. Tercio con `>=` o con `<=`: cae su caso de 17,5. Dos equivalentes al código, sin
+  test posible: el signo con el periodo de la fila de t + W (`read_outcome` rechaza la ventana
+  que cruza el periodo; 0 de 7.229 desenlaces cambian) y la tolerancia del tercio devuelta (0
+  estratos cambian en S1, S2 y C3).
+  Gate local en verde: ruff, format, `mypy src`, `pytest -q` (1.034 pasan, eran 1.029: los dos
+  tests espejados pasan a seis casos y hay uno de estrato más; 26 deseleccionados), `pytest -m
+  realdata` (26 de 26), `ac2fb protocol --check` OK.
+  Falta la pasada 4 sobre el arreglo de la pasada 3.
 - [ ] 23. `sonnet` Congelación en un commit propio: `stage: "frozen"`, `code_tree_sha`, semilla,
   umbrales. Aceptación: desde ese commit hasta la lectura, `git diff <congelación> -- src
   pyproject.toml uv.lock .python-version protocol/` vacío (revisión 18: el sha cubre ya todo

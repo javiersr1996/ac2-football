@@ -1732,10 +1732,27 @@ su test sintético con el fallo plantado (una sonda que no puede fallar no prote
     `realdata`; sería medio si se ve plausible "un signo por periodo sacado de los datos". Un
     partido mixto, con los dos equipos en los dos periodos y un solo `attack_sign`, las tumba
     todas, y también los dos bajos de la pasada 4 (borrador de unas 60 líneas en
-    `review22_p5/alt/test_mixed_alt.py`). **Lo decide Javier.**
+    `review22_p5/alt/test_mixed_alt.py`). **Lo decide Javier: adoptarlo (abajo).**
   - *El requisito de `make_metric` solo estaba en la 22:* diferirlo es aceptable (no alimenta D1
     a D5 y sus dos mutaciones tumban `test_realdata_s1`, `real_metric_s1.log`), pero pasa a la
     aceptación de la 25.
+  **Decisión de Javier (2026-10-20): adoptar el partido mixto.** Arreglado en `8b02f78`, solo
+  tests (el sha no cambia): `effect_helpers.mixed`, los cuatro cuadrantes (periodo, equipo) en
+  un partido con un solo `attack_sign` y el portador del segundo equipo listado después de los
+  rivales, y `unshifted`, que devuelve cada unidad a su mundo base; un test por lector
+  (`test_both_teams_in_both_periods_give_the_same_outcomes`, `..._units` y `..._c1_units`), con
+  el segundo equipo 2 o 7. **Mutaciones (las 72 de `mutplug5.py` del revisor, sobre los siete
+  tests, `fix22p5/sweep.log`):** caen 63, entre ellas las 10 de esta familia y los dos bajos de
+  la pasada 4; viven las 7 equivalentes (signo con el periodo de t + W, tolerancia del tercio
+  devuelta, equipo de la fila del portador, signo negado del rival más cercano, signo del
+  equipo listado primero en el desenlace y en el diseño, signo por volteo de periodo) y las 2
+  de `make_metric`, que van con la 25. En la suite completa, las dos que en la calibración real
+  dejarían pasar D3 y D5 (la caché por periodo y el periodo de la primera fila, en la x del pre)
+  tumban solo los casos mixtos de diseño y desenlace: 4 fallan y 1.048 pasan cada una.
+  Gate local en verde: ruff, format, `mypy src`, `pytest -q` (1.052 pasan, eran 1.046: los
+  seis casos nuevos; 26 deseleccionados), `pytest -m realdata` (26 de 26), `ac2fb protocol
+  --check` OK.
+  Falta la pasada 6 sobre este arreglo.
 - [ ] 23. `sonnet` Congelación en un commit propio: `stage: "frozen"`, `code_tree_sha`, semilla,
   umbrales. Aceptación: desde ese commit hasta la lectura, `git diff <congelación> -- src
   pyproject.toml uv.lock .python-version protocol/` vacío (revisión 18: el sha cubre ya todo

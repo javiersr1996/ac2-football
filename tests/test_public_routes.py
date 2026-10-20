@@ -1,4 +1,4 @@
-"""Every public route of ``ac2fb`` refuses a held-out match while the held-out is locked.
+"""Every public route of ``ac2fb`` refuses a held-out match outside the reading, in every stage.
 
 The routes are enumerated, not listed by hand: every function in the ``__all__`` of every
 module of the package, and every command of the CLI. Each one must have an entry in
@@ -32,7 +32,7 @@ import numpy as np
 import pyarrow as pa
 import pytest
 from ftbase import silver
-from gate_helpers import CAL, HELD, POISON, Checkout
+from gate_helpers import CAL, HELD, POISON, ROOT, Checkout, inside_the_reading
 
 import ac2fb
 from ac2fb import cli
@@ -51,7 +51,7 @@ from ac2fb.defence import (
     probe_s3,
 )
 from ac2fb.protocol import check as protocol_check
-from ac2fb.protocol import data
+from ac2fb.protocol import data, lock
 from ac2fb.protocol.data import HeldOutLocked
 from ac2fb.reliability import cadence, inventory, long, report, runs, visibility
 from ac2fb.reliability import match as match_module
@@ -253,6 +253,15 @@ def one_unit(window: WindowFrames) -> Reading | None:
     return Reading(0.0, ())
 
 
+LOCK_TEXT = (ROOT / "uv.lock").read_text(encoding="utf-8")
+
+
+def refused_reading() -> None:
+    """The reading in the poisoned checkout, whose layer2.json is in design: refused unopened."""
+    with pytest.raises(HeldOutLocked, match="stage 'design'"):
+        data.read_heldout(cli.LAYER2_READS, Path(OUT))
+
+
 def built(m: int) -> match_module.MatchData:
     return match_module.build_match(
         m,
@@ -269,6 +278,13 @@ FUNCTION_ROUTES: dict[str, Route] = {
     "ac2fb.protocol.data.data_dir": without_match(data.data_dir),
     "ac2fb.protocol.data.guard_status": without_match(data.guard_status),
     "ac2fb.protocol.data.load_split": without_match(data.load_split),
+    "ac2fb.protocol.data.read_heldout": without_match(refused_reading),
+    "ac2fb.protocol.lock.installed_packages": without_match(lock.installed_packages),
+    "ac2fb.protocol.lock.lock_mismatches": without_match(
+        lambda: lock.lock_mismatches(LOCK_TEXT, lock.installed_packages())
+    ),
+    "ac2fb.protocol.lock.locked_packages": without_match(lambda: lock.locked_packages(LOCK_TEXT)),
+    "ac2fb.protocol.lock.normalise": without_match(lambda: lock.normalise("Typing_Extensions")),
     "ac2fb.protocol.data.read_frames": by_match(
         lambda m: data.read_frames([m]),
         lambda m: data.read_frames([m], attacking=True),
@@ -724,6 +740,8 @@ CLI_ROUTES: dict[tuple[str, ...], Route] = {
     ("design",): by_match(design_command),
     ("calibration",): by_match(calibration_command),
     ("protocol",): without_match(lambda: cli.main(["protocol", "--check"])),
+    ("heldout",): without_match(lambda: cli.main(["heldout", "read", "--reports-dir", OUT])),
+    ("heldout", "read"): without_match(lambda: cli.main(["heldout", "read", "--reports-dir", OUT])),
 }
 
 
@@ -855,9 +873,23 @@ def test_every_route_without_a_match_never_opens_a_heldout_file(
 
 
 @pytest.mark.parametrize("route", [pytest.param(r, id=n) for n, r in routes() if r.takes_match])
-def test_with_the_heldout_open_every_route_serves_it(gate: Checkout, route: Route) -> None:
-    gate.freeze()
+def test_in_stage_read_outside_the_reading_every_route_refuses_a_heldout_match(
+    poisoned_gate: Checkout, route: Route
+) -> None:
+    # After the reading, layer 3 and everything else still refuse the held-out: only the
+    # commands of layer2.json, run by read_heldout, ever see it.
+    poisoned_gate.freeze("read")
+    assert data.guard_status().open
     for call in route.calls:
-        table = call(HELD)
-        assert table.num_rows > 0
-        assert match_ids_in(table) <= {f"fb:{HELD}"}
+        with pytest.raises(HeldOutLocked, match="only inside"):
+            call(HELD)
+
+
+@pytest.mark.parametrize("route", [pytest.param(r, id=n) for n, r in routes() if r.takes_match])
+def test_inside_the_reading_every_route_serves_it(gate: Checkout, route: Route) -> None:
+    gate.freeze("read")
+    with inside_the_reading():
+        for call in route.calls:
+            table = call(HELD)
+            assert table.num_rows > 0
+            assert match_ids_in(table) <= {f"fb:{HELD}"}

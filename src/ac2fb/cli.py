@@ -5,7 +5,7 @@ from __future__ import annotations
 import argparse
 import json
 import sys
-from collections.abc import Sequence
+from collections.abc import Mapping, Sequence
 from pathlib import Path
 from typing import Any
 
@@ -19,10 +19,13 @@ from ac2fb.defence.probe_s3 import write_s3_report
 from ac2fb.protocol import check as protocol_check
 from ac2fb.protocol.data import (
     GUARDED_CODE,
+    LAYER2_PATH,
+    Command,
     HeldOutLocked,
     data_dir,
     guard_status,
     load_split,
+    read_heldout,
 )
 from ac2fb.reliability.cadence import write_cadence_report
 from ac2fb.reliability.long import write_long
@@ -212,7 +215,57 @@ def build_parser() -> argparse.ArgumentParser:
         ),
     )
     protocol.add_argument("--check", action="store_true", help="validate the protocol")
+    heldout = commands.add_parser(
+        "heldout",
+        help="the single reading of the held-out matches, for layer 2 only",
+        description=f"Layer 3 is dead (D5); the held-out is read once, under {LAYER2_PATH}.",
+    )
+    heldout_commands = heldout.add_subparsers(
+        dest="heldout_command", metavar="command", required=True
+    )
+    read = heldout_commands.add_parser(
+        "read",
+        help="commit the reading, then run the layer 2 commands on the held-out matches",
+        description=(
+            f"Irreversible. From stage frozen of {LAYER2_PATH}: checks that layer 3 is dead, "
+            "that HEAD holds the frozen code with a clean tree and that the installed packages "
+            "are those of uv.lock; commits the reading (stage read) before computing any "
+            f"figure; then runs the commands {LAYER2_PATH} lists ({', '.join(LAYER2_READS)}) on "
+            "the held-out matches and nothing else. From stage read it reproduces the reading "
+            "without a new commit. Exit 2 with the reasons when refused."
+        ),
+    )
+    read.add_argument(
+        "--reports-dir",
+        type=Path,
+        default=_REPORTS / "heldout",
+        help="where the held-out artefacts go (default: reports/heldout/)",
+    )
     return parser
+
+
+def _layer2_artifacts(match_ids: list[int], reports_dir: Path) -> Path:
+    """The ``layer2`` command as a command of the reading: long Parquet and ``layer2.json``."""
+    write_long(match_ids)
+    return write_report(layer2_report(match_ids), reports_dir)
+
+
+# The layer 2 commands the reading may run, by the names protocol/layer2.json lists.
+LAYER2_READS: Mapping[str, Command] = {"layer2": _layer2_artifacts}
+
+
+def _heldout_read(reports_dir: Path) -> int:
+    try:
+        reading = read_heldout(LAYER2_READS, reports_dir)
+    except (HeldOutLocked, RuntimeError) as exc:
+        print(f"refused: {exc}", file=sys.stderr)
+        return 2
+    verb = "reproduced the reading of" if reading.reproduced else "read"
+    print(f"{verb} {len(reading.heldout)} held-out matches at {reading.commit}")
+    print(f"frozen at {reading.frozen_commit}")
+    for path in reading.written:
+        print(f"wrote {path}")
+    return 0
 
 
 _PROBE_REPORTS = ("probe_s1.json", "probe_s2.json", "probe_s3.json")
@@ -238,7 +291,7 @@ def _protocol(do_check: bool) -> int:
     protocol = _read_protocol(_PROTOCOL)
     status = guard_status()
     print(f"protocol: {_PROTOCOL}")
-    print(f"stage in the working tree: {protocol.get('stage')}; at HEAD: {status.stage}")
+    print(f"stage in the working tree: {protocol.get('stage')}; at HEAD: {status.protocol_stage}")
     print(f"candidate: {protocol.get('candidate')}; written: {protocol.get('date_written')}")
     if not do_check:
         return 0
@@ -353,11 +406,12 @@ def _status() -> int:
     print(f"data: {data_dir()}")
     print(f"split at HEAD: {len(split.calibration)} calibration, {len(split.heldout)} held-out")
     print(f"HEAD: {status.head}")
-    print(f"stage at HEAD: {status.stage}")
+    print(f"stage of protocol/protocol.json (layer 3) at HEAD: {status.protocol_stage}")
+    print(f"stage of {LAYER2_PATH} at HEAD: {status.stage}")
     print(f"code_tree_sha of {' and '.join(GUARDED_CODE)} at HEAD: {status.code_tree_sha}")
-    print(f"code_tree_sha frozen in the protocol: {status.frozen_code_tree_sha}")
+    print(f"code_tree_sha frozen in {LAYER2_PATH}: {status.frozen_code_tree_sha}")
     print(f"working tree: {'clean' if not status.dirty else f'{len(status.dirty)} path(s)'}")
-    print("held-out: open" if status.open else "held-out: locked")
+    print("held-out: open inside `ac2fb heldout read` only" if status.open else "held-out: locked")
     for reason in status.reasons:
         print(f"  - {reason}")
     return 0
@@ -385,6 +439,8 @@ def main(argv: Sequence[str] | None = None) -> int:
         return _calibration(args.match, args.reports_dir)
     if args.command == "protocol":
         return _protocol(args.check)
+    if args.command == "heldout" and args.heldout_command == "read":
+        return _heldout_read(args.reports_dir)
     return 0
 
 

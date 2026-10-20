@@ -7,19 +7,23 @@ So the gate is tested on silver files it could open and must refuse, and never o
 
 from __future__ import annotations
 
+import contextlib
 import hashlib
 import json
 import shutil
 import subprocess
-from collections.abc import Sequence
+from collections.abc import Iterator, Sequence
 from dataclasses import dataclass
 from pathlib import Path
 
 from ftbase.cli import main as ftbase_main
 from ftbase.fixtures import PlantedRun, write_synthetic_match
 
+from ac2fb.protocol import data
+
 ROOT = Path(__file__).resolve().parent.parent
 CAL, HELD = 1874553, 1899585  # the first id of each set in protocol/split.json
+READS = ("layer2",)  # the reads of a throwaway layer2.json: the commands of ac2fb.cli
 # What the freeze covers, in the order of `git ls-tree`, written out here so a test never
 # borrows the constant it checks: `src` whole and the three files that pin what runs it.
 GUARDED = (".python-version", "pyproject.toml", "src", "uv.lock")
@@ -107,17 +111,43 @@ class Checkout:
         assert listing.count(b"\n") == len(GUARDED)
         return hashlib.sha256(listing).hexdigest()
 
-    def set_protocol(self, stage: str, code_tree_sha: str | None) -> None:
-        body = {"stage": stage, "code_tree_sha": code_tree_sha}
+    def set_protocol(self, stage: str) -> None:
+        """``protocol/protocol.json`` (layer 3) in ``stage``, committed."""
+        body = {"stage": stage, "code_tree_sha": None}
         self.write("protocol/protocol.json", json.dumps(body, indent=2) + "\n")
         self.commit(f"protocol to {stage}")
 
-    def freeze(self, stage: str = "frozen") -> None:
-        self.set_protocol(stage, self.tree_sha())
+    def set_layer2(
+        self, stage: str, code_tree_sha: str | None, reads: Sequence[str] = READS, **extra: object
+    ) -> None:
+        """``protocol/layer2.json`` in ``stage``, committed."""
+        body = {"stage": stage, "code_tree_sha": code_tree_sha, "reads": list(reads), **extra}
+        self.write("protocol/layer2.json", json.dumps(body, indent=2) + "\n")
+        self.commit(f"layer2 to {stage}")
+
+    def freeze(self, stage: str = "frozen", reads: Sequence[str] = READS) -> None:
+        """``layer2.json`` frozen on the code at HEAD; in ``read``, with the record of a reading."""
+        extra: dict[str, object] = {}
+        if stage == "read":
+            heldout = json.loads((self.root / "protocol" / "split.json").read_bytes())["heldout"]
+            frozen = self.git("rev-parse", "HEAD").strip()
+            extra["reading"] = {"frozen_commit": frozen, "heldout": heldout, "date": "2026-01-01"}
+        self.set_layer2(stage, self.tree_sha(), reads, **extra)
+
+
+@contextlib.contextmanager
+def inside_the_reading() -> Iterator[None]:
+    """What only ``read_heldout`` does in the package: serve the held-out while it runs."""
+    token = data._READING.set(True)
+    try:
+        yield
+    finally:
+        data._READING.reset(token)
 
 
 def make_checkout(root: Path) -> Checkout:
-    """A checkout in stage ``design`` with the real split and every frozen file."""
+    """A checkout with layer 3 dead and ``layer2.json`` in ``design``, the real split and every
+    frozen file."""
     checkout = Checkout(root)
     root.mkdir(parents=True)
     checkout.git("init", "-q")
@@ -129,7 +159,11 @@ def make_checkout(root: Path) -> Checkout:
     ):
         checkout.git("config", key, value)
     checkout.write("protocol/split.json", (ROOT / "protocol" / "split.json").read_text("utf-8"))
-    checkout.write("protocol/protocol.json", '{"stage": "design", "code_tree_sha": null}\n')
+    checkout.write("protocol/protocol.json", '{"stage": "dead", "code_tree_sha": null}\n')
+    checkout.write(
+        "protocol/layer2.json",
+        json.dumps({"stage": "design", "code_tree_sha": None, "reads": list(READS)}) + "\n",
+    )
     for path in FROZEN_FILES:
         checkout.write(path, f"# {path}\n")
     checkout.write("README.md", "throwaway checkout for the gate tests\n")

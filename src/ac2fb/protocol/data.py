@@ -8,32 +8,42 @@ walks the code to keep it so. The readers (:func:`read_frames`, :func:`read_even
 refuse a held-out id with :class:`HeldOutLocked` before any file is opened. An id outside the
 split is refused too (:class:`ValueError`). Calibration matches are served in every stage.
 
-The held-out opens when, and only when, all of this holds in the git checkout the package runs
-from (:func:`guard_status` says which part fails):
+Layer 3 died in calibration (``protocol/protocol.json`` in stage ``dead``, D5, branch B), so
+the held-out is read once, for layer 2 only, under ``protocol/layer2.json``. It is served
+only inside :func:`read_heldout` (the command ``ac2fb heldout read``), which runs the layer 2
+commands that file lists and nothing else, and only when all of this holds in the git checkout
+the package runs from (:func:`guard_status` says which part fails):
 
-1. ``protocol/protocol.json``, as committed at ``HEAD``, is in stage ``frozen`` (the single
-   reading) or ``read`` (the reading is committed; from then on it is reproduced);
-2. :func:`code_tree_sha` at ``HEAD`` equals the ``code_tree_sha`` that file records, so
-   everything that reaches the frozen code is frozen: the whole of ``src`` (this door and the
-   CLI included), ``pyproject.toml`` and ``uv.lock`` (the pinned base and libraries) and
-   ``.python-version`` (the interpreter);
-3. the working tree is clean: ``git status`` lists nothing, untracked files included, and no
+1. ``protocol/protocol.json``, as committed at ``HEAD``, is in stage ``dead``;
+2. ``protocol/layer2.json``, as committed at ``HEAD``, is in stage ``read``: the reading is
+   committed before any figure is computed, and from then on it is reproduced. In ``frozen``
+   the held-out never opens: :func:`read_heldout` moves it to ``read`` first;
+3. :func:`code_tree_sha` at ``HEAD`` equals the ``code_tree_sha`` that ``layer2.json``
+   records, so everything that reaches the frozen code is frozen: the whole of ``src`` (this
+   door and the CLI included), ``pyproject.toml`` and ``uv.lock`` (the pinned base and
+   libraries) and ``.python-version`` (the interpreter);
+4. the working tree is clean: ``git status`` lists nothing, untracked files included, and no
    tracked file is hidden from it by ``assume-unchanged`` or ``skip-worktree``.
 
-The split and the stage are read from ``HEAD``, never from the working tree, so an uncommitted
-edit cannot move a match into calibration or open the held-out.
+Outside :func:`read_heldout`, every route refuses the held-out in every stage. The split and
+the stages are read from ``HEAD``, never from the working tree, so an uncommitted edit cannot
+move a match into calibration or open the held-out.
 
 Where the data lives: :func:`data_dir`.
 """
 
 from __future__ import annotations
 
+import datetime
 import hashlib
 import json
 import operator
 import os
+import shutil
 import subprocess
-from collections.abc import Iterable, Sequence
+import tempfile
+from collections.abc import Callable, Iterable, Mapping, Sequence
+from contextvars import ContextVar
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
@@ -45,12 +55,16 @@ from ftbase import silver as _silver
 from ftbase.bronze.common import bronze_path
 from ftbase.silver.read import DimName
 
+from ac2fb.protocol import lock
+
 __all__ = [
     "DATA_ROOT_ENV",
     "GUARDED_CODE",
     "OPEN_STAGES",
+    "READ_MESSAGE",
     "GuardStatus",
     "HeldOutLocked",
+    "HeldOutReading",
     "Split",
     "code_tree_sha",
     "data_dir",
@@ -62,15 +76,27 @@ __all__ = [
     "read_dim",
     "read_events",
     "read_frames",
+    "read_heldout",
 ]
 
 DATA_ROOT_ENV = "FTBASE_DATA_ROOT"
 SPLIT_PATH = "protocol/split.json"
 PROTOCOL_PATH = "protocol/protocol.json"
+LAYER2_PATH = "protocol/layer2.json"
 # In the order of `git ls-tree`: the whole package and the three files that pin what runs it.
 GUARDED_CODE: tuple[str, ...] = (".python-version", "pyproject.toml", "src", "uv.lock")
-OPEN_STAGES: tuple[str, ...] = ("frozen", "read")
+# The stages of layer2.json in which the held-out is served (inside the reading only).
+OPEN_STAGES: tuple[str, ...] = ("read",)
+_READABLE_STAGES = ("frozen", "read")  # the stages read_heldout starts from
+_LAYER3_DEAD = "dead"
+READ_MESSAGE = "Read the held-out for layer 2: the single reading"
 _ID_PREFIX = "fb:"  # silver's match_id is ``fb:<native_match_id>``
+# True only while read_heldout runs the commands of layer2.json.
+_READING: ContextVar[bool] = ContextVar("ac2fb_reading_heldout", default=False)
+
+# A layer 2 command of the reading: it takes the held-out ids and the reports directory and
+# returns the artefact it wrote.
+Command = Callable[[list[int], Path], Path]
 
 
 class HeldOutLocked(PermissionError):
@@ -87,9 +113,15 @@ class Split:
 
 @dataclass(frozen=True)
 class GuardStatus:
-    """The state the guard decides on; ``open`` is true when ``reasons`` is empty."""
+    """The state the guard decides on; ``open`` is true when ``reasons`` is empty.
+
+    ``stage`` and ``frozen_code_tree_sha`` are those of ``protocol/layer2.json``;
+    ``protocol_stage`` is the stage of ``protocol/protocol.json`` (layer 3). Open means the
+    held-out may be served inside :func:`read_heldout`, and nowhere else.
+    """
 
     head: str | None
+    protocol_stage: str | None
     stage: str | None
     frozen_code_tree_sha: str | None
     code_tree_sha: str | None
@@ -99,6 +131,17 @@ class GuardStatus:
     @property
     def open(self) -> bool:
         return not self.reasons
+
+
+@dataclass(frozen=True)
+class HeldOutReading:
+    """What :func:`read_heldout` did: the commit of the reading and the artefacts written."""
+
+    commit: str
+    frozen_commit: str
+    heldout: tuple[int, ...]
+    written: tuple[Path, ...]
+    reproduced: bool
 
 
 def _repo_root() -> Path:
@@ -182,32 +225,45 @@ def _dirty() -> tuple[str, ...]:
     return tuple(status + hidden)
 
 
-def guard_status() -> GuardStatus:
-    """Whether the held-out is open, and every reason it is not."""
+def _guard(open_stages: tuple[str, ...]) -> GuardStatus:
+    """The guard, with ``layer2.json`` taken as open in ``open_stages``."""
     head: str | None = None
+    protocol_stage: Any = None
     stage: Any = None
     frozen: Any = None
     current: str | None = None
     dirty: tuple[str, ...] = ()
     try:
         head = _head()
-        protocol = _committed_json(head, PROTOCOL_PATH)
-        stage, frozen = protocol.get("stage"), protocol.get("code_tree_sha")
-        current = code_tree_sha(head)
         dirty = _dirty()
+        protocol_stage = _committed_json(head, PROTOCOL_PATH).get("stage")
+        layer2 = _committed_json(head, LAYER2_PATH)
+        stage, frozen = layer2.get("stage"), layer2.get("code_tree_sha")
+        current = code_tree_sha(head)
     except (RuntimeError, ValueError, AttributeError) as exc:
-        return GuardStatus(head, stage, frozen, current, dirty, (f"cannot check: {exc}",))
+        reason = (f"cannot check: {exc}",)
+        return GuardStatus(head, protocol_stage, stage, frozen, current, dirty, reason)
     reasons: list[str] = []
-    if stage not in OPEN_STAGES:
-        reasons.append(f"{PROTOCOL_PATH} at HEAD is in stage {stage!r}, not one of {OPEN_STAGES}")
+    if protocol_stage != _LAYER3_DEAD:
+        reasons.append(
+            f"{PROTOCOL_PATH} at HEAD is in stage {protocol_stage!r}, not {_LAYER3_DEAD!r}: "
+            "layer 2 reads the held-out only once layer 3 is dead"
+        )
+    if stage not in open_stages:
+        reasons.append(f"{LAYER2_PATH} at HEAD is in stage {stage!r}, not one of {open_stages}")
     if not isinstance(frozen, str) or frozen != current:
         reasons.append(
             f"code_tree_sha of {' and '.join(GUARDED_CODE)} at HEAD is {current}; "
-            f"the protocol records {frozen}"
+            f"{LAYER2_PATH} records {frozen}"
         )
     if dirty:
         reasons.append(f"the working tree is not clean ({len(dirty)}: {list(dirty[:3])})")
-    return GuardStatus(head, stage, frozen, current, dirty, tuple(reasons))
+    return GuardStatus(head, protocol_stage, stage, frozen, current, dirty, tuple(reasons))
+
+
+def guard_status() -> GuardStatus:
+    """Whether the held-out may be served inside the reading, and every reason it may not."""
+    return _guard(OPEN_STAGES)
 
 
 def _admit(match_ids: Sequence[int]) -> list[int]:
@@ -221,10 +277,92 @@ def _admit(match_ids: Sequence[int]) -> list[int]:
         raise ValueError(f"match(es) {unknown} are not in {SPLIT_PATH}")
     held = [m for m in ids if m in split.heldout]
     if held:
-        status = guard_status()
-        if not status.open:
-            raise HeldOutLocked(f"held-out match(es) {held} refused: " + "; ".join(status.reasons))
+        reasons = list(guard_status().reasons)
+        if not _READING.get():
+            reasons.append("the held-out is served only inside `ac2fb heldout read`")
+        if reasons:
+            raise HeldOutLocked(f"held-out match(es) {held} refused: " + "; ".join(reasons))
     return ids
+
+
+def _record(layer2: Mapping[str, Any], frozen_commit: str, heldout: Sequence[int]) -> bytes:
+    reading = {
+        "frozen_commit": frozen_commit,
+        "heldout": list(heldout),
+        "date": datetime.datetime.now(datetime.UTC).date().isoformat(),
+    }
+    body = {**layer2, "stage": "read", "reading": reading}
+    return (json.dumps(body, indent=2, ensure_ascii=False) + "\n").encode("utf-8")
+
+
+def read_heldout(commands: Mapping[str, Command], reports_dir: Path) -> HeldOutReading:
+    """The single reading of the held-out, for layer 2 only; in stage ``read``, its reproduction.
+
+    ``commands`` are the layer 2 commands by name; they must be exactly the ``reads`` of
+    ``protocol/layer2.json`` at ``HEAD``, and they run in that order, each on the held-out ids.
+    Nothing else runs while the held-out is served. Each writes into a staging directory
+    outside the checkout and returns the path of its artefact there; once all have run, the
+    staging directory is copied under ``reports_dir``. A command that fails leaves the reading
+    recorded and ``reports_dir`` untouched: running again reproduces it.
+
+    From stage ``frozen``: with ``protocol.json`` dead, the frozen code tree at ``HEAD``, a
+    clean tree and an environment that matches ``uv.lock`` (``lock.lock_mismatches``), it
+    commits ``layer2.json`` in stage ``read`` with the frozen commit, the held-out ids and the
+    date (:data:`READ_MESSAGE`) *before* computing any figure, and then runs the commands.
+    From stage ``read``: the same checks, no new commit, the same commands. Anything else is
+    refused with :class:`HeldOutLocked` before a file of the held-out is opened.
+    """
+    status = _guard(_READABLE_STAGES)
+    if not status.open:
+        raise HeldOutLocked("the reading is refused: " + "; ".join(status.reasons))
+    head = str(status.head)
+    layer2 = _committed_json(head, LAYER2_PATH)  # a mapping: the guard read it
+    heldout = load_split().heldout
+    reproduced = status.stage == "read"
+    problems: list[str] = []
+    reads = layer2.get("reads")
+    if not (
+        isinstance(reads, list)
+        and all(isinstance(r, str) for r in reads)
+        and len(set(reads)) == len(reads)
+        and set(reads) == set(commands)
+    ):
+        problems.append(f"{LAYER2_PATH} reads {reads}; the code offers {sorted(commands)}")
+    reading = layer2.get("reading")
+    if reproduced and not (
+        isinstance(reading, dict)
+        and isinstance(reading.get("frozen_commit"), str)
+        and reading.get("heldout") == list(heldout)
+    ):
+        problems.append(f"{LAYER2_PATH} is in stage read without the record of its reading")
+    if not reproduced and reading is not None:
+        problems.append(f"{LAYER2_PATH} is in stage frozen with a reading already recorded")
+    locked = _git("show", f"{head}:uv.lock").decode("utf-8")
+    problems += lock.lock_mismatches(locked, lock.installed_packages())
+    if problems:
+        raise HeldOutLocked("the reading is refused: " + "; ".join(problems))
+    if reproduced:
+        frozen_commit = str(reading["frozen_commit"])
+    else:
+        frozen_commit = head
+        (_repo_root() / LAYER2_PATH).write_bytes(_record(layer2, head, heldout))
+        _git("add", "--", LAYER2_PATH)
+        _git("commit", "-q", "-m", READ_MESSAGE, "--", LAYER2_PATH)
+    after = guard_status()
+    if not after.open:
+        raise HeldOutLocked("the reading is recorded but shut: " + "; ".join(after.reasons))
+    # The commands write outside the checkout, so the tree stays clean while the held-out is
+    # served; their artefacts are copied under reports_dir once every command has run.
+    with tempfile.TemporaryDirectory(prefix="ac2fb-heldout-") as tmp:
+        staging = Path(tmp)
+        token = _READING.set(True)
+        try:
+            staged = [commands[name](list(heldout), staging) for name in reads]
+        finally:
+            _READING.reset(token)
+        shutil.copytree(staging, reports_dir, dirs_exist_ok=True)
+        written = tuple(reports_dir / path.relative_to(staging) for path in staged)
+    return HeldOutReading(str(after.head), frozen_commit, heldout, written, reproduced)
 
 
 def read_frames(

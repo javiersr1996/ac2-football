@@ -13,7 +13,15 @@ from pathlib import Path
 import pyarrow as pa
 import pytest
 from ftbase import silver
-from gate_helpers import CAL, FROZEN_FILES, GUARDED, HELD, ROOT, Checkout
+from gate_helpers import (
+    CAL,
+    FROZEN_FILES,
+    GUARDED,
+    HELD,
+    ROOT,
+    Checkout,
+    inside_the_reading,
+)
 
 from ac2fb.protocol import data
 from ac2fb.protocol.data import HeldOutLocked
@@ -63,40 +71,63 @@ def test_match_ids_are_integers(gate: Checkout, bad: object) -> None:
         data.read_frames(bad)  # type: ignore[arg-type]
 
 
-# --- frozen and read: the held-out opens, and only then ---------------------------------------
+# --- read, inside the reading: the held-out is served there and only there ---------------------
 
 
-@pytest.mark.parametrize("stage", ["frozen", "read"])
-def test_frozen_code_and_a_clean_tree_open_the_heldout(gate: Checkout, stage: str) -> None:
-    gate.freeze(stage)
+def test_in_stage_read_the_heldout_is_served_inside_the_reading_only(gate: Checkout) -> None:
+    gate.freeze("read")
     status = data.guard_status()
     assert status.open, status.reasons
     assert status.code_tree_sha == status.frozen_code_tree_sha == gate.tree_sha()
-    assert ids(frames(HELD)) == {HELD}
-    assert ids(data.read_frames([CAL, HELD], columns=["native_match_id"])) == {CAL, HELD}
+    assert status.protocol_stage == "dead" and status.stage == "read"
+    with pytest.raises(HeldOutLocked, match="only inside `ac2fb heldout read`"):
+        frames(HELD)
+    with inside_the_reading():
+        assert ids(frames(HELD)) == {HELD}
+        assert ids(data.read_frames([CAL, HELD], columns=["native_match_id"])) == {CAL, HELD}
+    with pytest.raises(HeldOutLocked, match="only inside"):
+        frames(HELD)
+
+
+def test_in_stage_frozen_it_never_opens_not_even_inside_the_reading(gate: Checkout) -> None:
+    gate.freeze("frozen")
+    assert not data.guard_status().open
+    with inside_the_reading(), pytest.raises(HeldOutLocked, match="stage 'frozen'"):
+        frames(HELD)
+
+
+@pytest.mark.parametrize("stage", ["design", "frozen", "read", "Dead"])
+def test_a_layer3_protocol_that_is_not_dead_keeps_it_shut(gate: Checkout, stage: str) -> None:
+    gate.freeze("read")
+    gate.set_protocol(stage)
+    status = data.guard_status()
+    assert len(status.reasons) == 1 and "not 'dead'" in status.reasons[0]
+    with inside_the_reading(), pytest.raises(HeldOutLocked, match="not 'dead'"):
+        frames(HELD)
 
 
 @pytest.mark.parametrize("path", [*FROZEN_FILES, "src/ac2fb/new_module.py"])
 def test_a_code_change_after_the_freeze_closes_it(gate: Checkout, path: str) -> None:
     # Any file that reaches the frozen code: the analysis, the door, the CLI, the pins of the
     # base and the libraries, the interpreter pin, and a new module under src.
-    gate.freeze()
+    gate.freeze("read")
     gate.write(path, "# changed after the freeze\n")
     gate.commit("change frozen code")
     status = data.guard_status()
-    # Stage frozen and a clean tree: only the code tree keeps it shut.
-    assert status.stage == "frozen" and status.dirty == ()
+    # Stage read and a clean tree: only the code tree keeps it shut.
+    assert status.stage == "read" and status.dirty == ()
     assert [r for r in status.reasons if "code_tree_sha" in r] == list(status.reasons)
-    with pytest.raises(HeldOutLocked, match="code_tree_sha"):
+    with inside_the_reading(), pytest.raises(HeldOutLocked, match="code_tree_sha"):
         frames(HELD)
 
 
 def test_a_change_outside_the_guarded_code_leaves_it_open(gate: Checkout) -> None:
-    gate.freeze()
+    gate.freeze("read")
     gate.write("README.md", "edited after the freeze\n")
     gate.commit("edit the readme")
     assert data.guard_status().open
-    assert ids(frames(HELD)) == {HELD}
+    with inside_the_reading():
+        assert ids(frames(HELD)) == {HELD}
 
 
 @pytest.mark.parametrize("path", ["uv.lock", "pyproject.toml", ".python-version"])
@@ -108,56 +139,66 @@ def test_a_checkout_without_a_frozen_file_stays_shut(gate: Checkout, path: str) 
         data.code_tree_sha()
     status = data.guard_status()
     assert not status.open and "does not hold" in status.reasons[0]
-    with pytest.raises(HeldOutLocked, match="does not hold"):
+    with inside_the_reading(), pytest.raises(HeldOutLocked, match="does not hold"):
         frames(HELD)
 
 
-def test_frozen_without_a_recorded_code_tree_sha_stays_shut(gate: Checkout) -> None:
-    gate.set_protocol("frozen", None)
-    with pytest.raises(HeldOutLocked, match="records None"):
+def test_read_without_a_recorded_code_tree_sha_stays_shut(gate: Checkout) -> None:
+    gate.set_layer2("read", None)
+    with inside_the_reading(), pytest.raises(HeldOutLocked, match="records None"):
         frames(HELD)
 
 
-@pytest.mark.parametrize("stage", ["Frozen", "frozen ", "design", "reading", "dead"])
+@pytest.mark.parametrize("stage", ["Read", "read ", "design", "frozen", "reading", "dead"])
 def test_any_other_stage_stays_shut(gate: Checkout, stage: str) -> None:
-    gate.set_protocol(stage, gate.tree_sha())
-    with pytest.raises(HeldOutLocked, match="stage"):
+    gate.set_layer2(stage, gate.tree_sha())
+    with inside_the_reading(), pytest.raises(HeldOutLocked, match="stage"):
+        frames(HELD)
+
+
+def test_without_a_layer2_protocol_it_stays_shut(gate: Checkout) -> None:
+    gate.git("rm", "-q", "protocol/layer2.json")
+    gate.commit("drop layer2.json")
+    status = data.guard_status()
+    assert not status.open and "cannot check" in status.reasons[0]
+    with inside_the_reading(), pytest.raises(HeldOutLocked, match="layer2.json"):
         frames(HELD)
 
 
 @pytest.mark.parametrize("dirt", ["modified", "staged", "untracked"])
 def test_a_dirty_tree_keeps_it_shut(gate: Checkout, dirt: str) -> None:
-    gate.freeze()
+    gate.freeze("read")
     target = "src/ac2fb/reliability/__init__.py" if dirt != "untracked" else "notes.txt"
     gate.write(target, "x = 1\n")
     if dirt == "staged":
         gate.git("add", target)
     status = data.guard_status()
-    # Stage and code tree at HEAD are the frozen ones: only the tree keeps it shut.
-    assert status.stage == "frozen" and status.code_tree_sha == status.frozen_code_tree_sha
+    # Stages and code tree at HEAD are the frozen ones: only the tree keeps it shut.
+    assert status.stage == "read" and status.code_tree_sha == status.frozen_code_tree_sha
     assert len(status.reasons) == 1 and "not clean" in status.reasons[0]
-    with pytest.raises(HeldOutLocked, match="not clean"):
+    with inside_the_reading(), pytest.raises(HeldOutLocked, match="not clean"):
         frames(HELD)
 
 
 @pytest.mark.parametrize("flag", ["--skip-worktree", "--assume-unchanged"])
 def test_an_edit_hidden_from_git_status_keeps_it_shut(gate: Checkout, flag: str) -> None:
-    gate.freeze()
+    gate.freeze("read")
     target = "src/ac2fb/reliability/__init__.py"
     gate.git("update-index", flag, target)
     gate.write(target, "def changed() -> None: ...\n")
     assert gate.git("status", "--porcelain", "--untracked-files=all") == ""
-    with pytest.raises(HeldOutLocked, match="hidden from git status"):
+    with inside_the_reading(), pytest.raises(HeldOutLocked, match="hidden from git status"):
         frames(HELD)
 
 
 # --- HEAD, never the working tree --------------------------------------------------------------
 
 
-def test_an_uncommitted_freeze_does_not_open_it(gate: Checkout) -> None:
+def test_an_uncommitted_reading_does_not_open_it(gate: Checkout) -> None:
     sha = gate.tree_sha()
-    gate.write("protocol/protocol.json", json.dumps({"stage": "frozen", "code_tree_sha": sha}))
-    with pytest.raises(HeldOutLocked, match="stage 'design'"):
+    body = {"stage": "read", "code_tree_sha": sha, "reads": ["layer2"]}
+    gate.write("protocol/layer2.json", json.dumps(body))
+    with inside_the_reading(), pytest.raises(HeldOutLocked, match="stage 'design'"):
         frames(HELD)
 
 
@@ -200,7 +241,7 @@ def test_outside_a_git_checkout_nothing_is_served(
 def test_a_folder_inside_another_checkout_is_not_a_checkout(
     gate: Checkout, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    gate.freeze()
+    gate.freeze("read")
     inner = gate.root / "src"
     monkeypatch.setattr(data, "_repo_root", lambda: inner)
     with pytest.raises(RuntimeError, match="own git checkout"):

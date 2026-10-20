@@ -30,8 +30,8 @@ def test_the_door_serves_the_ten_calibration_matches() -> None:
 
 
 def test_the_door_refuses_the_ten_heldout_matches() -> None:
-    status = data.guard_status()
-    assert not status.open, "this test holds until the protocol is frozen"
+    # Outside `ac2fb heldout read` the held-out is refused in every stage, so this holds after
+    # the reading too.
     assert data.load_split().heldout == HELDOUT
     for match_id in HELDOUT:
         with pytest.raises(data.HeldOutLocked):

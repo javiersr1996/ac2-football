@@ -1802,8 +1802,9 @@ su test sintético con el fallo plantado (una sonda que no puede fallar no prote
     comprobar. Gate local en verde (`sync --locked`, ruff, format, `mypy src`, `pytest -q`: 1.067
     pasan, eran 1.052; 26 deseleccionados; `pytest -m realdata`: 26 de 26; `ac2fb protocol
     --check`: 99 campos de esquema, eran 89; 32 reglas de coherencia, eran 24; 27 constantes
-    contra el código; 26 campos numéricos, todos justificados).
-  - [ ] 23b. `opus` Puerta de la capa 2 y `ac2fb heldout read` (los requisitos de la revisión 18,
+    contra el código; 26 campos numéricos, todos justificados). Commit `ed729c4`, empujado; CI en
+    verde (run 39444922954).
+  - [x] 23b. `opus` Puerta de la capa 2 y `ac2fb heldout read` (los requisitos de la revisión 18,
     adaptados). `protocol/layer2.json` (`design`, `frozen`, `read`): qué comandos lee y qué
     artefactos escribe (los de la 25 y la 26), `code_tree_sha`, y que no calcula nada de la capa
     3. La puerta abre el reservado solo con `protocol.json` en `dead`, `layer2.json` en `read`, su
@@ -1817,6 +1818,47 @@ su test sintético con el fallo plantado (una sonda que no puede fallar no prote
     (`effect`, `design`, `calibration`, `power`) con un id del reservado y de que un cambio de
     código posterior la cierra; mutaciones anotadas (la puerta que abre en `frozen`; la lectura
     que no compara versiones; la lectura que commitea después de calcular).
+    Hecho (2026-10-20). **Más estricto que lo escrito arriba:** el reservado se sirve solo
+    *dentro* de `data.read_heldout` (un `ContextVar` que solo esa función activa), y fuera de
+    ella toda ruta lo rechaza en todos los stages, también después de la lectura. Con la puerta
+    abierta en `read` para cualquier lector, `reliability.match.load_match` serviría el reservado
+    y una función pura de `defence/` podría calcular la capa 3 sobre él: el registro de D5 dice
+    que eso no ocurre nunca. La condición de la puerta: `protocol.json` en `dead`, `layer2.json`
+    en `read`, su `code_tree_sha` igual al de `HEAD` y el árbol limpio (`_guard`); en `frozen` no
+    abre ni dentro de la lectura. `read_heldout(commands, reports_dir)`: con la puerta en
+    `frozen` o `read`, los `reads` de `layer2.json` iguales a los comandos del código, el bloque
+    `reading` presente solo en `read` y `lock.lock_mismatches` vacío, commitea `layer2.json` en
+    `read` (`READ_MESSAGE`; commit de la congelación, ids, fecha UTC) y solo después corre los
+    comandos; en `read` reproduce sin commit nuevo. Los comandos escriben en un directorio
+    temporal fuera del checkout y sus artefactos se copian a `reports_dir` al final: **fallo
+    hallado al revisar el diff**, un comando que escribía en `reports/heldout` ensuciaba el
+    árbol y la puerta rechazaba al siguiente (test nuevo, que caía antes del arreglo con ese
+    error). `protocol/lock.py`: todo lo instalado está en `uv.lock` con su versión, y `ftbase`
+    con su commit (`Distribution.origin`, sin abrir ficheros); el cierre de dependencias de
+    `ac2fb` sin marcadores está instalado (`colorama` y el grupo dev pueden faltar). En este
+    entorno, 0 diferencias en 24 paquetes. CLI: `ac2fb heldout read [--reports-dir D]`
+    (`reports/heldout/` por defecto; sale con 2 y los motivos si rehúsa) y `ac2fb status` con los
+    dos stages. `protocol/layer2.json` en `design`, escrito a mano, con `reads: ["layer2"]`: el
+    comando de la 12 (detección por distancia al balón, tramos y salto por banda de hueco), que
+    la figura 1 necesita en los 20; la 25 y la 26 añaden los suyos, y el `--check` de `layer2`
+    entra con ellos antes de 23c. Tests: `test_heldout.py` (16: la lectura commitea antes de
+    calcular, solo `layer2.json`, con el registro; reproduce sin commit y un cambio de código la
+    cierra; dos comandos que escriben dentro del checkout; 10 rechazos sin commit, sin llamar a
+    ningún comando y sin escribir nada; el CLI no ejecuta ninguna función de `defence/`, medido
+    con `sys.setprofile`; el `layer2.json` commiteado), `test_lock.py` (16), la puerta reescrita
+    por stages (`test_data_gate.py`) y en `test_public_routes.py` dos barridos: en `read`, fuera
+    de la lectura, toda ruta que toma partido rechaza el reservado; dentro, lo sirve.
+    `test_realdata_gate` deja de exigir la puerta cerrada: los rechazos valen en todo stage.
+    **Mutaciones (13, todas tumban su test; copias en memoria, árbol igual antes y después;
+    `d5/mutate23b.py` y su log en el scratchpad):** la puerta que abre en `frozen`; la que sirve
+    fuera de la lectura; capa 3 viva admitida; la lectura sin comparar versiones; la lectura que
+    commitea después de calcular (con `frozen` abierto, que es lo único que la deja correr);
+    `reads` sin comparar; una reproducción tomada por primera lectura; el registro sin el commit
+    de la congelación; el lock sin el commit de git, sin el cierre de dependencias, siguiendo
+    los marcadores y admitiendo un paquete que no lista; la lectura que ejecuta código de
+    `defence/`. Gate local en verde (`sync --locked`, ruff, format, `mypy src`, `pytest -q`:
+    1.193 pasan, eran 1.067; 26 deseleccionados; `pytest -m realdata`: 26 de 26; `ac2fb protocol
+    --check` OK). Nadie leyó el reservado.
   - [ ] 23c. `opus` (subagente `revisor-adversarial`) Revisión de 23b, 25 y 26 antes de congelar,
     como la 22, hasta que no salga nada alto ni medio.
   - [ ] 23d. `sonnet` Congelación de `layer2.json` en un commit propio: `stage: "frozen"`,

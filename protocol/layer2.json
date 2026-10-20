@@ -1,0 +1,12 @@
+{
+  "stage": "design",
+  "code_tree_sha": null,
+  "title": "The single reading of the held-out, for layer 2 only",
+  "date_written": "2026-10-20",
+  "about": "Layer 3 died in calibration (protocol/protocol.json, stage dead, D5, branch B), so the held-out is read at most once, and only for layer 2: how much each defensive metric moves when it is computed from what the camera saw. The commands in reads are written, run on the calibration half and frozen before the reading (task 23); the reading runs them on the held-out ids and nothing else, and computes nothing of layer 3. Stages: design (this file is written), frozen (code_tree_sha of the code that will read), read (the reading is committed before any figure is computed; from then on it is reproduced from that commit). Its artefacts go under reports/heldout and are published as they fall, per match.",
+  "layer3": "dead: protocol/protocol.json is in stage dead and layer 3 is never computed on the held-out",
+  "reads": [
+    "layer2"
+  ],
+  "writes_under": "reports/heldout"
+}

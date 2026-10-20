@@ -1638,8 +1638,9 @@ su test sintético con el fallo plantado (una sonda que no puede fallar no prote
     espejados se parametrizan sobre (periodo, equipo) = (2, 1), (1, 2) y (2, 2) con un ayudante
     común, `effect_helpers.moved` (el equipo del portador con otra etiqueta y el campo espejado
     donde ataca hacia −x; los signos del periodo 1 siguen en `attack_sign`, así que un lector
-    con el periodo o el equipo equivocado lee un signo falso, no uno ausente). Pasan a llamarse
-    `test_the_carriers_period_and_team_do_not_move_an_outcome` y `..._a_unit`.
+    con el periodo o el equipo equivocado lee un signo falso, no uno ausente; falso para las
+    unidades del periodo 1, en un partido que no listaba el 2: lo arregla la pasada 4). Pasan a
+    llamarse `test_the_carriers_period_and_team_do_not_move_an_outcome` y `..._a_unit`.
   - *Bajos.* El borde del tercio final en +17,5 no tenía test (`depth >= THIRD_CUT` pasaba los
     43 de estratos): caso nuevo en `test_the_stratum_of_the_incoming_ball`. En calibración
     ninguna profundidad de S1 ni de S2 cae en el corte y una de C3 sí (el revisor). Dos frases
@@ -1666,7 +1667,51 @@ su test sintético con el fallo plantado (una sonda que no puede fallar no prote
   Gate local en verde: ruff, format, `mypy src`, `pytest -q` (1.034 pasan, eran 1.029: los dos
   tests espejados pasan a seis casos y hay uno de estrato más; 26 deseleccionados), `pytest -m
   realdata` (26 de 26), `ac2fb protocol --check` OK.
-  Falta la pasada 4 sobre el arreglo de la pasada 3.
+  Revisión 22, pasada 4 (2026-10-20), de solo lectura sobre `git diff 299dcac..bbb3f4a`.
+  **Ningún alto; un medio, otra vez en los tests, que no cambia ningún veredicto.** El arreglo
+  de la pasada 3 cierra el equipo en los tres lectores; la calibración regenerada en `bbb3f4a`
+  sale idéntica byte a byte y el diff no toca `src` ni los pines (mismo `code_tree_sha`).
+  Arreglado en `8a25f87`:
+  - *Medio: el periodo del signo, fijado en un solo sentido.* Con `period=1`, `moved` no listaba
+    los signos del periodo 2, y los mundos base son de un periodo: un ayudante que ignora el
+    periodo y se queda con el último listado pasaba los 1.034 tests en los tres lectores. En los
+    10 partidos el periodo 2 se lista el último, así que daría su signo a las 4.286 recepciones
+    del periodo 1 (de 8.142). En la calibración real (cifras del revisor), en la x del pre: T
+    −0,184, P −0,034, 8 de 10, p 0,0005, **D3 y D5 dejarían pasar la calibración**; en el
+    desenlace: T +0,064, acuerdo 7, la barra no pasa; en el índice y el estrato: T −0,070, P
+    +0,541, D5 mata. `moved` lista ahora los signos de los dos periodos, ordenados por periodo y
+    equipo, y admite la etiqueta 7, que no es un número de periodo: los casos pasan a ser (1, 1),
+    (2, 1), (1, 2), (2, 2), (1, 7) y (2, 7) (`effect_helpers.MOVES`). La propuesta del revisor
+    dejaba vivo un ayudante que ignora el equipo y se queda con el primero del periodo, porque
+    listaba siempre primero el del portador; con el orden por equipo cae. El texto de `moved`, de
+    los docstrings de mutaciones y del registro de la pasada 3, corregido.
+  - *Bajo: dos lectores fuera de los tres, con el mismo hueco del equipo.* `power.c1_units` (que
+    da `power.json`): test nuevo `test_the_carriers_period_and_team_do_not_move_a_c1_unit` con
+    los mismos casos. `pressure.make_metric` (la sensibilidad de S1 y, si la capa 2 del
+    reservado usa el índice, también esa) lee además la tabla larga, que `moved` no mueve: su
+    test con un portador del equipo 2 y del periodo 2 va con el código de la capa 2, antes de
+    abrir (con la tolerancia de la pasada 2). Ninguno de los dos toca D3 ni D5.
+  - *Bajo: trazabilidad.* La pasada 3 solo guardó el log de 3 de sus 11 mutaciones y no el de
+    ruff, format ni `protocol --check`; el revisor los re-derivó todos y son ciertos. Los de esta
+    pasada se guardan todos (`fix22p4/sweep.log`, `mut_full.log`, `gate.log`,
+    `lint_protocol.log` en el scratchpad de la sesión).
+  - *Sin arreglo, bajos rebuscados que sobreviven:* el signo con el periodo de la última fila
+    del balón, y con el equipo de la primera fila listada en t (en datos reales esa fila solo es
+    del equipo del portador en 4.281 de 8.142). El revisor los tumba con un partido sintético de
+    dos periodos (`review22_p4/alt/test_two_periods_alt.py`); no se adopta: ningún lector lee
+    así el signo y el coste es un `MatchData` construido a mano.
+  **Mutaciones (33 en memoria, con `mutplug4.py` del revisor, sobre los cuatro tests):** 27
+  tumban su test; las seis vivas son las cuatro equivalentes (signo con el periodo de t + W,
+  tolerancia del tercio devuelta, equipo leído de la fila del portador, signo negado del rival
+  más cercano) y los dos bajos de arriba. Lo que tumba cada una, en `fix22p4/sweep.log`. Con el
+  ayudante que se queda con el último periodo caen los casos del periodo 1; con el signo de un
+  mismo equipo, los del equipo 2 y 7; con la clave al revés, los del equipo 7. En la suite
+  completa, solo esos: con el último periodo en el desenlace, en la x del pre y en el índice,
+  3, 6 y 9 fallan (1.043, 1.040 y 1.037 pasan); con el equipo más bajo en `c1_units`, 4 (1.042).
+  Gate local en verde: ruff, format, `mypy src`, `pytest -q` (1.046 pasan, eran 1.034: tres
+  casos más en cada test espejado y los seis del de `c1_units`; 26 deseleccionados), `pytest -m
+  realdata` (26 de 26), `ac2fb protocol --check` OK.
+  Falta la pasada 5 sobre el arreglo de la pasada 4.
 - [ ] 23. `sonnet` Congelación en un commit propio: `stage: "frozen"`, `code_tree_sha`, semilla,
   umbrales. Aceptación: desde ese commit hasta la lectura, `git diff <congelación> -- src
   pyproject.toml uv.lock .python-version protocol/` vacío (revisión 18: el sha cubre ya todo

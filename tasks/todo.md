@@ -1531,7 +1531,7 @@ su test sintético con el fallo plantado (una sonda que no puede fallar no prote
     la 23 no congela para una lectura y J4 no se lanza; la 22 sigue siendo la revisión adversarial
     antes de dar el veredicto por bueno; CP2 decide la rama B (y si se abre el reservado solo para
     la capa 2, irreversible). Esto lo decide Javier, no este registro.
-- [ ] 22. `opus` (subagente `revisor-adversarial`) Revisión del protocolo, el estimador y la
+- [x] 22. `opus` (subagente `revisor-adversarial`) Revisión del protocolo, el estimador y la
   calibración antes de congelar, hasta que no salga nada alto ni medio.
   **Decisión de Javier (2026-10-19), antes de la revisión: seguir la recomendación.** Primero la
   22; en CP2, rama B; el reservado se abre solo para la capa 2, después de la 22, por código y
@@ -1752,7 +1752,18 @@ su test sintético con el fallo plantado (una sonda que no puede fallar no prote
   Gate local en verde: ruff, format, `mypy src`, `pytest -q` (1.052 pasan, eran 1.046: los
   seis casos nuevos; 26 deseleccionados), `pytest -m realdata` (26 de 26), `ac2fb protocol
   --check` OK.
-  Falta la pasada 6 sobre este arreglo.
+  Revisión 22, pasada 6 (2026-10-20), corta y de solo lectura sobre `git diff 4ca6618..c59acd4`.
+  **Ningún alto ni medio: la 22 queda cerrada.** D3 mata y D5 mata (`reports/calibration.json`
+  sin cambios; su regresión de `realdata` pasa en `c59acd4`). `mixed` es equivalente para un
+  lector correcto: el revisor comprobó por script `key`, `frame_order`, el orden del balón, el
+  portador 50 detrás de los rivales y al menos 9.774 frames entre cuadrantes frente a W = 13;
+  ninguno de los tres lectores lee `gap`, el periodo de las filas de jugadores ni la tabla
+  larga. Los tres tests son el borrador de la pasada 5, con las mismas aserciones. El barrido
+  cuadra (72, 63, 9) y otras 9 mutaciones del revisor, que los docstrings dicen cubrir, caen
+  solo en los casos mixtos. Dos notas sin severidad: los logs de `fix22p5` no llevan el HEAD
+  (se escribieron antes del commit; repetidos en HEAD salen iguales), y
+  `outcome_sign_other_period_neg` cae por un `KeyError` en el mundo base, un lector correcto
+  rechazado con un error visible y no un hueco.
 - [ ] 23. `sonnet` Congelación en un commit propio: `stage: "frozen"`, `code_tree_sha`, semilla,
   umbrales. Aceptación: desde ese commit hasta la lectura, `git diff <congelación> -- src
   pyproject.toml uv.lock .python-version protocol/` vacío (revisión 18: el sha cubre ya todo

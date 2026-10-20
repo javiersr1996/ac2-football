@@ -1858,13 +1858,17 @@ su test sintético con el fallo plantado (una sonda que no puede fallar no prote
     los marcadores y admitiendo un paquete que no lista; la lectura que ejecuta código de
     `defence/`. Gate local en verde (`sync --locked`, ruff, format, `mypy src`, `pytest -q`:
     1.193 pasan, eran 1.067; 26 deseleccionados; `pytest -m realdata`: 26 de 26; `ac2fb protocol
-    --check` OK). Nadie leyó el reservado.
+    --check` OK). Nadie leyó el reservado. Commit `913d8d9`, empujado; CI en verde (run
+    39450823910).
   - [ ] 23c. `opus` (subagente `revisor-adversarial`) Revisión de 23b, 25 y 26 antes de congelar,
     como la 22, hasta que no salga nada alto ni medio.
   - [ ] 23d. `sonnet` Congelación de `layer2.json` en un commit propio: `stage: "frozen"`,
     `code_tree_sha`. Aceptación: desde ese commit hasta la lectura, `git diff <congelación> --
     src pyproject.toml uv.lock .python-version protocol/` vacío; test contra `HEAD` de que el
-    reservado sigue cerrado con un cambio de código posterior.
+    reservado sigue cerrado con un cambio de código posterior. Antes, **[Javier]** confirma que
+    `reads` incluye `layer2` (el comando de la 12, que la figura 1 necesita en los 20): va más
+    allá de "25 + 26" tal como lo eligió; si no, se quita, y con él su `--check`. Pendiente desde
+    23b; mejor antes de escribir ese `--check`.
 - [ ] CP2. **[Javier]** Aprueba la congelación de `layer2.json` y queda avisado de que la lectura
   del reservado es irreversible. La rama B ya está decidida (2026-10-19) y D5 registrado (23a).
 

@@ -1700,8 +1700,9 @@ su test sintético con el fallo plantado (una sonda que no puede fallar no prote
     del equipo del portador en 4.281 de 8.142). El revisor los tumba con un partido sintético de
     dos periodos (`review22_p4/alt/test_two_periods_alt.py`); no se adopta: ningún lector lee
     así el signo y el coste es un `MatchData` construido a mano.
-  **Mutaciones (33 en memoria, con `mutplug4.py` del revisor, sobre los cuatro tests):** 27
-  tumban su test; las seis vivas son las cuatro equivalentes (signo con el periodo de t + W,
+  **Mutaciones (32 en memoria, con `mutplug4.py` del revisor, sobre los cuatro tests; el log
+  tiene 33 bloques porque el primero es la línea base, según la pasada 5):** 26 tumban su test;
+  las seis vivas son las cuatro equivalentes (signo con el periodo de t + W,
   tolerancia del tercio devuelta, equipo leído de la fila del portador, signo negado del rival
   más cercano) y los dos bajos de arriba. Lo que tumba cada una, en `fix22p4/sweep.log`. Con el
   ayudante que se queda con el último periodo caen los casos del periodo 1; con el signo de un
@@ -1711,7 +1712,30 @@ su test sintético con el fallo plantado (una sonda que no puede fallar no prote
   Gate local en verde: ruff, format, `mypy src`, `pytest -q` (1.046 pasan, eran 1.034: tres
   casos más en cada test espejado y los seis del de `c1_units`; 26 deseleccionados), `pytest -m
   realdata` (26 de 26), `ac2fb protocol --check` OK.
-  Falta la pasada 5 sobre el arreglo de la pasada 4.
+  Revisión 22, pasada 5 (2026-10-20), de solo lectura sobre `git diff bbb3f4a..c6096cf`.
+  **Ningún alto ni medio: la 22 cumple su criterio.** El veredicto se sostiene (D3 mata, D5
+  mata): `calibration.json` regenerado en `c6096cf` sale idéntico byte a byte, el diff solo toca
+  tests y `todo.md` y el `code_tree_sha` es el de `bbb3f4a`. `moved` es equivalente para un
+  lector correcto en los seis casos y ninguno pasa por construcción; ningún lector de `src`
+  depende de las etiquetas {1, 2}. De 72 mutaciones (`review22_p5/logs/sweep5.log`) caen 51.
+  Tres bajos:
+  - *El recuento de la pasada 4* (33 y 27 por 32 y 26), corregido en su sitio.
+  - *Los lectores que toman el signo de otra unidad, de otra fila o de una caché* sobreviven a
+    los cuatro tests, porque cada mundo base es de un periodo y un equipo: 10 mutaciones (el
+    periodo de la primera fila de jugadores, el signo de la primera unidad, una caché por equipo
+    y una caché por periodo que olvida el equipo). En la calibración real, con el pre leído así
+    (cifras del revisor, `calmut5.log`): con la caché por periodo T −0,190, P −0,007, 8 de 10, p
+    0,0005; con el periodo de la primera fila T −0,184, P +0,047, 8 de 10, p 0,0005: **D3 y D5
+    dejarían pasar la calibración**. En el desenlace y en el índice, D5 sigue matando. Solo las
+    tumban las regresiones de `realdata`. El revisor lo deja en bajo porque ningún lector del
+    proyecto tiene esa forma y los actuales están re-derivados (pasada 1) y fijados por
+    `realdata`; sería medio si se ve plausible "un signo por periodo sacado de los datos". Un
+    partido mixto, con los dos equipos en los dos periodos y un solo `attack_sign`, las tumba
+    todas, y también los dos bajos de la pasada 4 (borrador de unas 60 líneas en
+    `review22_p5/alt/test_mixed_alt.py`). **Lo decide Javier.**
+  - *El requisito de `make_metric` solo estaba en la 22:* diferirlo es aceptable (no alimenta D1
+    a D5 y sus dos mutaciones tumban `test_realdata_s1`, `real_metric_s1.log`), pero pasa a la
+    aceptación de la 25.
 - [ ] 23. `sonnet` Congelación en un commit propio: `stage: "frozen"`, `code_tree_sha`, semilla,
   umbrales. Aceptación: desde ese commit hasta la lectura, `git diff <congelación> -- src
   pyproject.toml uv.lock .python-version protocol/` vacío (revisión 18: el sha cubre ya todo
@@ -1742,7 +1766,10 @@ su test sintético con el fallo plantado (una sonda que no puede fallar no prote
   partido (presión local, distancia al rival más cercano, altura de línea, anchura, longitud, área
   del bloque, y la reacción de la línea al balón entrante) en V0, V1 y V2, con la fracción
   extrapolada y su `gap_len`, en `reports/reliability.csv`. Aceptación: las cifras de calibración
-  coinciden con las de la 12; mutación anotada.
+  coinciden con las de la 12; mutación anotada. Antes de abrir el reservado (revisión 22,
+  pasadas 2, 4 y 5): test de `pressure.make_metric` y de toda métrica nueva que lea
+  `attack_sign`, con portadores de los dos equipos en los dos periodos y moviendo también la
+  tabla larga; y decidida la tolerancia de `index >= PRESSED_INDEX` y de `weights > 0`.
 - [ ] 26. `sonnet` Referencia por amputación (`reliability/amputate.py`): en tramos con los
   jugadores de la métrica detectados se enmascaran huecos muestreados de la distribución real de
   `gap_len` y de la detección por distancia al balón, se rellenan por interpolación lineal entre

@@ -29,7 +29,9 @@ Mutations, each annotated with the test that kills it:
   ``t + W``): ``test_no_window_crosses_a_period_break``;
 * the outcome read without the attack sign, with the sign of another period or of the last one
   listed, with one team's sign for every carrier, or with the key read as ``(team, period)``:
-  ``test_the_carriers_period_and_team_do_not_move_an_outcome``.
+  ``test_the_carriers_period_and_team_do_not_move_an_outcome``;
+* the outcome read with the sign of another unit, of another row or from a cache (per period or
+  per team): ``test_both_teams_in_both_periods_give_the_same_outcomes``.
 """
 
 from __future__ import annotations
@@ -53,12 +55,14 @@ from effect_helpers import (
     collapse_strata,
     confounded_world,
     extrapolated_world,
+    mixed,
     moved,
     plain_difference,
     planted_units,
     reverse_world,
     through_the_pipeline,
     tracking_match,
+    unshifted,
 )
 
 from ac2fb.defence import bar, design, effect, power, pressure
@@ -220,6 +224,20 @@ def test_the_carriers_period_and_team_do_not_move_an_outcome(period: int, team: 
     got = effect.effect_units(design.design_units(other), other.s1.match)
     assert [u.outcome for u in want] == [7.5, -4.0]
     assert [dataclasses.replace(u, period=1) for u in got] == want
+
+
+@pytest.mark.parametrize("other", [2, 7])
+def test_both_teams_in_both_periods_give_the_same_outcomes(other: int) -> None:
+    # One match, one attack_sign as a real one lists it (``mixed``): each unit must read the
+    # sign of its own period and team, not another unit's, another row's or a cached one.
+    inputs = tracking_match(
+        5, [Spec(2.0, out, (Rival(pos=ahead(3.0)), FAR)) for out in (7.5, -4.0)]
+    )
+    both = mixed(inputs, other)
+    want = effect.effect_units(design.design_units(inputs), inputs.s1.match)
+    got = effect.effect_units(design.design_units(both), both.s1.match)
+    assert [u.outcome for u in want] == [7.5, -4.0]
+    assert [unshifted(u, period=1) for u in got] == want * 4
 
 
 def test_the_variants_select_by_their_definition() -> None:

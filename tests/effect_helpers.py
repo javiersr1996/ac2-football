@@ -18,6 +18,7 @@ from __future__ import annotations
 import dataclasses
 from collections.abc import Sequence
 from dataclasses import dataclass, field
+from typing import Any
 
 import numpy as np
 from layer2_helpers import Row, frames_table, make_match
@@ -26,6 +27,7 @@ from ac2fb.defence import design, effect, power, probe_s1
 from ac2fb.defence.pressure import INCOMING_WINDOW as W
 from ac2fb.defence.pressure import Reception
 from ac2fb.reliability.long import long_table
+from ac2fb.reliability.match import MatchData
 
 SPACING = 40  # frames between receptions
 FIRST = 100
@@ -237,6 +239,85 @@ def moved(inputs: power.C1Inputs, period: int, team: int) -> power.C1Inputs:
     )
     s1 = dataclasses.replace(inputs.s1, match=match, receptions=receptions)
     return dataclasses.replace(inputs, s1=s1)
+
+
+OFFSET = 10_000  # frames between the quadrants of :func:`mixed`
+_ROWS = ("player", "team", "period", "frame", "x", "y", "detected", "gap")
+_BALL = ("ball_frame", "ball_period", "ball_x", "ball_y", "ball_detected", "ball_gap")
+
+
+def quadrants(other: int) -> list[tuple[int, int]]:
+    """The ``(period, team)`` of the quadrants of :func:`mixed`, in the order of their frames."""
+    return [(1, 1), (1, other), (2, 1), (2, other)]
+
+
+def mixed(inputs: power.C1Inputs, other: int) -> power.C1Inputs:
+    """The base world four times in one match: both teams, 1 and ``other``, in both periods.
+
+    The match lists one ``attack_sign`` as a real one does (team 1 attacks +x in period 1, the
+    sides switch at the break, sorted by period and team). Quadrant ``k`` is the base world with
+    the carrier's team labelled as its team and the rivals as the other, every x flipped where
+    that team attacks -x, the frames shifted by ``k * OFFSET``; in team ``other``'s quadrants
+    the carrier is player 50, listed after the rivals 11 and 12. A reader that takes the sign of
+    another unit, of another row or from a cache reads a wrong one in some quadrant.
+    """
+    m = inputs.s1.match
+    signs = {(1, 1): 1, (1, other): -1, (2, 1): -1, (2, other): 1}
+    parts = []
+    receptions: list[Reception] = []
+    possessions: dict[str, str] = {}
+    for k, (period, team) in enumerate(quadrants(other)):
+        flip = signs[(period, team)]  # the base carrier attacks +x
+        carrier, rivals = (1, other) if team == 1 else (50, 1)
+        shift = OFFSET * k
+        part = {f: getattr(m, f) for f in _ROWS + _BALL}
+        part |= {
+            "player": np.where(m.player == 1, carrier, m.player),
+            "team": np.where(m.team == 1, team, rivals),
+            "period": np.full_like(m.period, period),
+            "frame": m.frame + shift,
+            "x": flip * m.x,
+            "ball_frame": m.ball_frame + shift,
+            "ball_period": np.full_like(m.ball_period, period),
+            "ball_x": flip * m.ball_x,
+        }
+        parts.append(part)
+        receptions += [
+            dataclasses.replace(
+                r,
+                event_id=f"{k}{r.event_id}",
+                period=period,
+                team=team,
+                player=carrier,
+                frame=r.frame + shift,
+            )
+            for r in inputs.s1.receptions
+        ]
+        possessions |= {f"{k}{e}": f"{k}{p}" for e, p in inputs.possessions.items()}
+    joined = {f: np.concatenate([part[f] for part in parts]) for f in _ROWS + _BALL}
+    order = np.lexsort((joined["frame"], joined["player"]))
+    rows = {f: joined[f][order] for f in _ROWS}
+    ball_order = np.argsort(joined["ball_frame"], kind="stable")
+    ball = {f: joined[f][ball_order] for f in _BALL}
+    frame_order = np.argsort(rows["frame"], kind="stable")
+    match = MatchData(
+        match_id=m.match_id,
+        **rows,
+        key=rows["player"] * (1 << 32) + rows["frame"],
+        frame_order=frame_order,
+        frame_sorted=rows["frame"][frame_order],
+        **ball,
+        events=(),
+        attack_sign=signs,
+    )
+    s1 = dataclasses.replace(inputs.s1, match=match, receptions=tuple(receptions))
+    return power.C1Inputs(s1, possessions)
+
+
+def unshifted(u: Any, **fields: object) -> Any:
+    """A unit of :func:`mixed` put back in the base world (its quadrant is in its possession)."""
+    k = int(u.possession[0])
+    return dataclasses.replace(u, frame=u.frame - OFFSET * k, possession=u.possession[1:], **fields)
 
 
 # --- the planted worlds ------------------------------------------------------------------------

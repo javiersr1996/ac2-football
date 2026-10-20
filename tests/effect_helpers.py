@@ -199,25 +199,38 @@ def through_the_pipeline(
     return out
 
 
+MOVES = [(1, 1), (2, 1), (1, 2), (2, 2), (1, 7), (2, 7)]  # (period, team) for :func:`moved`
+
+
 def moved(inputs: power.C1Inputs, period: int, team: int) -> power.C1Inputs:
     """The same world, the carrier's team (1, attacking +x in period 1) in ``period`` as ``team``.
 
-    Period 2 turns both teams round; team 2 swaps the two labels. Every x of the players and
-    the ball is flipped when the carrier's team then attacks -x, so it sees the same pitch.
-    The signs of period 1 stay listed: a reader that takes another period's sign or another
-    team's reads a wrong sign, not a missing one.
+    The rivals are team 2, or 1 when the carrier's team is 2. The signs of both periods are
+    listed, sorted by period and team (so the carrier's team comes first as 1 and last as 2 or
+    7), and the sides switch in period 2, where every x of the players and the ball is flipped
+    so the carrier sees the same pitch: a reader that takes another period's sign or another
+    team's reads a wrong sign. Team 7 is no period number, so a key read as ``(team, period)``
+    finds no sign.
     """
     m = inputs.s1.match
-    signs = {(period, k): s if period == 1 else -s for (_, k), s in m.attack_sign.items()}
-    flip = signs[(period, team)]
+    rivals = 1 if team == 2 else 2
+    label = {1: team, 2: rivals}
+    signs = dict(
+        sorted(
+            ((p, label[k]), s if p == 1 else -s)
+            for p in (1, 2)
+            for (_, k), s in m.attack_sign.items()
+        )
+    )
+    flip = 1 if period == 1 else -1
     match = dataclasses.replace(
         m,
-        team=m.team if team == 1 else 3 - m.team,
+        team=np.where(m.team == 1, team, rivals),
         period=np.full_like(m.period, period),
         x=flip * m.x,
         ball_x=flip * m.ball_x,
         ball_period=np.full_like(m.ball_period, period),
-        attack_sign={**m.attack_sign, **signs},
+        attack_sign=signs,
     )
     receptions = tuple(
         dataclasses.replace(r, period=period, team=team) for r in inputs.s1.receptions

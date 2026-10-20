@@ -24,6 +24,11 @@ Review 18 (pass 1):
 * a contiguous contrast that ignores its third: ``test_a_c3_contrast_keeps_to_its_third``;
 * a window overlap with ``<`` for ``<=``, across periods, or blind to the team:
   ``test_window_overlap_by_hand``.
+
+Review 22 (pass 4):
+
+* the pre statistic of C1 read with one team's sign for every carrier, or with the sign of the
+  last period listed: ``test_the_carriers_period_and_team_do_not_move_a_c1_unit``.
 """
 
 from __future__ import annotations
@@ -35,6 +40,7 @@ from pathlib import Path
 import numpy as np
 import pyarrow as pa
 import pytest
+from effect_helpers import MOVES, moved
 from layer2_helpers import Row, frames_table, make_match
 
 from ac2fb.defence import bar, power, probe_s1, probe_s3
@@ -112,6 +118,15 @@ def test_nothing_after_t_moves_a_c1_unit(plan: tuple[float, float, bool]) -> Non
     a, _ = c1_world([plan], after=1.0)
     b, _ = c1_world([plan], after=-45.0)
     assert power.c1_units(a) == power.c1_units(b)
+
+
+@pytest.mark.parametrize(("period", "team"), MOVES)
+def test_the_carriers_period_and_team_do_not_move_a_c1_unit(period: int, team: int) -> None:
+    # As in test_design: the pre statistic and the stratum take the unit's own sign.
+    inputs, _ = c1_world([(3.0, 6.0, True), (4.0, -5.0, True), (7.0, 1.0, True)])
+    want = power.c1_units(inputs)
+    assert [u.pre for u in want[0]] == [6.0, -5.0, 1.0]
+    assert power.c1_units(moved(inputs, period, team)) == want
 
 
 def test_the_readers_refuse_a_lag_after_t() -> None:

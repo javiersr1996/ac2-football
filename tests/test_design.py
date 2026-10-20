@@ -7,8 +7,8 @@ Every expected number is planted here. Mutations, each annotated with the test t
   ``test_the_exclusion_ignores_a_period_break_and_the_team``; judged against every labelled
   reception instead of the design units: ``test_a_reception_that_is_not_a_unit_excludes_nothing``;
 * the pre statistic, the stratum or the index read without the attack sign, with the sign of
-  another period, or with one team's sign for every carrier:
-  ``test_the_carriers_period_and_team_do_not_move_a_unit``;
+  another period or of the last one listed, with one team's sign for every carrier, or with the
+  key read as ``(team, period)``: ``test_the_carriers_period_and_team_do_not_move_a_unit``;
 * a cut with ``>`` for ``>=`` (a unit at exactly the cut): ``test_the_cut_is_at_or_above``;
 * a V1 that ignores the carrier, or V2 classes that count the rivals outside the radius:
   ``test_v1_needs_the_carrier_and_v2_counts_the_extrapolated_players``;
@@ -27,7 +27,7 @@ import math
 
 import numpy as np
 import pytest
-from effect_helpers import moved
+from effect_helpers import MOVES, moved
 from layer2_helpers import Row, frames_table, make_match
 
 from ac2fb.defence import design, power, probe_s1
@@ -215,10 +215,11 @@ def test_nothing_after_t_moves_a_design_unit(p: Plan) -> None:
     )
 
 
-@pytest.mark.parametrize(("period", "team"), [(2, 1), (1, 2), (2, 2)])
+@pytest.mark.parametrize(("period", "team"), MOVES)
 def test_the_carriers_period_and_team_do_not_move_a_unit(period: int, team: int) -> None:
-    # The carrier's team in period 2, labelled 2, or both, on a pitch flipped wherever it then
-    # attacks -x. Nothing the design measures may move (forward, backward, lateral ball).
+    # The carrier's team in either period, labelled 1, 2 or 7, in a match that lists the signs
+    # of both periods (``moved``). Nothing the design measures may move (forward, backward,
+    # lateral ball).
     inputs, _ = world(
         [plan(100, 3.0), plan(200, 4.0, behind=True), plan(300, 7.0)], advances=[6.0, -5.0, 1.0]
     )

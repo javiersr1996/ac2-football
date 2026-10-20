@@ -27,8 +27,9 @@ Mutations, each annotated with the test that kills it:
   ``test_the_pretrend_by_hand`` and ``test_the_pretrend_agrees_with_the_design_module``;
 * a window read across a period break (the ball row's period not checked at ``t - W``, ``t`` or
   ``t + W``): ``test_no_window_crosses_a_period_break``;
-* the outcome read without the attack sign, with the sign of another period, or with one team's
-  sign for every carrier: ``test_the_carriers_period_and_team_do_not_move_an_outcome``.
+* the outcome read without the attack sign, with the sign of another period or of the last one
+  listed, with one team's sign for every carrier, or with the key read as ``(team, period)``:
+  ``test_the_carriers_period_and_team_do_not_move_an_outcome``.
 """
 
 from __future__ import annotations
@@ -44,6 +45,7 @@ import pytest
 from effect_helpers import (
     FAR,
     LATE,
+    MOVES,
     Rival,
     Spec,
     ahead,
@@ -205,11 +207,11 @@ def test_effect_units_keep_the_kept_units_with_their_outcome() -> None:
     assert [u.pressed for u in got] == [units[0].pressed, units[2].pressed]
 
 
-@pytest.mark.parametrize(("period", "team"), [(2, 1), (1, 2), (2, 2)])
+@pytest.mark.parametrize(("period", "team"), MOVES)
 def test_the_carriers_period_and_team_do_not_move_an_outcome(period: int, team: int) -> None:
-    # The carrier's team in period 2, labelled 2, or both, on a pitch flipped wherever it then
-    # attacks -x. The outcome must take the sign of the unit's own period and team, forward or
-    # backward.
+    # The carrier's team in either period, labelled 1, 2 or 7, in a match that lists the signs
+    # of both periods (``moved``). The outcome must take the sign of the unit's own period and
+    # team, forward or backward.
     inputs = tracking_match(
         5, [Spec(2.0, out, (Rival(pos=ahead(3.0)), FAR)) for out in (7.5, -4.0)]
     )

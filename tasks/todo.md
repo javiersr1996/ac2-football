@@ -1764,33 +1764,57 @@ su test sintético con el fallo plantado (una sonda que no puede fallar no prote
   (se escribieron antes del commit; repetidos en HEAD salen iguales), y
   `outcome_sign_other_period_neg` cae por un `KeyError` en el mundo base, un lector correcto
   rechazado con un error visible y no un hueco.
-- [ ] 23. `sonnet` Congelación en un commit propio: `stage: "frozen"`, `code_tree_sha`, semilla,
-  umbrales. Aceptación: desde ese commit hasta la lectura, `git diff <congelación> -- src
-  pyproject.toml uv.lock .python-version protocol/` vacío (revisión 18: el sha cubre ya todo
-  `src`, la puerta y el CLI incluidos, y los pines de la base, las librerías y el intérprete);
-  test contra `HEAD` que el reservado sigue cerrado con un cambio de código posterior.
-  **Requisito de la revisión 18, una sola lectura por código y no solo por procedimiento:** hoy
-  la puerta abre en `frozen` tantas veces como se pida (`OPEN_STAGES`). La 23 escribe `ac2fb
-  heldout read` (el comando que lanza J4) y hace que, en `frozen`, el reservado solo se abra
-  dentro de ese comando, que registra la lectura (commit con `stage: "read"`, el sha de la
-  congelación y los ids leídos) antes de dar ninguna cifra; y que en `read` solo se reproduzca
-  con el mismo `code_tree_sha`. El sha congela `uv.lock`, no el entorno instalado: `ac2fb heldout
-  read` compara las versiones instaladas (`importlib.metadata`) con las de `uv.lock` antes de
-  abrir y se niega si alguna difiere. Aceptación: test de que una segunda apertura en `frozen`
-  fuera del comando falla, test de que una versión instalada distinta de la del lock cierra la
-  lectura, y mutaciones anotadas (la puerta que abre en `frozen` sin registrar la lectura; la
-  lectura que no compara las versiones).
-- [ ] CP2. **[Javier] lun 16 nov.** Aprueba la congelación y queda avisado de que la lectura del
-  reservado es irreversible. Si D5 ya mató la pregunta, aprueba la rama B: la capa 2 se queda en
-  los 10 de calibración, salvo que Javier decida abrir el reservado solo para ella (irreversible).
+- [ ] 23. Rama B: registro de D5, puerta de la capa 2, revisión y congelación. **Decisiones de
+  Javier (2026-10-20), antes de escribir nada de esto:** (1) dos protocolos: `protocol.json`
+  (capa 3) no se congela nunca para una lectura, como dice D5 ("the protocol is not frozen for a
+  reading"), y pasa a `stage: "dead"`; la única lectura del reservado, solo para la capa 2, lleva
+  su propio `protocol/layer2.json`; (2) antes de esa lectura se escriben, se corren en
+  calibración y se congelan la 25, la 26 y el `--check` de sus dos comandos (las figuras leen
+  solo `reports/` y van después). Como la puerta solo reproduce con el mismo `code_tree_sha`,
+  todo cambio de `src` posterior a la lectura cierra el reservado en `HEAD`: sus artefactos se
+  reproducen desde el commit de la lectura (un `git worktree` en ese commit). Orden: 23a, 23b,
+  25, 26, 23c, 23d, CP2, J4, 24.
+  - [ ] 23a. `sonnet` Registro público de D5, ya. `protocol.json` pasa a `stage: "dead"` con un
+    bloque `verdict` (D5, `killed_by` y `v0_bar_passed` del informe, `reports/calibration.json`
+    con su sha256, el commit y el `code_tree_sha` con los que se reproduce byte a byte, rama B,
+    `heldout_read_for_layer3: false`); `code_tree_sha` sigue nulo (nunca se congeló). `protocol
+    --check` admite `dead` y exige el bloque solo ahí (sin abrir `reports/`, como hasta ahora);
+    un test contrasta el bloque con el informe; la puerta no abre en `dead`. Commit y push: es el
+    registro de que la capa 3 murió antes de leer nada del reservado. Aceptación: tests de
+    `check` y de la puerta; mutaciones anotadas (la puerta que abre en `dead`; un `killed_by` que
+    no es el del informe).
+  - [ ] 23b. `opus` Puerta de la capa 2 y `ac2fb heldout read` (los requisitos de la revisión 18,
+    adaptados). `protocol/layer2.json` (`design`, `frozen`, `read`): qué comandos lee y qué
+    artefactos escribe (los de la 25 y la 26), `code_tree_sha`, y que no calcula nada de la capa
+    3. La puerta abre el reservado solo con `protocol.json` en `dead`, `layer2.json` en `read`, su
+    `code_tree_sha` igual al de `HEAD` y el árbol limpio; en `frozen` no abre nunca. `ac2fb
+    heldout read` compara las versiones instaladas con las de `uv.lock` (`importlib.metadata`, y
+    el commit de `ftbase` por su `direct_url.json`) y se niega si alguna difiere; commitea
+    `layer2.json` en `read` (commit de la congelación, ids leídos, fecha) antes de calcular
+    ninguna cifra, y después corre la 25 y la 26 sobre los 20. En `read`, solo reproduce con el
+    mismo sha. Aceptación: tests de que `frozen` no abre fuera del comando, de que una versión
+    instalada distinta cierra la lectura, de que la lectura no llama a ningún lector de la capa 3
+    (`effect`, `design`, `calibration`, `power`) con un id del reservado y de que un cambio de
+    código posterior la cierra; mutaciones anotadas (la puerta que abre en `frozen`; la lectura
+    que no compara versiones; la lectura que commitea después de calcular).
+  - [ ] 23c. `opus` (subagente `revisor-adversarial`) Revisión de 23b, 25 y 26 antes de congelar,
+    como la 22, hasta que no salga nada alto ni medio.
+  - [ ] 23d. `sonnet` Congelación de `layer2.json` en un commit propio: `stage: "frozen"`,
+    `code_tree_sha`. Aceptación: desde ese commit hasta la lectura, `git diff <congelación> --
+    src pyproject.toml uv.lock .python-version protocol/` vacío; test contra `HEAD` de que el
+    reservado sigue cerrado con un cambio de código posterior.
+- [ ] CP2. **[Javier]** Aprueba la congelación de `layer2.json` y queda avisado de que la lectura
+  del reservado es irreversible. La rama B ya está decidida (2026-10-19) y D5 registrado (23a).
 
 ## Fase 3: reservado y capa 2 completa (lun 16 nov a dom 29 nov)
 
-- [ ] J4. **[Javier]** Lectura única del reservado: autoriza y lanza `ac2fb heldout read` (o lo
-  autoriza por escrito a quien lo lance). Paso irreversible.
-- [ ] 24. `opus` Veredicto mecánico del reservado (D6) por partido en `reports/heldout.json`, con
-  el commit de la lectura; `stage: "read"`. Se publica como cae.
-- [ ] 25. `sonnet` Capa 2 en los 20 partidos (ya permitido): mapa de fiabilidad por métrica y
+- [ ] J4. **[Javier]** Lectura única del reservado, solo capa 2: confirma justo antes y lanza
+  `ac2fb heldout read` (o lo autoriza por escrito a quien lo lance). Paso irreversible.
+- [ ] 24. `opus` Registro de la lectura de la capa 2: cifras por partido de los 20 en
+  `reliability.csv` y `amputation.csv`, con el commit de la lectura (`layer2.json` en `read`). Se
+  publica como cae. Sin D6: la capa 3 no se lee en el reservado (rama B).
+- [ ] 25. `sonnet` Capa 2 (rama B: código y `--check` antes de 23c, corrido en calibración; los
+  20 partidos solo en la lectura de J4): mapa de fiabilidad por métrica y
   partido (presión local, distancia al rival más cercano, altura de línea, anchura, longitud, área
   del bloque, y la reacción de la línea al balón entrante) en V0, V1 y V2, con la fracción
   extrapolada y su `gap_len`, en `reports/reliability.csv`. Aceptación: las cifras de calibración
@@ -1798,7 +1822,8 @@ su test sintético con el fallo plantado (una sonda que no puede fallar no prote
   pasadas 2, 4 y 5): test de `pressure.make_metric` y de toda métrica nueva que lea
   `attack_sign`, con portadores de los dos equipos en los dos periodos y moviendo también la
   tabla larga; y decidida la tolerancia de `index >= PRESSED_INDEX` y de `weights > 0`.
-- [ ] 26. `sonnet` Referencia por amputación (`reliability/amputate.py`): en tramos con los
+- [ ] 26. `sonnet` (rama B: como la 25, antes de 23c) Referencia por amputación
+  (`reliability/amputate.py`), con su comando y su `--check`: en tramos con los
   jugadores de la métrica detectados se enmascaran huecos muestreados de la distribución real de
   `gap_len` y de la detección por distancia al balón, se rellenan por interpolación lineal entre
   extremos (lo que m11 dice que hace el proveedor; declarado como cota, no como su modelo) y se
@@ -1816,14 +1841,17 @@ su test sintético con el fallo plantado (una sonda que no puede fallar no prote
   Aceptación: test que regenera y compara; cada número de una etiqueta sale de un artefacto.
 - [ ] 28. `sonnet` `--check` en cada comando que escribe un artefacto (recalcula y compara; con
   fixtures dice cuánto verificó, `PARTIAL n/20`). Aceptación: mutar un valor de un JSON hace
-  fallar su `--check`.
+  fallar su `--check`. Rama B: el de la 25 y la 26 ya existe (23); en `HEAD`, tras la lectura,
+  verifica solo la calibración y lo dice (`PARTIAL 10/20`); el reservado, desde el commit de la
+  lectura.
 - [ ] 29. `sonnet` API pública mínima y documentada (`reliability.sensitivity`,
   `reliability.amputate`, `protocol.data` como lector guardado del silver de la base, esquema del
   Parquet largo con `gap_len`) y un
   `examples/sensitivity.py` que corre sobre el sintético. Aceptación: el ejemplo corre en CI.
 - [ ] 30. `sonnet` `full-build.yml`: `workflow_dispatch`, caché de `data/raw` por huella del
   manifiesto, build completo, todos los `--check` y los dos bloques de `clean_clone_check.sh` en
-  `ubuntu-latest`. Aceptación: una ejecución en verde con su enlace; el árbol queda limpio.
+  `ubuntu-latest`. Aceptación: una ejecución en verde con su enlace; el árbol queda limpio. Rama
+  B: los `--check` del reservado corren en un `git worktree` en el commit de la lectura.
 - [ ] 31. `sonnet` `scripts/readme_check.py` y su test: palabras del README (todo el texto, bloques
   de código incluidos, sin comentarios HTML) ≤ 1000, figuras más tablas ≤ 2, cada número del README
   presente en algún artefacto de `reports/`, y la frase literal de que los fixtures sintéticos no
@@ -1905,8 +1933,8 @@ su test sintético con el fallo plantado (una sonda que no puede fallar no prote
   limpio de `ac2-football` en Linux instala la base desde GitHub sin token en los dos bloques, con
   el tiempo impreso; `src/ac2fb/base/` no existe; README ≤ 1000 palabras contadas por script y ≤ 2
   figuras o tablas; `LICENSE.md` en los dos repos; ningún número del README, del guion ni de las
-  figuras sin un artefacto de `reports/` que lo imprima; `protocol.json` en `read` (o en
-  `design`/`frozen` con D5 documentado, rama B) y su historia en git; ninguna ruta pública lee el
+  figuras sin un artefacto de `reports/` que lo imprima; `protocol.json` en `dead` con D5
+  registrado (rama B) y `layer2.json` en `read`, con su historia en git; ninguna ruta pública lee el
   reservado fuera del guard; cada test nuevo con su mutación anotada; las cifras de m10 y m11
   re-derivadas por la 12 y la 15 o este plan corregido. Revisión adversarial (`revisor-adversarial`)
   de todo `ac2-football` (sin commit de importación: todo es nuevo) y del diff de la base desde su

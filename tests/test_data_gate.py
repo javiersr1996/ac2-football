@@ -118,7 +118,7 @@ def test_frozen_without_a_recorded_code_tree_sha_stays_shut(gate: Checkout) -> N
         frames(HELD)
 
 
-@pytest.mark.parametrize("stage", ["Frozen", "frozen ", "design", "reading"])
+@pytest.mark.parametrize("stage", ["Frozen", "frozen ", "design", "reading", "dead"])
 def test_any_other_stage_stays_shut(gate: Checkout, stage: str) -> None:
     gate.set_protocol(stage, gate.tree_sha())
     with pytest.raises(HeldOutLocked, match="stage"):

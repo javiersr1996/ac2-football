@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import builtins
 import copy
+import hashlib
 import io
 import json
 from pathlib import Path
@@ -63,7 +64,7 @@ def test_the_committed_protocol_passes_the_check() -> None:
 
 def test_the_check_says_how_much_it_verified() -> None:
     report = check.check(protocol())
-    assert report.schema_fields == len(check.SCHEMA) + 1
+    assert report.schema_fields == len(check.SCHEMA) + 1 + len(check.VERDICT)
     assert report.coherence_rules >= 20
     assert report.code_constants == len(check.CODE_CHECKS) >= 20
     accounted = {c.path for c in check.CODE_CHECKS} | set(check.DERIVED) | set(check.PROTOCOL_ONLY)
@@ -71,12 +72,26 @@ def test_the_check_says_how_much_it_verified() -> None:
     assert leaves <= accounted and report.numeric_leaves == len(leaves) >= 20
 
 
-def test_the_protocol_file_is_lf_and_in_stage_design() -> None:
+def test_the_protocol_file_is_lf_and_in_stage_dead() -> None:
     raw = PROTOCOL_FILE.read_bytes()
     assert b"\r" not in raw and raw.endswith(b"\n")
     doc = json.loads(raw.decode("utf-8"))
-    assert doc["stage"] == "design" and doc["code_tree_sha"] is None
+    assert doc["stage"] == "dead" and doc["code_tree_sha"] is None
     assert doc["candidate"] == "C1" and doc["written_before_any_outcome"] is True
+    assert doc["verdict"]["criterion"] == "D5" and doc["verdict"]["branch"] == "B"
+
+
+def test_the_verdict_is_the_one_of_the_calibration_report() -> None:
+    # The record of stage dead says what reports/calibration.json says, byte for byte.
+    verdict = protocol()["verdict"]
+    raw = (ROOT / verdict["report"]).read_bytes()
+    assert hashlib.sha256(raw).hexdigest() == verdict["report_sha256"]
+    report = json.loads(raw.decode("utf-8"))
+    assert report["verdict"]["calibration_passes"] is False
+    d5 = report["criteria"]["D5"]
+    assert d5["kills"] is True
+    assert d5["killing"] == verdict["killed_by"] == ["D3"]
+    assert d5["v0_bar_passed"] is verdict["v0_bar_passed"] is True
 
 
 def test_the_plan_text_of_every_death_criterion_is_quoted() -> None:
@@ -205,13 +220,50 @@ def test_the_estimators_constants_are_checked_against_the_code(
 
 
 def test_a_frozen_protocol_needs_a_real_sha() -> None:
-    doc = put(protocol(), "stage", "frozen")
+    doc = drop(put(protocol(), "stage", "frozen"), "verdict")
     assert any("code_tree_sha" in p for p in check.check(doc).problems)
     sha = "0123456789abcdef" * 4
     frozen = check.check(put(doc, "code_tree_sha", sha))
     assert not any("code_tree_sha" in p or "stage" in p for p in frozen.problems)
     short = check.check(put(doc, "code_tree_sha", "abc"))
     assert any("hexadecimal" in p for p in short.problems)
+
+
+@pytest.mark.parametrize(
+    ("path", "value", "words"),
+    [
+        ("verdict.criterion", "D6", "D5's"),
+        ("verdict.killed_by", ["D5"], "killed_by"),
+        ("verdict.killed_by", ["D3", "D3"], "killed_by"),
+        ("verdict.killed_by", ["D7"], "killed_by"),
+        ("verdict.killed_by", [], "killed_by"),
+        ("verdict.branch", "A", "branch B"),
+        ("verdict.heldout_read_for_layer3", True, "never read the held-out"),
+        ("verdict.report", "reports/design.json", "reports/calibration.json"),
+        ("verdict.report_sha256", "abc", "sha256s"),
+        ("verdict.reproduced_with_code_tree_sha", "A" * 64, "sha256s"),
+        ("verdict.reproduced_at_commit", "abc", "40-character commit"),
+        ("verdict.v0_bar_passed", "yes", "verdict.v0_bar_passed is str"),
+    ],
+)
+def test_an_incoherent_verdict_fails(path: str, value: object, words: str) -> None:
+    report = check.check(put(protocol(), path, value))
+    assert any(words in p for p in report.problems), (path, report.problems)
+
+
+def test_a_verdict_lives_in_stage_dead_and_only_there() -> None:
+    doc = protocol()
+    unrecorded = check.check(drop(doc, "verdict")).problems
+    assert any("verdict is recorded in stage dead" in p for p in unrecorded)
+    assert any("missing field verdict.criterion" in p for p in unrecorded)
+    early = check.check(put(doc, "stage", "design")).problems
+    assert any("verdict is recorded in stage dead" in p for p in early)
+    assert not check.check(drop(put(doc, "stage", "design"), "verdict")).problems
+    with_sha = check.check(put(doc, "code_tree_sha", "0123456789abcdef" * 4)).problems
+    assert any("null in stages design and dead" in p for p in with_sha)
+    # A failed V0 bar kills through D5 without any of D1 to D4.
+    by_the_bar = put(put(doc, "verdict.killed_by", []), "verdict.v0_bar_passed", False)
+    assert not check.check(by_the_bar).problems
 
 
 @pytest.mark.parametrize(
@@ -326,7 +378,7 @@ def test_the_command_line_check_passes_on_the_committed_protocol(
 ) -> None:
     assert cli.main(["protocol", "--check"]) == 0
     out = capsys.readouterr().out
-    assert "stage in the working tree: design" in out
+    assert "stage in the working tree: dead" in out
     assert f"{len(check.CODE_CHECKS)} constants against the code" in out
     assert "every one accounted for" in out and out.rstrip().endswith("protocol: OK")
 
@@ -351,7 +403,7 @@ def test_the_command_line_without_check_only_prints_the_stage(
 ) -> None:
     assert cli.main(["protocol"]) == 0
     out = capsys.readouterr().out
-    assert "stage in the working tree: design" in out and "verified" not in out
+    assert "stage in the working tree: dead" in out and "verified" not in out
 
 
 def test_read_protocol_rejects_a_non_object(tmp_path: Path) -> None:

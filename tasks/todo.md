@@ -1774,7 +1774,7 @@ su test sintético con el fallo plantado (una sonda que no puede fallar no prote
   todo cambio de `src` posterior a la lectura cierra el reservado en `HEAD`: sus artefactos se
   reproducen desde el commit de la lectura (un `git worktree` en ese commit). Orden: 23a, 23b,
   25, 26, 23c, 23d, CP2, J4, 24.
-  - [ ] 23a. `sonnet` Registro público de D5, ya. `protocol.json` pasa a `stage: "dead"` con un
+  - [x] 23a. `sonnet` Registro público de D5, ya. `protocol.json` pasa a `stage: "dead"` con un
     bloque `verdict` (D5, `killed_by` y `v0_bar_passed` del informe, `reports/calibration.json`
     con su sha256, el commit y el `code_tree_sha` con los que se reproduce byte a byte, rama B,
     `heldout_read_for_layer3: false`); `code_tree_sha` sigue nulo (nunca se congeló). `protocol
@@ -1783,6 +1783,26 @@ su test sintético con el fallo plantado (una sonda que no puede fallar no prote
     registro de que la capa 3 murió antes de leer nada del reservado. Aceptación: tests de
     `check` y de la puerta; mutaciones anotadas (la puerta que abre en `dead`; un `killed_by` que
     no es el del informe).
+    Hecho (2026-10-20). Antes de escribir el registro, `ac2fb calibration` regenerado en el
+    scratchpad en `ccaafe5` sale idéntico byte a byte a `reports/calibration.json` (sha256
+    `7ec16e6b…4814`, `code_tree_sha` `39a23a99…11da`, 37 s): son el commit y el sha que el bloque
+    `verdict` registra. Cambian solo `stage` y ese bloque (`killed_by: ["D3"]`, `v0_bar_passed:
+    true`, rama B, `heldout_read_for_layer3: false`); el resto del protocolo queda como se
+    escribió antes de ningún desenlace. `check.py`: stage `dead` (con `design`, sin sha), esquema
+    `VERDICT` de 10 campos exigido en `dead` y solo ahí, y 8 reglas nuevas (el bloque existe solo
+    en `dead`; criterio D5; `killed_by` sin repetidos y dentro de D1 a D4, vacío solo si V0 no pasó
+    su barra; rama B; reservado no leído; el informe; formatos de sha y commit). `protocol --check`
+    sigue sin abrir `reports/`; el contraste con el informe (sha256 de los bytes, `killing`,
+    `v0_bar_passed`, `calibration_passes`) es un test. La puerta no cambia: `dead` no está en
+    `OPEN_STAGES`, y el test de los stages que no abren lo incluye. **Mutaciones (9, todas tumban
+    su test; copias en memoria, diff igual antes y después; `d5/mutate23a.py` y su log en el
+    scratchpad):** la puerta que abre en `dead`; `killed_by` D4; el sha256 del informe cambiado;
+    sin la regla de "solo en `dead`"; `killed_by` vacío con la barra pasada; `killed_by` con D5;
+    `dead` con sha obligatorio; el esquema de `dead` sin `VERDICT`; el reservado leído sin
+    comprobar. Gate local en verde (`sync --locked`, ruff, format, `mypy src`, `pytest -q`: 1.067
+    pasan, eran 1.052; 26 deseleccionados; `pytest -m realdata`: 26 de 26; `ac2fb protocol
+    --check`: 99 campos de esquema, eran 89; 32 reglas de coherencia, eran 24; 27 constantes
+    contra el código; 26 campos numéricos, todos justificados).
   - [ ] 23b. `opus` Puerta de la capa 2 y `ac2fb heldout read` (los requisitos de la revisión 18,
     adaptados). `protocol/layer2.json` (`design`, `frozen`, `read`): qué comandos lee y qué
     artefactos escribe (los de la 25 y la 26), `code_tree_sha`, y que no calcula nada de la capa

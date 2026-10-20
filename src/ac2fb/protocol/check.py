@@ -6,11 +6,12 @@ file and prints what :func:`check` returns). Three things are verified, and the 
 many of each:
 
 1. *Schema*: every field of :data:`SCHEMA` exists with its type, and the six death criteria
-   are there with the plan's text.
+   are there with the plan's text; in stage ``dead``, every field of :data:`VERDICT` too.
 2. *Coherence*: the rules of :func:`coherence_problems`, inside the protocol (the window in
    seconds is the frames over the frame rate, the exclusion gap is the window, the bar's count
    of null draws follows from its p and the number of draws, the Holm family is the two
-   variants, a frozen protocol records a code tree sha, ...).
+   variants, a frozen protocol records a code tree sha, a dead one records D5's verdict and
+   never froze, ...).
 3. *The code*: every constant the code already fixes equals the one written in the protocol
    (:data:`CODE_CHECKS`: the window, the exclusion gap, the index's radius, goal and cut, the
    strata cuts, the label levels, the null's draws, seed and blocking threshold, the bars, the
@@ -41,6 +42,7 @@ __all__ = [
     "PROTOCOL_ONLY",
     "SCHEMA",
     "STAGES",
+    "VERDICT",
     "CodeCheck",
     "Report",
     "check",
@@ -50,9 +52,27 @@ __all__ = [
     "schema_problems",
 ]
 
-STAGES: tuple[str, ...] = ("design", "frozen", "read")
+# ``dead``: D5 killed layer 3 in calibration (branch B), so the protocol never froze for a reading.
+STAGES: tuple[str, ...] = ("design", "frozen", "read", "dead")
+_UNFROZEN = ("design", "dead")
 _SHA = re.compile(r"^[0-9a-f]{64}$")
+_COMMIT = re.compile(r"^[0-9a-f]{40}$")
 _CRITERIA = ("D1", "D2", "D3", "D4", "D5", "D6")
+
+# The record of stage ``dead``, required there and only there: which criteria made D5 kill, the
+# report that says so (its sha256) and the commit and code tree sha that reproduce it.
+VERDICT: dict[str, type | tuple[type, ...]] = {
+    "verdict.about": str,
+    "verdict.criterion": str,
+    "verdict.killed_by": list,
+    "verdict.v0_bar_passed": bool,
+    "verdict.branch": str,
+    "verdict.report": str,
+    "verdict.report_sha256": str,
+    "verdict.reproduced_at_commit": str,
+    "verdict.reproduced_with_code_tree_sha": str,
+    "verdict.heldout_read_for_layer3": bool,
+}
 
 # Field path -> expected type(s). Booleans are not ints here, and ints are not floats.
 SCHEMA: dict[str, type | tuple[type, ...]] = {
@@ -327,7 +347,8 @@ def _typed(value: object, expected: type | tuple[type, ...]) -> bool:
 def schema_problems(protocol: Mapping[str, Any]) -> list[str]:
     """Missing or mistyped fields, and the death criteria without the plan's text."""
     found: list[str] = []
-    for path, expected in SCHEMA.items():
+    schema = {**SCHEMA, **VERDICT} if protocol.get("stage") == "dead" else SCHEMA
+    for path, expected in schema.items():
         exists, value = _get(protocol, path)
         if not exists:
             found.append(f"missing field {path}")
@@ -369,13 +390,47 @@ def coherence_problems(protocol: Mapping[str, Any]) -> tuple[list[str], int]:
     _, sha = _get(p, "code_tree_sha")
     rule(stage in STAGES, f"stage {stage!r} is not one of {STAGES}")
     rule(
-        (stage == "design") == (sha is None),
-        "code_tree_sha must be null in stage design and only there",
+        (stage in _UNFROZEN) == (sha is None),
+        "code_tree_sha must be null in stages design and dead and only there",
     )
     rule(
         sha is None or (isinstance(sha, str) and bool(_SHA.match(sha))),
         "code_tree_sha must be a 64-character hexadecimal sha256",
     )
+    rule(
+        ("verdict" in p) == (stage == "dead"), "a verdict is recorded in stage dead and only there"
+    )
+    if stage == "dead":
+        _, killed = _get(p, "verdict.killed_by")
+        rule(_get(p, "verdict.criterion")[1] == "D5", "the verdict of a dead protocol is D5's")
+        rule(
+            isinstance(killed, list)
+            and len(set(killed)) == len(killed)
+            and set(killed) <= set(_CRITERIA[:4])
+            and (bool(killed) or _get(p, "verdict.v0_bar_passed")[1] is False),
+            "D5 kills when V0 fails its bar or one of D1 to D4 kills: killed_by lists those",
+        )
+        rule(_get(p, "verdict.branch")[1] == "B", "D5 sends the entry to branch B")
+        rule(
+            _get(p, "verdict.heldout_read_for_layer3")[1] is False,
+            "a dead protocol never read the held-out for layer 3",
+        )
+        rule(
+            _get(p, "verdict.report")[1] == "reports/calibration.json",
+            "the verdict is the one of reports/calibration.json",
+        )
+        shas = [
+            _get(p, f"verdict.{k}")[1] for k in ("report_sha256", "reproduced_with_code_tree_sha")
+        ]
+        rule(
+            all(isinstance(s, str) and _SHA.match(s) for s in shas),
+            "the verdict's sha256s must be 64-character hexadecimal",
+        )
+        commit = _get(p, "verdict.reproduced_at_commit")[1]
+        rule(
+            isinstance(commit, str) and bool(_COMMIT.match(commit)),
+            "verdict.reproduced_at_commit must be a 40-character commit",
+        )
     rule(_get(p, "candidate")[1] == "C1", "the candidate chosen at CP1 is C1")
     rule(
         _get(p, "written_before_any_outcome")[1] is True, "written_before_any_outcome must be true"
@@ -512,7 +567,8 @@ def check(protocol: Mapping[str, Any]) -> Report:
             problems.append(f"declared numeric field {path} is absent")
     return Report(
         problems=tuple(problems),
-        schema_fields=len(SCHEMA) + 1,  # plus code_tree_sha
+        # plus code_tree_sha, and the verdict in stage dead
+        schema_fields=len(SCHEMA) + 1 + (len(VERDICT) if protocol.get("stage") == "dead" else 0),
         coherence_rules=rules,
         code_constants=len(CODE_CHECKS),
         derived_numbers=len(DERIVED),

@@ -1,6 +1,20 @@
 {
-  "stage": "design",
+  "stage": "dead",
   "code_tree_sha": null,
+  "verdict": {
+    "about": "Recorded on 2026-10-20, after the adversarial review of task 22 closed and before any held-out match was read: the calibration half did not pass, so D5 kills layer 3. This protocol is never frozen for a reading, layer 3 is never computed on the held-out, and the entry publishes the negative per match (branch B). Only the stage and this block change; every other field is as it was written before any outcome. The held-out is read at most once, for layer 2 only, under its own protocol (protocol/layer2.json), which computes nothing of layer 3.",
+    "criterion": "D5",
+    "killed_by": [
+      "D3"
+    ],
+    "v0_bar_passed": true,
+    "branch": "B",
+    "report": "reports/calibration.json",
+    "report_sha256": "7ec16e6b8a072ee665cc787527ec2fc2dc4625e3b69f1745ec4cc34a4de04814",
+    "reproduced_at_commit": "ccaafe59f3ecf712276f45c0203d3d0e1543144f",
+    "reproduced_with_code_tree_sha": "39a23a9938682ec18da329a816ce003d6fb328f505cad49cbb387ec5c89c11da",
+    "heldout_read_for_layer3": false
+  },
   "candidate": "C1",
   "title": "Pressure the camera sees: pressure at the reception and the immediate advance of the ball",
   "question": "Within the same incoming-ball stratum, does pressure on the carrier at the reception reduce the ball's advance towards the goal over the next W frames, and does the effect survive when the cause is measured only from players the camera detected?",

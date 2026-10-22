@@ -1773,7 +1773,9 @@ su test sintético con el fallo plantado (una sonda que no puede fallar no prote
   solo `reports/` y van después). Como la puerta solo reproduce con el mismo `code_tree_sha`,
   todo cambio de `src` posterior a la lectura cierra el reservado en `HEAD`: sus artefactos se
   reproducen desde el commit de la lectura (un `git worktree` en ese commit). Orden: 23a, 23b,
-  25, 26, 23c, 23d, CP2, J4, 24.
+  25, 30, 26, 23c, 23d, CP2, J4, 24 (la 30 se adelanta por decisión de Javier del 2026-10-22: no
+  funcionar out of the box es lo único que descalifica; el borrador del README, adelantado de la
+  33, entra antes que ella porque `clean_clone_check.sh` lee sus bloques).
   - [x] 23a. `sonnet` Registro público de D5, ya. `protocol.json` pasa a `stage: "dead"` con un
     bloque `verdict` (D5, `killed_by` y `v0_bar_passed` del informe, `reports/calibration.json`
     con su sha256, el commit y el `code_tree_sha` con los que se reproduce byte a byte, rama B,
@@ -1861,14 +1863,19 @@ su test sintético con el fallo plantado (una sonda que no puede fallar no prote
     --check` OK). Nadie leyó el reservado. Commit `913d8d9`, empujado; CI en verde (run
     39450823910).
   - [ ] 23c. `opus` (subagente `revisor-adversarial`) Revisión de 23b, 25 y 26 antes de congelar,
-    como la 22, hasta que no salga nada alto ni medio.
+    como la 22, **con un máximo de 3 pasadas** (decisión de Javier, 2026-10-22: la 22 necesitó 6).
+    Un alto se arregla siempre; los medios que sigan vivos tras la tercera pasada van a Javier,
+    que decide si se arreglan o se aceptan por escrito.
   - [ ] 23d. `sonnet` Congelación de `layer2.json` en un commit propio: `stage: "frozen"`,
     `code_tree_sha`. Aceptación: desde ese commit hasta la lectura, `git diff <congelación> --
     src pyproject.toml uv.lock .python-version protocol/` vacío; test contra `HEAD` de que el
     reservado sigue cerrado con un cambio de código posterior. Antes, **[Javier]** confirma que
     `reads` incluye `layer2` (el comando de la 12, que la figura 1 necesita en los 20): va más
     allá de "25 + 26" tal como lo eligió; si no, se quita, y con él su `--check`. Pendiente desde
-    23b; mejor antes de escribir ese `--check`.
+    23b; mejor antes de escribir ese `--check`. **Resuelto (2026-10-22): `layer2` se queda.**
+    Javier delegó la decisión; la lectura es irreversible y sin `layer2` la figura 1 quedaría
+    para siempre en los 10 de calibración, y es capa 2 pura (nada de la capa 3). Consecuencia:
+    `ac2fb layer2 --check` se escribe antes de la 23c, con la 26.
 - [ ] CP2. **[Javier]** Aprueba la congelación de `layer2.json` y queda avisado de que la lectura
   del reservado es irreversible. La rama B ya está decidida (2026-10-19) y D5 registrado (23a).
 
@@ -2027,6 +2034,12 @@ su test sintético con el fallo plantado (una sonda que no puede fallar no prote
   interpolated" y la cifra de huecos largos), capa 3, método en corto, reproducir (bloque rápido
   de un partido y bloque completo, con tiempos medidos), fixtures sintéticos solo para tests,
   reutilizar, licencia y datos. Aceptación: la 31 en verde; lectura de Javier.
+  Borrador adelantado (2026-10-22), en `README.md`: cada cifra lleva al lado
+  `<!-- src: fichero:clave -->` y lo que falta dice `PENDING(...)`. Propuesta para la 31: comprobar
+  cada cifra contra la clave que cita, con su redondeo, en vez de buscarla literal en `reports/`
+  (así cubre también tamaños y versiones, que no viven en `reports/`). Los tamaños de descarga
+  (95.6 MB, 1.9 GB) vienen del README anterior y los re-mide la 30: el manifiesto suma
+  1.823.448.331 B (choque 1), que no redondea a 1.9 GB.
 - [ ] 34. `sonnet` Guion del vídeo (≤ 60 s, unas 140 palabras, voz de Javier) con plano por frase
   (figura 1, figura 2, clip de la 32); cada cifra con su artefacto.
 - [ ] J6. **[Javier]** `ac2-football` público (si no lo era; la base lo es desde J2); `full-build`

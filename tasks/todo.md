@@ -1903,8 +1903,8 @@ su test sintético con el fallo plantado (una sonda que no puede fallar no prote
   mundos aleatorios (5 semillas, `test_reliability_metrics.py`) y en los 10 partidos reales
   (`realdata`, la `Sensitivity` entera igual, no aproximada). Cuesta unas 60 líneas repetidas
   (pesos del índice, línea, extremos del bloque); mover `pressure`, `line` y `block` a
-  `reliability/` tocaría código de la capa 3 ya auditado. **[Javier]** confirmar la copia con
-  igualdad comprobada frente a mover.
+  `reliability/` tocaría código de la capa 3 ya auditado. Confirmado por Javier (2026-10-22): la
+  copia con igualdad comprobada.
   **Construido** (commit `de8919f`, empujado; CI en verde, run 39775012607, 1 min 50 s):
   `reliability/metrics.py` (siete métricas), `reliability/table.py` (filas, CSV, `check`),
   `match.load_with_long`, el comando `ac2fb reliability [--match ID] [--reports-dir D]
@@ -1918,7 +1918,8 @@ su test sintético con el fallo plantado (una sonda que no puede fallar no prote
   `match_id, metric, variant, n, mean` (V0, V1 y `V2_k` con k jugadores detectados en toda la
   ventana) y, repetidas en cada fila del par, `n_units, n_skipped, player_frames,
   extrapolated_fraction, absent_fraction, gap_len_n, gap_len_median, gap_len_p90, gap_len_max`.
-  **Métricas y definiciones mínimas propuestas, [Javier] confirmar todas:** `pressure_index`
+  **Métricas y definiciones mínimas, confirmadas por Javier (2026-10-22) salvo `line_reaction_m`,
+  que gana el estrato del balón en la 26:** `pressure_index`
   (el índice de S1 en t; jugadores: los rivales con peso mayor que `NEAR_WEIGHT`);
   `nearest_rival_m` (distancia del portador al rival más cercano en t; jugador: ese rival; el
   portador no cuenta, como en S1); `line_height_m` (profundidad media de los 4 rivales de campo
@@ -1930,7 +1931,7 @@ su test sintético con el fallo plantado (una sonda que no puede fallar no prote
   cuatro que fijan los extremos). Toda V1 es una selección declarada (unidades con sus jugadores
   detectados en toda la ventana). Sin cubrir: la visibilidad del balón (la causa común) no está en
   el CSV; sigue en `probe_s2.json` (`ball`).
-  **Tolerancias ([Javier] confirmar), medidas en las 8.142 recepciones puntuadas de calibración
+  **Tolerancias (confirmadas por Javier, 2026-10-22), medidas en las 8.142 recepciones puntuadas de calibración
   (`measure_cuts.log`):** el mínimo de |índice - 0,5| es 2,4e-4; el de |d - 10| m, 1,3e-4, y el de
   |d - 5| m, 5,7e-4; de 14.669 pesos positivos, el menor es 1,1e-9, ninguno por debajo de 1e-9,
   15 por debajo de 1e-6, 384 por debajo de 1e-3. El ruido de coma flotante es de otro orden: un
@@ -1999,6 +2000,12 @@ su test sintético con el fallo plantado (una sonda que no puede fallar no prote
   Aceptación: hueco 0 da error 0; sintético con trayectoria conocida recupera el error analítico;
   mutación: rellenar con la última posición cambia el error y un test lo detecta. Sesgo
   declarado: los tramos enteramente vistos están cerca del balón.
+  Entran también en la 26, antes de la 23c: (a) **decisión de Javier (2026-10-22):**
+  `line_reaction_m` se parte por el estrato del movimiento previo del balón (el de S2, copiado en
+  `reliability/` como el resto) con una columna `ball_stratum` en `reliability.csv`, y V0 frente a
+  V1 se compara dentro de cada estrato (m10: V1 se queda con lo que está cerca del balón); se
+  rehacen el CSV, su `--check` y las mutaciones afectadas; (b) `ac2fb layer2 --check` (23d:
+  `layer2` se queda en `reads`), que `full-build.yml` corre en cuanto exista.
 
 ## Fase 4: empaquetado (lun 30 nov a dom 6 dic)
 

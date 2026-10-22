@@ -2016,10 +2016,41 @@ su test sintético con el fallo plantado (una sonda que no puede fallar no prote
   `reliability.amputate`, `protocol.data` como lector guardado del silver de la base, esquema del
   Parquet largo con `gap_len`) y un
   `examples/sensitivity.py` que corre sobre el sintético. Aceptación: el ejemplo corre en CI.
-- [ ] 30. `sonnet` `full-build.yml`: `workflow_dispatch`, caché de `data/raw` por huella del
+- [x] 30. `sonnet` `full-build.yml`: `workflow_dispatch`, caché de `data/raw` por huella del
   manifiesto, build completo, todos los `--check` y los dos bloques de `clean_clone_check.sh` en
   `ubuntu-latest`. Aceptación: una ejecución en verde con su enlace; el árbol queda limpio. Rama
   B: los `--check` del reservado corren en un `git worktree` en el commit de la lectura.
+  Hecho (2026-10-22), commits `3e9cbcc`, `e8d0891` y `09915b8` (README). **Qué hay:**
+  `.github/workflows/full-build.yml` (`workflow_dispatch`, `ubuntu-latest`, solo las acciones de
+  `ci.yml` más `actions/cache/restore` y `save` en `v6.1.0`). Clave de la caché: sha256 del
+  `sources.json` de la base (`047f8b36...`). Caché fría: el bloque rápido baja sus 5 ficheros, el
+  completo baja los 85 una vez y, si salen en verde, se guardan; caché caliente: cada bloque recibe
+  una copia de `raw` en su propio `FTBASE_DATA_ROOT` (el rápido solo los 5 ficheros de su partido,
+  elegidos con `select_match`, para que bronze y silver se queden en 1 partido) y `ftbase ingest`
+  salta todo lo presente y verificado. Los bloques del README no cambian por la caché; el script
+  tampoco. Después, `ac2fb protocol --check` y `ac2fb reliability --check` (los únicos `--check` de
+  `ac2fb`; `ftbase provenance --check` no aplica: este repo no tiene `reports/provenance.json`) sobre
+  el silver que construyó el bloque completo. **Dos ejecuciones, las dos en verde:** fría
+  https://github.com/javiersr1996/ac2-football/actions/runs/39782141426 (rápido `CLEAN CLONE OK in
+  9 s`, `downloaded=5`, 95.624.493 B; completo `CLEAN CLONE OK in 174 s`, `downloaded=85`,
+  1.919.842.163 B, de ellos 1.823.448.331 B en los 20 ficheros LFS; recibo `verified=85 failed=0`;
+  `protocol: OK` con 99 campos, 32 reglas, 27 constantes; `reliability`: 465 filas, 6.510 celdas,
+  10 partidos) y caliente https://github.com/javiersr1996/ac2-football/actions/runs/39783298818
+  (`downloaded=0` en los dos bloques, 9 s y 150 s, mismos `--check`). Cuota LFS gastada: una
+  descarga completa más el partido rápido; `cache-hit` lo imprime el resumen del run.
+  **Riesgo conocido, materializado y arreglado:** el bloque rápido reescribía `reports/layer2.json`
+  con un solo partido (comprobado en local: difiere del commiteado) y el script habría fallado con
+  "the clone is not clean". Cambio mínimo en el bloque rápido del README:
+  `ac2fb layer2 --match 1874553 --reports-dir ../reports-quick` (fuera del árbol; el script no se
+  toca). `layer2`, `calibration` y `reliability` completos reproducen byte a byte los ficheros de
+  `reports/` (comprobado en local con `--reports-dir` aparte y con `cmp`). README: rellenados los
+  `PENDING(task 30)` con 95,6 MB y 9 s (rápido), 1,9 GB (1,8 GB LFS) y unos 3 min (completo), cada
+  cifra con su `<!-- src: -->` al run. No se tocó `src/`, `protocol/*.json` ni el reservado.
+  **Pendiente tras J4:** la rama B ("los `--check` del reservado en un `git worktree` en el commit
+  de la lectura"): la lectura no existe aún, así que ese paso no está en el workflow.
+  Desviaciones: el medido local de `layer2` + `calibration` + `reliability` fue 38 min por
+  contención de la máquina (el run de CI, 150 s el bloque entero); el primer intento de dispatch
+  falló al parsear el YAML (`runner` no existe en el `env` del job), sin descargar nada.
 - [ ] 31. `sonnet` `scripts/readme_check.py` y su test: palabras del README (todo el texto, bloques
   de código incluidos, sin comentarios HTML) ≤ 1000, figuras más tablas ≤ 2, cada número del README
   presente en algún artefacto de `reports/`, y la frase literal de que los fixtures sintéticos no

@@ -42,7 +42,7 @@ git clone https://github.com/javiersr1996/ac2-football
 cd ac2-football
 uv sync --locked
 uv run ftbase ingest --match 1874553
-uv run ftbase bronze && uv run ftbase silver && uv run ac2fb layer2 --match 1874553
+uv run ftbase bronze && uv run ftbase silver && uv run ac2fb layer2 --match 1874553 --reports-dir ../reports-quick
 ```
 <!-- clean-clone:quick:end -->
 

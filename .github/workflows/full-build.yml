@@ -1,0 +1,117 @@
+name: Full build
+
+# Manual only. Builds the 20 matches from the base's CLI, runs every --check that exists and the two
+# README blocks through scripts/clean_clone_check.sh (quick and full), on a clean machine.
+#
+# SkillCorner's Git LFS quota: a full download is 1,823,448,331 B of it. So the verified raw files are
+# cached under a key made from the base's manifest (the file that lists every path and sha256), and:
+#   cold cache: the quick block downloads its 5 files (95.6 MB), the full block downloads the 85 once,
+#               and the verified raw files are then saved under the key;
+#   warm cache: nothing is downloaded. Each block gets a copy of the raw files in its own
+#               FTBASE_DATA_ROOT, so `ftbase ingest` sees every file present and matching and skips it
+#               (the quick block gets only its match's files, so its bronze and silver stay at 1 match).
+# The README blocks are not changed for this: they run as a reader would, only the data root differs.
+# The checks at the end read the silver that the full block built, in the same data root.
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  full-build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    env:
+      QUICK_ROOT: ${{ runner.temp }}/data-quick
+      FULL_ROOT: ${{ runner.temp }}/data-full
+      RAW_CACHE: ${{ runner.temp }}/raw-cache
+      MATCH: "1874553"
+    steps:
+      - uses: actions/checkout@v7.0.1
+        with:
+          lfs: false
+      - uses: astral-sh/setup-uv@v10.3.0
+        with:
+          version: "0.10.4"
+      - name: Python from .python-version
+        run: uv python install
+      - run: uv sync --locked
+
+      - name: Fingerprint of the base's manifest
+        id: manifest
+        run: |
+          manifest="$(uv run python -c "import pathlib, ftbase; print(pathlib.Path(ftbase.__file__).parent / 'manifest' / 'sources.json')")"
+          echo "hash=$(sha256sum "$manifest" | cut -d' ' -f1)" >> "$GITHUB_OUTPUT"
+          echo "manifest=$manifest" >> "$GITHUB_OUTPUT"
+      - name: Raw data cache
+        id: raw
+        uses: actions/cache/restore@v6.1.0
+        with:
+          path: ${{ env.RAW_CACHE }}
+          key: raw-opendata-football-${{ steps.manifest.outputs.hash }}
+      - name: Say whether the cache is warm
+        run: echo "cache-hit=${{ steps.raw.outputs.cache-hit }}" | tee -a "$GITHUB_STEP_SUMMARY"
+
+      - name: Seed the quick data root with its match's files (warm cache)
+        if: steps.raw.outputs.cache-hit == 'true'
+        run: |
+          uv run python - "${{ steps.manifest.outputs.manifest }}" <<'PY'
+          import os, shutil, sys
+          from pathlib import Path
+          from ftbase.ingest.manifest import load_manifest
+          from ftbase.ingest.select import select_match
+          source = select_match(load_manifest(Path(sys.argv[1])).source("opendata-football"), int(os.environ["MATCH"]))
+          cached = Path(os.environ["RAW_CACHE"]) / "raw" / source.source_id
+          seeded = Path(os.environ["QUICK_ROOT"]) / "raw" / source.source_id
+          for entry in source.files:
+              (seeded / entry.path).parent.mkdir(parents=True, exist_ok=True)
+              shutil.copy2(cached / entry.path, seeded / entry.path)
+          print(f"seeded {len(source.files)} files")
+          PY
+      - name: Seed the full data root with every verified file (warm cache)
+        if: steps.raw.outputs.cache-hit == 'true'
+        run: mkdir -p "$FULL_ROOT" && cp -r "$RAW_CACHE/raw" "$FULL_ROOT/raw"
+
+      # AC2_REPO: the repo is private, so the clone takes the checkout (committed state only).
+      - name: README block quick
+        run: |
+          mkdir -p "$RUNNER_TEMP/w-quick"
+          TMPDIR="$RUNNER_TEMP/w-quick" FTBASE_DATA_ROOT="$QUICK_ROOT" AC2_REPO="$GITHUB_WORKSPACE" \
+            bash scripts/clean_clone_check.sh quick 2>&1 | tee "$RUNNER_TEMP/quick.log"
+      - name: README block full
+        run: |
+          mkdir -p "$RUNNER_TEMP/w-full"
+          TMPDIR="$RUNNER_TEMP/w-full" FTBASE_DATA_ROOT="$FULL_ROOT" AC2_REPO="$GITHUB_WORKSPACE" \
+            bash scripts/clean_clone_check.sh full 2>&1 | tee "$RUNNER_TEMP/full.log"
+      - name: Save the verified raw files (cold cache; the full block verified all 85)
+        if: steps.raw.outputs.cache-hit != 'true'
+        run: mkdir -p "$RAW_CACHE" && cp -r "$FULL_ROOT/raw" "$RAW_CACHE/raw"
+      - name: Cache the raw files
+        if: steps.raw.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v6.1.0
+        with:
+          path: ${{ env.RAW_CACHE }}
+          key: raw-opendata-football-${{ steps.manifest.outputs.hash }}
+
+      # Every --check that exists today, on the silver the full block built. Each prints how many
+      # cells or rules it verified; a check that verified nothing is a failure, not a pass.
+      - name: ac2fb protocol --check
+        run: uv run ac2fb protocol --check
+      - name: ac2fb reliability --check
+        run: FTBASE_DATA_ROOT="$FULL_ROOT" uv run ac2fb reliability --check
+
+      - name: Times and bytes
+        if: always()
+        run: |
+          {
+            echo "## Measured"
+            for mode in quick full; do
+              log="$RUNNER_TEMP/$mode.log"
+              [ -f "$log" ] || continue
+              bytes="$(sed -n 's/^downloaded: .* (\([0-9]*\) bytes)$/\1/p' "$log" | paste -sd+ - | bc)"
+              echo "- $mode: $(grep -E '^(CLEAN CLONE OK|FAIL)' "$log" | head -1); downloaded bytes: ${bytes:-0}"
+            done
+            echo "- cache-hit: ${{ steps.raw.outputs.cache-hit }}"
+          } | tee -a "$GITHUB_STEP_SUMMARY"

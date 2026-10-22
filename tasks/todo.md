@@ -1991,7 +1991,7 @@ su test sintético con el fallo plantado (una sonda que no puede fallar no prote
   `test_single_door`, `test_heldout`) no se debilitan (los únicos cambios: entradas nuevas en las
   tablas de rutas, la lista de `reads` del helper y un sitio de lectura de un informe). Pendiente
   de la 25: nada; faltan la 26, 23c y 23d.
-- [ ] 26. `sonnet` (rama B: como la 25, antes de 23c) Referencia por amputación
+- [x] 26. `sonnet` (rama B: como la 25, antes de 23c) Referencia por amputación
   (`reliability/amputate.py`), con su comando y su `--check`: en tramos con los
   jugadores de la métrica detectados se enmascaran huecos muestreados de la distribución real de
   `gap_len` y de la detección por distancia al balón, se rellenan por interpolación lineal entre
@@ -2006,6 +2006,90 @@ su test sintético con el fallo plantado (una sonda que no puede fallar no prote
   V1 se compara dentro de cada estrato (m10: V1 se queda con lo que está cerca del balón); se
   rehacen el CSV, su `--check` y las mutaciones afectadas; (b) `ac2fb layer2 --check` (23d:
   `layer2` se queda en `reads`), que `full-build.yml` corre en cuanto exista.
+  **Decisiones de Javier (2026-10-22), antes de escribir código:** (1) el estrato de (a) es la
+  dirección del balón en `[t - 13, t]` con el corte de 2 m de S2 (`backward`, `forward`,
+  `lateral`, `undefined`), no las 18 celdas; las filas de las otras métricas, y las de la
+  reacción sin partir, llevan `ball_stratum = all`. (2) Amputación con frames reales: unidades V1
+  de cada métrica; cada jugador de la métrica se oculta con la probabilidad de no detección de su
+  banda de distancia al balón en `t` (la de `layer2.json`); si cae, copia de un frame extrapolado
+  real de esa banda (mismo partido, con detección a los dos lados en el periodo) los frames hasta
+  la detección anterior y la siguiente, y los pone alrededor de `t`; los extremos se mueven a la
+  detección más cercana del jugador; relleno lineal entre ellos. Error = valor rellenado menos
+  valor visto, por banda del hueco efectivo más largo (`runs.BANDS`), más `none` (nadie oculto) y
+  `all`. Semilla fija, una corriente por partido y métrica.
+  Hecho (2026-10-22). **Construido:** `reliability/amputate.py` con el comando `ac2fb amputation
+  [--match ID] [--reports-dir D] [--check]` y `LAYER2_READS["amputation"]`; `protocol/layer2.json`
+  lista `layer2`, `reliability` y `amputation` en `reads` (sigue en `design`). Apoyos:
+  `sensitivity.window_frames` (extraído de `_one_match` sin cambiar nada: la amputación construye
+  las ventanas y decide V1 igual que la tabla de la 25), `metrics.incoming_direction` y
+  `reaction_strata` (la dirección de `pressure.incoming_ball`, copiada como el resto),
+  `table.check_csv` y `render_csv` (un solo check de CSV para las dos tablas), `report.check` y
+  `ac2fb layer2 --check` (cada valor de `layer2.json` por su ruta, después los bytes tal como los
+  escribe el código; no escribe nada, ni el Parquet largo) y `cli._committed` en lugar de
+  `_committed_table` (un solo sitio de lectura de informes para los tres checks, en
+  `ALLOWED_FILE_SITES`). `full-build.yml` corre `layer2 --check` y `amputation --check` después
+  del de `reliability`. README: el `PENDING(task 26)` apunta ahora a `reports/amputation.csv`, con
+  el resumen PENDING(task 27). Del bloque completo del README no se ha tocado nada: el workflow
+  verifica `amputation.csv` con su `--check`.
+  **`reliability.csv`:** columna `ball_stratum` detrás de `metric` (clave: partido, métrica,
+  estrato y variante); 695 filas, eran 465. Las 465 de `all` son iguales celda a celda a las de
+  `HEAD` (comprobado contra `git show`); hay 230 nuevas de `line_reaction_m` por dirección. El
+  estrato `undefined` está vacío en los 10 partidos. Cifras (`summary26.log`; mínimo, mediana y
+  máximo de los 10 partidos), con n y la media de V0 frente a V1: hacia atrás n 296-394-449,
+  −1,518/−1,327/−0,932 frente a n 55-86,5-194, −0,951/−0,625/−0,021; hacia delante 284-356-417,
+  +0,870/+1,198/+1,437 frente a 73-109,5-218, +2,106/+2,669/+3,107; lateral 134-154-208,
+  −0,356/−0,149/+0,286 frente a 30-47-86, +0,116/+0,604/+1,066. **V1 queda por encima de V0 en
+  los tres estratos y en los 10 de 10 partidos:** estratificar por el balón no borra la diferencia
+  V0-V1 de la reacción (sin estratos, mediana −0,095 frente a +1,064).
+  **`amputation.csv`:** 420 filas (10 partidos, 7 métricas y 6 bandas: `none`, `le_1s`, `1_5s`,
+  `5_20s`, `gt_20s` y `all`), 10 columnas (`n`, error medio, error absoluto medio, su p90 y su
+  máximo, `n_units` y `n_skipped`), LF. Tiempos en local: `ac2fb amputation` 52 s en los 10,
+  `ac2fb reliability` 71 s y `ac2fb layer2 --check` 16 s (3.558 valores verificados). Las
+  unidades son las V1 de `reliability.csv` (test `realdata`). Se saltan de 0 a 11 por partido y
+  métrica. La banda `le_1s` casi no tiene unidades (0 a 6): un frame extrapolado rara vez vive en
+  un hueco de 1 s o menos, y el muestreo pondera por frame. Error absoluto medio de `all`
+  (mínimo, mediana y máximo): presión 0,019-0,033-0,050; rival más cercano 0,20-0,32-0,50 m;
+  altura de línea 0,79-0,89-1,39 m; reacción 0,34-0,40-0,46 m; anchura 1,87-2,34-3,32 m;
+  longitud 1,17-2,72-5,06 m (14 a 42 unidades); área 43-133-246 m². En huecos de más de 20 s:
+  presión 0,15-0,18-0,21; rival 2,12-2,73-3,75 m, con error medio siempre positivo (+1,22 a
+  +3,19: el rival rellenado queda más lejos); línea 1,31-1,46-1,94 m; reacción 0,54-0,62-0,67 m;
+  anchura 3,80-4,57-5,40 m. En la mediana entre partidos, el error crece con la banda en las
+  siete métricas; partido a partido crece de banda en banda en 10 de 10 (línea, reacción, área),
+  9 de 10 (rival, anchura), 8 de 10 (longitud) y 5 de 10 (presión, donde 5-20 s y más de 20 s
+  quedan parecidos).
+  **Tests:** `test_amputate.py` (33: hueco nulo, recta exacta, error analítico `c a b` de una
+  parábola en tres huecos, extremos que se desplazan y no cruzan periodos, saltos sin balón o
+  sin detección, banda del hueco más largo, ocultación igual a `detection_by_ball_distance`,
+  unidades V1 en 5 mundos, semillas fijas e independientes, tabla y check), `test_layer2_check.py`
+  (5), dirección contra el original (5 semillas y un caso plantado en el corte con ruido de coma
+  flotante), estratos en la tabla plantada y, en `realdata`, `test_realdata_amputation.py` (14:
+  el CSV es el del código, una mutación de 1e-6 la ve, unidades = V1, bandas que reparten, la
+  ocultación igual a `layer2.json` en los 10) y en `test_realdata_reliability.py` (estratos que
+  reparten las unidades; la dirección igual a la de S2, posesión a posesión, en los 10).
+  **Mutaciones (28, todas caen; `t26/mutate26.py` y sus logs `mutate26.log` y
+  `mutate26_tolerance.log` en el scratchpad de la sesión; copia del árbol, el real no se toca):**
+  relleno con la última posición; huecos que siguen marcados como detectados; error con el signo
+  cambiado; extremos que no se mueven o que cruzan periodos; probabilidad igual a la fracción
+  detectada; bolsa con huecos abiertos o con todos los frames muestreados; ocultar con el sorteo
+  invertido; banda del hueco más corto; amputar todas las unidades V0; no saltar sin balón; una
+  corriente para todos los partidos o para todas las métricas; dirección sin signo, sin
+  tolerancia o cruzando el descanso; cada estrato con todas las unidades; `check_csv` con una
+  columna menos o sin ver una fila que falta; escritor con CRLF; comando de amputación que sale
+  con 0 aunque el check falle; check de `layer2` solo con números, sin ver un valor que falta, un
+  CR u otro formato; `layer2 --check` que escribe el Parquet o que no dice cuánto verificó. En la
+  primera pasada sobrevivió una, la dirección sin tolerancia: en la rejilla de 10 cm del test
+  aleatorio ninguna diferencia pasaba de 2 m por ruido. Se añadió el caso plantado (−17,6 a
+  −15,6 m), y ahí cae.
+  Gate local en verde: `sync --locked`, ruff, format, `mypy src`; `pytest -q` pasa 1.416 (eran
+  1.314) con 66 deseleccionados; `pytest -m realdata`, 66 de 66 (eran 41); `ac2fb protocol
+  --check` OK. Commit `925b902`, empujado. CI en verde (run 39798271669, 2 min 18 s). Full build
+  en verde con la caché caliente (https://github.com/javiersr1996/ac2-football/actions/runs/39798302910;
+  `downloaded=0`; rápido en 10 s, completo en 164 s). En Linux, `reliability` verificó 695 filas y
+  10.425 celdas; `layer2`, 3.558 valores; `amputation`, 420 filas y 4.200 celdas. Los tres salen
+  idénticos a los calculados en Windows. Nadie leyó el reservado: la puerta y sus tests no se
+  tocan, salvo entradas nuevas en las tablas de rutas, `READS` del helper y el sitio de lectura
+  renombrado. Pendiente de la 26: nada. Siguen la 23c (revisión de 23b, 25 y 26, con un máximo de
+  3 pasadas) y la 23d.
 
 ## Fase 4: empaquetado (lun 30 nov a dom 6 dic)
 

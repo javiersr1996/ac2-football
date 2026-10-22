@@ -24,11 +24,15 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 120
     env:
-      QUICK_ROOT: ${{ runner.temp }}/data-quick
-      FULL_ROOT: ${{ runner.temp }}/data-full
-      RAW_CACHE: ${{ runner.temp }}/raw-cache
       MATCH: "1874553"
     steps:
+      - name: Work directories (the runner context is not available in job-level env)
+        run: |
+          {
+            echo "QUICK_ROOT=$RUNNER_TEMP/data-quick"
+            echo "FULL_ROOT=$RUNNER_TEMP/data-full"
+            echo "RAW_CACHE=$RUNNER_TEMP/raw-cache"
+          } >> "$GITHUB_ENV"
       - uses: actions/checkout@v7.0.1
         with:
           lfs: false

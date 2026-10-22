@@ -1879,7 +1879,7 @@ su test sintético con el fallo plantado (una sonda que no puede fallar no prote
 - [ ] 24. `opus` Registro de la lectura de la capa 2: cifras por partido de los 20 en
   `reliability.csv` y `amputation.csv`, con el commit de la lectura (`layer2.json` en `read`). Se
   publica como cae. Sin D6: la capa 3 no se lee en el reservado (rama B).
-- [ ] 25. `sonnet` Capa 2 (rama B: código y `--check` antes de 23c, corrido en calibración; los
+- [x] 25. `sonnet` Capa 2 (rama B: código y `--check` antes de 23c, corrido en calibración; los
   20 partidos solo en la lectura de J4): mapa de fiabilidad por métrica y
   partido (presión local, distancia al rival más cercano, altura de línea, anchura, longitud, área
   del bloque, y la reacción de la línea al balón entrante) en V0, V1 y V2, con la fracción
@@ -1888,6 +1888,101 @@ su test sintético con el fallo plantado (una sonda que no puede fallar no prote
   pasadas 2, 4 y 5): test de `pressure.make_metric` y de toda métrica nueva que lea
   `attack_sign`, con portadores de los dos equipos en los dos periodos y moviendo también la
   tabla larga; y decidida la tolerancia de `index >= PRESSED_INDEX` y de `weights > 0`.
+  Hecho (2026-10-22). **Dónde vive, contra lo escrito arriba:** el código está en `reliability/` y
+  no reutiliza las funciones de `defence/`. La lectura de J4 no puede ejecutar ninguna función de
+  `defence/` (la 23b lo mide con `sys.setprofile` en
+  `test_the_command_runs_the_layer2_commands_and_no_layer3_code`) y la 25 va en `LAYER2_READS`.
+  Las definiciones se reescriben en `reliability/metrics.py` y se igualan a las originales: en
+  mundos aleatorios (5 semillas, `test_reliability_metrics.py`) y en los 10 partidos reales
+  (`realdata`, la `Sensitivity` entera igual, no aproximada). Cuesta unas 60 líneas repetidas
+  (pesos del índice, línea, extremos del bloque); mover `pressure`, `line` y `block` a
+  `reliability/` tocaría código de la capa 3 ya auditado. **[Javier]** confirmar la copia con
+  igualdad comprobada frente a mover.
+  **Construido** (commit `de8919f`, empujado; CI en verde, run 39775012607, 1 min 50 s):
+  `reliability/metrics.py` (siete métricas), `reliability/table.py` (filas, CSV, `check`),
+  `match.load_with_long`, el comando `ac2fb reliability [--match ID] [--reports-dir D]
+  [--check]` y `LAYER2_READS["reliability"]`; `protocol/layer2.json` lista `layer2` y
+  `reliability` en `reads` (el `stage` sigue en `design`; `protocol.json` no se toca; `layer2`
+  sigue donde estaba). `reports/reliability.csv`: 465 filas, 14 columnas, 10 partidos de
+  calibración, LF; `ac2fb reliability` tarda 2 min 53 s en los 10. Las unidades salen de los
+  eventos del partido: una posesión es un `player_possession` con equipo y jugador (t = su
+  `frame_start`; 755 a 1.050 por partido, 9.153 en total, 25 sin medir) y una fase un
+  `phases_of_play` con equipo (374 a 473 por partido, 4.250 en total, 169 sin medir). Columnas:
+  `match_id, metric, variant, n, mean` (V0, V1 y `V2_k` con k jugadores detectados en toda la
+  ventana) y, repetidas en cada fila del par, `n_units, n_skipped, player_frames,
+  extrapolated_fraction, absent_fraction, gap_len_n, gap_len_median, gap_len_p90, gap_len_max`.
+  **Métricas y definiciones mínimas propuestas, [Javier] confirmar todas:** `pressure_index`
+  (el índice de S1 en t; jugadores: los rivales con peso mayor que `NEAR_WEIGHT`);
+  `nearest_rival_m` (distancia del portador al rival más cercano en t; jugador: ese rival; el
+  portador no cuenta, como en S1); `line_height_m` (profundidad media de los 4 rivales de campo
+  más profundos en t, la de S2, portero fuera por el proxy); `line_reaction_m` (altura de la línea
+  elegida en t menos su altura en t - 13, positiva si se retira; ventana [t - 13, t]; sin estrato
+  del balón: es el `P` de S2 sobre todas las posesiones); `block_width_m`, `block_length_m`
+  (definición `with_gk_extremes_listed`, la de `power.C3_DEFINITION`, que S3 eligió) y
+  `block_area_m2` (**rectángulo envolvente, ancho por largo, no casco convexo**; jugadores: los
+  cuatro que fijan los extremos). Toda V1 es una selección declarada (unidades con sus jugadores
+  detectados en toda la ventana). Sin cubrir: la visibilidad del balón (la causa común) no está en
+  el CSV; sigue en `probe_s2.json` (`ball`).
+  **Tolerancias ([Javier] confirmar), medidas en las 8.142 recepciones puntuadas de calibración
+  (`measure_cuts.log`):** el mínimo de |índice - 0,5| es 2,4e-4; el de |d - 10| m, 1,3e-4, y el de
+  |d - 5| m, 5,7e-4; de 14.669 pesos positivos, el menor es 1,1e-9, ninguno por debajo de 1e-9,
+  15 por debajo de 1e-6, 384 por debajo de 1e-3. El ruido de coma flotante es de otro orden: un
+  rival exactamente detrás del portador, sobre la recta al gol, pesa 1,15e-17 en vez de 0 (caso del
+  test). Decidido: `weights > NEAR_WEIGHT` con `NEAR_WEIGHT = 1e-12` (tres órdenes por encima del
+  ruido y tres por debajo del peso real menor), en `pressure.score_receptions`,
+  `pressure.make_metric` y la copia de `metrics`; cambia 0 decisiones en calibración (los informes
+  de S1, diseño, calibración y potencia salen idénticos byte a byte en `realdata`).
+  `index >= PRESSED_INDEX` queda sin tolerancia: solo lo lee `design.py` (capa 3, muerta) y la
+  capa 2 no lo usa (la métrica es el índice, sin corte); si algún día se leyera, la holgura sería
+  `TIE` (1e-9) y la distancia mínima medida es 2,4e-4.
+  **Cifras de calibración** (`summary25.log`; mínimo - mediana - máximo de los 10 partidos): V1
+  sobre V0 y fracción extrapolada: presión 0,904-0,961-0,977 y 0,016-0,030-0,070; rival más
+  cercano 0,943-0,972-0,980 y 0,020-0,028-0,057; altura de línea 0,255-0,326-0,561 y
+  0,303-0,500-0,556; reacción 0,183-0,257-0,506 y 0,307-0,502-0,555; anchura 0,329-0,399-0,589 y
+  0,271-0,408-0,455; longitud 0,039-0,053-0,095 y 0,524-0,581-0,633; área 0,035-0,046-0,086 y
+  0,404-0,497-0,542. `gap_len` máximo: 446 (presión) a 3.109 frames (longitud y área);
+  `absent_fraction` 0 en todas las filas. La longitud del bloque casi no se ve entera: sus
+  extremos los fijan jugadores que la cámara pierde.
+  **Coinciden con la 12 donde se solapan** (`test_realdata_reliability.py`, 10 de 10 partidos):
+  los estratos V2 de la altura de línea son `line.detected_count` de `layer2.json`; sus unidades,
+  `line_at_t` de `probe_s2.json`; las unidades del bloque, `block.phases`; V0 menos V1 de la
+  presión, las recepciones con un rival extrapolado a menos de 10 m de `reception`; anchura y
+  longitud, el `fixers` de `probe_s3.json` (n, medias, fracción extrapolada, `gap_len`) a seis
+  decimales. El `check` del CSV real recalcula los 10 partidos (110 s en el test): 465 filas,
+  6.510 celdas, sin diferencias. La presión de S1 usa las 8.142 recepciones etiquetadas y esta
+  tabla las 9.153 posesiones: no se solapan en cifras, y sí en definición (`pressure.make_metric`
+  igual).
+  **`--check`:** recalcula y compara celda a celda con el CSV, dice cuánto verificó (`verified: N
+  rows, M cells, K matches`) y sale con 1 y la celda (partido, métrica, variante, columna) si
+  difiere; no escribe. La lectura del CSV la hace `cli._committed_table` (sitio nuevo en
+  `ALLOWED_FILE_SITES` de `test_single_door.py`, una sola llamada, un solo receptor: leer un
+  informe, no un dato); `table.check` recibe los bytes y no abre nada. **Hallazgo:**
+  `effect_helpers.mixed` reutiliza los ids de jugador en los dos equipos, y la tabla larga da a
+  cada jugador el equipo de su primera fila; el test renumera (`+ 1000 k` por cuadrante) para
+  poder mover también la tabla larga.
+  **Revisión 22:** `pressure.make_metric` y las tres métricas nuevas que leen `attack_sign`
+  (índice, altura y reacción) pasan por el partido mixto con los dos equipos en los dos periodos
+  (`other` 2 y 7) y la tabla larga rehecha desde los arrays movidos. **Mutaciones (38, todas
+  caen; `mutate25.py` y sus logs `mutate25_pass1.log` y `mutate25_final.log` en
+  `scratchpad/t25/`; copia del árbol, el árbol real no se toca):** para `make_metric`, el signo
+  del periodo 1 siempre, sin signo y el signo del equipo 1 siempre (las dos de la 22 y una más), y
+  las mismas tres en cada lector nuevo (9 en total con las de `make_metric`); `sensitivity` que
+  ignora `is_detected` (V1 = V0); tres métricas que no declaran sus jugadores; `weights > 0` en
+  `score_receptions`, `make_metric` y `pressure_index`; una tolerancia de 1e-9; línea con el
+  portero, sin signo, con los cuatro menos profundos, reacción sin exigir la línea en t - 13 y sin
+  signo; bloque de 4, por percentiles, área como suma, extremos con otro desempate; rival más
+  cercano el más lejano; peso sin la mitad; `check` sin comparar celdas, con solo 4 columnas, solo
+  la primera fila, sin ver una fila que falta, sin ver un CR y sin contar celdas; escritor con CRLF
+  y con NaN; comando que no imprime cuánto verificó y que sale 0 con el `check` fallido. En la
+  primera pasada sobrevivieron 2: `weights > 0` en `score_receptions` (sin test; añadido
+  `test_the_scored_receptions_cut_the_near_rivals_the_same_way`) y el escritor con NaN
+  (equivalente al original, que escribía `nan`; ahora una celda vacía, con test). Gate local en
+  verde (`sync --locked`, ruff, format, `mypy src`, `pytest -q`: 1.314 pasan, eran 1.193; 41
+  deseleccionados; `pytest -m realdata`: 41 de 41, eran 26; `ac2fb protocol --check` OK). Nadie
+  leyó el reservado: los tests de la puerta (`test_public_routes`, `test_data_gate`,
+  `test_single_door`, `test_heldout`) no se debilitan (los únicos cambios: entradas nuevas en las
+  tablas de rutas, la lista de `reads` del helper y un sitio de lectura de un informe). Pendiente
+  de la 25: nada; faltan la 26, 23c y 23d.
 - [ ] 26. `sonnet` (rama B: como la 25, antes de 23c) Referencia por amputación
   (`reliability/amputate.py`), con su comando y su `--check`: en tramos con los
   jugadores de la métrica detectados se enmascaran huecos muestreados de la distribución real de

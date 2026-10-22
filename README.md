@@ -34,7 +34,7 @@ We do not impute positions. Each metric is recomputed on detected-only units and
 
 ## Reproduce
 
-Needs [uv](https://docs.astral.sh/uv/), git and Python 3.13 or later<!-- src: pyproject.toml:project.requires-python -->. Quick, one match, 5 files and 95.6 MB<!-- src: PENDING(task 30) re-measure --> (about PENDING(task 30)):
+Needs [uv](https://docs.astral.sh/uv/), git and Python 3.13 or later<!-- src: pyproject.toml:project.requires-python -->. Quick, one match, 5 files and 95.6 MB<!-- src: Full build run 39782141426, step README block quick, sum of the `downloaded:` lines = 95,624,493 B --> (about 9 s on a GitHub runner<!-- src: same run, `CLEAN CLONE OK in 9 s` -->):
 
 <!-- clean-clone:quick:start -->
 ```bash
@@ -46,7 +46,7 @@ uv run ftbase bronze && uv run ftbase silver && uv run ac2fb layer2 --match 1874
 ```
 <!-- clean-clone:quick:end -->
 
-Full, 85 files and 1.9 GB of Git LFS<!-- src: PENDING(task 30) re-measure --> (about PENDING(task 30)); mind SkillCorner's quota:
+Full, 85 files and 1.9 GB<!-- src: Full build run 39782141426, step README block full, sum of the `downloaded:` lines = 1,919,842,163 B; the manifest lists 1,823,448,331 B of it in the 20 Git LFS files --> (1.8 GB of it Git LFS), about 3 min on a GitHub runner<!-- src: same run, `CLEAN CLONE OK in 174 s` -->; mind SkillCorner's quota:
 
 <!-- clean-clone:full:start -->
 ```bash

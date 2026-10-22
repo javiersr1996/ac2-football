@@ -7,7 +7,8 @@ runs under ``pooled`` and the comparison with the plan's inventory under ``inven
 file has sorted keys, rounded floats, LF line endings and no NaN.
 
 Everything in it describes visibility at the instants of the provider's events and the shape of
-the extrapolated runs. It contains no outcome of any candidate question.
+the extrapolated runs. It contains no outcome of any candidate question. :func:`check` recomputes
+it and compares every value with the file on disk.
 """
 
 from __future__ import annotations
@@ -15,6 +16,7 @@ from __future__ import annotations
 import json
 import statistics
 from collections.abc import Mapping, Sequence
+from dataclasses import dataclass
 from pathlib import Path
 
 import numpy as np
@@ -22,7 +24,15 @@ import numpy as np
 from ac2fb.reliability import inventory, runs, visibility
 from ac2fb.reliability.match import MatchData, load_match
 
-__all__ = ["REPORT_NAME", "layer2_report", "match_report", "render_report", "write_report"]
+__all__ = [
+    "REPORT_NAME",
+    "Check",
+    "check",
+    "layer2_report",
+    "match_report",
+    "render_report",
+    "write_report",
+]
 
 REPORT_NAME = "layer2.json"
 _DECIMALS = 6
@@ -163,3 +173,53 @@ def write_report(report: Mapping[str, object], reports_dir: Path) -> Path:
     path = reports_dir / REPORT_NAME
     path.write_bytes(render_report(report).encode("utf-8"))
     return path
+
+
+@dataclass(frozen=True)
+class Check:
+    """What :func:`check` verified and what it found."""
+
+    matches: int
+    values: int
+    problems: tuple[str, ...]
+
+    @property
+    def ok(self) -> bool:
+        return not self.problems
+
+
+def _flat(node: object, prefix: str = "") -> dict[str, object]:
+    """Every value of a parsed JSON by its path (``a.b.0``): numbers, strings, booleans, nulls."""
+    if isinstance(node, dict):
+        items = list(node.items())
+    elif isinstance(node, list):
+        items = list(enumerate(node))
+    else:
+        return {prefix: node}
+    found: dict[str, object] = {}
+    for key, value in items:
+        found.update(_flat(value, f"{prefix}.{key}" if prefix else str(key)))
+    return found
+
+
+def check(match_ids: Sequence[int], raw: bytes | None) -> Check:
+    """Recompute the report of the matches and compare every value with the bytes of the file.
+
+    ``raw`` is ``layer2.json`` as the command line read it (``None``: there is none), so nothing
+    here opens a file. The summary, pooled and inventory figures are over all the matches, so the
+    matches must be those of the file. Problems: the file is missing, has a carriage return, lacks
+    a value the code writes, has one it does not, differs in one (named by its path), or is not
+    rendered as the code renders it. ``values`` counts what was compared.
+    """
+    if raw is None:
+        return Check(0, 0, (f"{REPORT_NAME} does not exist",))
+    problems = ["the file has a carriage return"] if b"\r" in raw else []
+    fresh = render_report(layer2_report(match_ids))
+    code, disk = _flat(json.loads(fresh)), _flat(json.loads(raw.decode("utf-8")))
+    problems += [f"missing from the file: {p}" for p in code if p not in disk]
+    problems += [f"not produced by the code: {p}" for p in disk if p not in code]
+    compared = [p for p in code if p in disk]
+    problems += [f"{p}: file {disk[p]!r}, code {code[p]!r}" for p in compared if disk[p] != code[p]]
+    if not problems and raw.decode("utf-8") != fresh:
+        problems.append("the file is not rendered as the code renders it")
+    return Check(len(match_ids), len(compared), tuple(problems))

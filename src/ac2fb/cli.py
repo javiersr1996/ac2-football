@@ -27,7 +27,7 @@ from ac2fb.protocol.data import (
     load_split,
     read_heldout,
 )
-from ac2fb.reliability import table
+from ac2fb.reliability import amputate, report, table
 from ac2fb.reliability.cadence import write_cadence_report
 from ac2fb.reliability.long import write_long
 from ac2fb.reliability.report import layer2_report, write_report
@@ -56,7 +56,9 @@ def build_parser() -> argparse.ArgumentParser:
         description=(
             "Layer 2, descriptive: per match, how much of the tracking the camera saw. "
             "Reads through the guarded door, so a held-out match is refused while it is locked. "
-            "Without --match, the calibration matches."
+            "Without --match, the calibration matches. --check recomputes the report and "
+            "compares every value with the file, and says how many it verified (exit 1 if any "
+            "differs); it writes nothing, not even the long Parquet."
         ),
     )
     layer2.add_argument(
@@ -66,7 +68,10 @@ def build_parser() -> argparse.ArgumentParser:
         "--reports-dir",
         type=Path,
         default=_REPORTS,
-        help="where layer2.json goes (default: reports/)",
+        help="where layer2.json goes, or is read from with --check (default: reports/)",
+    )
+    layer2.add_argument(
+        "--check", action="store_true", help="compare the file with a recomputation, write nothing"
     )
     reliability = commands.add_parser(
         "reliability",
@@ -90,6 +95,31 @@ def build_parser() -> argparse.ArgumentParser:
         help="where reliability.csv goes, or is read from with --check (default: reports/)",
     )
     reliability.add_argument(
+        "--check", action="store_true", help="compare the file with a recomputation, write nothing"
+    )
+    amputation = commands.add_parser(
+        "amputation",
+        help="write reports/amputation.csv: each metric's error when seen players are hidden",
+        description=(
+            "Layer 2, the amputation reference: in the units where a metric's players were all "
+            "detected, hide them as the camera hides players at their distance from the ball, "
+            "with gaps copied from the match's real ones, fill each gap by a straight line "
+            "between the detections on either side, and report the metric's error by gap band "
+            "and match. Reads through the guarded door. Without --match, the calibration "
+            "matches. --check recomputes the rows and compares every cell with the file, and "
+            "says how many it verified (exit 1 if any differs)."
+        ),
+    )
+    amputation.add_argument(
+        "--match", type=int, action="append", metavar="ID", help="native match id (repeatable)"
+    )
+    amputation.add_argument(
+        "--reports-dir",
+        type=Path,
+        default=_REPORTS,
+        help="where amputation.csv goes, or is read from with --check (default: reports/)",
+    )
+    amputation.add_argument(
         "--check", action="store_true", help="compare the file with a recomputation, write nothing"
     )
     cadence = commands.add_parser(
@@ -279,6 +309,7 @@ def _layer2_artifacts(match_ids: list[int], reports_dir: Path) -> Path:
 LAYER2_READS: Mapping[str, Command] = {
     "layer2": _layer2_artifacts,
     "reliability": table.write_table,
+    "amputation": amputate.write_table,
 }
 
 
@@ -415,21 +446,30 @@ def _cadence(match_ids: Sequence[int] | None, reports_dir: Path) -> int:
     return 0
 
 
-def _layer2(match_ids: Sequence[int] | None, reports_dir: Path) -> int:
+def _layer2(match_ids: Sequence[int] | None, reports_dir: Path, do_check: bool) -> int:
     ids = list(match_ids) if match_ids else list(load_split().calibration)
     try:
-        longs = write_long(ids)
-        path = write_report(layer2_report(ids), reports_dir)
+        if do_check:
+            result = report.check(ids, _committed(reports_dir / report.REPORT_NAME))
+        else:
+            longs = write_long(ids)
+            path = write_report(layer2_report(ids), reports_dir)
     except HeldOutLocked as exc:
         print(f"refused: {exc}", file=sys.stderr)
         return 2
-    print(f"wrote {len(longs)} long Parquet file(s) under {longs[0].parent}")
-    print(f"wrote {path}")
-    return 0
+    if not do_check:
+        print(f"wrote {len(longs)} long Parquet file(s) under {longs[0].parent}")
+        print(f"wrote {path}")
+        return 0
+    print(f"verified: {result.values} values, {result.matches} matches")
+    for problem in result.problems:
+        print(f"  - {problem}")
+    print("layer2: OK" if result.ok else "layer2: FAILED")
+    return 0 if result.ok else 1
 
 
-def _committed_table(path: Path) -> bytes | None:
-    """The one place that reads the committed reliability table, for its check."""
+def _committed(path: Path) -> bytes | None:
+    """The one place that reads a committed report (layer2.json or a CSV), for its check."""
     return path.read_bytes() if path.exists() else None
 
 
@@ -439,15 +479,32 @@ def _reliability(match_ids: Sequence[int] | None, reports_dir: Path, do_check: b
         if not do_check:
             print(f"wrote {table.write_table(ids, reports_dir)}")
             return 0
-        report = table.check(ids, _committed_table(reports_dir / table.REPORT_NAME))
+        result = table.check(ids, _committed(reports_dir / table.REPORT_NAME))
     except HeldOutLocked as exc:
         print(f"refused: {exc}", file=sys.stderr)
         return 2
-    print(f"verified: {report.rows} rows, {report.cells} cells, {report.matches} matches")
-    for problem in report.problems:
+    print(f"verified: {result.rows} rows, {result.cells} cells, {result.matches} matches")
+    for problem in result.problems:
         print(f"  - {problem}")
-    print("reliability: OK" if report.ok else "reliability: FAILED")
-    return 0 if report.ok else 1
+    print("reliability: OK" if result.ok else "reliability: FAILED")
+    return 0 if result.ok else 1
+
+
+def _amputation(match_ids: Sequence[int] | None, reports_dir: Path, do_check: bool) -> int:
+    ids = list(match_ids) if match_ids else list(load_split().calibration)
+    try:
+        if not do_check:
+            print(f"wrote {amputate.write_table(ids, reports_dir)}")
+            return 0
+        result = amputate.check(ids, _committed(reports_dir / amputate.REPORT_NAME))
+    except HeldOutLocked as exc:
+        print(f"refused: {exc}", file=sys.stderr)
+        return 2
+    print(f"verified: {result.rows} rows, {result.cells} cells, {result.matches} matches")
+    for problem in result.problems:
+        print(f"  - {problem}")
+    print("amputation: OK" if result.ok else "amputation: FAILED")
+    return 0 if result.ok else 1
 
 
 def _status() -> int:
@@ -472,9 +529,11 @@ def main(argv: Sequence[str] | None = None) -> int:
     if args.command == "status":
         return _status()
     if args.command == "layer2":
-        return _layer2(args.match, args.reports_dir)
+        return _layer2(args.match, args.reports_dir, args.check)
     if args.command == "reliability":
         return _reliability(args.match, args.reports_dir, args.check)
+    if args.command == "amputation":
+        return _amputation(args.match, args.reports_dir, args.check)
     if args.command == "cadence":
         return _cadence(args.match, args.reports_dir)
     if args.command == "s1":

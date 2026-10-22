@@ -91,13 +91,13 @@ FILE_CALLS = frozenset(
 )
 STATUS_FIELD = ("status", "open")  # the guard's `status.open` flag, read in `cli` and the door
 # The one allowance, by site: (module, function, call, receiver). The command line reads the
-# three probe reports there, and hands the verdicts to `power`, which opens nothing; and the
-# committed reliability table, which it hands to the check of `reliability.table`.
+# three probe reports there, and hands the verdicts to `power`, which opens nothing; and a
+# committed report (layer2.json, reliability.csv, amputation.csv), which it hands to its check.
 ALLOWED_FILE_SITES = frozenset(
     {
         ("ac2fb.cli", "_probe_verdicts", "read_text", "probes_dir / name"),
         ("ac2fb.cli", "_read_protocol", "read_text", "path"),
-        ("ac2fb.cli", "_committed_table", "read_bytes", "path"),
+        ("ac2fb.cli", "_committed", "read_bytes", "path"),
     }
 )
 DATA_ROOT_NAMES = frozenset({"DATA_ROOT_ENV", "data_dir"})

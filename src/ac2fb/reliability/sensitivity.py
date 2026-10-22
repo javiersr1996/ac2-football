@@ -37,6 +37,7 @@ __all__ = [
     "Window",
     "WindowFrames",
     "sensitivity",
+    "window_frames",
 ]
 
 
@@ -171,9 +172,11 @@ def _matrices(
     )
 
 
-def _one_match(
-    match_id: int, table: pa.Table, metric: Metric, windows: Sequence[Window] | None
-) -> Sensitivity:
+def _columns(
+    table: pa.Table,
+) -> tuple[NDArray[np.int64], NDArray[np.int64], NDArray[np.int64], dict[str, NDArray[Any]]]:
+    """The player rows of one match's long table, sorted by player and frame, and where each
+    player's rows start and end."""
     keep = table.filter(pc.is_valid(table["player_id"]))
     player = keep["player_id"].to_numpy().astype(np.int64)
     frame = keep["frame"].to_numpy().astype(np.int64)
@@ -189,6 +192,22 @@ def _one_match(
     sorted_player = player[order]
     players, starts = np.unique(sorted_player, return_index=True)
     ends = np.r_[starts[1:], len(sorted_player)]
+    return players, starts, ends, cols
+
+
+def window_frames(table: pa.Table) -> Callable[[Window], WindowFrames | None]:
+    """The matrices of any window of one match's long table, as :func:`sensitivity` builds them.
+
+    The returned function gives ``None`` for a window where no player has a row.
+    """
+    players, starts, ends, cols = _columns(table)
+    return lambda window: _matrices(window, players, starts, ends, cols)
+
+
+def _one_match(
+    match_id: int, table: pa.Table, metric: Metric, windows: Sequence[Window] | None
+) -> Sensitivity:
+    players, starts, ends, cols = _columns(table)
     if windows is None:
         windows = [Window(match_id, int(f), int(f)) for f in np.unique(cols["frame"])]
     values: list[float] = []

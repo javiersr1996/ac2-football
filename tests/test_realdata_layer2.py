@@ -5,6 +5,7 @@ Reads only through the guarded door, so only calibration matches are touched.
 
 from __future__ import annotations
 
+import json
 from pathlib import Path
 
 import numpy as np
@@ -12,10 +13,10 @@ import pytest
 from test_split import CALIBRATION
 
 from ac2fb.protocol import data
-from ac2fb.reliability import runs
+from ac2fb.reliability import report, runs
 from ac2fb.reliability.long import long_table
 from ac2fb.reliability.match import load_match
-from ac2fb.reliability.report import REPORT_NAME, layer2_report, render_report
+from ac2fb.reliability.report import REPORT_NAME
 
 pytestmark = pytest.mark.realdata
 
@@ -49,8 +50,11 @@ def test_the_first_match_reproduces_the_plan_probe_m11_to_the_third_decimal() ->
 
 
 def test_the_committed_report_is_what_the_code_writes_for_the_calibration_matches() -> None:
-    fresh = render_report(layer2_report(list(CALIBRATION)))
-    assert (REPORTS / REPORT_NAME).read_bytes().decode("utf-8") == fresh
+    # The check of `ac2fb layer2 --check`: every value, then the bytes as the code renders them.
+    raw = (REPORTS / REPORT_NAME).read_bytes()
+    got = report.check(list(CALIBRATION), raw)
+    assert got.ok, got.problems
+    assert got.matches == 10 and got.values == len(report._flat(json.loads(raw))) > 3000
 
 
 def test_the_goalkeeper_proxy_is_the_rostered_goalkeeper_in_every_period_and_team() -> None:

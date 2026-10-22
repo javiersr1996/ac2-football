@@ -53,9 +53,19 @@ from ac2fb.defence import (
 from ac2fb.protocol import check as protocol_check
 from ac2fb.protocol import data, lock
 from ac2fb.protocol.data import HeldOutLocked
-from ac2fb.reliability import cadence, inventory, long, metrics, report, runs, table, visibility
+from ac2fb.reliability import (
+    amputate,
+    cadence,
+    inventory,
+    long,
+    metrics,
+    report,
+    runs,
+    table,
+    visibility,
+)
 from ac2fb.reliability import match as match_module
-from ac2fb.reliability.sensitivity import Reading, WindowFrames, sensitivity
+from ac2fb.reliability.sensitivity import Reading, Window, WindowFrames, sensitivity, window_frames
 
 DIMS = ("dim_sport", "dim_period", "dim_team", "dim_match", "dim_team_period", "dim_entity")
 
@@ -127,6 +137,78 @@ def reliability_command(m: int) -> pa.Table:
 def checked_table(m: int) -> pa.Table:
     """The table's check for one match, against a file that holds only the header."""
     return served(m, table.check([m], table.render([]).encode("utf-8")).matches == 1)
+
+
+def checked_amputation(m: int) -> pa.Table:
+    """The amputation's check for one match, against a file that holds only the header."""
+    header = table.render_csv(amputate.COLUMNS, []).encode("utf-8")
+    return served(m, amputate.check([m], header).matches == 1)
+
+
+def checked_csv(m: int) -> pa.Table:
+    """The generic check for one match, its rows built by the table's guarded reader."""
+    raw = table.render([]).encode("utf-8")
+    got = table.check_csv("x.csv", table.COLUMNS, 4, [m], table.match_rows, raw)
+    return served(m, got.rows > 0)
+
+
+def checked_layer2(m: int) -> pa.Table:
+    """The report's check for one match, against an empty JSON object."""
+    return served(m, report.check([m], b"{}").values == 0)
+
+
+def amputation_command(m: int) -> pa.Table:
+    """The ``amputation`` command for one match: exit 2 and a refusal on stderr is a refusal."""
+    err = io.StringIO()
+    with contextlib.redirect_stderr(err), contextlib.redirect_stdout(io.StringIO()):
+        code = cli.main(["amputation", "--match", str(m), "--reports-dir", OUT])
+    if code == 2 and "held-out" in err.getvalue():
+        raise HeldOutLocked(err.getvalue())
+    assert code == 0, err.getvalue()
+    return served(m, True)
+
+
+def layer2_check_command(m: int) -> pa.Table:
+    """``layer2 --check`` for one match against an empty report: a refusal is exit 2.
+
+    The file must exist: without one the check stops before it reads any match.
+    """
+    where = Path(tempfile.mkdtemp(prefix="ac2fb-layer2-check-"))
+    (where / report.REPORT_NAME).write_bytes(b"{}\n")
+    err = io.StringIO()
+    with contextlib.redirect_stderr(err), contextlib.redirect_stdout(io.StringIO()):
+        code = cli.main(["layer2", "--check", "--match", str(m), "--reports-dir", str(where)])
+    if code == 2 and "held-out" in err.getvalue():
+        raise HeldOutLocked(err.getvalue())
+    assert code in (0, 1), err.getvalue()
+    return served(m, True)
+
+
+def the_hiding(mt: match_module.MatchData) -> bool:
+    return len(amputate.hiding(mt).probability) == len(visibility.BALL_DISTANCE_EDGES) + 1
+
+
+def amputated(mt: match_module.MatchData) -> bool:
+    """The amputation of one metric on a loaded match, with its long table rebuilt from it."""
+    frames = window_frames(long_of(mt.match_id))
+    metric, windows = metrics.metric_units(mt)["nearest_rival_m"]
+    got = amputate.amputate(
+        mt, frames, metric, windows, amputate.hiding(mt), np.random.default_rng(0)
+    )
+    return got.n_units >= 0
+
+
+def first_ends(mt: match_module.MatchData) -> bool:
+    sides = amputate.detected_sides(mt)
+    amputate.ends_of(mt, sides, int(mt.player[0]), int(mt.frame[0]), 1, 1)
+    return len(sides[0]) == len(mt.frame)
+
+
+def first_window(m: int) -> pa.Table:
+    """The matrices of the first 100 frames of the match."""
+    long = long_of(m)
+    first = int(np.min(long["frame"].to_numpy()))
+    return served(m, window_frames(long)(Window(m, first, first + 99)) is not None)
 
 
 def cadence_command(m: int) -> pa.Table:
@@ -706,6 +788,12 @@ FUNCTION_ROUTES: dict[str, Route] = {
     "ac2fb.reliability.match.load_with_long": by_match(
         lambda m: served(m, match_module.load_with_long(m)[1].num_rows > 0)
     ),
+    "ac2fb.reliability.metrics.incoming_direction": on_match(
+        lambda mt: metrics.incoming_direction(mt, int(mt.frame[0]), 1) in metrics.DIRECTIONS
+    ),
+    "ac2fb.reliability.metrics.reaction_strata": on_match(
+        lambda mt: list(metrics.reaction_strata(mt)) == list(metrics.DIRECTIONS)
+    ),
     "ac2fb.reliability.metrics.block_extent": without_match(
         lambda: callable(metrics.block_extent([], "width"))
     ),
@@ -756,12 +844,41 @@ FUNCTION_ROUTES: dict[str, Route] = {
     "ac2fb.reliability.visibility.engager_detection": on_match(visibility.engager_detection),
     "ac2fb.reliability.visibility.goalkeepers": on_match(visibility.goalkeepers),
     "ac2fb.reliability.visibility.reception_detection": on_match(visibility.reception_detection),
+    "ac2fb.reliability.sensitivity.window_frames": by_match(first_window),
+    "ac2fb.reliability.amputate.amputate": on_match(amputated),
+    "ac2fb.reliability.amputate.check": by_match(checked_amputation),
+    "ac2fb.reliability.amputate.detected_sides": on_match(first_ends),
+    "ac2fb.reliability.amputate.ends_of": on_match(first_ends),
+    "ac2fb.reliability.amputate.fill": without_match(
+        lambda: amputate.fill(
+            WindowFrames(
+                Window(1, 0, 0),
+                *(np.zeros(1, dtype=np.int64) for _ in range(3)),
+                np.zeros((1, 1)),
+                np.zeros((1, 1)),
+                np.ones((1, 1), dtype=np.bool_),
+                np.ones((1, 1), dtype=np.bool_),
+                np.zeros((1, 1), dtype=np.int64),
+            ),
+            {},
+        )
+    ),
+    "ac2fb.reliability.amputate.hiding": on_match(the_hiding),
+    "ac2fb.reliability.amputate.match_rows": by_match(
+        lambda m: served(m, len(amputate.match_rows(m)) > 0)
+    ),
+    "ac2fb.reliability.amputate.write_table": by_match(
+        lambda m: served(m, amputate.write_table([m], Path(OUT)).is_file())
+    ),
     "ac2fb.reliability.sensitivity.sensitivity": by_match(
         lambda m: served(m, m in sensitivity(one_unit, long_of(m)))
     ),
     "ac2fb.reliability.inventory.compare": without_match(lambda: inventory.compare({}, {})),
     "ac2fb.reliability.inventory.leaf": without_match(lambda: inventory.leaf({"a": 1}, "a")),
     "ac2fb.reliability.table.check": by_match(checked_table),
+    "ac2fb.reliability.table.check_csv": by_match(checked_csv),
+    "ac2fb.reliability.table.cell": without_match(lambda: table.cell(0.5)),
+    "ac2fb.reliability.table.render_csv": without_match(lambda: table.render_csv(("a",), [])),
     "ac2fb.reliability.table.match_rows": by_match(
         lambda m: served(m, isinstance(table.match_rows(m), list))
     ),
@@ -769,6 +886,7 @@ FUNCTION_ROUTES: dict[str, Route] = {
     "ac2fb.reliability.table.write_table": by_match(
         lambda m: served(m, table.write_table([m], Path(OUT)).is_file())
     ),
+    "ac2fb.reliability.report.check": by_match(checked_layer2),
     "ac2fb.reliability.report.layer2_report": by_match(
         lambda m: served(m, "inventory" in report.layer2_report([m]))
     ),
@@ -781,8 +899,9 @@ FUNCTION_ROUTES: dict[str, Route] = {
 
 CLI_ROUTES: dict[tuple[str, ...], Route] = {
     ("status",): without_match(lambda: cli.main(["status"])),
-    ("layer2",): by_match(layer2_command),
+    ("layer2",): by_match(layer2_command, layer2_check_command),
     ("reliability",): by_match(reliability_command),
+    ("amputation",): by_match(amputation_command),
     ("cadence",): by_match(cadence_command),
     ("s1",): by_match(s1_command),
     ("s2",): by_match(s2_command),

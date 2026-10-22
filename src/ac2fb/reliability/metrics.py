@@ -19,7 +19,9 @@ is its player); a *phase* is a ``phases_of_play`` event with a team (``t`` = its
   ``visibility.goalkeepers``; the line is chosen at ``t`` and never re-ranked.
 - ``line_reaction_m``: that line's height at ``t`` minus its height at ``t - W``, positive when
   it retreats, the line's reaction to the ball that came in; the window is ``[t - W, t]`` and the
-  unit needs the four listed at both ends.
+  unit needs the four listed at both ends. The line follows the ball (m10), so its units are also
+  split by the direction of the ball in the same window (:func:`reaction_strata`): the direction
+  of the incoming-ball stratum of probe S2, without its third and length.
 - ``block_width_m`` / ``block_length_m`` / ``block_area_m2``: extent of ``y`` / extent of ``x``
   / their product, over every player of the team out of possession listed at ``t``, goalkeeper
   included, between the extreme players (the definition ``with_gk_extremes_listed`` that probe
@@ -43,6 +45,8 @@ from ac2fb.reliability.sensitivity import Metric, Reading, Window, WindowFrames
 from ac2fb.reliability.visibility import goalkeepers
 
 __all__ = [
+    "BACKWARD_CUT",
+    "DIRECTIONS",
     "GOAL_X",
     "INCOMING_WINDOW",
     "LINE_SIZE",
@@ -50,7 +54,9 @@ __all__ = [
     "MIN_BLOCK",
     "NEAR_WEIGHT",
     "RADIUS",
+    "TIE",
     "block_extent",
+    "incoming_direction",
     "line_height",
     "line_reaction",
     "metric_units",
@@ -58,6 +64,7 @@ __all__ = [
     "phases",
     "possessions",
     "pressure_index",
+    "reaction_strata",
     "rival_weights",
 ]
 
@@ -67,6 +74,9 @@ NEAR_WEIGHT = 1e-12  # a rival weighs something from here: floating-point noise 
 INCOMING_WINDOW = 13  # W, frames: the shortest admissible window of reports/probe_cadence.json
 LINE_SIZE = 4  # outfield players in the last line
 MIN_BLOCK = 5  # a block with fewer players is not measured
+BACKWARD_CUT = 2.0  # metres of ball displacement along the attack that make it not lateral
+TIE = 1e-9  # values closer than this are equal: floating-point noise neither grows nor cuts
+DIRECTIONS = ("backward", "forward", "lateral", "undefined")  # of the incoming ball
 
 METRICS: tuple[str, ...] = (
     "pressure_index",
@@ -245,6 +255,39 @@ def block_extent(events: Sequence[Event], what: str) -> Metric:
         return Reading(value, tuple(sorted(set(fixers))))
 
     return metric
+
+
+def incoming_direction(match: MatchData, frame: int, sign: int) -> str:
+    """Direction along the attack of the ball in ``[frame - W, frame]``, or ``undefined``.
+
+    ``undefined`` without a ball row at either end or with the two rows in different periods.
+    """
+    rows = np.searchsorted(match.ball_frame, [frame - INCOMING_WINDOW, frame])
+    if (
+        rows.max() >= len(match.ball_frame)
+        or not np.array_equal(match.ball_frame[rows], [frame - INCOMING_WINDOW, frame])
+        or match.ball_period[rows[0]] != match.ball_period[rows[1]]
+    ):
+        return "undefined"
+    dx = sign * float(match.ball_x[rows[1]] - match.ball_x[rows[0]])
+    cut = BACKWARD_CUT + TIE
+    return "backward" if dx < -cut else "forward" if dx > cut else "lateral"
+
+
+def reaction_strata(match: MatchData) -> dict[str, list[Window]]:
+    """The windows of ``line_reaction_m`` by the direction of the incoming ball.
+
+    Keys in :data:`DIRECTIONS` order; a possession whose team has no attack direction in its
+    period is ``undefined``.
+    """
+    strata: dict[str, list[Window]] = {d: [] for d in DIRECTIONS}
+    for e in possessions(match.events):
+        sign = match.attack_sign.get((e.period, int(e.team or 0)))
+        direction = "undefined" if sign is None else incoming_direction(match, e.frame_start, sign)
+        strata[direction].append(
+            Window(match.match_id, e.frame_start - INCOMING_WINDOW, e.frame_start)
+        )
+    return strata
 
 
 def metric_units(match: MatchData) -> dict[str, tuple[Metric, list[Window]]]:

@@ -18,7 +18,7 @@ Each player-frame carries `is_detected`. We add `gap_len`, the frames to the nea
 
 *Figure 1. Median jump on re-detection by gap length: up to 1 s 0.224<!-- src: reports/layer2.json:summary.runs.by_band.le_1s.closed_jump_median.median --> m, 1 to 5 s 0.196<!-- src: reports/layer2.json:summary.runs.by_band.1_5s.closed_jump_median.median --> m, 5 to 20 s 0.192<!-- src: reports/layer2.json:summary.runs.by_band.5_20s.closed_jump_median.median --> m, over 20 s 0.217<!-- src: reports/layer2.json:summary.runs.by_band.gt_20s.closed_jump_median.median --> m, against 0.198<!-- src: reports/layer2.json:summary.steps.detected_to_detected.p50.median --> m between detected frames. Calibration half, closed gaps.*
 
-The reliability map, which metrics hold up and which are mostly model, is in `reports/reliability.csv`; its summary is PENDING(task 27). The amputation reference (known detections hidden, filled by linear interpolation, error measured per gap length) is PENDING(task 26).
+The reliability map, which metrics hold up and which are mostly model, is in `reports/reliability.csv`; its summary is PENDING(task 27). The amputation reference (seen players hidden as the camera hides them, filled by linear interpolation, error measured per gap length) is in `reports/amputation.csv`; its summary is PENDING(task 27).
 
 ## Layer 3: a question that died, as designed
 

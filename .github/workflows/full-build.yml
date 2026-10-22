@@ -105,6 +105,10 @@ jobs:
         run: uv run ac2fb protocol --check
       - name: ac2fb reliability --check
         run: FTBASE_DATA_ROOT="$FULL_ROOT" uv run ac2fb reliability --check
+      - name: ac2fb layer2 --check
+        run: FTBASE_DATA_ROOT="$FULL_ROOT" uv run ac2fb layer2 --check
+      - name: ac2fb amputation --check
+        run: FTBASE_DATA_ROOT="$FULL_ROOT" uv run ac2fb amputation --check
 
       - name: Times and bytes
         if: always()

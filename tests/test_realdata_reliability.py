@@ -3,8 +3,9 @@
 The committed ``reports/reliability.csv`` is what the code writes; its figures equal those of
 task 12 and of the probes where they overlap (the line's V2 strata with ``layer2.json``, the
 block's width and length with ``probe_s3.json``, the units of the line with ``probe_s2.json``,
-the extrapolated near rivals with ``layer2.json``); and the metrics written for the reading equal
-the definitions of ``defence/`` match by match.
+the extrapolated near rivals with ``layer2.json``); the metrics written for the reading equal
+the definitions of ``defence/`` match by match; and the strata of the line's reaction split its
+units by the direction of the incoming ball of probe S2.
 """
 
 from __future__ import annotations
@@ -30,10 +31,16 @@ pytestmark = pytest.mark.realdata
 REPORTS = Path(__file__).resolve().parent.parent / "reports"
 
 
+def every_row() -> list[dict[str, str]]:
+    return list(csv.DictReader((REPORTS / table.REPORT_NAME).read_text("utf-8").splitlines()))
+
+
 def committed() -> dict[tuple[str, str, str], dict[str, str]]:
-    text = (REPORTS / table.REPORT_NAME).read_text(encoding="utf-8")
-    rows = list(csv.DictReader(text.splitlines()))
-    return {(r["match_id"], r["metric"], r["variant"]): r for r in rows}
+    """The rows over all the units of each metric (``ball_stratum`` ``all``)."""
+    rows = every_row()
+    return {
+        (r["match_id"], r["metric"], r["variant"]): r for r in rows if r["ball_stratum"] == "all"
+    }
 
 
 def report(name: str) -> dict[str, dict[str, object]]:
@@ -46,7 +53,7 @@ def report(name: str) -> dict[str, dict[str, object]]:
 def test_the_committed_table_is_what_the_code_writes_for_the_calibration_matches() -> None:
     result = table.check(CALIBRATION, (REPORTS / table.REPORT_NAME).read_bytes())
     assert result.ok, result.problems
-    assert result.matches == 10 and result.rows == len(committed())
+    assert result.matches == 10 and result.rows == len(every_row())
     assert result.cells == result.rows * len(table.COLUMNS)
     assert {m for m, _, _ in committed()} == {str(m) for m in CALIBRATION}
     assert b"\r" not in (REPORTS / table.REPORT_NAME).read_bytes()
@@ -56,14 +63,15 @@ def test_the_check_sees_a_mutated_value_of_the_real_table(tmp_path: Path) -> Non
     text = (REPORTS / table.REPORT_NAME).read_text(encoding="utf-8")
     first = str(CALIBRATION[0])
     lines = text.splitlines()
-    i = next(k for k, line in enumerate(lines) if line.startswith(f"{first},line_reaction_m,V1,"))
+    start = f"{first},line_reaction_m,all,V1,"
+    i = next(k for k, line in enumerate(lines) if line.startswith(start))
     cells = lines[i].split(",")
-    cells[4] = repr(float(cells[4]) + 0.000001)  # the mean of V1, one unit in the last place
+    cells[5] = repr(float(cells[5]) + 0.000001)  # the mean of V1, one unit in the last place
     lines[i] = ",".join(cells)
     (tmp_path / table.REPORT_NAME).write_bytes(("\n".join(lines) + "\n").encode("utf-8"))
     result = table.check([CALIBRATION[0]], (tmp_path / table.REPORT_NAME).read_bytes())
     assert not result.ok and len(result.problems) == 1
-    assert f"{first}/line_reaction_m/V1 mean: file " in result.problems[0]
+    assert f"{first}/line_reaction_m/all/V1 mean: file " in result.problems[0]
 
 
 def test_every_match_has_every_metric_in_v0_and_v1() -> None:
@@ -103,6 +111,30 @@ def test_the_figures_equal_those_of_task_12_and_the_probes_where_they_overlap() 
             assert float(v0["extrapolated_fraction"]) == fix["extrapolated_fraction"]
             assert int(v0["gap_len_max"]) == fix["gap_len"]["max"]
             assert int(v0["n_skipped"]) == fix["n_skipped"]
+
+
+def test_the_strata_of_the_reaction_split_its_units() -> None:
+    rows = every_row()
+    for m in CALIBRATION:
+        mine = [r for r in rows if r["match_id"] == str(m) and r["metric"] == "line_reaction_m"]
+        v0 = {r["ball_stratum"]: r for r in mine if r["variant"] == "V0"}
+        assert list(v0) == ["all", *metrics.DIRECTIONS]
+        for column in ("n", "n_units", "n_skipped", "player_frames"):
+            parts = sum(int(v0[d][column]) for d in metrics.DIRECTIONS)
+            assert parts == int(v0["all"][column]), (m, column)
+        assert min(int(v0[d]["n"]) for d in ("backward", "forward", "lateral")) > 0
+
+
+@pytest.mark.parametrize("match_id", CALIBRATION)
+def test_the_direction_is_the_one_of_probe_s2_on_the_real_matches(match_id: int) -> None:
+    match, _ = load_with_long(match_id)
+    seen: set[str] = set()
+    for e in metrics.possessions(match.events):
+        sign = match.attack_sign[(e.period, e.team or 0)]
+        mine = metrics.incoming_direction(match, e.frame_start, sign)
+        assert mine == pressure.incoming_ball(match, e.frame_start, sign, 0.0).split("/")[0]
+        seen.add(mine)
+    assert seen == set(metrics.DIRECTIONS)
 
 
 def test_the_probe_s3_definition_is_the_one_the_metrics_use() -> None:

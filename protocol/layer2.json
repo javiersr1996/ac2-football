@@ -7,7 +7,8 @@
   "layer3": "dead: protocol/protocol.json is in stage dead and layer 3 is never computed on the held-out",
   "reads": [
     "layer2",
-    "reliability"
+    "reliability",
+    "amputation"
   ],
   "writes_under": "reports/heldout"
 }

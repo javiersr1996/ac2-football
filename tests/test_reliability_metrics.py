@@ -18,7 +18,11 @@ Mutations, each with the test that kills it (script and log in the task's record
   ``test_the_near_cut_is_between_float_noise_and_a_real_weight``;
 * a block of fewer than five players, extremes that are not the extreme players, or fixers
   that swap their ties: ``test_the_block_is_the_planted_one``,
-  ``test_the_ends_of_the_block_break_ties_like_the_original``.
+  ``test_the_ends_of_the_block_break_ties_like_the_original``;
+* a direction of the incoming ball without the attack sign, without the tolerance at its cut,
+  or across the break between periods:
+  ``test_the_direction_equals_the_one_of_the_incoming_ball_stratum``,
+  ``test_a_ball_on_the_cut_give_or_take_float_noise_is_lateral``.
 """
 
 from __future__ import annotations
@@ -448,8 +452,59 @@ def test_the_weights_equal_the_originals(seed: int) -> None:
             )
 
 
+@pytest.mark.parametrize("seed", SEEDS)
+def test_the_direction_equals_the_one_of_the_incoming_ball_stratum(seed: int) -> None:
+    # A ball on a 10 cm grid (displacements land on the 2 m cut give or take float noise, which
+    # the tolerance absorbs), missing in some frames and in period 2 from frame 200, so some
+    # windows straddle the break.
+    rng = np.random.default_rng(seed)
+    match, _, _ = random_world(seed)
+    frames = (80 + np.flatnonzero(rng.random(221) < 0.9)).astype(np.int64)
+    x = np.round(np.cumsum(rng.normal(0.0, 1.2, len(frames))), 1)
+    match = dataclasses.replace(
+        match,
+        ball_frame=frames,
+        ball_period=np.where(frames < 200, 1, 2).astype(np.int64),
+        ball_x=x,
+        ball_y=rng.uniform(-30.0, 30.0, len(frames)),
+        ball_detected=np.ones(len(frames), dtype=np.bool_),
+        ball_gap=np.zeros(len(frames), dtype=np.int64),
+    )
+    found: dict[str, int] = {}
+    on_the_cut = 0
+    for t in range(80, 301):
+        for sign in (1, -1):
+            mine = metrics.incoming_direction(match, t, sign)
+            theirs = pressure.incoming_ball(match, t, sign, 0.0)
+            assert mine == theirs.split("/")[0], (t, sign)
+            found[mine] = found.get(mine, 0) + 1
+            rows = np.searchsorted(frames, [t - W, t])
+            if mine == "lateral" and abs(abs(float(np.diff(x[rows])[0])) - 2.0) < 1e-9:
+                on_the_cut += 1
+    assert set(found) == set(metrics.DIRECTIONS) and on_the_cut > 0, found
+
+
+def test_a_ball_on_the_cut_give_or_take_float_noise_is_lateral() -> None:
+    # -15.6 - (-17.6) is 2 plus float noise: lateral with the tolerance, along the attack without.
+    match = planted_match()
+    match = dataclasses.replace(
+        match,
+        ball_frame=np.array([100 - W, 100], dtype=np.int64),
+        ball_period=np.ones(2, dtype=np.int64),
+        ball_x=np.array([-17.6, -15.6]),
+        ball_y=np.zeros(2),
+        ball_detected=np.ones(2, dtype=np.bool_),
+        ball_gap=np.zeros(2, dtype=np.int64),
+    )
+    assert -15.6 - (-17.6) > metrics.BACKWARD_CUT
+    for sign in (1, -1):
+        assert metrics.incoming_direction(match, 100, sign) == "lateral"
+        assert pressure.incoming_ball(match, 100, sign, 0.0).startswith("lateral/")
+
+
 def test_the_constants_equal_the_originals() -> None:
     assert metrics.GOAL_X == pressure.GOAL_X and metrics.RADIUS == pressure.RADIUS
+    assert metrics.BACKWARD_CUT == pressure.BACKWARD_CUT and metrics.TIE == pressure.TIE
     assert metrics.NEAR_WEIGHT == pressure.NEAR_WEIGHT
     assert metrics.INCOMING_WINDOW == pressure.INCOMING_WINDOW
     assert metrics.LINE_SIZE == line.LINE_SIZE

@@ -9,7 +9,9 @@ a missing or an extra row or a carriage return
 (``test_the_check_sees_a_missing_extra_or_repeated_row``,
 ``test_the_check_refuses_a_file_it_cannot_trust``), or that does not say how much it verified
 (``test_the_command_writes_and_checks_and_says_how_much_it_verified``); a writer that leaves a
-CR or a NaN in the file (``test_the_file_has_lf_and_no_nan``).
+CR or a NaN in the file (``test_the_file_has_lf_and_no_nan``); strata of the line's reaction that
+ignore the sign, or that do not split its units (each stratum given every unit):
+``test_the_reaction_is_split_by_the_direction_of_the_incoming_ball``.
 """
 
 from __future__ import annotations
@@ -19,6 +21,7 @@ import dataclasses
 import io
 from pathlib import Path
 
+import numpy as np
 import pytest
 from test_reliability_metrics import INDEX, long_of, planted_match
 
@@ -29,11 +32,27 @@ from ac2fb.reliability.match import Event, MatchData
 MATCH = 7
 
 
+BALL = {87: -2.0, 100: -7.0, 187: 2.0, 200: 4.5}  # frame: x; the carrier's team attacks +x
+
+
 def world() -> MatchData:
-    """The planted match with rival 15 undetected in one frame, and a phase at frame 100."""
+    """The planted match with rival 15 undetected in one frame, and a phase at frame 100.
+
+    The ball goes back 5 m into the first possession (t = 100) and forward 2.5 m into the second.
+    """
     match = planted_match(not_detected=[(15, 195)])
     phase = Event("phases_of_play", None, 100, 100, 1, 1, None)
-    return dataclasses.replace(match, events=(*match.events, phase))
+    k = len(BALL)
+    return dataclasses.replace(
+        match,
+        events=(*match.events, phase),
+        ball_frame=np.array(list(BALL), dtype=np.int64),
+        ball_period=np.ones(k, dtype=np.int64),
+        ball_x=np.array(list(BALL.values())),
+        ball_y=np.zeros(k),
+        ball_detected=np.ones(k, dtype=np.bool_),
+        ball_gap=np.zeros(k, dtype=np.int64),
+    )
 
 
 @pytest.fixture(autouse=True)
@@ -55,7 +74,7 @@ def checked(directory: Path) -> table.Check:
 def test_the_table_has_the_planted_rows_in_order(tmp_path: Path) -> None:
     rows = written(tmp_path)
     assert tuple(rows[0]) == table.COLUMNS
-    by = {(r[1], r[2]): dict(zip(table.COLUMNS, r, strict=True)) for r in rows[1:]}
+    by = {(r[1], r[3]): dict(zip(table.COLUMNS, r, strict=True)) for r in rows[1:] if r[2] == "all"}
     assert list(dict.fromkeys(r[1] for r in rows[1:])) == list(metrics.METRICS)
     index = by["pressure_index", "V0"]
     assert (index["match_id"], index["n"], index["n_units"]) == (str(MATCH), "2", "2")
@@ -71,7 +90,9 @@ def test_the_table_has_the_planted_rows_in_order(tmp_path: Path) -> None:
         "1",
     )
     assert [
-        (r[2], r[3]) for r in rows[1:] if r[1] == "line_reaction_m" and r[2].startswith("V2")
+        (r[3], r[4])
+        for r in rows[1:]
+        if r[1] == "line_reaction_m" and r[2] == "all" and r[3].startswith("V2")
     ] == [
         ("V2_3", "1"),
         ("V2_4", "1"),
@@ -81,8 +102,23 @@ def test_the_table_has_the_planted_rows_in_order(tmp_path: Path) -> None:
     assert by["block_area_m2", "V0"]["gap_len_median"] == ""  # no value is an empty cell
 
 
+def test_the_reaction_is_split_by_the_direction_of_the_incoming_ball(tmp_path: Path) -> None:
+    rows = written(tmp_path)
+    assert {r[2] for r in rows[1:] if r[1] != "line_reaction_m"} == {"all"}
+    strata = [r[2] for r in rows[1:] if r[1] == "line_reaction_m"]
+    assert list(dict.fromkeys(strata)) == ["all", *metrics.DIRECTIONS]
+    got = {(r[2], r[3]): (r[4], r[5]) for r in rows[1:] if r[1] == "line_reaction_m"}
+    # back 5 m into t = 100 (seen whole), forward 2.5 m into t = 200 (rival 15 lost at 195)
+    assert got["backward", "V0"] == ("1", "1.5") and got["backward", "V1"] == ("1", "1.5")
+    assert got["forward", "V0"] == ("1", "1.5") and got["forward", "V1"] == ("0", "")
+    assert got["forward", "V2_3"] == ("1", "1.5") and ("backward", "V2_3") not in got
+    for empty in ("lateral", "undefined"):
+        assert got[empty, "V0"] == ("0", "") and got[empty, "V1"] == ("0", "")
+    assert sum(int(got[d, "V0"][0]) for d in metrics.DIRECTIONS) == int(got["all", "V0"][0])
+
+
 def test_a_value_that_is_not_a_number_is_an_empty_cell() -> None:
-    assert [table._cell(v) for v in (float("nan"), float("inf"), None, 0.0, 3, 0.1234567)] == [
+    assert [table.cell(v) for v in (float("nan"), float("inf"), None, 0.0, 3, 0.1234567)] == [
         "",
         "",
         "",
@@ -124,7 +160,7 @@ def test_the_check_sees_a_mutated_cell_in_every_column(
     edit(tmp_path / table.REPORT_NAME, mutate)
     report = checked(tmp_path)
     assert not report.ok
-    words = " {column}: file " if j >= 3 else "the code: " if j == 2 else ""
+    words = " {column}: file " if j >= 4 else "the code: " if j in (2, 3) else ""
     assert any(words.format(column=column) in p for p in report.problems), report.problems
 
 
@@ -134,7 +170,7 @@ def test_the_check_sees_a_missing_extra_or_repeated_row(tmp_path: Path) -> None:
     edit(path, lambda rows: rows.pop(3))
     assert any("missing from the file" in p for p in checked(tmp_path).problems)
     written(tmp_path)
-    edit(path, lambda rows: rows.append([*rows[1][:2], "V9", *rows[1][3:]]))
+    edit(path, lambda rows: rows.append([*rows[1][:3], "V9", *rows[1][4:]]))
     assert any("not produced by the code" in p for p in checked(tmp_path).problems)
     written(tmp_path)
     edit(path, lambda rows: rows.append(list(rows[1])))
@@ -155,7 +191,7 @@ def test_the_check_refuses_a_file_it_cannot_trust(tmp_path: Path) -> None:
 def test_rows_of_other_matches_are_not_checked_nor_counted(tmp_path: Path) -> None:
     written(tmp_path)
     path = tmp_path / table.REPORT_NAME
-    edit(path, lambda rows: rows.append(["99", "pressure_index", "V0", *["x"] * 11]))
+    edit(path, lambda rows: rows.append(["99", "pressure_index", "all", "V0", *["x"] * 11]))
     report = checked(tmp_path)
     assert report.ok and report.matches == 1
 
@@ -172,7 +208,7 @@ def test_the_command_writes_and_checks_and_says_how_much_it_verified(
     assert f"verified: {rows} rows, {rows * len(table.COLUMNS)} cells, 1 matches" in out
     assert "reliability: OK" in out
 
-    edit(tmp_path / table.REPORT_NAME, lambda rows: rows[1].__setitem__(4, "123.0"))
+    edit(tmp_path / table.REPORT_NAME, lambda rows: rows[1].__setitem__(5, "123.0"))
     assert cli.main(args) == 1
     out = capsys.readouterr().out
     assert "reliability: FAILED" in out and " mean: file " in out

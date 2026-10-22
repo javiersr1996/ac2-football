@@ -23,6 +23,7 @@ __all__ = [
     "MatchData",
     "build_match",
     "load_match",
+    "load_with_long",
     "locate_rows",
     "players_at",
 ]
@@ -161,6 +162,22 @@ def build_match(
         events=_events(events),
         attack_sign=signs,
     )
+
+
+def load_with_long(match_id: int) -> tuple[MatchData, pa.Table]:
+    """Read one match through the guarded door: its arrays and its long table (one reading).
+
+    Raises :class:`~ac2fb.protocol.data.HeldOutLocked` for a held-out match while locked.
+    """
+    ids = [match_id]
+    frames = data.read_frames(ids, columns=_FRAME_COLUMNS)
+    match = build_match(
+        match_id,
+        frames,
+        data.read_events(ids, columns=_EVENT_COLUMNS),
+        data.read_dim("dim_team_period", ids),
+    )
+    return match, long_table(frames)
 
 
 def load_match(match_id: int) -> MatchData:

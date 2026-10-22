@@ -23,7 +23,7 @@ from ac2fb.protocol import data
 
 ROOT = Path(__file__).resolve().parent.parent
 CAL, HELD = 1874553, 1899585  # the first id of each set in protocol/split.json
-READS = ("layer2",)  # the reads of a throwaway layer2.json: the commands of ac2fb.cli
+READS = ("layer2", "reliability")  # the reads of a throwaway layer2.json: the commands of ac2fb.cli
 # What the freeze covers, in the order of `git ls-tree`, written out here so a test never
 # borrows the constant it checks: `src` whole and the three files that pin what runs it.
 GUARDED = (".python-version", "pyproject.toml", "src", "uv.lock")

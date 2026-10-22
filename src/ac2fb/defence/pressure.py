@@ -50,6 +50,7 @@ __all__ = [
     "INCOMING_WINDOW",
     "LEVELS",
     "LONG_BALL",
+    "NEAR_WEIGHT",
     "PRESSED_INDEX",
     "RADIUS",
     "THIRD_CUT",
@@ -74,6 +75,7 @@ INCOMING_WINDOW = 13  # frames; decision.w_min_frames of reports/probe_cadence.j
 BACKWARD_CUT = 2.0  # metres of ball displacement along the attack that make it not lateral
 THIRD_CUT = 17.5  # metres from the centre line: the middle third is 35 m of 105
 LONG_BALL = 10.0  # metres of straight displacement from which the incoming ball is long
+NEAR_WEIGHT = 1e-12  # a rival is near from this weight: float noise is below 1e-15, data above 1e-9
 TIE = 1e-9  # values closer than this are equal: floating-point noise neither grows nor cuts
 LEVELS: dict[int, str] = {
     1: "no_pressure",
@@ -100,7 +102,8 @@ class Reception:
 class Scored:
     """A reception with its index, the rivals within the radius and its incoming-ball stratum.
 
-    ``near_*`` list the rivals with weight above zero at ``t`` (ids, weights, ``is_detected``).
+    ``near_*`` list the rivals with weight above :data:`NEAR_WEIGHT` at ``t`` (ids, weights,
+    ``is_detected``).
     """
 
     reception: Reception
@@ -177,7 +180,7 @@ def score_receptions(match: MatchData, receptions: Sequence[Reception]) -> list[
             continue
         xy = np.column_stack([match.x[rivals], match.y[rivals]])
         weights = rival_weights((float(match.x[carrier]), float(match.y[carrier])), xy, sign)
-        near = weights > 0
+        near = weights > NEAR_WEIGHT
         scored.append(
             Scored(
                 reception=r,
@@ -212,7 +215,7 @@ def make_metric(match: MatchData, receptions: Sequence[Reception]) -> Metric:
         carrier = (float(window.x[mine[0], 0]), float(window.y[mine[0], 0]))
         xy = np.column_stack([window.x[rivals, 0], window.y[rivals, 0]])
         weights = rival_weights(carrier, xy, sign)
-        near = weights > 0
+        near = weights > NEAR_WEIGHT
         return Reading(float(weights.sum()), tuple(int(p) for p in window.player_ids[rivals][near]))
 
     return metric

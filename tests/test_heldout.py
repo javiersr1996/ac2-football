@@ -9,6 +9,7 @@ is refused, unrecorded and unopened, when any condition fails. Mutations in the 
 
 from __future__ import annotations
 
+import csv
 import json
 import re
 import sys
@@ -241,6 +242,10 @@ def test_the_command_runs_the_layer2_commands_and_no_layer3_code(
     assert layer2 in called and layer3 not in called
     report = json.loads((tmp_path / "layer2.json").read_text(encoding="utf-8"))
     assert set(report["matches"]) == {str(HELD)}
+    table = list(
+        csv.DictReader((tmp_path / "reliability.csv").read_text(encoding="utf-8").splitlines())
+    )
+    assert table and {row["match_id"] for row in table} == {str(HELD)}
     assert f"read 1 held-out matches at {head(reading)}" in out.out
     assert layer2_at_head(reading)["stage"] == "read"
 

@@ -53,7 +53,7 @@ from ac2fb.defence import (
 from ac2fb.protocol import check as protocol_check
 from ac2fb.protocol import data, lock
 from ac2fb.protocol.data import HeldOutLocked
-from ac2fb.reliability import cadence, inventory, long, report, runs, visibility
+from ac2fb.reliability import cadence, inventory, long, metrics, report, runs, table, visibility
 from ac2fb.reliability import match as match_module
 from ac2fb.reliability.sensitivity import Reading, WindowFrames, sensitivity
 
@@ -111,6 +111,22 @@ def layer2_command(m: int) -> pa.Table:
         raise HeldOutLocked(err.getvalue())
     assert code == 0, err.getvalue()
     return served(m, True)
+
+
+def reliability_command(m: int) -> pa.Table:
+    """The ``reliability`` command for one match: exit 2 and a refusal on stderr is a refusal."""
+    err = io.StringIO()
+    with contextlib.redirect_stderr(err), contextlib.redirect_stdout(io.StringIO()):
+        code = cli.main(["reliability", "--match", str(m), "--reports-dir", OUT])
+    if code == 2 and "held-out" in err.getvalue():
+        raise HeldOutLocked(err.getvalue())
+    assert code == 0, err.getvalue()
+    return served(m, True)
+
+
+def checked_table(m: int) -> pa.Table:
+    """The table's check for one match, against a file that holds only the header."""
+    return served(m, table.check([m], table.render([]).encode("utf-8")).matches == 1)
 
 
 def cadence_command(m: int) -> pa.Table:
@@ -687,6 +703,32 @@ FUNCTION_ROUTES: dict[str, Route] = {
     "ac2fb.reliability.match.players_at": on_match(
         lambda mt: len(match_module.players_at(mt, int(mt.frame[0]))) > 0
     ),
+    "ac2fb.reliability.match.load_with_long": by_match(
+        lambda m: served(m, match_module.load_with_long(m)[1].num_rows > 0)
+    ),
+    "ac2fb.reliability.metrics.block_extent": without_match(
+        lambda: callable(metrics.block_extent([], "width"))
+    ),
+    "ac2fb.reliability.metrics.line_height": on_match(
+        lambda mt: callable(metrics.line_height(mt, []))
+    ),
+    "ac2fb.reliability.metrics.line_reaction": on_match(
+        lambda mt: callable(metrics.line_reaction(mt, []))
+    ),
+    "ac2fb.reliability.metrics.metric_units": on_match(
+        lambda mt: set(metrics.metric_units(mt)) == set(metrics.METRICS)
+    ),
+    "ac2fb.reliability.metrics.nearest_rival": without_match(
+        lambda: callable(metrics.nearest_rival([]))
+    ),
+    "ac2fb.reliability.metrics.phases": without_match(lambda: metrics.phases([])),
+    "ac2fb.reliability.metrics.possessions": without_match(lambda: metrics.possessions([])),
+    "ac2fb.reliability.metrics.pressure_index": on_match(
+        lambda mt: callable(metrics.pressure_index(mt, []))
+    ),
+    "ac2fb.reliability.metrics.rival_weights": without_match(
+        lambda: metrics.rival_weights((0.0, 0.0), np.array([[1.0, 0.0]]), 1)
+    ),
     "ac2fb.reliability.runs.acceleration_summary": on_match(runs.acceleration_summary),
     "ac2fb.reliability.runs.band_of": without_match(lambda: runs.band_of(np.array([1, 99]))),
     "ac2fb.reliability.runs.extrapolated_runs": on_match(
@@ -719,6 +761,14 @@ FUNCTION_ROUTES: dict[str, Route] = {
     ),
     "ac2fb.reliability.inventory.compare": without_match(lambda: inventory.compare({}, {})),
     "ac2fb.reliability.inventory.leaf": without_match(lambda: inventory.leaf({"a": 1}, "a")),
+    "ac2fb.reliability.table.check": by_match(checked_table),
+    "ac2fb.reliability.table.match_rows": by_match(
+        lambda m: served(m, isinstance(table.match_rows(m), list))
+    ),
+    "ac2fb.reliability.table.render": without_match(lambda: table.render([])),
+    "ac2fb.reliability.table.write_table": by_match(
+        lambda m: served(m, table.write_table([m], Path(OUT)).is_file())
+    ),
     "ac2fb.reliability.report.layer2_report": by_match(
         lambda m: served(m, "inventory" in report.layer2_report([m]))
     ),
@@ -732,6 +782,7 @@ FUNCTION_ROUTES: dict[str, Route] = {
 CLI_ROUTES: dict[tuple[str, ...], Route] = {
     ("status",): without_match(lambda: cli.main(["status"])),
     ("layer2",): by_match(layer2_command),
+    ("reliability",): by_match(reliability_command),
     ("cadence",): by_match(cadence_command),
     ("s1",): by_match(s1_command),
     ("s2",): by_match(s2_command),

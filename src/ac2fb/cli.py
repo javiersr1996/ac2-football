@@ -27,6 +27,7 @@ from ac2fb.protocol.data import (
     load_split,
     read_heldout,
 )
+from ac2fb.reliability import table
 from ac2fb.reliability.cadence import write_cadence_report
 from ac2fb.reliability.long import write_long
 from ac2fb.reliability.report import layer2_report, write_report
@@ -66,6 +67,30 @@ def build_parser() -> argparse.ArgumentParser:
         type=Path,
         default=_REPORTS,
         help="where layer2.json goes (default: reports/)",
+    )
+    reliability = commands.add_parser(
+        "reliability",
+        help="write reports/reliability.csv: each metric in V0, V1 and V2 for the given matches",
+        description=(
+            "Layer 2, descriptive: per match and metric (local pressure, nearest rival, line "
+            "height, block width, length and area, the line's reaction to the incoming ball), "
+            "the metric in V0, V1 and V2 with the extrapolated fraction behind it and its "
+            "gap_len. Reads through the guarded door. Without --match, the calibration "
+            "matches. --check recomputes the rows and compares every cell with the file, and "
+            "says how many it verified (exit 1 if any differs)."
+        ),
+    )
+    reliability.add_argument(
+        "--match", type=int, action="append", metavar="ID", help="native match id (repeatable)"
+    )
+    reliability.add_argument(
+        "--reports-dir",
+        type=Path,
+        default=_REPORTS,
+        help="where reliability.csv goes, or is read from with --check (default: reports/)",
+    )
+    reliability.add_argument(
+        "--check", action="store_true", help="compare the file with a recomputation, write nothing"
     )
     cadence = commands.add_parser(
         "cadence",
@@ -251,7 +276,10 @@ def _layer2_artifacts(match_ids: list[int], reports_dir: Path) -> Path:
 
 
 # The layer 2 commands the reading may run, by the names protocol/layer2.json lists.
-LAYER2_READS: Mapping[str, Command] = {"layer2": _layer2_artifacts}
+LAYER2_READS: Mapping[str, Command] = {
+    "layer2": _layer2_artifacts,
+    "reliability": table.write_table,
+}
 
 
 def _heldout_read(reports_dir: Path) -> int:
@@ -400,6 +428,28 @@ def _layer2(match_ids: Sequence[int] | None, reports_dir: Path) -> int:
     return 0
 
 
+def _committed_table(path: Path) -> bytes | None:
+    """The one place that reads the committed reliability table, for its check."""
+    return path.read_bytes() if path.exists() else None
+
+
+def _reliability(match_ids: Sequence[int] | None, reports_dir: Path, do_check: bool) -> int:
+    ids = list(match_ids) if match_ids else list(load_split().calibration)
+    try:
+        if not do_check:
+            print(f"wrote {table.write_table(ids, reports_dir)}")
+            return 0
+        report = table.check(ids, _committed_table(reports_dir / table.REPORT_NAME))
+    except HeldOutLocked as exc:
+        print(f"refused: {exc}", file=sys.stderr)
+        return 2
+    print(f"verified: {report.rows} rows, {report.cells} cells, {report.matches} matches")
+    for problem in report.problems:
+        print(f"  - {problem}")
+    print("reliability: OK" if report.ok else "reliability: FAILED")
+    return 0 if report.ok else 1
+
+
 def _status() -> int:
     split = load_split()
     status = guard_status()
@@ -423,6 +473,8 @@ def main(argv: Sequence[str] | None = None) -> int:
         return _status()
     if args.command == "layer2":
         return _layer2(args.match, args.reports_dir)
+    if args.command == "reliability":
+        return _reliability(args.match, args.reports_dir, args.check)
     if args.command == "cadence":
         return _cadence(args.match, args.reports_dir)
     if args.command == "s1":

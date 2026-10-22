@@ -8,9 +8,9 @@ consolida o se archiva en `lessons-archive.md`.
 - **Ninguna cifra en prosa sin un artefacto que la imprima** (README, guion, figura, plan). Las
   cifras de un plan son hipótesis hasta medirlas, también las del sintético.
 - **Un test que pasa por construcción no protege nada** (INNER JOIN que descarta, fichero
-  comparado consigo mismo, margen de sintético que es ruido, sintético de un equipo y un periodo
-  que no fija qué clave se lee). Mutar y ver fallar; varias semillas; la mutación se anota en la
-  tarea. Mutar con el árbol commiteado o desde una copia (`git checkout` borra lo no commiteado).
+  comparado consigo mismo, margen de sintético que es ruido, sintético que no distingue la clave,
+  aleatorio que nunca cae en un corte: cada umbral, su caso plantado). Mutar y ver fallar; varias
+  semillas; anotar la mutación; mutar desde una copia (`git checkout` borra lo no commiteado).
 - **Un guard sobre una función no guarda los datos.** Una sola lectura del reservado, guardada;
   una sola puerta a los datos; test de comportamiento sobre toda ruta pública; lo que leerá el
   reservado, escrito y congelado antes.

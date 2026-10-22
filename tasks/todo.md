@@ -1865,7 +1865,10 @@ su test sintético con el fallo plantado (una sonda que no puede fallar no prote
   - [ ] 23c. `opus` (subagente `revisor-adversarial`) Revisión de 23b, 25 y 26 antes de congelar,
     como la 22, **con un máximo de 3 pasadas** (decisión de Javier, 2026-10-22: la 22 necesitó 6).
     Un alto se arregla siempre; los medios que sigan vivos tras la tercera pasada van a Javier,
-    que decide si se arreglan o se aceptan por escrito.
+    que decide si se arreglan o se aceptan por escrito. Dos notas de la 26 esperan a Javier
+    (2026-10-22): el docstring de `metrics.py` (línea 29) aún dice "Javier to confirm" sobre el
+    área, confirmada en la 25, y como toca `src` va antes de la 23d; y el bloque completo del
+    README no corre `ac2fb amputation` (su `--check` sí corre en full-build).
   - [ ] 23d. `sonnet` Congelación de `layer2.json` en un commit propio: `stage: "frozen"`,
     `code_tree_sha`. Aceptación: desde ese commit hasta la lectura, `git diff <congelación> --
     src pyproject.toml uv.lock .python-version protocol/` vacío; test contra `HEAD` de que el

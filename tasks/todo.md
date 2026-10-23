@@ -1869,6 +1869,63 @@ su test sintético con el fallo plantado (una sonda que no puede fallar no prote
     (2026-10-22): el docstring de `metrics.py` (línea 29) aún dice "Javier to confirm" sobre el
     área, confirmada en la 25, y como toca `src` va antes de la 23d; y el bloque completo del
     README no corre `ac2fb amputation` (su `--check` sí corre en full-build).
+    **Pasada 1 (2026-10-23)**, en dos frentes paralelos de solo lectura sobre `git diff
+    ed729c4..5dbee58` (A: la puerta y la lectura; B: las métricas de la 25 y la amputación de la
+    26). Antes, el docstring de `metrics.py` dice ya que el área está confirmada (`5dbee58`).
+    Arreglado en dos worktrees separados, uno por frente, y juntado en `main`:
+    - *Alto, A: tras la lectura, editar `layer2.json` la reabría.* Con el sha del código nuevo en
+      `code_tree_sha` (stage y registro intactos) la puerta servía el reservado a otro código; de
+      vuelta a `frozen`, salía una segunda "primera lectura". La puerta lee ahora la historia
+      (`_freeze`): en `frozen`, ningún commit anterior dejó `layer2.json` en `read`; en `read`, el
+      último commit que lo tocó es la lectura (`READ_MESSAGE`, el único en `read`), el anterior es
+      la congelación que el registro nombra; y desde la congelación nada del código ni de
+      `protocol/` cambió, salvo `layer2.json` en `read`.
+    - *Alto, A: `read_heldout` ejecutaba cualquier función.* Ya no recibe comandos: los toma de
+      `ac2fb.reliability.reading.LAYER2_READS`.
+    - *Medio, A: el registro guardaba `HEAD`, no la congelación, y un `split.json` cambiado
+      después se leía.* Ahora guarda el commit de la congelación y `protocol/` entra en el diff.
+    - *Medio, A: el lock comparaba metadatos, no lo que se importa.* Reglas nuevas en `lock.py`:
+      cada módulo de primer nivel del cierre se importa desde su distribución (un `ftbase` en
+      `PYTHONPATH` cierra la lectura), los ficheros de un paquete fijado por git (la base) siguen
+      con los hashes de su `RECORD` (leído tal cual: en 3.13 `Distribution.files` oculta los
+      borrados), y el intérprete es el de `.python-version`. Los hashes de numpy y pyarrow no se
+      comprueban: tardan más de 2 min en Windows (la base, 55 ficheros, 0,2 s).
+    - *Medio, A: cinco comprobaciones sin test.* Casos nuevos para todas.
+    - *Bajos, A:* el comando `layer2` de la lectura ya no escribe el Parquet largo bajo `data/`
+      (nada lo lee y se mezclaría con calibración); un fallo del CLI sale con 1 y `failed:`, no
+      como rechazo; los pasos del README de full-build van con `shell: bash` (pipefail: con `| tee`
+      un bloque roto no tumbaba el paso); el bloque completo del README corre también `ac2fb
+      amputation` (la segunda nota de la 26: el clon debe quedar limpio, así que el CSV debe salir
+      igual byte a byte).
+    - *Alto condicionado, B: la reacción de la línea leía del periodo anterior.* En los 3 primeros
+      frames del periodo 2, con un descanso de 10 frames (5 de los 10), `t - 13` cae en el periodo
+      1; 0 casos en calibración, pero el reservado no se ha mirado. Ahora exige el mismo periodo
+      en los dos extremos; `defence/` no se toca (la capa 3 está muerta) y el docstring anota la
+      diferencia. Con el arreglo, las 10.425 celdas de calibración no cambian.
+    - *Medio, B: cuatro mutaciones sobrevivían* (banda contada sin el `- 1`, relleno solo del
+      último frame de la ventana, distancia al balón en `t - 13`, área con solo los jugadores de
+      la anchura); cuatro casos plantados, cada uno tumba la suya.
+    - *Medio, B: V2 mezclaba tamaños.* En la presión, n va de 0 a 11 jugadores y V2_0 eran sobre
+      todo recepciones sin rivales cerca (en 2010085, de 0,01 a 2,26 por construcción). **Decisión
+      de Javier (2026-10-23): V2 por "k de n"**, `V2_{k}of{n}`, ordenado por n y después k, con una
+      agrupación aparte (`sensitivity_by_size`) para no cambiar `sensitivity()` ni los informes de
+      la capa 3. n por métrica: 4 en línea y reacción, 2 en anchura y longitud, 1 en el rival más
+      cercano, de 0 a 11 en la presión y 2, 3 o 4 en el área. `reliability.csv` pasa de 695 a 854
+      filas (de 10.425 a 12.810 celdas): las 220 de V0 y V1, idénticas; de las 475 de V2, 330 solo
+      cambian de etiqueta y el resto se parten.
+    **Mutaciones: 18 en A (`mutate23c_a.py` y su log en el scratchpad de la sesión) y 5 en B,
+    todas caen, cada una en su test.** Commits `3ffb031`, `e6a4c9d`, `be1a03b`, `65e9944`,
+    `e43e241`, `eff9dda`.
+    Gate local en `main` tras juntar los dos frentes: `sync --locked`, ruff, format, `mypy src`;
+    `pytest -q` pasa 1.460 con 66 deseleccionados (el único rojo, `test_single_door`, señalaba la
+    lectura del `RECORD` en `lock._edited`: dos sitios permitidos más, sin datos); `pytest -m
+    realdata`, 66 de 66; `protocol --check` OK; `reliability --check`, 854 filas y 12.810 celdas;
+    `layer2 --check`, 3.558 valores; `amputation --check`, 420 filas y 4.200 celdas.
+    **Pasada 2, frente B (2026-10-23), sobre `be1a03b..eff9dda`: ningún alto ni medio.** Rehízo
+    V2 sin el código de `reliability/` en los 10 (834 filas iguales a 6 decimales; en los 110
+    grupos, V2 suma V0 y `V2_nofn` suma V1) y 13 de 14 mutaciones caen; la que sobrevive (n como
+    jugadores con fila en la ventana) es equivalente en las siete métricas. Un bajo arreglado: el
+    README decía "V2 grouped by how many are extrapolated".
   - [ ] 23d. `sonnet` Congelación de `layer2.json` en un commit propio: `stage: "frozen"`,
     `code_tree_sha`. Aceptación: desde ese commit hasta la lectura, `git diff <congelación> --
     src pyproject.toml uv.lock .python-version protocol/` vacío; test contra `HEAD` de que el

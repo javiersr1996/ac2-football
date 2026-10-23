@@ -9,6 +9,8 @@ Mutations, each with the test that kills it (script and log in the task's record
 
 * a line that keeps the goalkeeper, or that ranks by x without the attack sign:
   ``test_the_line_height_and_its_reaction_are_the_planted_ones``;
+* a reaction that subtracts the height at ``t - W`` without the same period at both ends (a
+  break of 10 frames, shorter than W): ``test_a_reaction_needs_the_same_period_at_both_ends``;
 * a metric that reports no players, or a sensitivity that ignores ``is_detected`` (V1 = V0):
   ``test_the_variants_follow_who_was_detected``;
 * a reader that takes the sign of another period or team (the sign of period 1, of team 1, or of
@@ -154,6 +156,31 @@ def test_a_line_needs_the_four_listed_at_both_ends() -> None:
     held = metrics.possessions(match.events)
     assert reading(match, metrics.line_reaction(match, held), before_t(held, 7)[0]) is None
     assert reading(match, metrics.line_height(match, held), at_t(held, 7)[0]) is not None
+
+
+def test_a_reaction_needs_the_same_period_at_both_ends() -> None:
+    # Period 1 ends at frame 99 and period 2 starts at 110, a break shorter than W. A possession
+    # at t = 110, 111 or 112 reaches back to period 1 (frames 97 to 99) and has no unit; at
+    # t = 123 the window is all period 2 and the line, still, has reacted by 0.
+    after = range(110, 124)
+    rows: dict[int, list[Row]] = {}
+    for p, (x, y) in AT_T.items():
+        rows[p] = [(f, x + 10.0, y, True) for f in range(97, 100)]  # deeper in period 1
+        rows[p] += [(f, x, y, True) for f in after]
+    ticks = (110, 111, 112, 123)
+    base = make_match(rows, TEAMS, events=[event("player_possession", t, t, 1, 1) for t in ticks])
+    match = dataclasses.replace(
+        base,
+        period=np.where(base.frame >= 110, 2, 1).astype(np.int64),
+        events=tuple(dataclasses.replace(e, period=2) for e in base.events),
+        attack_sign={(q, 1): 1 for q in (1, 2)} | {(q, 2): -1 for q in (1, 2)},
+    )
+    held = metrics.possessions(match.events)
+    got = [reading(match, metrics.line_reaction(match, held), w) for w in before_t(held, 7)]
+    assert got[:3] == [None, None, None]
+    assert got[3] == Reading(0.0, (11, 12, 13, 15))
+    height = reading(match, metrics.line_height(match, held), at_t(held, 7)[0])
+    assert height == Reading(81 / 4, (11, 12, 13, 15))  # the unit at t alone is not in question
 
 
 def test_the_block_is_the_planted_one() -> None:

@@ -19,9 +19,11 @@ is its player); a *phase* is a ``phases_of_play`` event with a team (``t`` = its
   ``visibility.goalkeepers``; the line is chosen at ``t`` and never re-ranked.
 - ``line_reaction_m``: that line's height at ``t`` minus its height at ``t - W``, positive when
   it retreats, the line's reaction to the ball that came in; the window is ``[t - W, t]`` and the
-  unit needs the four listed at both ends. The line follows the ball (m10), so its units are also
-  split by the direction of the ball in the same window (:func:`reaction_strata`): the direction
-  of the incoming-ball stratum of probe S2, without its third and length.
+  unit needs the four listed at both ends, in the same period (a break shorter than ``W`` would
+  otherwise read the other period's positions with this one's sign). The line follows the ball
+  (m10), so its units are also split by the direction of the ball in the same window
+  (:func:`reaction_strata`): the direction of the incoming-ball stratum of probe S2, without its
+  third and length.
 - ``block_width_m`` / ``block_length_m`` / ``block_area_m2``: extent of ``y`` / extent of ``x``
   / their product, over every player of the team out of possession listed at ``t``, goalkeeper
   included, between the extreme players (the definition ``with_gk_extremes_listed`` that probe
@@ -31,6 +33,8 @@ is its player); a *phase* is a ``phases_of_play`` event with a team (``t`` = its
 These are the definitions of ``defence/`` (``pressure``, ``line``, ``block``) written again here
 because the reading of the held-out may run no code of ``defence/`` (task 23b); the tests hold
 each of them equal to the original on synthetic worlds and, in ``realdata``, on the real matches.
+One difference: ``defence/`` subtracts the height at ``t - W`` without asking for the same
+period at both ends; here the unit has no value if they differ (review 23c, front B).
 """
 
 from __future__ import annotations
@@ -40,7 +44,7 @@ from collections.abc import Sequence
 import numpy as np
 from numpy.typing import NDArray
 
-from ac2fb.reliability.match import Event, MatchData
+from ac2fb.reliability.match import Event, MatchData, locate_rows
 from ac2fb.reliability.sensitivity import Metric, Reading, Window, WindowFrames
 from ac2fb.reliability.visibility import goalkeepers
 
@@ -191,6 +195,13 @@ def _line(
     return line if len(line) == LINE_SIZE else None
 
 
+def _one_period(match: MatchData, window: WindowFrames, line: NDArray[np.int64]) -> bool:
+    """Whether the first player of ``line`` is in the same period at both ends of the window."""
+    ends = np.array([window.window.frame_start, window.window.frame_end])
+    rows = locate_rows(match, np.full(2, window.player_ids[line[0]], dtype=np.int64), ends)
+    return bool((rows >= 0).all() and match.period[rows[0]] == match.period[rows[1]])
+
+
 def _line_metric(match: MatchData, events: Sequence[Event], back: int) -> Metric:
     by_frame = _by_frame(events)
     keepers = goalkeepers(match)
@@ -208,7 +219,7 @@ def _line_metric(match: MatchData, events: Sequence[Event], back: int) -> Metric
             return None
         height = float(np.mean(window.x[line, -1] * sign))
         if back:
-            if not window.present[line, 0].all():
+            if not window.present[line, 0].all() or not _one_period(match, window, line):
                 return None
             height -= float(np.mean(window.x[line, 0] * sign))
         return Reading(height, tuple(int(p) for p in window.player_ids[line]))

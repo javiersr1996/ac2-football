@@ -21,6 +21,8 @@ Mutations, each with the test that kills it (script and log in the task's record
 * a block of fewer than five players, extremes that are not the extreme players, or fixers
   that swap their ties: ``test_the_block_is_the_planted_one``,
   ``test_the_ends_of_the_block_break_ties_like_the_original``;
+* an area whose players are only those that fix the width:
+  ``test_the_area_players_are_the_four_extremes``;
 * a direction of the incoming ball without the attack sign, without the tolerance at its cut,
   or across the break between periods:
   ``test_the_direction_equals_the_one_of_the_incoming_ball_stratum``,
@@ -208,6 +210,26 @@ def test_the_block_is_the_planted_one() -> None:
     assert block_of(everyone, "area") == Reading(2250.0, (20, 25))
     assert block_of((1, 20, 21, 22, 23), "width") is None  # four players are not a block
     assert block_of((1, 20, 21, 22, 23, 24), "width") is not None
+
+
+def test_the_area_players_are_the_four_extremes() -> None:
+    # The lowest and highest x are 20 and 25; the lowest and highest y are 21 and 22: four players.
+    xs = [10.0, 20.0, 25.0, 33.0, 40.0, 55.0]
+    ys = [0.0, -20.0, 30.0, 8.0, 15.0, 5.0]
+    rivals = {20 + i: [(100, x, y, True)] for i, (x, y) in enumerate(zip(xs, ys, strict=True))}
+    match = make_match(
+        {1: [(100, 0.0, 0.0, True)], **rivals},
+        {1: 1, **{p: 2 for p in rivals}},
+        events=[event("phases_of_play", 100, 100, 1, None)],
+        signs={1: 1, 2: -1},
+    )
+    phases = metrics.phases(match.events)
+    window = Window(7, 100, 100)
+    assert reading(match, metrics.block_extent(phases, "area"), window) == Reading(
+        2250.0, (20, 21, 22, 25)
+    )
+    assert reading(match, metrics.block_extent(phases, "width"), window) == Reading(50.0, (21, 22))
+    assert reading(match, metrics.block_extent(phases, "length"), window) == Reading(45.0, (20, 25))
 
 
 def test_the_ends_of_the_block_break_ties_like_the_original() -> None:

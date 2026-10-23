@@ -15,6 +15,11 @@ Mutations, each with the test that kills it (script and log in the task's record
 * a hiding probability that is the detected share, or a pool that keeps the open gaps or every
   sampled frame: ``test_the_hiding_is_the_match_s_own``;
 * a unit binned by its shortest gap: ``test_a_unit_goes_to_the_band_of_its_longest_gap``;
+* a band counted as ``hi - lo`` frames, not ``hi - lo - 1``:
+  ``test_the_bands_cut_where_the_bands_cut``;
+* a reaction that fills only the last frame of its window, or a distance to the ball taken at
+  ``t - W``: ``test_the_reaction_is_filled_over_the_whole_window``,
+  ``test_the_distance_to_the_ball_is_the_one_at_t``;
 * every V0 unit amputated, not only V1: ``test_only_the_v1_units_are_amputated``;
 * one stream of draws for all the matches or all the metrics:
   ``test_the_draws_are_fixed_and_no_match_or_metric_moves_another``;
@@ -63,6 +68,7 @@ def planted(
     paths: dict[int, Trajectory] | None = None,
     hidden: Sequence[tuple[int, range]] = (),
     period_two_from: int | None = None,
+    frames: range = FRAMES,
 ) -> MatchData:
     """Everyone still (or on ``paths``), detected but in ``hidden``; the ball on the carrier."""
     moving = paths or {}
@@ -70,9 +76,9 @@ def planted(
     for p, (x0, y0) in STILL.items():
         where = moving.get(p, lambda f, x0=x0, y0=y0: (x0, y0))
         rows[p] = [
-            (f, *where(f), not any(p == q and f in span for q, span in hidden)) for f in FRAMES
+            (f, *where(f), not any(p == q and f in span for q, span in hidden)) for f in frames
         ]
-    ball: list[Row] = [(f, 0.0, 0.0, True) for f in FRAMES]
+    ball: list[Row] = [(f, 0.0, 0.0, True) for f in frames]
     match = make_match(
         rows,
         TEAMS,
@@ -153,6 +159,60 @@ def test_a_curved_path_gives_the_analytic_error(c: float, back: int, ahead: int)
     match = planted({11: lambda f: (30.0 + c * (f - T) ** 2, 0.0)})
     got = line_at_t(match, every_bin(back, ahead))
     assert got.errors[0] == pytest.approx(c * back * ahead / 4, rel=1e-9)
+
+
+def line_reaction_at_t(match: MatchData, hide: Hiding) -> amputate.Amputation:
+    held = metrics.possessions(match.events)
+    return amputate.amputate(
+        match,
+        window_frames(long_of(match)),
+        metrics.line_reaction(match, held),
+        [Window(match.match_id, T - 13, T)],
+        hide,
+        np.random.default_rng(0),
+    )
+
+
+@pytest.mark.parametrize(
+    ("gap", "band"),
+    [
+        (10, "le_1s"),
+        (11, "1_5s"),
+        (50, "1_5s"),
+        (51, "5_20s"),
+        (200, "5_20s"),
+        (201, "gt_20s"),
+    ],
+)
+def test_the_bands_cut_where_the_bands_cut(gap: int, band: str) -> None:
+    # The gap is the frames between the two detections: back + ahead - 1.
+    back = (gap + 1) // 2
+    match = planted(frames=range(T - 150, T + 150))
+    assert line_at_t(match, every_bin(back, gap + 1 - back)).bands == (band,)
+
+
+def test_the_reaction_is_filled_over_the_whole_window() -> None:
+    # Player 11 on x = 30 + c (f - T)^2, hidden 30 frames back and 50 ahead: the chord is off by
+    # c (a - u)(b + u) at u = f - T, so the line, four players, is off by (e(0) - e(-13)) / 4.
+    c, b, a = 0.001, 30, 50
+    match = planted({11: lambda f: (30.0 + c * (f - T) ** 2, 0.0)})
+    got = line_reaction_at_t(match, every_bin(b, a))
+    want = c * (a * b - (a + 13) * (b - 13)) / 4
+    assert got.errors == pytest.approx((want,), rel=1e-9) and want > 0.1 * c
+
+
+def test_the_distance_to_the_ball_is_the_one_at_t() -> None:
+    # Player 11 runs 2 m a frame: 30 m from the ball at t (bin 30_40, alone in it), 4 m at
+    # t - 13 (bin 00_05). Only that bin hides players: the unit is hidden if the distance is read
+    # at t.
+    k = len(visibility.BALL_DISTANCE_EDGES) + 1
+    only = Hiding(
+        (0.0, 0.0, 0.0, 0.0, 1.0, 0.0),
+        (np.array([3], dtype=np.int64),) * k,
+        (np.array([4], dtype=np.int64),) * k,
+    )
+    match = planted({11: lambda f: (30.0 + 2.0 * (f - T), 0.0)})
+    assert line_reaction_at_t(match, only).bands == ("le_1s",)
 
 
 # --- the ends of a gap ----------------------------------------------------------------------------

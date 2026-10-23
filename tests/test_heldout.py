@@ -571,12 +571,35 @@ def test_the_command_says_a_failure_is_not_a_refusal(
 # --- the committed layer2.json ------------------------------------------------------------------
 
 
-def test_the_committed_layer2_protocol_is_in_design_and_lists_the_codes_commands() -> None:
+def test_the_committed_layer2_protocol_is_frozen_on_the_code_at_head() -> None:
+    # Task 23d, until the reading: a change to the frozen code after the freeze fails here.
     raw = LAYER2_FILE.read_bytes()
     assert b"\r" not in raw and raw.endswith(b"\n")
     doc = json.loads(raw.decode("utf-8"))
-    assert doc["stage"] == "design" and doc["code_tree_sha"] is None and "reading" not in doc
+    assert doc["stage"] == "frozen" and "reading" not in doc
+    assert doc["code_tree_sha"] == data.code_tree_sha("HEAD")
     assert doc["reads"] == list(reads.LAYER2_READS) == list(cli.LAYER2_READS)
     assert doc["writes_under"] == "reports/heldout"
     args = cli.build_parser().parse_args(["heldout", "read"])
     assert args.reports_dir == ROOT / "reports" / "heldout"
+
+
+def test_a_clone_of_head_admits_the_reading_and_a_later_code_change_shuts_it(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    # Task 23d, on the real history (CI checks out all of it), until the reading: the freeze at
+    # HEAD stands on every ref, and one more commit to src shuts the reading. No data is read.
+    clone = Checkout(tmp_path / "clone")
+    subprocess.run(["git", "clone", "-q", "--no-hardlinks", str(ROOT), str(clone.root)], check=True)
+    for key, value in (("user.name", "gate test"), ("user.email", "gate@test.invalid")):
+        clone.git("config", key, value)
+    monkeypatch.setattr(data, "_repo_root", lambda: clone.root)
+    status = data._guard(data._READABLE_STAGES)
+    assert status.open and status.stage == "frozen", status.reasons
+    freeze = clone.git("log", "-1", "--format=%H", "--", "protocol/layer2.json").strip()
+    assert status.frozen_commit == freeze
+    clone.write("src/ac2fb/after_the_freeze.py", "# code after the freeze\n")
+    clone.commit("code after the freeze")
+    reasons = data._guard(data._READABLE_STAGES).reasons
+    assert any("code_tree_sha" in r for r in reasons)
+    assert any("['src/ac2fb/after_the_freeze.py'] changed since the freeze" in r for r in reasons)

@@ -1862,7 +1862,7 @@ su test sintético con el fallo plantado (una sonda que no puede fallar no prote
     1.193 pasan, eran 1.067; 26 deseleccionados; `pytest -m realdata`: 26 de 26; `ac2fb protocol
     --check` OK). Nadie leyó el reservado. Commit `913d8d9`, empujado; CI en verde (run
     39450823910).
-  - [ ] 23c. `opus` (subagente `revisor-adversarial`) Revisión de 23b, 25 y 26 antes de congelar,
+  - [x] 23c. `opus` (subagente `revisor-adversarial`) Revisión de 23b, 25 y 26 antes de congelar,
     como la 22, **con un máximo de 3 pasadas** (decisión de Javier, 2026-10-22: la 22 necesitó 6).
     Un alto se arregla siempre; los medios que sigan vivos tras la tercera pasada van a Javier,
     que decide si se arreglan o se aceptan por escrito. Dos notas de la 26 esperan a Javier
@@ -1946,6 +1946,35 @@ su test sintético con el fallo plantado (una sonda que no puede fallar no prote
     **Mutaciones: 23 en A tras la pasada 2 (16 de la pasada 1 vigentes y 7 nuevas,
     `mutate23c_a2.py`; log `mutate23c_p2.log`), todas caen, cada una en su test**, incluida la que
     mete `--all` en `read` (cae el test del worktree). Commit `706a3be`.
+    **Pasada 3, la última (2026-10-23), sobre `6548f03..706a3be`, en un clon (las mutaciones
+    corrían en el árbol): un alto, dos medios, un bajo.**
+    - *Alto: en `read`, una lectura a mano en una rama desde la congelación pasaba por
+      reproducción* (en `read` solo contaba la historia de `HEAD`). Ahora una lectura es un commit
+      con `READ_MESSAGE` que deja `layer2.json` en `read`, buscado en todas las refs y por los dos
+      padres de un merge; en `frozen` no hay ninguna, en `read` hay una y es el último cambio de
+      `HEAD`. Una edición posterior en otra rama no es una lectura: el worktree en la lectura sigue
+      reproduciendo.
+    - *Medio, regresión de la pasada 2: `--full-history` en la historia de `HEAD`* tomaba un merge
+      posterior a la congelación por la congelación (un split cambiado en una rama anterior,
+      juntado después, se leía). La historia de `HEAD` vuelve a ser la simplificada; solo la
+      búsqueda de lecturas sigue todos los padres.
+    - *Medio: las lecturas que el clon no ha traído no se ven* (un clon anterior a la lectura sin
+      `fetch`, o de una sola rama). **Decisión de Javier (2026-10-23): se acepta por escrito.** J4
+      se lanza solo desde su checkout, con `git fetch` justo antes, y la lectura se empuja en el
+      acto; nadie más tiene clones del repo.
+    - *Bajo: con `--all`, una rama de trabajo con `layer2.json` roto, borrado o en `read` a mano
+      bloqueaba la primera lectura.* Ahora solo cuenta una lectura de verdad, y un `layer2.json`
+      ilegible en otra ref es un stage nulo.
+    - *Sospechoso arreglado: en Fedora (`lib64 -> lib`) cada paquete se ve dos veces* y la regla 3
+      rechazaría el entorno de un juez; un sitio visto dos veces es una copia.
+    - Para la 23d: el test contra `HEAD` necesita la historia entera en CI (`fetch-depth: 0`).
+    **Mutaciones finales de la puerta: 26, cada una contra su test con nombre, todas caen**
+    (`mutate23c_final.py` y su log en el scratchpad de la sesión; las 16 de la pasada 1 que
+    siguen vigentes, las 7 de la 2 y 3 nuevas). Commit `a3bc9a4`. **Cierre de la 23c:** tres
+    pasadas, como decidió Javier; los altos de las tres arreglados, los medios arreglados salvo
+    el aceptado por escrito, y en la capa 2 nada abierto. Los arreglos de la tercera no tienen
+    una cuarta pasada: los cubren sus tests, las 26 mutaciones y el test de la 23d sobre la
+    historia real.
   - [ ] 23d. `sonnet` Congelación de `layer2.json` en un commit propio: `stage: "frozen"`,
     `code_tree_sha`. Aceptación: desde ese commit hasta la lectura, `git diff <congelación> --
     src pyproject.toml uv.lock .python-version protocol/` vacío; test contra `HEAD` de que el

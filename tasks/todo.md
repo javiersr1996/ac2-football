@@ -1926,6 +1926,26 @@ su test sintético con el fallo plantado (una sonda que no puede fallar no prote
     grupos, V2 suma V0 y `V2_nofn` suma V1) y 13 de 14 mutaciones caen; la que sobrevive (n como
     jugadores con fila en la ventana) es equivalente en las siete métricas. Un bajo arreglado: el
     README decía "V2 grouped by how many are extrapolated".
+    **Pasada 2, frente A (2026-10-23), sobre `5dbee58..be1a03b`: un alto y un medio.**
+    - *Alto: la lectura única se eludía con git.* Una rama desde la congelación, un `merge -s
+      ours` que descarta la lectura o un clon superficial volvían a leer: la puerta miraba solo
+      la historia simplificada de `HEAD`. Ahora `--full-history` sigue los dos padres de un merge;
+      en `frozen`, una lectura en cualquier ref (`--all`) la cierra; en `read` cuenta solo la
+      historia de `HEAD`, para que un worktree en el commit de la lectura la reproduzca aunque
+      `main` cambie `src` y `layer2.json` (el `--all` que proponía el revisor lo rompía: test
+      nuevo); y un clon superficial se rechaza.
+    - *Medio: un `ftbase` sombra con su propio dist-info (`pip install --target`) pasaba la
+      regla 3*, porque se hasheaba contra su propio `RECORD`. Ahora cada paquete del cierre está
+      instalado una sola vez, sus módulos se importan desde el site-packages del entorno
+      (`sysconfig`) y se hashea el `RECORD` de todos, no solo el de la base: 0,8 s en total (los
+      más de 2 min medidos antes eran carga de la máquina, no el hash).
+    - *Bajo, aceptado:* un rebase de la congelación después de la lectura cierra la
+      reproducción ("does not name its freeze"); y `reset --hard` más force-push o `git replace`
+      reescriben la historia, fuera del alcance de una puerta local. Mitigación en J4: la
+      congelación se empuja antes de leer, y el commit de la lectura justo después.
+    **Mutaciones: 23 en A tras la pasada 2 (16 de la pasada 1 vigentes y 7 nuevas,
+    `mutate23c_a2.py`; log `mutate23c_p2.log`), todas caen, cada una en su test**, incluida la que
+    mete `--all` en `read` (cae el test del worktree). Commit `706a3be`.
   - [ ] 23d. `sonnet` Congelación de `layer2.json` en un commit propio: `stage: "frozen"`,
     `code_tree_sha`. Aceptación: desde ese commit hasta la lectura, `git diff <congelación> --
     src pyproject.toml uv.lock .python-version protocol/` vacío; test contra `HEAD` de que el
@@ -1942,7 +1962,9 @@ su test sintético con el fallo plantado (una sonda que no puede fallar no prote
 ## Fase 3: reservado y capa 2 completa (lun 16 nov a dom 29 nov)
 
 - [ ] J4. **[Javier]** Lectura única del reservado, solo capa 2: confirma justo antes y lanza
-  `ac2fb heldout read` (o lo autoriza por escrito a quien lo lance). Paso irreversible.
+  `ac2fb heldout read` (o lo autoriza por escrito a quien lo lance). Paso irreversible. La
+  congelación ya empujada a `origin` antes de leer, y el commit de la lectura empujado justo
+  después (un rebase posterior de cualquiera de los dos cierra la reproducción; 23c, pasada 2).
 - [ ] 24. `opus` Registro de la lectura de la capa 2: cifras por partido de los 20 en
   `reliability.csv` y `amputation.csv`, con el commit de la lectura (`layer2.json` en `read`). Se
   publica como cae. Sin D6: la capa 3 no se lee en el reservado (rama B).

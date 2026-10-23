@@ -1,5 +1,5 @@
 {
-  "stage": "frozen",
+  "stage": "read",
   "code_tree_sha": "899a013cee5b8dca8ab66bcdacf1e8a8543a250e58ef05769d137b4a910b8695",
   "title": "The single reading of the held-out, for layer 2 only",
   "date_written": "2026-10-20",
@@ -10,5 +10,21 @@
     "reliability",
     "amputation"
   ],
-  "writes_under": "reports/heldout"
+  "writes_under": "reports/heldout",
+  "reading": {
+    "frozen_commit": "38cbd60b00d0f8c420a9fd8deedb3456b976398a",
+    "heldout": [
+      1899585,
+      1927964,
+      1953632,
+      1986691,
+      2006229,
+      2006363,
+      2007721,
+      2013725,
+      2016236,
+      2017461
+    ],
+    "date": "2026-10-23"
+  }
 }

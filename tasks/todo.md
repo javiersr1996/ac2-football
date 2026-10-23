@@ -1975,7 +1975,7 @@ su test sintético con el fallo plantado (una sonda que no puede fallar no prote
     el aceptado por escrito, y en la capa 2 nada abierto. Los arreglos de la tercera no tienen
     una cuarta pasada: los cubren sus tests, las 26 mutaciones y el test de la 23d sobre la
     historia real.
-  - [ ] 23d. `sonnet` Congelación de `layer2.json` en un commit propio: `stage: "frozen"`,
+  - [x] 23d. `sonnet` Congelación de `layer2.json` en un commit propio: `stage: "frozen"`,
     `code_tree_sha`. Aceptación: desde ese commit hasta la lectura, `git diff <congelación> --
     src pyproject.toml uv.lock .python-version protocol/` vacío; test contra `HEAD` de que el
     reservado sigue cerrado con un cambio de código posterior. Antes, **[Javier]** confirma que
@@ -1985,6 +1985,17 @@ su test sintético con el fallo plantado (una sonda que no puede fallar no prote
     Javier delegó la decisión; la lectura es irreversible y sin `layer2` la figura 1 quedaría
     para siempre en los 10 de calibración, y es capa 2 pura (nada de la capa 3). Consecuencia:
     `ac2fb layer2 --check` se escribe antes de la 23c, con la 26.
+    Hecho (2026-10-23). **Congelación `38cbd60`**, `code_tree_sha`
+    `899a013cee5b8dca8ab66bcdacf1e8a8543a250e58ef05769d137b4a910b8695` (el mismo con `git ls-tree
+    HEAD -- .python-version pyproject.toml src uv.lock | sha256sum`). Dos tests la sostienen hasta
+    la lectura: `layer2.json` commiteado nombra el código de `HEAD`, y un clon completo del repo
+    real admite la lectura (congelación `38cbd60`, ninguna lectura en ninguna ref) y la cierra con
+    un commit más en `src`. CI con `fetch-depth: 0` (la puerta lee la historia). En el repo real:
+    `ac2fb status`, reservado cerrado (`frozen` no abre fuera de la lectura); la puerta de la
+    lectura, abierta; el lock, 0 diferencias en las reglas 1 a 4. Gate local en verde (`pytest
+    -q`, 1.474 con 66 deseleccionados; `realdata`, 66 de 66; los cuatro `--check` como en la 23c);
+    CI en verde (run 40021739416). Desde aquí, todo cambio de `src`, `pyproject.toml`, `uv.lock`,
+    `.python-version` o `protocol/` antes de la lectura obliga a congelar otra vez (y a CP2).
 - [ ] CP2. **[Javier]** Aprueba la congelación de `layer2.json` y queda avisado de que la lectura
   del reservado es irreversible. La rama B ya está decidida (2026-10-19) y D5 registrado (23a).
 

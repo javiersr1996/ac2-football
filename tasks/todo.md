@@ -2003,13 +2003,75 @@ su test sintético con el fallo plantado (una sonda que no puede fallar no prote
 
 ## Fase 3: reservado y capa 2 completa (lun 16 nov a dom 29 nov)
 
-- [ ] J4. **[Javier]** Lectura única del reservado, solo capa 2: confirma justo antes y lanza
+- [x] J4. **[Javier]** Lectura única del reservado, solo capa 2: confirma justo antes y lanza
   `ac2fb heldout read` (o lo autoriza por escrito a quien lo lance). Paso irreversible. La
   congelación ya empujada a `origin` antes de leer, y el commit de la lectura empujado justo
   después (un rebase posterior de cualquiera de los dos cierra la reproducción; 23c, pasada 2).
-- [ ] 24. `opus` Registro de la lectura de la capa 2: cifras por partido de los 20 en
+  **Hecho (2026-10-23, 21:18 UTC), lanzada por Claude con la autorización escrita de Javier
+  (CP2).** Antes: `git fetch`, `HEAD` igual a `origin/main` (`85c69f5`), la congelación `38cbd60`
+  empujada, sin otras ramas ni worktrees, árbol limpio. Commit de la lectura **`4cb9351`**,
+  hecho antes de calcular nada y empujado en el acto; su registro: `frozen_commit` `38cbd60`,
+  los 10 ids de la decisión 1 y la fecha. 2 min 33 s. Artefactos en `reports/heldout/`
+  (`layer2.json`, `reliability.csv`, `amputation.csv`, LF), commit `8c3ef91`. Reproducida con el
+  mismo código en un directorio aparte: idéntica byte a byte en los tres, sin commit nuevo.
+- [x] 24. `opus` Registro de la lectura de la capa 2: cifras por partido de los 20 en
   `reliability.csv` y `amputation.csv`, con el commit de la lectura (`layer2.json` en `read`). Se
   publica como cae. Sin D6: la capa 3 no se lee en el reservado (rama B).
+  Hecho (2026-10-23). Cifras por partido de los 10 del reservado, impresas por
+  `scripts/layer2_summary.py reports/heldout` (el mismo script sobre `reports` da las de
+  calibración); las de cada celda están en los CSV. **Se publican como caen; veredicto
+  reservado** a las figuras (27) y al README (33).
+  V1 menos V0 (estrato `all`, media de V1 menos media de V0):
+
+  | match | press | rival | line | react | width | length | area |
+  |---|---|---|---|---|---|---|---|
+  | 1899585 | -0.015 | -0.123 | +12.375 | +0.993 | -1.063 | -37.304 | -1554.062 |
+  | 1927964 | -0.004 | -0.072 | +8.847 | +0.979 | -1.140 | -18.055 | -811.148 |
+  | 1953632 | -0.020 | +0.006 | +7.280 | +0.789 | +0.660 | -23.749 | -1002.797 |
+  | 1986691 | -0.007 | -0.050 | +12.035 | +0.846 | -0.895 | -23.337 | -1014.382 |
+  | 2006229 | -0.017 | -0.009 | +7.193 | +0.810 | -0.077 | -17.073 | -724.359 |
+  | 2006363 | -0.010 | -0.054 | +9.556 | +1.751 | -1.874 | -26.307 | -1206.273 |
+  | 2007721 | -0.013 | -0.087 | +8.031 | +0.932 | +0.005 | -27.945 | -1252.244 |
+  | 2013725 | -0.034 | -0.006 | +9.987 | +1.339 | -0.308 | -23.904 | -913.213 |
+  | 2016236 | -0.018 | -0.049 | +13.200 | +1.908 | -0.519 | -27.141 | -1254.792 |
+  | 2017461 | -0.029 | -0.157 | +9.583 | +1.718 | -1.286 | -23.624 | -975.189 |
+
+  Error absoluto medio de la amputación (banda `all`):
+
+  | match | press | rival | line | react | width | length | area |
+  |---|---|---|---|---|---|---|---|
+  | 1899585 | 0.039 | 0.357 | 0.945 | 0.425 | 2.435 | 2.121 | 143.492 |
+  | 1927964 | 0.027 | 0.274 | 1.173 | 0.398 | 2.455 | 1.681 | 178.964 |
+  | 1953632 | 0.036 | 0.426 | 1.037 | 0.455 | 2.285 | 1.091 | 94.898 |
+  | 1986691 | 0.037 | 0.291 | 0.899 | 0.364 | 2.131 | 1.735 | 118.026 |
+  | 2006229 | 0.034 | 0.413 | 0.979 | 0.407 | 2.075 | 1.477 | 164.726 |
+  | 2006363 | 0.033 | 0.287 | 0.943 | 0.343 | 2.360 | 5.952 | 185.084 |
+  | 2007721 | 0.038 | 0.333 | 0.964 | 0.438 | 2.284 | 0.079 | 28.590 |
+  | 2013725 | 0.042 | 0.512 | 1.203 | 0.486 | 2.894 | 4.580 | 179.263 |
+  | 2016236 | 0.035 | 0.268 | 1.017 | 0.406 | 2.901 | 1.646 | 117.149 |
+  | 2017461 | 0.046 | 0.342 | 1.091 | 0.374 | 2.796 | 2.798 | 106.562 |
+
+  **Contra calibración (mínimo, mediana y máximo de los 10; mismo script).** V1 - V0: altura
+  de línea +7,19 / +9,57 / +13,20 m (calibración +8,654 / +11,091 / +13,885), positiva en 10 de 10
+  en las dos mitades; reacción +0,79 / +0,99 / +1,91 m (+0,625 / +1,361 / +1,457), 10 de 10, y V1
+  por encima de V0 en los tres estratos del balón entrante en 10 de 10 (como en calibración);
+  longitud del bloque −37,3 / −23,8 / −17,1 m (−34,5 / −28,7 / −21,8) y área −1.554 / −1.009 /
+  −724 m² (−1.364 / −1.189 / −807), negativas en 10 de 10; presión −0,034 / −0,016 / −0,004
+  (−0,041 / −0,014 / −0,006), negativa en 10 de 10; rival más cercano negativo en 9 de 10 en las
+  dos; anchura mixta (positiva en 2 de 10; en calibración, 3). Fracción extrapolada de
+  jugador-frame, mediana: línea 0,469 (0,500), longitud 0,580 (0,581), presión 0,040 (0,030).
+  Amputación, error absoluto medio de `all`: presión 0,027 / 0,037 / 0,046 (0,019 / 0,033 /
+  0,049); rival 0,27 / 0,34 / 0,51 m (0,20 / 0,32 / 0,50); línea 0,90 / 1,00 / 1,20 m (0,79 /
+  0,89 / 1,39); reacción 0,34 / 0,41 / 0,49 m (0,34 / 0,40 / 0,46); anchura 2,075 / 2,398 / 2,901 m
+  (1,87 / 2,34 / 3,32); longitud 0,08 / 1,71 / 5,95 m (1,17 / 2,72 / 5,06); área 29 / 131 / 185
+  m² (43 / 133 / 246). Error estrictamente creciente de banda en banda (bandas con unidades, de
+  `le_1s` a `gt_20s`), partidos: presión 8, rival 10, línea 10, reacción 10, anchura 10,
+  longitud 8, área 7 (calibración: 5, 9, 10, 10, 9, 7, 9).
+  **Nota sobre la 26:** sus recuentos de calibración (10 en línea, reacción y área; 9 en rival y
+  anchura; 8 en longitud; 5 en presión) venían de `summary26.log`, en el scratchpad de otra
+  sesión; ninguna definición probada aquí los reproduce desde `amputation.csv` (estricta o no,
+  con o sin `le_1s`, error medio o p90, mínimo de unidades 1, 2, 5 o 10). Valen los de este
+  script, que está en el repo. Sin D6.
 - [x] 25. `sonnet` Capa 2 (rama B: código y `--check` antes de 23c, corrido en calibración; los
   20 partidos solo en la lectura de J4): mapa de fiabilidad por métrica y
   partido (presión local, distancia al rival más cercano, altura de línea, anchura, longitud, área
@@ -2227,6 +2289,9 @@ su test sintético con el fallo plantado (una sonda que no puede fallar no prote
   fallar su `--check`. Rama B: el de la 25 y la 26 ya existe (23); en `HEAD`, tras la lectura,
   verifica solo la calibración y lo dice (`PARTIAL 10/20`); el reservado, desde el commit de la
   lectura.
+  Cabo suelto de la 23c (2026-10-23): los scripts de mutación que citan los registros
+  (`mutate23c_final.py` y los de 23a, 23b, 25 y 26) viven en scratchpads de sesión; pasarlos
+  a `scripts/mutations/` para que su registro tenga artefacto en el repo (lecciones).
 - [ ] 29. `sonnet` API pública mínima y documentada (`reliability.sensitivity`,
   `reliability.amputate`, `protocol.data` como lector guardado del silver de la base, esquema del
   Parquet largo con `gap_len`) y un

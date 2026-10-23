@@ -571,35 +571,41 @@ def test_the_command_says_a_failure_is_not_a_refusal(
 # --- the committed layer2.json ------------------------------------------------------------------
 
 
-def test_the_committed_layer2_protocol_is_frozen_on_the_code_at_head() -> None:
-    # Task 23d, until the reading: a change to the frozen code after the freeze fails here.
+def test_the_committed_layer2_protocol_holds_the_reading_on_its_freeze() -> None:
+    # Task 24: read once, at 4cb9351, on the code frozen at 38cbd60 (task 23d).
     raw = LAYER2_FILE.read_bytes()
     assert b"\r" not in raw and raw.endswith(b"\n")
     doc = json.loads(raw.decode("utf-8"))
-    assert doc["stage"] == "frozen" and "reading" not in doc
-    assert doc["code_tree_sha"] == data.code_tree_sha("HEAD")
+    assert doc["stage"] == "read"
+    assert doc["reading"]["frozen_commit"].startswith("38cbd60")
+    assert doc["reading"]["heldout"] == list(data.load_split().heldout)
+    assert doc["code_tree_sha"] == data.code_tree_sha(doc["reading"]["frozen_commit"])
     assert doc["reads"] == list(reads.LAYER2_READS) == list(cli.LAYER2_READS)
     assert doc["writes_under"] == "reports/heldout"
     args = cli.build_parser().parse_args(["heldout", "read"])
     assert args.reports_dir == ROOT / "reports" / "heldout"
 
 
-def test_a_clone_of_head_admits_the_reading_and_a_later_code_change_shuts_it(
+def test_a_clone_at_the_reading_reproduces_it_and_a_later_code_change_shuts_it(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    # Task 23d, on the real history (CI checks out all of it), until the reading: the freeze at
-    # HEAD stands on every ref, and one more commit to src shuts the reading. No data is read.
+    # Tasks 23d and 24, on the real history (CI checks out all of it): a full clone, at the
+    # commit of the reading, admits its reproduction on the freeze it names, and one more commit
+    # to src shuts it. No data is read.
     clone = Checkout(tmp_path / "clone")
     subprocess.run(["git", "clone", "-q", "--no-hardlinks", str(ROOT), str(clone.root)], check=True)
     for key, value in (("user.name", "gate test"), ("user.email", "gate@test.invalid")):
         clone.git("config", key, value)
+    log = clone.git("log", "--format=%H %s", "--", "protocol/layer2.json").splitlines()
+    readings = [line.split(" ", 1)[0] for line in log if line.endswith(data.READ_MESSAGE)]
+    assert len(readings) == 1 and readings[0].startswith("4cb9351")
+    clone.git("checkout", "-q", "--detach", readings[0])
     monkeypatch.setattr(data, "_repo_root", lambda: clone.root)
     status = data._guard(data._READABLE_STAGES)
-    assert status.open and status.stage == "frozen", status.reasons
-    freeze = clone.git("log", "-1", "--format=%H", "--", "protocol/layer2.json").strip()
-    assert status.frozen_commit == freeze
-    clone.write("src/ac2fb/after_the_freeze.py", "# code after the freeze\n")
-    clone.commit("code after the freeze")
+    assert status.open and status.stage == "read", status.reasons
+    assert status.frozen_commit is not None and status.frozen_commit.startswith("38cbd60")
+    clone.write("src/ac2fb/after_the_reading.py", "# code after the reading\n")
+    clone.commit("code after the reading")
     reasons = data._guard(data._READABLE_STAGES).reasons
     assert any("code_tree_sha" in r for r in reasons)
-    assert any("['src/ac2fb/after_the_freeze.py'] changed since the freeze" in r for r in reasons)
+    assert any("['src/ac2fb/after_the_reading.py'] changed since the freeze" in r for r in reasons)

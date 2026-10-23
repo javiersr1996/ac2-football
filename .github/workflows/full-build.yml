@@ -80,11 +80,13 @@ jobs:
 
       # AC2_REPO: the repo is private, so the clone takes the checkout (committed state only).
       - name: README block quick
+        shell: bash
         run: |
           mkdir -p "$RUNNER_TEMP/w-quick"
           TMPDIR="$RUNNER_TEMP/w-quick" FTBASE_DATA_ROOT="$QUICK_ROOT" AC2_REPO="$GITHUB_WORKSPACE" \
             bash scripts/clean_clone_check.sh quick 2>&1 | tee "$RUNNER_TEMP/quick.log"
       - name: README block full
+        shell: bash
         run: |
           mkdir -p "$RUNNER_TEMP/w-full"
           TMPDIR="$RUNNER_TEMP/w-full" FTBASE_DATA_ROOT="$FULL_ROOT" AC2_REPO="$GITHUB_WORKSPACE" \

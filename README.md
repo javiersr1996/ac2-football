@@ -54,7 +54,7 @@ git clone https://github.com/javiersr1996/ac2-football
 cd ac2-football
 uv sync --locked
 uv run ftbase ingest
-uv run ftbase bronze && uv run ftbase silver && uv run ac2fb layer2 && uv run ac2fb reliability && uv run ac2fb calibration
+uv run ftbase bronze && uv run ftbase silver && uv run ac2fb layer2 && uv run ac2fb reliability && uv run ac2fb amputation && uv run ac2fb calibration
 ```
 <!-- clean-clone:full:end -->
 

@@ -98,6 +98,9 @@ ALLOWED_FILE_SITES = frozenset(
         ("ac2fb.cli", "_probe_verdicts", "read_text", "probes_dir / name"),
         ("ac2fb.cli", "_read_protocol", "read_text", "path"),
         ("ac2fb.cli", "_committed", "read_bytes", "path"),
+        # The base's installed files, hashed against their RECORD before the reading: no data.
+        ("ac2fb.protocol.lock", "_edited", "read_text", "dist"),
+        ("ac2fb.protocol.lock", "_edited", "read_bytes", "Path(str(dist.locate_file(path)))"),
     }
 )
 DATA_ROOT_NAMES = frozenset({"DATA_ROOT_ENV", "data_dir"})

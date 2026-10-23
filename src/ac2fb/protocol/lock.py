@@ -12,24 +12,41 @@ refuses the reading. The rules:
    edge with a marker, such as ``colorama`` on Windows only, is required by rule 1 when present
    and not required when absent, as no marker is evaluated here).
 
+Metadata can match while other code runs, so :func:`import_mismatches` and
+:func:`python_mismatches` add:
+
+3. every top-level module of those run-time packages imports from where its distribution is
+   installed, not from a path that shadows it (``PYTHONPATH``, a ``.pth``); a package locked
+   from git (the base) has every file its ``RECORD`` hashes unchanged. The hashes of the
+   other packages are not checked (numpy and pyarrow are too large to hash at each reading);
+4. the interpreter is the one ``.python-version`` pins (``3.13`` admits any ``3.13.x``).
+
 Names are compared normalised (PEP 503). This module reads no data.
 """
 
 from __future__ import annotations
 
+import base64
+import csv
+import hashlib
 import importlib.metadata
+import importlib.util
+import platform
 import re
 import tomllib
 from collections.abc import Iterable, Mapping
 from dataclasses import dataclass
+from pathlib import Path
 
 __all__ = [
     "Installed",
     "Locked",
+    "import_mismatches",
     "installed_packages",
     "lock_mismatches",
     "locked_packages",
     "normalise",
+    "python_mismatches",
 ]
 
 ROOT_PACKAGE = "ac2fb"
@@ -120,3 +137,57 @@ def lock_mismatches(lock_text: str, installed: Mapping[str, Installed]) -> list[
     for name in sorted(_closure(locked, ROOT_PACKAGE) - set(installed)):
         found.append(f"{name} is needed at run time (uv.lock) but not installed")
     return found
+
+
+def _edited(dist: importlib.metadata.Distribution) -> list[str]:
+    """The files of a distribution that its ``RECORD`` hashes and that are gone or differ.
+
+    ``RECORD`` is read as written: ``Distribution.files`` leaves out the files that are gone.
+    """
+    edited = []
+    for path, hashed, *_ in csv.reader((dist.read_text("RECORD") or "").splitlines()):
+        mode, _, value = hashed.partition("=")
+        if not value:
+            continue
+        try:
+            body = Path(str(dist.locate_file(path))).read_bytes()
+        except OSError:
+            edited.append(path)
+            continue
+        digest = base64.urlsafe_b64encode(hashlib.new(mode, body).digest()).rstrip(b"=")
+        if digest.decode("ascii") != value:
+            edited.append(path)
+    return edited
+
+
+def import_mismatches(lock_text: str) -> list[str]:
+    """Rule 3: every run-time package imports from its own distribution, unedited if from git."""
+    locked = locked_packages(lock_text)
+    needed = _closure(locked, ROOT_PACKAGE) - {ROOT_PACKAGE}
+    found: list[str] = []
+    for module, names in sorted(importlib.metadata.packages_distributions().items()):
+        for name in sorted({normalise(n) for n in names} & needed):
+            spec = importlib.util.find_spec(module) if module.isidentifier() else None
+            if spec is None:
+                continue  # a data directory of the distribution, not a module
+            places = [spec.origin] if spec.origin else list(spec.submodule_search_locations or [])
+            home = Path(str(importlib.metadata.distribution(name).locate_file(""))).resolve()
+            outside = [p for p in places if not Path(p).resolve().is_relative_to(home)]
+            if outside or not places:
+                where = ", ".join(outside) or "nowhere"
+                found.append(f"{module} ({name}) is imported from {where}, not {home}")
+    for name in sorted(needed):
+        if name in locked and locked[name].commit is not None:
+            edited = _edited(importlib.metadata.distribution(name))
+            if edited:
+                found.append(f"{name} has {len(edited)} file(s) edited since install: {edited[:3]}")
+    return found
+
+
+def python_mismatches(pin: str, running: str | None = None) -> list[str]:
+    """Rule 4: the running interpreter against the pin of ``.python-version``."""
+    want = pin.strip().split(".")
+    have = platform.python_version() if running is None else running
+    if have.split(".")[: len(want)] != want:
+        return [f"Python {have} runs; .python-version pins {'.'.join(want)}"]
+    return []

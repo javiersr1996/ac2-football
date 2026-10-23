@@ -357,7 +357,7 @@ LOCK_TEXT = (ROOT / "uv.lock").read_text(encoding="utf-8")
 def refused_reading() -> None:
     """The reading in the poisoned checkout, whose layer2.json is in design: refused unopened."""
     with pytest.raises(HeldOutLocked, match="stage 'design'"):
-        data.read_heldout(cli.LAYER2_READS, Path(OUT))
+        data.read_heldout(Path(OUT))
 
 
 def built(m: int) -> match_module.MatchData:
@@ -377,12 +377,16 @@ FUNCTION_ROUTES: dict[str, Route] = {
     "ac2fb.protocol.data.guard_status": without_match(data.guard_status),
     "ac2fb.protocol.data.load_split": without_match(data.load_split),
     "ac2fb.protocol.data.read_heldout": without_match(refused_reading),
+    "ac2fb.protocol.lock.import_mismatches": without_match(
+        lambda: lock.import_mismatches(LOCK_TEXT)
+    ),
     "ac2fb.protocol.lock.installed_packages": without_match(lock.installed_packages),
     "ac2fb.protocol.lock.lock_mismatches": without_match(
         lambda: lock.lock_mismatches(LOCK_TEXT, lock.installed_packages())
     ),
     "ac2fb.protocol.lock.locked_packages": without_match(lambda: lock.locked_packages(LOCK_TEXT)),
     "ac2fb.protocol.lock.normalise": without_match(lambda: lock.normalise("Typing_Extensions")),
+    "ac2fb.protocol.lock.python_mismatches": without_match(lambda: lock.python_mismatches("3.13")),
     "ac2fb.protocol.data.read_frames": by_match(
         lambda m: data.read_frames([m]),
         lambda m: data.read_frames([m], attacking=True),

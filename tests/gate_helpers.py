@@ -127,13 +127,24 @@ class Checkout:
         self.commit(f"layer2 to {stage}")
 
     def freeze(self, stage: str = "frozen", reads: Sequence[str] = READS) -> None:
-        """``layer2.json`` frozen on the code at HEAD; in ``read``, with the record of a reading."""
-        extra: dict[str, object] = {}
+        """``layer2.json`` frozen on the code at HEAD; in ``read``, then read as the reading
+        does: one more commit with the record and the reading's message."""
+        self.set_layer2("frozen", self.tree_sha(), reads)
         if stage == "read":
-            heldout = json.loads((self.root / "protocol" / "split.json").read_bytes())["heldout"]
-            frozen = self.git("rev-parse", "HEAD").strip()
-            extra["reading"] = {"frozen_commit": frozen, "heldout": heldout, "date": "2026-01-01"}
-        self.set_layer2(stage, self.tree_sha(), reads, **extra)
+            self.record_reading()
+        elif stage != "frozen":
+            self.set_layer2(stage, self.tree_sha(), reads)
+
+    def record_reading(self, message: str = data.READ_MESSAGE, **changes: object) -> None:
+        """The commit of a reading on top of HEAD's ``layer2.json``, as ``read_heldout`` makes it;
+        ``changes`` overwrite fields of the record."""
+        frozen = self.git("log", "-1", "--format=%H", "--", "protocol/layer2.json").strip()
+        heldout = json.loads((self.root / "protocol" / "split.json").read_bytes())["heldout"]
+        reading = {"frozen_commit": frozen, "heldout": heldout, "date": "2026-01-01", **changes}
+        body = json.loads((self.root / "protocol" / "layer2.json").read_bytes())
+        body |= {"stage": "read", "reading": reading}
+        self.write("protocol/layer2.json", json.dumps(body, indent=2) + "\n")
+        self.commit(message)
 
 
 @contextlib.contextmanager

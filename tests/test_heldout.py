@@ -4,16 +4,22 @@ On a throwaway checkout whose split holds the two synthetic matches (``CAL`` cal
 ``HELD`` held-out) and whose ``uv.lock`` is the real one, so the installed environment matches
 it. The reading is committed before any figure is computed, reproduces in stage ``read``
 without a new commit, runs only the commands ``layer2.json`` lists and no code of layer 3, and
-is refused, unrecorded and unopened, when any condition fails. Mutations in the task's record.
+is refused, unrecorded and unopened, when any condition fails. Its commands are those of
+``ac2fb.reliability.reading`` (a test sets its own there). Task 23c adds what shuts the
+held-out after the reading (an edited ``layer2.json``, a second reading), the freeze as the
+commit the record names, and the interpreter and the imports. Mutations in the tasks' record.
 """
 
 from __future__ import annotations
 
 import csv
+import importlib.machinery
+import importlib.util
+import inspect
 import json
 import re
 import sys
-from collections.abc import Callable
+from collections.abc import Callable, Mapping
 from pathlib import Path
 from types import FrameType
 from typing import Any
@@ -25,17 +31,20 @@ import ac2fb.defence
 import ac2fb.reliability
 from ac2fb import cli
 from ac2fb.protocol import data, lock
-from ac2fb.protocol.data import HeldOutLocked
+from ac2fb.protocol.data import Command, HeldOutLocked
+from ac2fb.reliability import reading as reads
 
 LAYER2_FILE = ROOT / "protocol" / "layer2.json"
 
 
 @pytest.fixture
 def reading(gate: Checkout) -> Checkout:
-    """The gate's checkout with the real lock and a split of the two synthetic matches."""
+    """The gate's checkout with the real lock and interpreter pin and a split of the two
+    synthetic matches."""
     gate.write("uv.lock", (ROOT / "uv.lock").read_text(encoding="utf-8"))
+    gate.write(".python-version", (ROOT / ".python-version").read_text(encoding="utf-8"))
     gate.write("protocol/split.json", json.dumps({"calibration": [CAL], "heldout": [HELD]}) + "\n")
-    gate.commit("real lock, synthetic split")
+    gate.commit("real lock and pin, synthetic split")
     return gate
 
 
@@ -65,16 +74,22 @@ def probe(
     return command
 
 
+def run(mp: pytest.MonkeyPatch, commands: Mapping[str, Command], out: Path) -> data.HeldOutReading:
+    """The reading with ``commands`` as the package's own."""
+    mp.setattr(reads, "LAYER2_READS", commands)
+    return data.read_heldout(out)
+
+
 # --- from frozen: the reading is committed, then computed ----------------------------------------
 
 
 def test_from_frozen_the_reading_is_committed_before_any_figure(
-    reading: Checkout, tmp_path: Path
+    reading: Checkout, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     reading.freeze("frozen", reads=("probe",))
     frozen_head, frozen_body = head(reading), layer2_at_head(reading)
     seen: list[dict[str, Any]] = []
-    result = data.read_heldout({"probe": probe(reading, seen)}, tmp_path / "out")
+    result = run(monkeypatch, {"probe": probe(reading, seen)}, tmp_path / "out")
     # One commit on top of the freeze, holding layer2.json only, with the fixed message.
     assert reading.git("rev-parse", "HEAD~1").strip() == frozen_head != head(reading)
     assert reading.git("log", "-1", "--format=%s").strip() == data.READ_MESSAGE
@@ -106,12 +121,12 @@ def test_from_frozen_the_reading_is_committed_before_any_figure(
 
 
 def test_in_stage_read_the_reading_is_reproduced_without_a_new_commit(
-    reading: Checkout, tmp_path: Path
+    reading: Checkout, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     reading.freeze("frozen", reads=("probe",))
     seen: list[dict[str, Any]] = []
-    first = data.read_heldout({"probe": probe(reading, seen)}, tmp_path)
-    again = data.read_heldout({"probe": probe(reading, seen)}, tmp_path)
+    first = run(monkeypatch, {"probe": probe(reading, seen)}, tmp_path)
+    again = data.read_heldout(tmp_path)
     assert again.reproduced and not first.reproduced
     assert again.commit == first.commit == head(reading)
     assert again.frozen_commit == first.frozen_commit
@@ -120,12 +135,76 @@ def test_in_stage_read_the_reading_is_reproduced_without_a_new_commit(
     reading.write("src/ac2fb/cli.py", "# changed after the reading\n")
     reading.commit("change code")
     with pytest.raises(HeldOutLocked, match="code_tree_sha"):
-        data.read_heldout({"probe": probe(reading, seen)}, tmp_path)
+        data.read_heldout(tmp_path)
     assert len(seen) == 2
 
 
+def test_the_record_names_the_freeze_not_a_later_commit(
+    reading: Checkout, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    # A commit outside the code and protocol/ between the freeze and the reading (the record
+    # of CP2, say) leaves the reading open, and the record names the freeze, not that commit.
+    reading.freeze("frozen", reads=("probe",))
+    freeze = head(reading)
+    reading.write("README.md", "CP2 approved\n")
+    reading.commit("record CP2")
+    later = head(reading)
+    result = run(monkeypatch, {"probe": probe(reading, [])}, tmp_path)
+    assert result.frozen_commit == freeze != later
+    assert layer2_at_head(reading)["reading"]["frozen_commit"] == freeze
+    assert reading.git("rev-parse", "HEAD~1").strip() == later
+
+
+def _new_code_recorded(c: Checkout) -> None:
+    """New code after the reading, with its sha written into the record of the reading."""
+    c.write("src/ac2fb/cli.py", "# changed after the reading\n")
+    c.commit("change code")
+    body = layer2_at_head(c) | {"code_tree_sha": c.tree_sha()}
+    c.write("protocol/layer2.json", json.dumps(body, indent=2) + "\n")
+    c.commit("record the new code")
+
+
+def _frozen_again(c: Checkout) -> None:
+    """New code after the reading, and layer2.json frozen again on it."""
+    c.write("src/ac2fb/cli.py", "# changed after the reading\n")
+    c.commit("change code")
+    c.set_layer2("frozen", c.tree_sha(), ("probe",))
+
+
+def _split_swapped(c: Checkout) -> None:
+    c.write("protocol/split.json", json.dumps({"calibration": [HELD], "heldout": [CAL]}) + "\n")
+    c.commit("swap the split after the reading")
+
+
+AFTER_THE_READING: dict[str, tuple[Callable[[Checkout], None], str]] = {
+    "new code with its sha in layer2.json": (_new_code_recorded, "not the single reading"),
+    "layer2.json frozen again on new code": (_frozen_again, "it is read once"),
+    "the split changed after the reading": (_split_swapped, "['protocol/split.json'] changed"),
+}
+
+
+@pytest.mark.parametrize("case", list(AFTER_THE_READING))
+def test_after_the_reading_editing_layer2_does_not_open_it_again(
+    reading: Checkout, tmp_path: Path, monkeypatch: pytest.MonkeyPatch, case: str
+) -> None:
+    reading.freeze("frozen", reads=("probe",))
+    seen: list[dict[str, Any]] = []
+    run(monkeypatch, {"probe": probe(reading, seen)}, tmp_path / "first")
+    edit, words = AFTER_THE_READING[case]
+    edit(reading)
+    before = head(reading)
+    assert not data.guard_status().open
+    with pytest.raises(HeldOutLocked, match=re.escape(words)):
+        data.read_heldout(tmp_path / "again")
+    assert head(reading) == before and len(seen) == 1 and not (tmp_path / "again").exists()
+
+
+def test_the_reading_takes_no_function_from_its_caller() -> None:
+    assert list(inspect.signature(data.read_heldout).parameters) == ["reports_dir"]
+
+
 def test_commands_that_write_inside_the_checkout_do_not_shut_the_next_one(
-    reading: Checkout,
+    reading: Checkout, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     # The artefacts are staged outside the checkout while the held-out is served: one command's
     # report in the tree would make it dirty, and the guard would refuse the next command.
@@ -133,7 +212,7 @@ def test_commands_that_write_inside_the_checkout_do_not_shut_the_next_one(
     out = reading.root / "reports" / "heldout"
     seen: list[dict[str, Any]] = []
     commands = {name: probe(reading, seen, f"{name}.json") for name in ("first", "second")}
-    result = data.read_heldout(commands, out)
+    result = run(monkeypatch, commands, out)
     assert [s["rows"] > 0 for s in seen] == [True, True]
     assert result.written == (out / "first.json", out / "second.json")
     assert all(json.loads(p.read_text(encoding="utf-8")) == {"ids": [HELD]} for p in result.written)
@@ -175,6 +254,39 @@ def _installed(**changes: lock.Installed | None) -> Callable[[Checkout, pytest.M
     return prepare
 
 
+def _split_changed(c: Checkout, mp: pytest.MonkeyPatch) -> None:
+    _frozen(c)
+    c.write("protocol/split.json", json.dumps({"calibration": [HELD], "heldout": [CAL]}) + "\n")
+    c.commit("swap the split after the freeze")
+
+
+def _python(version: str) -> Callable[[Checkout, pytest.MonkeyPatch], None]:
+    def prepare(c: Checkout, mp: pytest.MonkeyPatch) -> None:
+        _frozen(c)
+        mp.setattr(lock.platform, "python_version", lambda: version)
+
+    return prepare
+
+
+def _shadowed(c: Checkout, mp: pytest.MonkeyPatch) -> None:
+    """Frozen, with ``ftbase`` found on a path outside its distribution."""
+    _frozen(c)
+    real = importlib.util.find_spec
+    elsewhere = str(c.root / "elsewhere" / "ftbase" / "__init__.py")
+
+    def find_spec(name: str, package: str | None = None) -> importlib.machinery.ModuleSpec | None:
+        if name == "ftbase":
+            return importlib.machinery.ModuleSpec("ftbase", None, origin=elsewhere)
+        return real(name, package)
+
+    mp.setattr(lock.importlib.util, "find_spec", find_spec)
+
+
+def _base_edited(c: Checkout, mp: pytest.MonkeyPatch) -> None:
+    _frozen(c)
+    mp.setattr(lock, "_edited", lambda dist: ["ftbase/cli.py"])
+
+
 REFUSALS: dict[str, tuple[Callable[[Checkout, pytest.MonkeyPatch], None], str]] = {
     "layer2.json in design": (lambda c, mp: None, "stage 'design'"),
     "layer 3 not dead": (_not_dead, "not 'dead'"),
@@ -184,13 +296,41 @@ REFUSALS: dict[str, tuple[Callable[[Checkout, pytest.MonkeyPatch], None], str]] 
         lambda c, mp: c.freeze("frozen", ("probe", "other")),
         "reads ['probe', 'other']",
     ),
+    "fewer reads than the code's": (
+        lambda c, mp: (
+            _frozen(c),
+            mp.setattr(reads, "LAYER2_READS", {"probe": probe(c, []), "other": probe(c, [])}),
+        ),
+        "reads ['probe']; the code offers ['other', 'probe']",
+    ),
+    "a read listed twice": (
+        lambda c, mp: c.freeze("frozen", ("probe", "probe")),
+        "reads ['probe', 'probe']",
+    ),
+    "the split changed after the freeze": (_split_changed, "['protocol/split.json'] changed"),
     "frozen with a reading recorded": (
         lambda c, mp: c.set_layer2("frozen", c.tree_sha(), ("probe",), reading={"x": 1}),
         "already recorded",
     ),
     "read without its record": (
         lambda c, mp: c.set_layer2("read", c.tree_sha(), ("probe",)),
+        "not the single reading",
+    ),
+    "a reading made by hand with other ids": (
+        lambda c, mp: (_frozen(c), c.record_reading(heldout=[CAL])),
         "without the record",
+    ),
+    "a reading not made by the command": (
+        lambda c, mp: (_frozen(c), c.record_reading(message="read it by hand")),
+        "not the single reading",
+    ),
+    "a reading with no freeze before it": (
+        lambda c, mp: c.record_reading(),
+        "not the single reading",
+    ),
+    "a reading that names another freeze": (
+        lambda c, mp: (_frozen(c), c.record_reading(frozen_commit="0" * 40)),
+        "does not name its freeze",
     ),
     "a library at another version": (
         _installed(numpy=lock.Installed("0.0", None)),
@@ -201,6 +341,9 @@ REFUSALS: dict[str, tuple[Callable[[Checkout, pytest.MonkeyPatch], None], str]] 
         "ftbase is installed from 0000",
     ),
     "a run-time package missing": (_installed(pyarrow=None), "pyarrow is needed at run time"),
+    "another interpreter": (_python("3.12.9"), "Python 3.12.9 runs; .python-version pins"),
+    "the base imported from elsewhere": (_shadowed, "ftbase (ftbase) is imported from"),
+    "the base edited since install": (_base_edited, "ftbase has 1 file(s) edited"),
 }
 
 
@@ -209,11 +352,12 @@ def test_a_reading_that_cannot_hold_is_refused_unrecorded_and_unopened(
     reading: Checkout, tmp_path: Path, monkeypatch: pytest.MonkeyPatch, case: str
 ) -> None:
     prepare, words = REFUSALS[case]
+    seen: list[dict[str, Any]] = []
+    monkeypatch.setattr(reads, "LAYER2_READS", {"probe": probe(reading, seen)})
     prepare(reading, monkeypatch)
     before = head(reading)
-    seen: list[dict[str, Any]] = []
     with pytest.raises(HeldOutLocked, match=re.escape(words)):
-        data.read_heldout({"probe": probe(reading, seen)}, tmp_path / "out")
+        data.read_heldout(tmp_path / "out")
     assert head(reading) == before and seen == [] and not (tmp_path / "out").exists()
 
 
@@ -259,6 +403,17 @@ def test_the_command_says_why_it_refuses(
     assert head(reading) == before
 
 
+def test_the_command_says_a_failure_is_not_a_refusal(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    def fails(reports_dir: Path) -> data.HeldOutReading:
+        raise RuntimeError("a command failed after the record")
+
+    monkeypatch.setattr(cli, "read_heldout", fails)
+    assert cli.main(["heldout", "read", "--reports-dir", str(tmp_path)]) == 1
+    assert "failed: a command failed after the record" in capsys.readouterr().err
+
+
 # --- the committed layer2.json ------------------------------------------------------------------
 
 
@@ -267,7 +422,7 @@ def test_the_committed_layer2_protocol_is_in_design_and_lists_the_codes_commands
     assert b"\r" not in raw and raw.endswith(b"\n")
     doc = json.loads(raw.decode("utf-8"))
     assert doc["stage"] == "design" and doc["code_tree_sha"] is None and "reading" not in doc
-    assert doc["reads"] == list(cli.LAYER2_READS)
+    assert doc["reads"] == list(reads.LAYER2_READS) == list(cli.LAYER2_READS)
     assert doc["writes_under"] == "reports/heldout"
     args = cli.build_parser().parse_args(["heldout", "read"])
     assert args.reports_dir == ROOT / "reports" / "heldout"

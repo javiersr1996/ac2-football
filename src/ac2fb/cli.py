@@ -5,7 +5,7 @@ from __future__ import annotations
 import argparse
 import json
 import sys
-from collections.abc import Mapping, Sequence
+from collections.abc import Sequence
 from pathlib import Path
 from typing import Any
 
@@ -20,7 +20,6 @@ from ac2fb.protocol import check as protocol_check
 from ac2fb.protocol.data import (
     GUARDED_CODE,
     LAYER2_PATH,
-    Command,
     HeldOutLocked,
     data_dir,
     guard_status,
@@ -30,6 +29,7 @@ from ac2fb.protocol.data import (
 from ac2fb.reliability import amputate, report, table
 from ac2fb.reliability.cadence import write_cadence_report
 from ac2fb.reliability.long import write_long
+from ac2fb.reliability.reading import LAYER2_READS
 from ac2fb.reliability.report import layer2_report, write_report
 
 __all__ = ["build_parser", "main"]
@@ -299,26 +299,15 @@ def build_parser() -> argparse.ArgumentParser:
     return parser
 
 
-def _layer2_artifacts(match_ids: list[int], reports_dir: Path) -> Path:
-    """The ``layer2`` command as a command of the reading: long Parquet and ``layer2.json``."""
-    write_long(match_ids)
-    return write_report(layer2_report(match_ids), reports_dir)
-
-
-# The layer 2 commands the reading may run, by the names protocol/layer2.json lists.
-LAYER2_READS: Mapping[str, Command] = {
-    "layer2": _layer2_artifacts,
-    "reliability": table.write_table,
-    "amputation": amputate.write_table,
-}
-
-
 def _heldout_read(reports_dir: Path) -> int:
     try:
-        reading = read_heldout(LAYER2_READS, reports_dir)
-    except (HeldOutLocked, RuntimeError) as exc:
+        reading = read_heldout(reports_dir)
+    except HeldOutLocked as exc:
         print(f"refused: {exc}", file=sys.stderr)
         return 2
+    except RuntimeError as exc:  # a git or command failure; `ac2fb status` says if it was recorded
+        print(f"failed: {exc}", file=sys.stderr)
+        return 1
     verb = "reproduced the reading of" if reading.reproduced else "read"
     print(f"{verb} {len(reading.heldout)} held-out matches at {reading.commit}")
     print(f"frozen at {reading.frozen_commit}")

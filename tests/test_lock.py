@@ -1,15 +1,21 @@
 """Task 23b: what is installed against what ``uv.lock`` pins (``ac2fb.protocol.lock``).
 
 The real environment matches the real lock; each kind of difference is found on an installed
-map built from the lock itself, so a change to the lock does not break these tests. Mutations
-in the task's record.
+map built from the lock itself, so a change to the lock does not break these tests. Rules 3
+and 4 (task 23c) on the real environment, on a module shadowed from ``PYTHONPATH``, on a
+distribution built here and on interpreter versions. Mutations in the tasks' record.
 """
 
 from __future__ import annotations
 
+import base64
+import hashlib
 import importlib.metadata
 import json
+import os
 import re
+import subprocess
+import sys
 from pathlib import Path
 
 import pytest
@@ -101,3 +107,74 @@ def test_the_installed_commit_is_read_from_direct_url(tmp_path: Path) -> None:
         "some-pkg": lock.Installed("1.2", "ab" * 20),
         "plain": lock.Installed("3.0", None),
     }
+
+
+# --- rule 3: imported from its own distribution, unedited if from git ---------------------------
+
+
+def test_the_running_environment_imports_from_its_distributions() -> None:
+    assert lock.import_mismatches(LOCK_TEXT) == []
+
+
+def test_a_base_shadowed_from_the_path_is_found(tmp_path: Path) -> None:
+    (tmp_path / "ftbase").mkdir()
+    (tmp_path / "ftbase" / "__init__.py").write_bytes(b"")
+    code = (
+        "import pathlib, sys; from ac2fb.protocol import lock; "
+        "text = pathlib.Path(sys.argv[1]).read_text(encoding='utf-8'); "
+        "print(*lock.import_mismatches(text), sep=chr(10))"
+    )
+    env = os.environ | {"PYTHONPATH": str(tmp_path)}
+    done = subprocess.run(
+        [sys.executable, "-c", code, str(ROOT / "uv.lock")],
+        capture_output=True,
+        check=True,
+        env=env,
+    )
+    out = done.stdout.decode("utf-8")
+    assert f"ftbase (ftbase) is imported from {tmp_path / 'ftbase'}" in out
+
+
+def _distribution(site: Path, body: bytes) -> importlib.metadata.Distribution:
+    """A distribution ``pkg`` 1.0 installed under ``site``, its RECORD hashing ``body``."""
+    (site / "pkg").mkdir(parents=True)
+    (site / "pkg" / "__init__.py").write_bytes(body)
+    info = site / "pkg-1.0.dist-info"
+    info.mkdir()
+    (info / "METADATA").write_bytes(b"Metadata-Version: 2.1\nName: pkg\nVersion: 1.0\n")
+    digest = base64.urlsafe_b64encode(hashlib.sha256(body).digest()).rstrip(b"=").decode()
+    record = f"pkg/__init__.py,sha256={digest},{len(body)}\npkg-1.0.dist-info/RECORD,,\n"
+    (info / "RECORD").write_bytes(record.encode("ascii"))
+    return importlib.metadata.PathDistribution(info)
+
+
+def test_a_file_edited_or_gone_since_install_is_found(tmp_path: Path) -> None:
+    dist = _distribution(tmp_path, b"x = 1\n")
+    assert lock._edited(dist) == []
+    (tmp_path / "pkg" / "__init__.py").write_bytes(b"x = 2\n")
+    assert lock._edited(dist) == ["pkg/__init__.py"]
+    (tmp_path / "pkg" / "__init__.py").unlink()
+    assert lock._edited(dist) == ["pkg/__init__.py"]
+
+
+# --- rule 4: the interpreter ---------------------------------------------------------------------
+
+
+@pytest.mark.parametrize(
+    ("pin", "running", "ok"),
+    [
+        ("3.13\n", "3.13.5", True),
+        ("3.13", "3.13.0", True),
+        ("3.13.5", "3.13.5", True),
+        ("3.13", "3.12.9", False),
+        ("3.13", "3.130.1", False),
+        ("3.13.5", "3.13.6", False),
+    ],
+)
+def test_the_interpreter_is_held_to_the_pin(pin: str, running: str, ok: bool) -> None:
+    found = lock.python_mismatches(pin, running)
+    assert found == ([] if ok else [f"Python {running} runs; .python-version pins {pin.strip()}"])
+
+
+def test_the_running_interpreter_is_the_pinned_one() -> None:
+    assert lock.python_mismatches((ROOT / ".python-version").read_text(encoding="utf-8")) == []

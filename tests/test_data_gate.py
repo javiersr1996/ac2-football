@@ -98,8 +98,8 @@ def test_in_stage_frozen_it_never_opens_not_even_inside_the_reading(gate: Checko
 
 @pytest.mark.parametrize("stage", ["design", "frozen", "read", "Dead"])
 def test_a_layer3_protocol_that_is_not_dead_keeps_it_shut(gate: Checkout, stage: str) -> None:
-    gate.freeze("read")
     gate.set_protocol(stage)
+    gate.freeze("read")
     status = data.guard_status()
     assert len(status.reasons) == 1 and "not 'dead'" in status.reasons[0]
     with inside_the_reading(), pytest.raises(HeldOutLocked, match="not 'dead'"):
@@ -114,9 +114,11 @@ def test_a_code_change_after_the_freeze_closes_it(gate: Checkout, path: str) -> 
     gate.write(path, "# changed after the freeze\n")
     gate.commit("change frozen code")
     status = data.guard_status()
-    # Stage read and a clean tree: only the code tree keeps it shut.
+    # Stage read and a clean tree: only the code tree, and its change since the freeze, keep
+    # it shut.
     assert status.stage == "read" and status.dirty == ()
-    assert [r for r in status.reasons if "code_tree_sha" in r] == list(status.reasons)
+    assert len(status.reasons) == 2 and "code_tree_sha" in status.reasons[1]
+    assert status.reasons[0].startswith(f"['{path}'] changed since the freeze")
     with inside_the_reading(), pytest.raises(HeldOutLocked, match="code_tree_sha"):
         frames(HELD)
 

@@ -65,7 +65,14 @@ from ac2fb.reliability import (
     visibility,
 )
 from ac2fb.reliability import match as match_module
-from ac2fb.reliability.sensitivity import Reading, Window, WindowFrames, sensitivity, window_frames
+from ac2fb.reliability.sensitivity import (
+    Reading,
+    Window,
+    WindowFrames,
+    sensitivity,
+    sensitivity_by_size,
+    window_frames,
+)
 
 DIMS = ("dim_sport", "dim_period", "dim_team", "dim_match", "dim_team_period", "dim_entity")
 
@@ -876,6 +883,9 @@ FUNCTION_ROUTES: dict[str, Route] = {
     ),
     "ac2fb.reliability.sensitivity.sensitivity": by_match(
         lambda m: served(m, m in sensitivity(one_unit, long_of(m)))
+    ),
+    "ac2fb.reliability.sensitivity.sensitivity_by_size": by_match(
+        lambda m: served(m, m in sensitivity_by_size(one_unit, long_of(m)))
     ),
     "ac2fb.reliability.inventory.compare": without_match(lambda: inventory.compare({}, {})),
     "ac2fb.reliability.inventory.leaf": without_match(lambda: inventory.leaf({"a": 1}, "a")),

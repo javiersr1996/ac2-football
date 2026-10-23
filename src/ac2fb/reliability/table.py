@@ -2,10 +2,11 @@
 
 For each match and each metric of :data:`~ac2fb.reliability.metrics.METRICS`, the metric in
 V0 (every unit), V1 (the units whose players were detected throughout the window) and V2 (one
-row per number of those players detected, ``V2_0``, ``V2_1``, ...), as
-:func:`~ac2fb.reliability.sensitivity.sensitivity` gives them, over all its units
-(``ball_stratum`` ``all``). The line's reaction is also given within each direction of the
-incoming ball (:func:`~ac2fb.reliability.metrics.reaction_strata`), so V0 and V1 are compared
+row per ``k`` of ``n``: ``k`` of the ``n`` players the metric was computed from detected
+throughout, ``V2_3of4``, sorted by ``n`` and then ``k``, since units with another ``n`` are not
+the same thing), as :func:`~ac2fb.reliability.sensitivity.sensitivity_by_size` gives them, over
+all its units (``ball_stratum`` ``all``). The line's reaction is also given within each direction
+of the incoming ball (:func:`~ac2fb.reliability.metrics.reaction_strata`), so V0 and V1 are compared
 inside a stratum: V1 keeps what is near the ball, and the line follows the ball (m10). ``n`` and
 ``mean`` are those of the row's variant. The remaining columns describe the V0 units of the row's
 stratum and repeat on each row of the group: units kept and skipped, player-frames behind the
@@ -27,7 +28,7 @@ from pathlib import Path
 
 from ac2fb.reliability import metrics
 from ac2fb.reliability.match import load_with_long
-from ac2fb.reliability.sensitivity import Sensitivity, sensitivity
+from ac2fb.reliability.sensitivity import Sensitivity, SizedStratum, sensitivity_by_size
 
 __all__ = [
     "COLUMNS",
@@ -73,7 +74,9 @@ def cell(value: float | int | None) -> str:
     return repr(round(value, _DECIMALS))
 
 
-def _rows(metric: str, stratum: str, s: Sensitivity) -> list[list[str]]:
+def _rows(
+    metric: str, stratum: str, s: Sensitivity, sized: Sequence[SizedStratum]
+) -> list[list[str]]:
     shared = [
         s.n_units,
         s.n_skipped,
@@ -86,7 +89,7 @@ def _rows(metric: str, stratum: str, s: Sensitivity) -> list[list[str]]:
         s.gap_len.max,
     ]
     variants = [("V0", s.v0.n, s.v0.mean), ("V1", s.v1.n, s.v1.mean)]
-    variants += [(f"V2_{k.detected_players}", k.n, k.mean) for k in s.v2]
+    variants += [(f"V2_{k.detected_players}of{k.players}", k.n, k.mean) for k in sized]
     return [
         [str(s.match_id), metric, stratum, name, *map(cell, [n, mean, *shared])]
         for name, n, mean in variants
@@ -98,10 +101,10 @@ def match_rows(match_id: int) -> list[list[str]]:
     match, long = load_with_long(match_id)
     rows: list[list[str]] = []
     for name, (metric, windows) in metrics.metric_units(match).items():
-        rows += _rows(name, "all", sensitivity(metric, long, windows)[match_id])
+        rows += _rows(name, "all", *sensitivity_by_size(metric, long, windows)[match_id])
         if name == "line_reaction_m":
             for direction, part in metrics.reaction_strata(match).items():
-                rows += _rows(name, direction, sensitivity(metric, long, part)[match_id])
+                rows += _rows(name, direction, *sensitivity_by_size(metric, long, part)[match_id])
     return rows
 
 

@@ -90,7 +90,7 @@ def test_the_figures_equal_those_of_task_12_and_the_probes_where_they_overlap() 
         key = str(m)
         line_counts = layer2[key]["line"]["detected_count"]  # type: ignore[index]
         strata = {
-            int(v.split("_")[1]): int(r["n"])
+            int(v.split("_")[1].removesuffix("of4")): int(r["n"])  # the line always has four
             for (mm, name, v), r in rows.items()
             if mm == key and name == "line_height_m" and v.startswith("V2")
         }

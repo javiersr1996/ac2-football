@@ -10,6 +10,10 @@ the unit cannot be measured. :func:`sensitivity` runs it over the units of a lon
   selection: it keeps what is near the ball and in view).
 - **V2**: the units split by how many of those players are detected in the whole window, so a
   metric that depends on what is extrapolated changes monotonically with that count.
+  :func:`sensitivity` splits by that count ``k`` alone; :func:`sensitivity_by_size` also by the
+  number ``n`` of players the metric was computed from (``k`` of ``n``), since units with the
+  same ``k`` and a different ``n`` are not the same thing (a pressure with 8 rivals in range and
+  one with none).
 
 Alongside: the fraction of the player-frames behind the metric that are extrapolated, and the
 ``gap_len`` of those frames. A player-frame the provider does not list counts as not detected
@@ -32,11 +36,13 @@ __all__ = [
     "Metric",
     "Reading",
     "Sensitivity",
+    "SizedStratum",
     "Stratum",
     "Variant",
     "Window",
     "WindowFrames",
     "sensitivity",
+    "sensitivity_by_size",
     "window_frames",
 ]
 
@@ -93,6 +99,16 @@ class Stratum:
     """Units where exactly ``detected_players`` of the metric's players are detected throughout."""
 
     detected_players: int
+    n: int
+    mean: float | None
+
+
+@dataclass(frozen=True)
+class SizedStratum:
+    """Units where exactly ``detected_players`` of the ``players`` the metric used are detected."""
+
+    detected_players: int
+    players: int
     n: int
     mean: float | None
 
@@ -206,13 +222,14 @@ def window_frames(table: pa.Table) -> Callable[[Window], WindowFrames | None]:
 
 def _one_match(
     match_id: int, table: pa.Table, metric: Metric, windows: Sequence[Window] | None
-) -> Sensitivity:
+) -> tuple[Sensitivity, tuple[SizedStratum, ...]]:
     players, starts, ends, cols = _columns(table)
     if windows is None:
         windows = [Window(match_id, int(f), int(f)) for f in np.unique(cols["frame"])]
     values: list[float] = []
     kept: list[float] = []
     by_count: dict[int, list[float]] = {}
+    by_size: dict[tuple[int, int], list[float]] = {}
     skipped = cells = extrapolated = absent = 0
     gaps: list[NDArray[np.int64]] = []
     for window in windows:
@@ -226,6 +243,7 @@ def _one_match(
         whole = data.present[mine].all(axis=1) & data.detected[mine].all(axis=1)
         values.append(reading.value)
         by_count.setdefault(int(whole.sum()), []).append(reading.value)
+        by_size.setdefault((len(reading.player_ids), int(whole.sum())), []).append(reading.value)
         if len(mine) == len(reading.player_ids) and whole.all():
             kept.append(reading.value)
         unlisted = (len(reading.player_ids) - len(mine)) * len(data.frames)
@@ -236,7 +254,7 @@ def _one_match(
         gaps.append(data.gap_len[mine][gone])
     pooled = np.concatenate(gaps) if gaps else np.zeros(0, dtype=np.int64)
     pooled = pooled[pooled >= 0]
-    return Sensitivity(
+    result = Sensitivity(
         match_id=match_id,
         n_units=len(values),
         n_skipped=skipped,
@@ -253,6 +271,20 @@ def _one_match(
             max=int(pooled.max()) if len(pooled) else None,
         ),
     )
+    sized = tuple(SizedStratum(k, n, len(v), _mean(v)) for (n, k), v in sorted(by_size.items()))
+    return result, sized
+
+
+def _per_match(
+    metric: Metric, frames: pa.Table, windows: Sequence[Window] | None
+) -> dict[int, tuple[Sensitivity, tuple[SizedStratum, ...]]]:
+    native = {m: int(m.split(":", 1)[1]) for m in set(frames["match_id"].to_pylist())}
+    out: dict[int, tuple[Sensitivity, tuple[SizedStratum, ...]]] = {}
+    for label, match_id in sorted(native.items(), key=lambda kv: kv[1]):
+        part = frames.filter(pc.equal(frames["match_id"], label))
+        mine = None if windows is None else [w for w in windows if w.match_id == match_id]
+        out[match_id] = _one_match(match_id, part, metric, mine)
+    return out
 
 
 def sensitivity(
@@ -265,10 +297,15 @@ def sensitivity(
     it every frame of every match is a unit, which is slow on a real match: pass windows.
     Units for which ``metric`` returns ``None`` are skipped and counted in ``n_skipped``.
     """
-    native = {m: int(m.split(":", 1)[1]) for m in set(frames["match_id"].to_pylist())}
-    out: dict[int, Sensitivity] = {}
-    for label, match_id in sorted(native.items(), key=lambda kv: kv[1]):
-        part = frames.filter(pc.equal(frames["match_id"], label))
-        mine = None if windows is None else [w for w in windows if w.match_id == match_id]
-        out[match_id] = _one_match(match_id, part, metric, mine)
-    return out
+    return {m: result for m, (result, _) in _per_match(metric, frames, windows).items()}
+
+
+def sensitivity_by_size(
+    metric: Metric, frames: pa.Table, windows: Sequence[Window] | None = None
+) -> dict[int, tuple[Sensitivity, tuple[SizedStratum, ...]]]:
+    """:func:`sensitivity` and, for each match, V2 split by ``(n, k)``, sorted by ``n`` then ``k``.
+
+    ``n`` is the number of players the metric reports for the unit, ``k`` how many of them are
+    detected throughout. The :class:`Sensitivity` is the one :func:`sensitivity` gives.
+    """
+    return _per_match(metric, frames, windows)

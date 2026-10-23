@@ -11,6 +11,8 @@ Mutations, each with the test that kills it (script and log in the task's record
   ``test_the_line_height_and_its_reaction_are_the_planted_ones``;
 * a reaction that subtracts the height at ``t - W`` without the same period at both ends (a
   break of 10 frames, shorter than W): ``test_a_reaction_needs_the_same_period_at_both_ends``;
+* a V2 split by ``k`` alone, units of another size ``n`` in the same row:
+  ``test_v2_is_split_by_k_of_n``;
 * a metric that reports no players, or a sensitivity that ignores ``is_detected`` (V1 = V0):
   ``test_the_variants_follow_who_was_detected``;
 * a reader that takes the sign of another period or team (the sign of period 1, of team 1, or of
@@ -53,6 +55,7 @@ from ac2fb.reliability.sensitivity import (
     Window,
     WindowFrames,
     sensitivity,
+    sensitivity_by_size,
 )
 
 W = metrics.INCOMING_WINDOW
@@ -248,6 +251,29 @@ def test_the_ends_of_the_block_break_ties_like_the_original() -> None:
         match, metrics.block_extent(metrics.phases(match.events), "length"), Window(7, 100, 100)
     )
     assert got == Reading(30.0, (20, 25))
+
+
+def test_v2_is_split_by_k_of_n() -> None:
+    # Three units, each reading some players of the planted world over its window:
+    #   A: 11 and 12, all detected: 2 of 2; B: 11, 13, 15 with 13 lost at 195: 2 of 3;
+    #   C: 13, 12, 15 with 13 and 12 lost at 195: 1 of 3.
+    match = planted_match(not_detected=[(13, 195), (12, 195)])
+    who = {95: (1.0, (11, 12)), 195: (2.0, (11, 13, 15)), 194: (4.0, (13, 12, 15))}
+
+    def metric(frames: WindowFrames) -> Reading:
+        value, players = who[frames.window.frame_start]
+        return Reading(value, players)
+
+    windows = [Window(7, 95, 100), Window(7, 195, 200), Window(7, 194, 200)]
+    got, sized = sensitivity_by_size(metric, long_of(match), windows)[7]
+    assert [(s.players, s.detected_players, s.n, s.mean) for s in sized] == [
+        (2, 2, 1, 1.0),
+        (3, 1, 1, 4.0),
+        (3, 2, 1, 2.0),
+    ]
+    # the plain V2 of layer 2 is unchanged: it mixes A and B, which both have k = 2
+    assert [(s.detected_players, s.n, s.mean) for s in got.v2] == [(1, 1, 4.0), (2, 2, 1.5)]
+    assert got == sensitivity(metric, long_of(match), windows)[7]
 
 
 def test_the_variants_follow_who_was_detected() -> None:

@@ -94,8 +94,8 @@ def test_the_table_has_the_planted_rows_in_order(tmp_path: Path) -> None:
         for r in rows[1:]
         if r[1] == "line_reaction_m" and r[2] == "all" and r[3].startswith("V2")
     ] == [
-        ("V2_3", "1"),
-        ("V2_4", "1"),
+        ("V2_3of4", "1"),
+        ("V2_4of4", "1"),
     ]
     # the block has one phase: one unit per block metric, nothing extrapolated
     assert by["block_area_m2", "V0"]["n"] == "1" and by["block_area_m2", "V0"]["gap_len_n"] == "0"
@@ -111,7 +111,7 @@ def test_the_reaction_is_split_by_the_direction_of_the_incoming_ball(tmp_path: P
     # back 5 m into t = 100 (seen whole), forward 2.5 m into t = 200 (rival 15 lost at 195)
     assert got["backward", "V0"] == ("1", "1.5") and got["backward", "V1"] == ("1", "1.5")
     assert got["forward", "V0"] == ("1", "1.5") and got["forward", "V1"] == ("0", "")
-    assert got["forward", "V2_3"] == ("1", "1.5") and ("backward", "V2_3") not in got
+    assert got["forward", "V2_3of4"] == ("1", "1.5") and ("backward", "V2_3of4") not in got
     for empty in ("lateral", "undefined"):
         assert got[empty, "V0"] == ("0", "") and got[empty, "V1"] == ("0", "")
     assert sum(int(got[d, "V0"][0]) for d in metrics.DIRECTIONS) == int(got["all", "V0"][0])

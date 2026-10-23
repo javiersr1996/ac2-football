@@ -4,7 +4,7 @@ Seven metrics, all read at the instant ``t`` of a provider event (the last frame
 or, for the line's reaction, in the ``W`` frames before it. Nothing is read after ``t``. Every
 one is a function of one unit (a window of frames) that returns a value and the players it was
 computed from, so V1 keeps the units whose players were detected throughout the window and V2
-splits them by how many were.
+splits them by how many of those were (k) out of how many the unit has (n).
 
 Units come from the match's events, not from any report: a *possession* is a provider
 ``player_possession`` event with a team and a player (``t`` = its ``frame_start``, the carrier

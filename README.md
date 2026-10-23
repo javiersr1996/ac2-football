@@ -46,7 +46,7 @@ uv run ftbase bronze && uv run ftbase silver && uv run ac2fb layer2 --match 1874
 ```
 <!-- clean-clone:quick:end -->
 
-Full, 85 files and 1.9 GB<!-- src: Full build run 39782141426, step README block full, sum of the `downloaded:` lines = 1,919,842,163 B; the manifest lists 1,823,448,331 B of it in the 20 Git LFS files --> (1.8 GB of it Git LFS), about 3 min on a GitHub runner<!-- src: same run, `CLEAN CLONE OK in 174 s` -->; mind SkillCorner's quota:
+Full, 85 files and 1.9 GB<!-- src: Full build run 39782141426, step README block full, sum of the `downloaded:` lines = 1,919,842,163 B; the manifest lists 1,823,448,331 B of it in the 20 Git LFS files --> (1.8 GB of it Git LFS), about 3 min on a GitHub runner<!-- src: Full build run 40024590394, the block with `ac2fb amputation`, `CLEAN CLONE OK in 200 s` -->; mind SkillCorner's quota:
 
 <!-- clean-clone:full:start -->
 ```bash

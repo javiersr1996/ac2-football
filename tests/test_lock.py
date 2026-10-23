@@ -116,9 +116,15 @@ def test_the_running_environment_imports_from_its_distributions() -> None:
     assert lock.import_mismatches(LOCK_TEXT) == []
 
 
-def test_a_base_shadowed_from_the_path_is_found(tmp_path: Path) -> None:
+@pytest.mark.parametrize("dist_info", [False, True], ids=["bare", "with its dist-info"])
+def test_a_base_shadowed_from_the_path_is_found(tmp_path: Path, dist_info: bool) -> None:
+    # With its own dist-info (``pip install --target``), the shadow's RECORD would hash itself.
     (tmp_path / "ftbase").mkdir()
     (tmp_path / "ftbase" / "__init__.py").write_bytes(b"")
+    if dist_info:
+        (tmp_path / "ftbase-9.9.dist-info").mkdir()
+        meta = b"Metadata-Version: 2.1\nName: ftbase\nVersion: 9.9\n"
+        (tmp_path / "ftbase-9.9.dist-info" / "METADATA").write_bytes(meta)
     code = (
         "import pathlib, sys; from ac2fb.protocol import lock; "
         "text = pathlib.Path(sys.argv[1]).read_text(encoding='utf-8'); "
@@ -132,7 +138,8 @@ def test_a_base_shadowed_from_the_path_is_found(tmp_path: Path) -> None:
         env=env,
     )
     out = done.stdout.decode("utf-8")
-    assert f"ftbase (ftbase) is imported from {tmp_path / 'ftbase'}" in out
+    assert f"ftbase is imported from {tmp_path / 'ftbase'}" in out
+    assert ("not once in site-packages" in out) == dist_info
 
 
 def _distribution(site: Path, body: bytes) -> importlib.metadata.Distribution:

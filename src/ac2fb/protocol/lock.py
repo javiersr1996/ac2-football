@@ -15,10 +15,10 @@ refuses the reading. The rules:
 Metadata can match while other code runs, so :func:`import_mismatches` and
 :func:`python_mismatches` add:
 
-3. every top-level module of those run-time packages imports from where its distribution is
-   installed, not from a path that shadows it (``PYTHONPATH``, a ``.pth``); a package locked
-   from git (the base) has every file its ``RECORD`` hashes unchanged. The hashes of the
-   other packages are not checked (numpy and pyarrow are too large to hash at each reading);
+3. every one of those run-time packages is installed once, in the environment's own
+   site-packages, with every file its ``RECORD`` hashes unchanged, and each of its top-level
+   modules imports from there, not from a path that shadows it (``PYTHONPATH``, a ``.pth``,
+   a ``pip install --target`` with its own ``dist-info``);
 4. the interpreter is the one ``.python-version`` pins (``3.13`` admits any ``3.13.x``).
 
 Names are compared normalised (PEP 503). This module reads no data.
@@ -33,6 +33,7 @@ import importlib.metadata
 import importlib.util
 import platform
 import re
+import sysconfig
 import tomllib
 from collections.abc import Iterable, Mapping
 from dataclasses import dataclass
@@ -160,27 +161,39 @@ def _edited(dist: importlib.metadata.Distribution) -> list[str]:
     return edited
 
 
+def _in_site(path: str | Path) -> bool:
+    """Whether ``path`` is under the environment's own site-packages (``purelib``, ``platlib``)."""
+    site = {Path(sysconfig.get_paths()[key]).resolve() for key in ("purelib", "platlib")}
+    return any(Path(path).resolve().is_relative_to(s) for s in site)
+
+
 def import_mismatches(lock_text: str) -> list[str]:
-    """Rule 3: every run-time package imports from its own distribution, unedited if from git."""
-    locked = locked_packages(lock_text)
-    needed = _closure(locked, ROOT_PACKAGE) - {ROOT_PACKAGE}
+    """Rule 3: every run-time package installed once, in site-packages, imported from there and
+    unedited."""
+    needed = _closure(locked_packages(lock_text), ROOT_PACKAGE) - {ROOT_PACKAGE}
     found: list[str] = []
+    copies: dict[str, list[importlib.metadata.Distribution]] = {}
+    for dist in importlib.metadata.distributions():
+        copies.setdefault(normalise(dist.metadata["Name"]), []).append(dist)
+    for name in sorted(needed & set(copies)):
+        homes = [str(dist.locate_file("")) for dist in copies[name]]
+        if len(homes) > 1:  # one outside site-packages is caught by its modules, below
+            found.append(f"{name} is installed at {', '.join(homes)}, not once in site-packages")
+            continue
+        edited = _edited(copies[name][0])
+        if edited:
+            found.append(f"{name} has {len(edited)} file(s) edited since install: {edited[:3]}")
     for module, names in sorted(importlib.metadata.packages_distributions().items()):
-        for name in sorted({normalise(n) for n in names} & needed):
-            spec = importlib.util.find_spec(module) if module.isidentifier() else None
-            if spec is None:
-                continue  # a data directory of the distribution, not a module
-            places = [spec.origin] if spec.origin else list(spec.submodule_search_locations or [])
-            home = Path(str(importlib.metadata.distribution(name).locate_file(""))).resolve()
-            outside = [p for p in places if not Path(p).resolve().is_relative_to(home)]
-            if outside or not places:
-                where = ", ".join(outside) or "nowhere"
-                found.append(f"{module} ({name}) is imported from {where}, not {home}")
-    for name in sorted(needed):
-        if name in locked and locked[name].commit is not None:
-            edited = _edited(importlib.metadata.distribution(name))
-            if edited:
-                found.append(f"{name} has {len(edited)} file(s) edited since install: {edited[:3]}")
+        if not {normalise(n) for n in names} & needed:
+            continue
+        spec = importlib.util.find_spec(module) if module.isidentifier() else None
+        if spec is None:
+            continue  # a data directory of the distribution, not a module
+        places = [spec.origin] if spec.origin else list(spec.submodule_search_locations or [])
+        outside = [p for p in places if not _in_site(p)]
+        if outside or not places:
+            where = ", ".join(outside) or "nowhere"
+            found.append(f"{module} is imported from {where}, not from site-packages")
     return found
 
 

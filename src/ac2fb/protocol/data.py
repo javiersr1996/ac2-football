@@ -231,12 +231,13 @@ def _dirty() -> tuple[str, ...]:
     return tuple(status + hidden)
 
 
-def _layer2_history(head: str) -> list[tuple[str, str, Any]]:
-    """The commits up to ``head`` that changed ``layer2.json``, newest first, with their subject
-    and the stage they left it in."""
-    log = _git("log", "--format=%H%x00%s", head, "--", LAYER2_PATH).decode("utf-8")
+def _layer2_history(*revs: str) -> list[tuple[str, str, Any]]:
+    """The commits reachable from ``revs`` that changed ``layer2.json``, newest first, with their
+    subject and the stage they left it in. Every parent of a merge is followed
+    (``--full-history``): the default simplification drops the side a merge discarded."""
+    log = _git("log", "--full-history", "--format=%H%x00%s", *revs, "--", LAYER2_PATH)
     history = []
-    for line in log.splitlines():
+    for line in log.decode("utf-8").splitlines():
         commit, subject = line.split("\0", 1)
         history.append((commit, subject, _committed_json(commit, LAYER2_PATH).get("stage")))
     return history
@@ -245,21 +246,27 @@ def _layer2_history(head: str) -> list[tuple[str, str, Any]]:
 def _freeze(head: str, stage: Any, reading: Any) -> tuple[str | None, list[str]]:
     """The commit of the freeze that ``layer2.json`` at ``head`` stands on, and why it fails.
 
-    In ``frozen``, the freeze is the last commit that changed ``layer2.json`` and the history
-    holds no commit that left it in ``read``. In ``read``, the last commit that changed it is
-    the reading (:data:`READ_MESSAGE`, the only commit ever in ``read``), the one before it is
-    the freeze, and the record names that freeze. Since the freeze nothing of the code or of
-    ``protocol/`` changed, save ``layer2.json`` in ``read``. Other stages have no freeze.
+    In ``frozen``, the freeze is the last commit that changed ``layer2.json`` and no commit of
+    any branch or tag left it in ``read`` (``--all``: a branch from the freeze cannot read
+    again). In ``read``, the last commit of ``head`` that changed it is the reading
+    (:data:`READ_MESSAGE`, the only one in ``read`` in that history), the one before it is the
+    freeze, and the record names that freeze; other branches do not count, so a worktree at the
+    reading reproduces it. Since the freeze nothing of the code or of ``protocol/`` changed,
+    save ``layer2.json`` in ``read``. A shallow clone, whose history is cut, is refused. Other
+    stages have no freeze.
     """
     if stage not in _READABLE_STAGES:
         return None, []
+    if _git("rev-parse", "--is-shallow-repository").strip() != b"false":
+        return None, ["the clone is shallow: the history of layer2.json is cut"]
     history = _layer2_history(head)
-    reads = [commit for commit, _, s in history if s == "read"]
     if stage == "frozen":
+        reads = [commit for commit, _, s in _layer2_history("--all") if s == "read"]
         if reads:
             return None, [f"{LAYER2_PATH} was in stage read at {reads[0]}: it is read once"]
         freeze, allowed = history[0][0], []
     else:
+        reads = [commit for commit, _, s in history if s == "read"]
         (last, subject, _), *before = history
         if reads != [last] or subject != READ_MESSAGE or not before or before[0][2] != "frozen":
             return None, [f"{LAYER2_PATH} at HEAD is not the single reading made on its freeze"]

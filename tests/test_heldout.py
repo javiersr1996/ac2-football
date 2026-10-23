@@ -18,6 +18,7 @@ import importlib.util
 import inspect
 import json
 import re
+import subprocess
 import sys
 from collections.abc import Callable, Mapping
 from pathlib import Path
@@ -203,6 +204,77 @@ def test_after_the_reading_editing_layer2_does_not_open_it_again(
     assert head(reading) == before and len(seen) == 1 and not (tmp_path / "again").exists()
 
 
+# --- git routes around the single reading, and the one route it must keep -----------------------
+
+
+def _read_then_branch(c: Checkout, mp: pytest.MonkeyPatch, out: Path) -> str:
+    """The reading on the main branch, then a branch from its freeze with new code refrozen;
+    returns the main branch."""
+    c.freeze("frozen", reads=("probe",))
+    freeze = head(c)
+    main = c.git("rev-parse", "--abbrev-ref", "HEAD").strip()
+    run(mp, {"probe": probe(c, [])}, out)
+    c.git("switch", "-q", "-c", "retry", freeze)
+    _frozen_again(c)
+    return main
+
+
+def test_a_branch_from_the_freeze_cannot_read_again(
+    reading: Checkout, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    _read_then_branch(reading, monkeypatch, tmp_path / "first")
+    with pytest.raises(HeldOutLocked, match="it is read once"):
+        data.read_heldout(tmp_path / "again")
+
+
+def test_a_merge_that_discards_the_reading_cannot_read_again(
+    reading: Checkout, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    # `merge -s ours` keeps the reading in the history and its layer2.json out of the tree: the
+    # simplified `git log -- layer2.json` of HEAD no longer lists it.
+    main = _read_then_branch(reading, monkeypatch, tmp_path / "first")
+    reading.git("merge", "-q", "-s", "ours", "--no-edit", main)
+    reading.git("branch", "-q", "-D", main)
+    assert layer2_at_head(reading)["stage"] == "frozen"
+    with pytest.raises(HeldOutLocked, match="it is read once"):
+        data.read_heldout(tmp_path / "again")
+
+
+def test_a_shallow_clone_is_refused(
+    reading: Checkout, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    reading.freeze("frozen", reads=("probe",))
+    shallow = Checkout(tmp_path / "shallow")
+    url = reading.root.as_uri()
+    subprocess.run(["git", "clone", "-q", "--depth", "1", url, str(shallow.root)], check=True)
+    monkeypatch.setattr(data, "_repo_root", lambda: shallow.root)
+    seen: list[dict[str, Any]] = []
+    with pytest.raises(HeldOutLocked, match="shallow"):
+        run(monkeypatch, {"probe": probe(shallow, seen)}, tmp_path / "out")
+    assert seen == []
+
+
+def test_a_worktree_at_the_reading_reproduces_it_after_main_moves_on(
+    reading: Checkout, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    # The plan's route once code changes after the reading: reproduce from the reading's commit.
+    reading.freeze("frozen", reads=("probe",))
+    freeze = head(reading)
+    seen: list[dict[str, Any]] = []
+    first = run(monkeypatch, {"probe": probe(reading, seen)}, tmp_path / "first")
+    reading.write("src/ac2fb/cli.py", "# the figures, after the reading\n")
+    reading.commit("code after the reading")
+    body = layer2_at_head(reading) | {"note": "edited on main"}
+    reading.write("protocol/layer2.json", json.dumps(body, indent=2) + "\n")
+    reading.commit("edit layer2.json on main")
+    tree = Checkout(tmp_path / "at-the-reading")
+    reading.git("worktree", "add", "-q", "--detach", str(tree.root), first.commit)
+    monkeypatch.setattr(data, "_repo_root", lambda: tree.root)
+    again = data.read_heldout(tmp_path / "again")
+    assert again.reproduced and (again.commit, again.frozen_commit) == (first.commit, freeze)
+    assert len(seen) == 2
+
+
 def test_the_reading_takes_no_function_from_its_caller() -> None:
     assert list(inspect.signature(data.read_heldout).parameters) == ["reports_dir"]
 
@@ -286,9 +358,15 @@ def _shadowed(c: Checkout, mp: pytest.MonkeyPatch) -> None:
     mp.setattr(lock.importlib.util, "find_spec", find_spec)
 
 
-def _base_edited(c: Checkout, mp: pytest.MonkeyPatch) -> None:
-    _frozen(c)
-    mp.setattr(lock, "_edited", lambda dist: ["ftbase/cli.py"])
+def _edited(name: str) -> Callable[[Checkout, pytest.MonkeyPatch], None]:
+    """Frozen, with one file of the run-time package ``name`` edited since install."""
+
+    def prepare(c: Checkout, mp: pytest.MonkeyPatch) -> None:
+        _frozen(c)
+        edited = {name: [f"{name}/__init__.py"]}
+        mp.setattr(lock, "_edited", lambda d: edited.get(lock.normalise(d.metadata["Name"]), []))
+
+    return prepare
 
 
 REFUSALS: dict[str, tuple[Callable[[Checkout, pytest.MonkeyPatch], None], str]] = {
@@ -346,8 +424,9 @@ REFUSALS: dict[str, tuple[Callable[[Checkout, pytest.MonkeyPatch], None], str]] 
     ),
     "a run-time package missing": (_installed(pyarrow=None), "pyarrow is needed at run time"),
     "another interpreter": (_python("3.12.9"), "Python 3.12.9 runs; .python-version pins"),
-    "the base imported from elsewhere": (_shadowed, "ftbase (ftbase) is imported from"),
-    "the base edited since install": (_base_edited, "ftbase has 1 file(s) edited"),
+    "the base imported from elsewhere": (_shadowed, "ftbase is imported from"),
+    "the base edited since install": (_edited("ftbase"), "ftbase has 1 file(s) edited"),
+    "a library edited since install": (_edited("numpy"), "numpy has 1 file(s) edited"),
 }
 
 

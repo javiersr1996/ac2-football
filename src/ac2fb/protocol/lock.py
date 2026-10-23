@@ -176,8 +176,10 @@ def import_mismatches(lock_text: str) -> list[str]:
     for dist in importlib.metadata.distributions():
         copies.setdefault(normalise(dist.metadata["Name"]), []).append(dist)
     for name in sorted(needed & set(copies)):
-        homes = [str(dist.locate_file("")) for dist in copies[name]]
-        if len(homes) > 1:  # one outside site-packages is caught by its modules, below
+        # One place seen twice (a `lib64 -> lib` link) is one copy; one outside site-packages is
+        # caught by its modules, below.
+        homes = sorted({str(Path(str(dist.locate_file(""))).resolve()) for dist in copies[name]})
+        if len(homes) > 1:
             found.append(f"{name} is installed at {', '.join(homes)}, not once in site-packages")
             continue
         edited = _edited(copies[name][0])

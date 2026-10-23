@@ -240,6 +240,77 @@ def test_a_merge_that_discards_the_reading_cannot_read_again(
         data.read_heldout(tmp_path / "again")
 
 
+def test_a_reading_by_hand_on_a_branch_from_the_freeze_is_not_a_reproduction(
+    reading: Checkout, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    # In read, the reading on main counts too: the branch's own "reading" is a second one.
+    _read_then_branch(reading, monkeypatch, tmp_path / "first")
+    reading.record_reading()
+    with pytest.raises(HeldOutLocked, match="not the single reading"):
+        data.read_heldout(tmp_path / "again")
+
+
+def _side_branch(c: Checkout, path: str, text: str) -> str:
+    """A branch from HEAD with one commit to ``path``; back on the branch it left, whose name is
+    returned."""
+    main = c.git("rev-parse", "--abbrev-ref", "HEAD").strip()
+    c.git("switch", "-q", "-c", "side")
+    c.write(path, text)
+    c.commit(f"{path} on a side branch")
+    c.git("switch", "-q", main)
+    return main
+
+
+def test_a_merge_after_the_freeze_is_not_taken_for_the_freeze(
+    reading: Checkout, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    # The merge keeps the freeze's layer2.json, so it changed nothing: the record names the
+    # freeze, and a split changed on the side branch is a change since the freeze.
+    _side_branch(reading, "docs/notes.md", "from before the freeze\n")
+    reading.freeze("frozen", reads=("probe",))
+    freeze = head(reading)
+    reading.git("merge", "-q", "--no-ff", "--no-edit", "side")
+    assert run(monkeypatch, {"probe": probe(reading, [])}, tmp_path / "out").frozen_commit == freeze
+
+
+def test_a_split_merged_in_after_the_freeze_shuts_it(
+    reading: Checkout, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    swapped = json.dumps({"calibration": [HELD], "heldout": [CAL]}) + "\n"
+    _side_branch(reading, "protocol/split.json", swapped)
+    reading.freeze("frozen", reads=("probe",))
+    reading.git("merge", "-q", "--no-ff", "--no-edit", "side")
+    seen: list[dict[str, Any]] = []
+    with pytest.raises(HeldOutLocked, match=re.escape("['protocol/split.json'] changed")):
+        run(monkeypatch, {"probe": probe(reading, seen)}, tmp_path / "out")
+    assert seen == []
+
+
+OTHER_BRANCHES: dict[str, str | None] = {
+    "layer2.json broken": "not json\n",
+    "layer2.json in stage read by hand": '{"stage": "read", "reads": ["probe"]}\n',
+    "layer2.json deleted": None,
+}
+
+
+@pytest.mark.parametrize("case", list(OTHER_BRANCHES))
+def test_a_work_branch_that_is_not_a_reading_does_not_block_it(
+    reading: Checkout, tmp_path: Path, monkeypatch: pytest.MonkeyPatch, case: str
+) -> None:
+    # Only a commit of the reading (its message, stage read) counts on other refs.
+    main = reading.git("rev-parse", "--abbrev-ref", "HEAD").strip()
+    reading.git("switch", "-q", "-c", "wip")
+    text = OTHER_BRANCHES[case]
+    if text is None:
+        reading.git("rm", "-q", "protocol/layer2.json")
+    else:
+        reading.write("protocol/layer2.json", text)
+    reading.commit("work in progress")
+    reading.git("switch", "-q", main)
+    reading.freeze("frozen", reads=("probe",))
+    assert not run(monkeypatch, {"probe": probe(reading, [])}, tmp_path / "out").reproduced
+
+
 def test_a_shallow_clone_is_refused(
     reading: Checkout, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:

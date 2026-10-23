@@ -142,6 +142,13 @@ def test_a_base_shadowed_from_the_path_is_found(tmp_path: Path, dist_info: bool)
     assert ("not once in site-packages" in out) == dist_info
 
 
+def test_one_place_seen_twice_is_one_copy(monkeypatch: pytest.MonkeyPatch) -> None:
+    # A `lib64 -> lib` link puts site-packages twice on sys.path: every distribution twice.
+    dists = list(importlib.metadata.distributions())
+    monkeypatch.setattr(importlib.metadata, "distributions", lambda: iter(dists + dists))
+    assert lock.import_mismatches(LOCK_TEXT) == []
+
+
 def _distribution(site: Path, body: bytes) -> importlib.metadata.Distribution:
     """A distribution ``pkg`` 1.0 installed under ``site``, its RECORD hashing ``body``."""
     (site / "pkg").mkdir(parents=True)

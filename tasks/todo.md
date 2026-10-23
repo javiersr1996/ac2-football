@@ -1996,8 +1996,10 @@ su test sintético con el fallo plantado (una sonda que no puede fallar no prote
     -q`, 1.474 con 66 deseleccionados; `realdata`, 66 de 66; los cuatro `--check` como en la 23c);
     CI en verde (run 40021739416). Desde aquí, todo cambio de `src`, `pyproject.toml`, `uv.lock`,
     `.python-version` o `protocol/` antes de la lectura obliga a congelar otra vez (y a CP2).
-- [ ] CP2. **[Javier]** Aprueba la congelación de `layer2.json` y queda avisado de que la lectura
+- [x] CP2. **[Javier]** Aprueba la congelación de `layer2.json` y queda avisado de que la lectura
   del reservado es irreversible. La rama B ya está decidida (2026-10-19) y D5 registrado (23a).
+  **Aprobado por Javier (2026-10-23)** sobre la congelación `38cbd60`, avisado de que la lectura
+  es irreversible; en la misma respuesta **autoriza por escrito que Claude lance J4** ahora.
 
 ## Fase 3: reservado y capa 2 completa (lun 16 nov a dom 29 nov)
 

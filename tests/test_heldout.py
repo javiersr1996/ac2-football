@@ -180,6 +180,10 @@ AFTER_THE_READING: dict[str, tuple[Callable[[Checkout], None], str]] = {
     "new code with its sha in layer2.json": (_new_code_recorded, "not the single reading"),
     "layer2.json frozen again on new code": (_frozen_again, "it is read once"),
     "the split changed after the reading": (_split_swapped, "['protocol/split.json'] changed"),
+    "a second reading by hand on new code": (
+        lambda c: (_frozen_again(c), c.record_reading()),
+        "not the single reading",
+    ),
 }
 
 

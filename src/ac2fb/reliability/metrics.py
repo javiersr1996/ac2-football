@@ -25,8 +25,8 @@ is its player); a *phase* is a ``phases_of_play`` event with a team (``t`` = its
 - ``block_width_m`` / ``block_length_m`` / ``block_area_m2``: extent of ``y`` / extent of ``x``
   / their product, over every player of the team out of possession listed at ``t``, goalkeeper
   included, between the extreme players (the definition ``with_gk_extremes_listed`` that probe
-  S3 chose); at least :data:`MIN_BLOCK` players. The area is the bounding rectangle (**proposal,
-  not a hull: Javier to confirm**); its players are the four that fix the ends.
+  S3 chose); at least :data:`MIN_BLOCK` players. The area is the bounding rectangle, not a hull
+  (confirmed by Javier in task 25); its players are the four that fix the ends.
 
 These are the definitions of ``defence/`` (``pressure``, ``line``, ``block``) written again here
 because the reading of the held-out may run no code of ``defence/`` (task 23b); the tests hold

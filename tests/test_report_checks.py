@@ -148,6 +148,15 @@ def test_power_checks_against_the_probe_reports_beside_its_file(
     assert code == 1 and "  - probes.C1: file " in out
 
 
+def test_power_check_without_the_probe_reports_refuses_cleanly(
+    gate: Checkout, tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    where = prepared("power", tmp_path, capsys)
+    (where / "probe_s2.json").unlink()
+    code, out, err = run(capsys, "power", where, "--check")
+    assert code == 2 and out == "" and f"missing in {where}: probe_s2.json" in err
+
+
 @pytest.mark.parametrize("command", ["layer2", "reliability", "amputation"])
 def test_the_earlier_checks_say_what_share_they_verified(
     gate: Checkout, tmp_path: Path, capsys: pytest.CaptureFixture[str], command: str

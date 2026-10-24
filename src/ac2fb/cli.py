@@ -490,6 +490,10 @@ def _power(match_ids: Sequence[int] | None, reports_dir: Path, do_check: bool) -
             print(f"wrote {write_power_report(ids, reports_dir, _probe_verdicts(_REPORTS))}")
             return 0
         # the probe reports beside the file checked, so a probe verdict edited there is seen
+        absent = [name for name in _PROBE_REPORTS if not (reports_dir / name).is_file()]
+        if absent:
+            print(f"missing in {reports_dir}: {', '.join(absent)}", file=sys.stderr)
+            return 2
         alive = _probe_verdicts(reports_dir)
         result = power.check(ids, alive, _committed(reports_dir / power.REPORT_NAME))
     except HeldOutLocked as exc:

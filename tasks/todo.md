@@ -2279,11 +2279,58 @@ su test sintético con el fallo plantado (una sonda que no puede fallar no prote
 
 ## Fase 4: empaquetado (lun 30 nov a dom 6 dic)
 
-- [ ] 27. `sonnet` Las dos figuras (máximo de las bases), generadas por `ac2fb figures` desde
+- [x] 27. `sonnet` Las dos figuras (máximo de las bases), generadas por `ac2fb figures` desde
   `reports/`: figura 1, detección por distancia al balón, fracción del modelo por banda de hueco y
   sensibilidad por métrica (V0 frente a V1, error por amputación), por partido; figura 2, el efecto
   de la capa 3 por partido en V0, V1 y V2, calibración y reservado (o la muerte, rama B).
   Aceptación: test que regenera y compara; cada número de una etiqueta sale de un artefacto.
+  Hecho (2026-10-24), commit `16446a4` (código, tests y figuras) y el de este registro. **Qué
+  hay:** `src/ac2fb/figures.py` (puro: recibe los bytes de `reports/` y devuelve cuatro ficheros,
+  no abre nada, la puerta única sigue única), `ac2fb figures [--reports-dir] [--out-dir] [--check]`,
+  `tests/test_figures.py` (25), matplotlib 3.11.2 con `uv add` (lock al día; `test_lock` espera
+  ahora `matplotlib` entre lo que necesita el paquete) y dos rutas nuevas en `test_public_routes`.
+  Salida en `reports/figures/`: `fig1_layer2.svg|json`, `fig2_layer3.svg|json`. Lee solo
+  `layer2.json`, `reliability.csv`, `amputation.csv`, `calibration.json` y los tres de
+  `reports/heldout/`; no toca `data/`, `protocol/*.json` ni el reservado.
+  **Figura 1** (20 partidos; calibración en azul con círculo, reservado en naranja con cuadrado;
+  línea fina por partido, gruesa la mediana de la mitad): (a) fracción de jugador-frames
+  detectados por distancia al balón; (b) fracción de los frames rellenados por banda de hueco
+  (`reacquisition.by_band.*.frame_share`); (c) por métrica y partido, V1 menos V0 (estrato `all`);
+  (d) error absoluto medio de la amputación (banda `all`). Las siete métricas van en su unidad,
+  sin normalizar (la reacción cruza el cero y una razón explotaría).
+  **Figura 2** (rama B, solo calibración, 10 partidos): (a) efecto E_m por partido en V0, V1 y V2
+  sin extrapolados, con el T conjunto y el suelo de D3 en gris; (b) la diferencia previa a la
+  recepción por partido; debajo, la muerte dicha con cifras de `calibration.json` (D3, V0 pasó su
+  barra, V2 con extrapolados sin unidades útiles) y que no hay lectura del reservado para la capa 3.
+  **Determinismo:** `svg.fonttype none`, `svg.hashsalt` fijo, metadatos sin fecha ni versión, ejes
+  en posiciones fijas (sin `tight_layout` ni leyendas automáticas), LF. Cada figura lleva un
+  sidecar JSON con cada valor trazado y cada número de etiqueta, su fórmula y las celdas de
+  origen, más el sha256 de los informes leídos. Comprobado en Linux (contenedor
+  `ghcr.io/astral-sh/uv:python3.13-bookworm`, `uv sync --locked`, `figures --check` y `cmp`): los
+  cuatro ficheros idénticos a los de Windows. En la primera pasada el SVG de la figura 1 difería:
+  el marcador de rombo escribe `-0` en Linux y `0` en Windows; se cambió por un cuadrado y
+  `test_no_signed_zero_in_the_svg...` lo vigila. CI de Ubuntu: pendiente (sin push).
+  **`--check`:** redibuja y compara byte a byte; imprime `verified: 4 files, 594 plotted values
+  and 7 labels, each from its artefact cell, 7 reports read`; sale 1 si algo difiere o falta, 2
+  si falta un informe; no escribe.
+  **Mutaciones.** En los tests, sobre copia de `reports` (cada una falla): un efecto de
+  `calibration.json`; el error de amputación de un partido del reservado (mueve un solo valor
+  trazado); fichero commiteado editado o ausente; número cambiado solo en el SVG; informe ausente
+  (salida 2); resolutor con valor, referencia, marca de mediana, número de etiqueta, redondeo y
+  número tecleado cambiados; cobertura con un partido, una variante o un punto quitados; recorrido
+  del SVG con un número tecleado y con una etiqueta quitada. Sobre el código, en copia del árbol
+  redibujando las figuras con el código mutado (18; `mutate27.py` y `mutate27.log` en el
+  scratchpad de la sesión, cabo para pasarlos a `scripts/mutations/` con los de la 28): caen 16
+  (número de etiqueta desplazado, redondeo, etiqueta fuera del sidecar, 10 tecleado, columna
+  equivocada en (b) y (d), mediana sustituida por la media, V1 leída de V0, reservado leído del
+  fichero de calibración, sidecar en CRLF, `--check` que ignora el SVG, que sale 0, que escribe o
+  que no dice cuánto verificó, un partido menos, sal del hash por el reloj); una no llega a dibujar
+  (estrato `backward` en (c): `KeyError`); una sobrevive en Windows, el rombo, y solo la ve Linux.
+  **Desviaciones:** "fracción del modelo por banda de hueco" se leyó como `frame_share` de los
+  runs extrapolados; el reservado de `layer2.json` no trae `runs` ni `steps`, solo `reacquisition`;
+  el enlace SVG a sidecar es por construcción (el SVG se dibuja de las series del sidecar) y lo
+  guarda el `--check` byte a byte; se arrancó Docker Desktop para la prueba en Linux. Gate local
+  en verde: ruff, format, `mypy src`, `pytest -q` 1.502 pasan (66 deseleccionados).
 - [ ] 28. `sonnet` `--check` en cada comando que escribe un artefacto (recalcula y compara; con
   fixtures dice cuánto verificó, `PARTIAL n/20`). Aceptación: mutar un valor de un JSON hace
   fallar su `--check`. Rama B: el de la 25 y la 26 ya existe (23); en `HEAD`, tras la lectura,

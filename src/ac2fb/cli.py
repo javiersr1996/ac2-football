@@ -636,8 +636,9 @@ def _figures(reports_dir: Path, out_dir: Path, do_check: bool) -> int:
         return 0
     result = figures.check(files, {name: _committed(out_dir / name) for name in figures.OUTPUTS})
     print(
-        f"verified: {result.files} files, {result.points} plotted values and {result.labels} "
-        f"labels, each from its artefact cell, {len(files)} reports read"
+        f"verified: {result.files} of {len(figures.OUTPUTS)} files found, {result.points} plotted "
+        f"values and {result.labels} labels, each from its artefact cell, "
+        f"{len(files)} reports read"
     )
     for problem in result.problems:
         print(f"  - {problem}")

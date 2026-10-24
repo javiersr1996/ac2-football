@@ -604,7 +604,7 @@ def build(files: Mapping[str, bytes]) -> Built:
 class CheckResult:
     ok: bool
     problems: list[str]
-    files: int
+    files: int  # of the committed files, how many exist
     points: int
     labels: int
 
@@ -626,4 +626,5 @@ def check(files: Mapping[str, bytes], committed: Mapping[str, bytes | None]) -> 
         elif old != built.files[name]:
             line = _first_difference(old, built.files[name])
             problems.append(f"{name}: differs from the recomputation (first at line {line})")
-    return CheckResult(not problems, problems, len(OUTPUTS), built.points, built.labels)
+    found = sum(committed.get(name) is not None for name in OUTPUTS)
+    return CheckResult(not problems, problems, found, built.points, built.labels)

@@ -223,7 +223,7 @@ def test_check_says_what_it_verified_and_writes_nothing(capsys: pytest.CaptureFi
     before = {p.name: p.read_bytes() for p in COMMITTED.iterdir()}
     assert main(["figures", "--check"]) == 0
     out = capsys.readouterr().out
-    assert f"verified: 4 files, {POINTS} plotted values and 7 labels" in out
+    assert f"verified: 4 of 4 files found, {POINTS} plotted values and 7 labels" in out
     assert "7 reports read" in out and "figures: OK" in out
     assert {p.name: p.read_bytes() for p in COMMITTED.iterdir()} == before
 
@@ -272,6 +272,7 @@ def test_check_fails_when_a_committed_file_is_missing_or_edited(tmp_path: Path, 
     (out / name).unlink()
     code, text = run_check(reports, out)
     assert code == 1 and f"{name}: missing" in text
+    assert "verified: 3 of 4 files found" in text
 
 
 def test_check_fails_when_a_drawn_number_changes_in_the_svg_only(tmp_path: Path) -> None:

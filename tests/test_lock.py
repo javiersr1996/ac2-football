@@ -42,7 +42,7 @@ def test_the_lock_is_read_with_the_base_commit_and_the_needs_of_the_package() ->
     locked = lock.locked_packages(LOCK_TEXT)
     commit = re.search(r"football-tracking-base\?tag=[^#\"]+#([0-9a-f]{40})", LOCK_TEXT)
     assert commit is not None and locked["ftbase"].commit == commit.group(1)
-    assert set(locked["ac2fb"].needs) == {"ftbase", "numpy", "pyarrow"}
+    assert set(locked["ac2fb"].needs) == {"ftbase", "matplotlib", "numpy", "pyarrow"}
     assert locked["numpy"].commit is None
     # pytest needs colorama only on Windows: an edge with a marker is not followed.
     assert "colorama" not in locked["pytest"].needs and "colorama" in locked

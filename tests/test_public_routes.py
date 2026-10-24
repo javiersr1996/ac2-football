@@ -35,7 +35,7 @@ from ftbase import silver
 from gate_helpers import CAL, HELD, POISON, ROOT, Checkout, inside_the_reading
 
 import ac2fb
-from ac2fb import cli
+from ac2fb import cli, figures
 from ac2fb.defence import (
     bar,
     block,
@@ -376,8 +376,20 @@ def built(m: int) -> match_module.MatchData:
     )
 
 
+def figure_inputs() -> dict[str, bytes]:
+    """The committed reports the figures read: no match id, nothing of the data."""
+    return {name: (ROOT / "reports" / name).read_bytes() for name in figures.INPUTS}
+
+
 FUNCTION_ROUTES: dict[str, Route] = {
     "ac2fb.cli.build_parser": without_match(cli.build_parser),
+    "ac2fb.figures.build": without_match(lambda: figures.build(figure_inputs())),
+    "ac2fb.figures.check": without_match(
+        lambda: figures.check(
+            figure_inputs(),
+            {n: (ROOT / "reports" / "figures" / n).read_bytes() for n in figures.OUTPUTS},
+        )
+    ),
     "ac2fb.cli.main": without_match(lambda: cli.main([])),
     "ac2fb.protocol.data.code_tree_sha": without_match(data.code_tree_sha),
     "ac2fb.protocol.data.data_dir": without_match(data.data_dir),
@@ -924,6 +936,7 @@ CLI_ROUTES: dict[tuple[str, ...], Route] = {
     ("design",): by_match(design_command),
     ("calibration",): by_match(calibration_command),
     ("protocol",): without_match(lambda: cli.main(["protocol", "--check"])),
+    ("figures",): without_match(lambda: cli.main(["figures", "--check"])),
     ("heldout",): without_match(lambda: cli.main(["heldout", "read", "--reports-dir", OUT])),
     ("heldout", "read"): without_match(lambda: cli.main(["heldout", "read", "--reports-dir", OUT])),
 }

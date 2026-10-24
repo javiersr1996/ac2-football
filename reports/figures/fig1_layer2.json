@@ -1,0 +1,5640 @@
+{
+ "figure": "fig1_layer2",
+ "labels": [
+  {
+   "numbers": [
+    {
+     "as": "10",
+     "decimals": 0,
+     "formula": "count",
+     "refs": [
+      "layer2.json#matches"
+     ],
+     "value": 10.0
+    }
+   ],
+   "text": "calibration, 10 matches"
+  },
+  {
+   "numbers": [
+    {
+     "as": "10",
+     "decimals": 0,
+     "formula": "count",
+     "refs": [
+      "heldout/layer2.json#matches"
+     ],
+     "value": 10.0
+    }
+   ],
+   "text": "held-out, 10 matches"
+  }
+ ],
+ "series": [
+  {
+   "group": "calibration",
+   "kind": "match",
+   "match": "1874553",
+   "panel": "a",
+   "points": [
+    {
+     "formula": "value",
+     "refs": [
+      "layer2.json#matches/1874553/ball_distance/00_05/detected"
+     ],
+     "value": 0.878691,
+     "x": "0-5"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "layer2.json#matches/1874553/ball_distance/05_10/detected"
+     ],
+     "value": 0.867101,
+     "x": "5-10"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "layer2.json#matches/1874553/ball_distance/10_20/detected"
+     ],
+     "value": 0.803814,
+     "x": "10-20"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "layer2.json#matches/1874553/ball_distance/20_30/detected"
+     ],
+     "value": 0.580875,
+     "x": "20-30"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "layer2.json#matches/1874553/ball_distance/30_40/detected"
+     ],
+     "value": 0.371189,
+     "x": "30-40"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "layer2.json#matches/1874553/ball_distance/40_plus/detected"
+     ],
+     "value": 0.169809,
+     "x": "40+"
+    }
+   ]
+  },
+  {
+   "group": "calibration",
+   "kind": "match",
+   "match": "1886347",
+   "panel": "a",
+   "points": [
+    {
+     "formula": "value",
+     "refs": [
+      "layer2.json#matches/1886347/ball_distance/00_05/detected"
+     ],
+     "value": 0.869328,
+     "x": "0-5"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "layer2.json#matches/1886347/ball_distance/05_10/detected"
+     ],
+     "value": 0.843801,
+     "x": "5-10"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "layer2.json#matches/1886347/ball_distance/10_20/detected"
+     ],
+     "value": 0.77659,
+     "x": "10-20"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "layer2.json#matches/1886347/ball_distance/20_30/detected"
+     ],
+     "value": 0.607603,
+     "x": "20-30"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "layer2.json#matches/1886347/ball_distance/30_40/detected"
+     ],
+     "value": 0.401218,
+     "x": "30-40"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "layer2.json#matches/1886347/ball_distance/40_plus/detected"
+     ],
+     "value": 0.183572,
+     "x": "40+"
+    }
+   ]
+  },
+  {
+   "group": "calibration",
+   "kind": "match",
+   "match": "1925299",
+   "panel": "a",
+   "points": [
+    {
+     "formula": "value",
+     "refs": [
+      "layer2.json#matches/1925299/ball_distance/00_05/detected"
+     ],
+     "value": 0.914174,
+     "x": "0-5"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "layer2.json#matches/1925299/ball_distance/05_10/detected"
+     ],
+     "value": 0.88152,
+     "x": "5-10"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "layer2.json#matches/1925299/ball_distance/10_20/detected"
+     ],
+     "value": 0.799735,
+     "x": "10-20"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "layer2.json#matches/1925299/ball_distance/20_30/detected"
+     ],
+     "value": 0.576129,
+     "x": "20-30"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "layer2.json#matches/1925299/ball_distance/30_40/detected"
+     ],
+     "value": 0.36036,
+     "x": "30-40"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "layer2.json#matches/1925299/ball_distance/40_plus/detected"
+     ],
+     "value": 0.120486,
+     "x": "40+"
+    }
+   ]
+  },
+  {
+   "group": "calibration",
+   "kind": "match",
+   "match": "1959846",
+   "panel": "a",
+   "points": [
+    {
+     "formula": "value",
+     "refs": [
+      "layer2.json#matches/1959846/ball_distance/00_05/detected"
+     ],
+     "value": 0.861031,
+     "x": "0-5"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "layer2.json#matches/1959846/ball_distance/05_10/detected"
+     ],
+     "value": 0.824585,
+     "x": "5-10"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "layer2.json#matches/1959846/ball_distance/10_20/detected"
+     ],
+     "value": 0.781883,
+     "x": "10-20"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "layer2.json#matches/1959846/ball_distance/20_30/detected"
+     ],
+     "value": 0.589767,
+     "x": "20-30"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "layer2.json#matches/1959846/ball_distance/30_40/detected"
+     ],
+     "value": 0.366752,
+     "x": "30-40"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "layer2.json#matches/1959846/ball_distance/40_plus/detected"
+     ],
+     "value": 0.169347,
+     "x": "40+"
+    }
+   ]
+  },
+  {
+   "group": "calibration",
+   "kind": "match",
+   "match": "1996435",
+   "panel": "a",
+   "points": [
+    {
+     "formula": "value",
+     "refs": [
+      "layer2.json#matches/1996435/ball_distance/00_05/detected"
+     ],
+     "value": 0.903865,
+     "x": "0-5"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "layer2.json#matches/1996435/ball_distance/05_10/detected"
+     ],
+     "value": 0.883248,
+     "x": "5-10"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "layer2.json#matches/1996435/ball_distance/10_20/detected"
+     ],
+     "value": 0.84119,
+     "x": "10-20"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "layer2.json#matches/1996435/ball_distance/20_30/detected"
+     ],
+     "value": 0.707998,
+     "x": "20-30"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "layer2.json#matches/1996435/ball_distance/30_40/detected"
+     ],
+     "value": 0.503992,
+     "x": "30-40"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "layer2.json#matches/1996435/ball_distance/40_plus/detected"
+     ],
+     "value": 0.202896,
+     "x": "40+"
+    }
+   ]
+  },
+  {
+   "group": "calibration",
+   "kind": "match",
+   "match": "1996436",
+   "panel": "a",
+   "points": [
+    {
+     "formula": "value",
+     "refs": [
+      "layer2.json#matches/1996436/ball_distance/00_05/detected"
+     ],
+     "value": 0.837248,
+     "x": "0-5"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "layer2.json#matches/1996436/ball_distance/05_10/detected"
+     ],
+     "value": 0.823562,
+     "x": "5-10"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "layer2.json#matches/1996436/ball_distance/10_20/detected"
+     ],
+     "value": 0.749307,
+     "x": "10-20"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "layer2.json#matches/1996436/ball_distance/20_30/detected"
+     ],
+     "value": 0.578256,
+     "x": "20-30"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "layer2.json#matches/1996436/ball_distance/30_40/detected"
+     ],
+     "value": 0.393866,
+     "x": "30-40"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "layer2.json#matches/1996436/ball_distance/40_plus/detected"
+     ],
+     "value": 0.155661,
+     "x": "40+"
+    }
+   ]
+  },
+  {
+   "group": "calibration",
+   "kind": "match",
+   "match": "2007448",
+   "panel": "a",
+   "points": [
+    {
+     "formula": "value",
+     "refs": [
+      "layer2.json#matches/2007448/ball_distance/00_05/detected"
+     ],
+     "value": 0.856547,
+     "x": "0-5"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "layer2.json#matches/2007448/ball_distance/05_10/detected"
+     ],
+     "value": 0.833863,
+     "x": "5-10"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "layer2.json#matches/2007448/ball_distance/10_20/detected"
+     ],
+     "value": 0.768957,
+     "x": "10-20"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "layer2.json#matches/2007448/ball_distance/20_30/detected"
+     ],
+     "value": 0.526783,
+     "x": "20-30"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "layer2.json#matches/2007448/ball_distance/30_40/detected"
+     ],
+     "value": 0.348904,
+     "x": "30-40"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "layer2.json#matches/2007448/ball_distance/40_plus/detected"
+     ],
+     "value": 0.131261,
+     "x": "40+"
+    }
+   ]
+  },
+  {
+   "group": "calibration",
+   "kind": "match",
+   "match": "2010085",
+   "panel": "a",
+   "points": [
+    {
+     "formula": "value",
+     "refs": [
+      "layer2.json#matches/2010085/ball_distance/00_05/detected"
+     ],
+     "value": 0.888364,
+     "x": "0-5"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "layer2.json#matches/2010085/ball_distance/05_10/detected"
+     ],
+     "value": 0.893005,
+     "x": "5-10"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "layer2.json#matches/2010085/ball_distance/10_20/detected"
+     ],
+     "value": 0.78205,
+     "x": "10-20"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "layer2.json#matches/2010085/ball_distance/20_30/detected"
+     ],
+     "value": 0.523851,
+     "x": "20-30"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "layer2.json#matches/2010085/ball_distance/30_40/detected"
+     ],
+     "value": 0.336682,
+     "x": "30-40"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "layer2.json#matches/2010085/ball_distance/40_plus/detected"
+     ],
+     "value": 0.148062,
+     "x": "40+"
+    }
+   ]
+  },
+  {
+   "group": "calibration",
+   "kind": "match",
+   "match": "2011166",
+   "panel": "a",
+   "points": [
+    {
+     "formula": "value",
+     "refs": [
+      "layer2.json#matches/2011166/ball_distance/00_05/detected"
+     ],
+     "value": 0.877611,
+     "x": "0-5"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "layer2.json#matches/2011166/ball_distance/05_10/detected"
+     ],
+     "value": 0.853982,
+     "x": "5-10"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "layer2.json#matches/2011166/ball_distance/10_20/detected"
+     ],
+     "value": 0.71005,
+     "x": "10-20"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "layer2.json#matches/2011166/ball_distance/20_30/detected"
+     ],
+     "value": 0.461167,
+     "x": "20-30"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "layer2.json#matches/2011166/ball_distance/30_40/detected"
+     ],
+     "value": 0.291732,
+     "x": "30-40"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "layer2.json#matches/2011166/ball_distance/40_plus/detected"
+     ],
+     "value": 0.115788,
+     "x": "40+"
+    }
+   ]
+  },
+  {
+   "group": "calibration",
+   "kind": "match",
+   "match": "2015213",
+   "panel": "a",
+   "points": [
+    {
+     "formula": "value",
+     "refs": [
+      "layer2.json#matches/2015213/ball_distance/00_05/detected"
+     ],
+     "value": 0.825309,
+     "x": "0-5"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "layer2.json#matches/2015213/ball_distance/05_10/detected"
+     ],
+     "value": 0.78878,
+     "x": "5-10"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "layer2.json#matches/2015213/ball_distance/10_20/detected"
+     ],
+     "value": 0.708996,
+     "x": "10-20"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "layer2.json#matches/2015213/ball_distance/20_30/detected"
+     ],
+     "value": 0.518132,
+     "x": "20-30"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "layer2.json#matches/2015213/ball_distance/30_40/detected"
+     ],
+     "value": 0.341519,
+     "x": "30-40"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "layer2.json#matches/2015213/ball_distance/40_plus/detected"
+     ],
+     "value": 0.166521,
+     "x": "40+"
+    }
+   ]
+  },
+  {
+   "group": "calibration",
+   "kind": "median",
+   "match": "median",
+   "panel": "a",
+   "points": [
+    {
+     "formula": "median",
+     "refs": [
+      "layer2.json#matches/1874553/ball_distance/00_05/detected",
+      "layer2.json#matches/1886347/ball_distance/00_05/detected",
+      "layer2.json#matches/1925299/ball_distance/00_05/detected",
+      "layer2.json#matches/1959846/ball_distance/00_05/detected",
+      "layer2.json#matches/1996435/ball_distance/00_05/detected",
+      "layer2.json#matches/1996436/ball_distance/00_05/detected",
+      "layer2.json#matches/2007448/ball_distance/00_05/detected",
+      "layer2.json#matches/2010085/ball_distance/00_05/detected",
+      "layer2.json#matches/2011166/ball_distance/00_05/detected",
+      "layer2.json#matches/2015213/ball_distance/00_05/detected"
+     ],
+     "value": 0.8734695,
+     "x": "0-5"
+    },
+    {
+     "formula": "median",
+     "refs": [
+      "layer2.json#matches/1874553/ball_distance/05_10/detected",
+      "layer2.json#matches/1886347/ball_distance/05_10/detected",
+      "layer2.json#matches/1925299/ball_distance/05_10/detected",
+      "layer2.json#matches/1959846/ball_distance/05_10/detected",
+      "layer2.json#matches/1996435/ball_distance/05_10/detected",
+      "layer2.json#matches/1996436/ball_distance/05_10/detected",
+      "layer2.json#matches/2007448/ball_distance/05_10/detected",
+      "layer2.json#matches/2010085/ball_distance/05_10/detected",
+      "layer2.json#matches/2011166/ball_distance/05_10/detected",
+      "layer2.json#matches/2015213/ball_distance/05_10/detected"
+     ],
+     "value": 0.8488915,
+     "x": "5-10"
+    },
+    {
+     "formula": "median",
+     "refs": [
+      "layer2.json#matches/1874553/ball_distance/10_20/detected",
+      "layer2.json#matches/1886347/ball_distance/10_20/detected",
+      "layer2.json#matches/1925299/ball_distance/10_20/detected",
+      "layer2.json#matches/1959846/ball_distance/10_20/detected",
+      "layer2.json#matches/1996435/ball_distance/10_20/detected",
+      "layer2.json#matches/1996436/ball_distance/10_20/detected",
+      "layer2.json#matches/2007448/ball_distance/10_20/detected",
+      "layer2.json#matches/2010085/ball_distance/10_20/detected",
+      "layer2.json#matches/2011166/ball_distance/10_20/detected",
+      "layer2.json#matches/2015213/ball_distance/10_20/detected"
+     ],
+     "value": 0.7792365,
+     "x": "10-20"
+    },
+    {
+     "formula": "median",
+     "refs": [
+      "layer2.json#matches/1874553/ball_distance/20_30/detected",
+      "layer2.json#matches/1886347/ball_distance/20_30/detected",
+      "layer2.json#matches/1925299/ball_distance/20_30/detected",
+      "layer2.json#matches/1959846/ball_distance/20_30/detected",
+      "layer2.json#matches/1996435/ball_distance/20_30/detected",
+      "layer2.json#matches/1996436/ball_distance/20_30/detected",
+      "layer2.json#matches/2007448/ball_distance/20_30/detected",
+      "layer2.json#matches/2010085/ball_distance/20_30/detected",
+      "layer2.json#matches/2011166/ball_distance/20_30/detected",
+      "layer2.json#matches/2015213/ball_distance/20_30/detected"
+     ],
+     "value": 0.5771925,
+     "x": "20-30"
+    },
+    {
+     "formula": "median",
+     "refs": [
+      "layer2.json#matches/1874553/ball_distance/30_40/detected",
+      "layer2.json#matches/1886347/ball_distance/30_40/detected",
+      "layer2.json#matches/1925299/ball_distance/30_40/detected",
+      "layer2.json#matches/1959846/ball_distance/30_40/detected",
+      "layer2.json#matches/1996435/ball_distance/30_40/detected",
+      "layer2.json#matches/1996436/ball_distance/30_40/detected",
+      "layer2.json#matches/2007448/ball_distance/30_40/detected",
+      "layer2.json#matches/2010085/ball_distance/30_40/detected",
+      "layer2.json#matches/2011166/ball_distance/30_40/detected",
+      "layer2.json#matches/2015213/ball_distance/30_40/detected"
+     ],
+     "value": 0.363556,
+     "x": "30-40"
+    },
+    {
+     "formula": "median",
+     "refs": [
+      "layer2.json#matches/1874553/ball_distance/40_plus/detected",
+      "layer2.json#matches/1886347/ball_distance/40_plus/detected",
+      "layer2.json#matches/1925299/ball_distance/40_plus/detected",
+      "layer2.json#matches/1959846/ball_distance/40_plus/detected",
+      "layer2.json#matches/1996435/ball_distance/40_plus/detected",
+      "layer2.json#matches/1996436/ball_distance/40_plus/detected",
+      "layer2.json#matches/2007448/ball_distance/40_plus/detected",
+      "layer2.json#matches/2010085/ball_distance/40_plus/detected",
+      "layer2.json#matches/2011166/ball_distance/40_plus/detected",
+      "layer2.json#matches/2015213/ball_distance/40_plus/detected"
+     ],
+     "value": 0.161091,
+     "x": "40+"
+    }
+   ]
+  },
+  {
+   "group": "held-out",
+   "kind": "match",
+   "match": "1899585",
+   "panel": "a",
+   "points": [
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/layer2.json#matches/1899585/ball_distance/00_05/detected"
+     ],
+     "value": 0.870623,
+     "x": "0-5"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/layer2.json#matches/1899585/ball_distance/05_10/detected"
+     ],
+     "value": 0.82393,
+     "x": "5-10"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/layer2.json#matches/1899585/ball_distance/10_20/detected"
+     ],
+     "value": 0.755723,
+     "x": "10-20"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/layer2.json#matches/1899585/ball_distance/20_30/detected"
+     ],
+     "value": 0.543787,
+     "x": "20-30"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/layer2.json#matches/1899585/ball_distance/30_40/detected"
+     ],
+     "value": 0.348912,
+     "x": "30-40"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/layer2.json#matches/1899585/ball_distance/40_plus/detected"
+     ],
+     "value": 0.140424,
+     "x": "40+"
+    }
+   ]
+  },
+  {
+   "group": "held-out",
+   "kind": "match",
+   "match": "1927964",
+   "panel": "a",
+   "points": [
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/layer2.json#matches/1927964/ball_distance/00_05/detected"
+     ],
+     "value": 0.893594,
+     "x": "0-5"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/layer2.json#matches/1927964/ball_distance/05_10/detected"
+     ],
+     "value": 0.866588,
+     "x": "5-10"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/layer2.json#matches/1927964/ball_distance/10_20/detected"
+     ],
+     "value": 0.811432,
+     "x": "10-20"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/layer2.json#matches/1927964/ball_distance/20_30/detected"
+     ],
+     "value": 0.644912,
+     "x": "20-30"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/layer2.json#matches/1927964/ball_distance/30_40/detected"
+     ],
+     "value": 0.439273,
+     "x": "30-40"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/layer2.json#matches/1927964/ball_distance/40_plus/detected"
+     ],
+     "value": 0.216321,
+     "x": "40+"
+    }
+   ]
+  },
+  {
+   "group": "held-out",
+   "kind": "match",
+   "match": "1953632",
+   "panel": "a",
+   "points": [
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/layer2.json#matches/1953632/ball_distance/00_05/detected"
+     ],
+     "value": 0.853116,
+     "x": "0-5"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/layer2.json#matches/1953632/ball_distance/05_10/detected"
+     ],
+     "value": 0.837845,
+     "x": "5-10"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/layer2.json#matches/1953632/ball_distance/10_20/detected"
+     ],
+     "value": 0.787816,
+     "x": "10-20"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/layer2.json#matches/1953632/ball_distance/20_30/detected"
+     ],
+     "value": 0.659504,
+     "x": "20-30"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/layer2.json#matches/1953632/ball_distance/30_40/detected"
+     ],
+     "value": 0.506198,
+     "x": "30-40"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/layer2.json#matches/1953632/ball_distance/40_plus/detected"
+     ],
+     "value": 0.26829,
+     "x": "40+"
+    }
+   ]
+  },
+  {
+   "group": "held-out",
+   "kind": "match",
+   "match": "1986691",
+   "panel": "a",
+   "points": [
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/layer2.json#matches/1986691/ball_distance/00_05/detected"
+     ],
+     "value": 0.86063,
+     "x": "0-5"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/layer2.json#matches/1986691/ball_distance/05_10/detected"
+     ],
+     "value": 0.834319,
+     "x": "5-10"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/layer2.json#matches/1986691/ball_distance/10_20/detected"
+     ],
+     "value": 0.771143,
+     "x": "10-20"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/layer2.json#matches/1986691/ball_distance/20_30/detected"
+     ],
+     "value": 0.609282,
+     "x": "20-30"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/layer2.json#matches/1986691/ball_distance/30_40/detected"
+     ],
+     "value": 0.419739,
+     "x": "30-40"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/layer2.json#matches/1986691/ball_distance/40_plus/detected"
+     ],
+     "value": 0.191413,
+     "x": "40+"
+    }
+   ]
+  },
+  {
+   "group": "held-out",
+   "kind": "match",
+   "match": "2006229",
+   "panel": "a",
+   "points": [
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/layer2.json#matches/2006229/ball_distance/00_05/detected"
+     ],
+     "value": 0.848128,
+     "x": "0-5"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/layer2.json#matches/2006229/ball_distance/05_10/detected"
+     ],
+     "value": 0.833126,
+     "x": "5-10"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/layer2.json#matches/2006229/ball_distance/10_20/detected"
+     ],
+     "value": 0.781643,
+     "x": "10-20"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/layer2.json#matches/2006229/ball_distance/20_30/detected"
+     ],
+     "value": 0.667729,
+     "x": "20-30"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/layer2.json#matches/2006229/ball_distance/30_40/detected"
+     ],
+     "value": 0.518148,
+     "x": "30-40"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/layer2.json#matches/2006229/ball_distance/40_plus/detected"
+     ],
+     "value": 0.269145,
+     "x": "40+"
+    }
+   ]
+  },
+  {
+   "group": "held-out",
+   "kind": "match",
+   "match": "2006363",
+   "panel": "a",
+   "points": [
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/layer2.json#matches/2006363/ball_distance/00_05/detected"
+     ],
+     "value": 0.878021,
+     "x": "0-5"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/layer2.json#matches/2006363/ball_distance/05_10/detected"
+     ],
+     "value": 0.857898,
+     "x": "5-10"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/layer2.json#matches/2006363/ball_distance/10_20/detected"
+     ],
+     "value": 0.749498,
+     "x": "10-20"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/layer2.json#matches/2006363/ball_distance/20_30/detected"
+     ],
+     "value": 0.490524,
+     "x": "20-30"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/layer2.json#matches/2006363/ball_distance/30_40/detected"
+     ],
+     "value": 0.332405,
+     "x": "30-40"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/layer2.json#matches/2006363/ball_distance/40_plus/detected"
+     ],
+     "value": 0.130284,
+     "x": "40+"
+    }
+   ]
+  },
+  {
+   "group": "held-out",
+   "kind": "match",
+   "match": "2007721",
+   "panel": "a",
+   "points": [
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/layer2.json#matches/2007721/ball_distance/00_05/detected"
+     ],
+     "value": 0.847922,
+     "x": "0-5"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/layer2.json#matches/2007721/ball_distance/05_10/detected"
+     ],
+     "value": 0.847193,
+     "x": "5-10"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/layer2.json#matches/2007721/ball_distance/10_20/detected"
+     ],
+     "value": 0.793839,
+     "x": "10-20"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/layer2.json#matches/2007721/ball_distance/20_30/detected"
+     ],
+     "value": 0.636813,
+     "x": "20-30"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/layer2.json#matches/2007721/ball_distance/30_40/detected"
+     ],
+     "value": 0.425022,
+     "x": "30-40"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/layer2.json#matches/2007721/ball_distance/40_plus/detected"
+     ],
+     "value": 0.183688,
+     "x": "40+"
+    }
+   ]
+  },
+  {
+   "group": "held-out",
+   "kind": "match",
+   "match": "2013725",
+   "panel": "a",
+   "points": [
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/layer2.json#matches/2013725/ball_distance/00_05/detected"
+     ],
+     "value": 0.841514,
+     "x": "0-5"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/layer2.json#matches/2013725/ball_distance/05_10/detected"
+     ],
+     "value": 0.800597,
+     "x": "5-10"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/layer2.json#matches/2013725/ball_distance/10_20/detected"
+     ],
+     "value": 0.721679,
+     "x": "10-20"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/layer2.json#matches/2013725/ball_distance/20_30/detected"
+     ],
+     "value": 0.529622,
+     "x": "20-30"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/layer2.json#matches/2013725/ball_distance/30_40/detected"
+     ],
+     "value": 0.350221,
+     "x": "30-40"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/layer2.json#matches/2013725/ball_distance/40_plus/detected"
+     ],
+     "value": 0.152639,
+     "x": "40+"
+    }
+   ]
+  },
+  {
+   "group": "held-out",
+   "kind": "match",
+   "match": "2016236",
+   "panel": "a",
+   "points": [
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/layer2.json#matches/2016236/ball_distance/00_05/detected"
+     ],
+     "value": 0.85979,
+     "x": "0-5"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/layer2.json#matches/2016236/ball_distance/05_10/detected"
+     ],
+     "value": 0.832419,
+     "x": "5-10"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/layer2.json#matches/2016236/ball_distance/10_20/detected"
+     ],
+     "value": 0.715102,
+     "x": "10-20"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/layer2.json#matches/2016236/ball_distance/20_30/detected"
+     ],
+     "value": 0.438868,
+     "x": "20-30"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/layer2.json#matches/2016236/ball_distance/30_40/detected"
+     ],
+     "value": 0.25978,
+     "x": "30-40"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/layer2.json#matches/2016236/ball_distance/40_plus/detected"
+     ],
+     "value": 0.116408,
+     "x": "40+"
+    }
+   ]
+  },
+  {
+   "group": "held-out",
+   "kind": "match",
+   "match": "2017461",
+   "panel": "a",
+   "points": [
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/layer2.json#matches/2017461/ball_distance/00_05/detected"
+     ],
+     "value": 0.865599,
+     "x": "0-5"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/layer2.json#matches/2017461/ball_distance/05_10/detected"
+     ],
+     "value": 0.838963,
+     "x": "5-10"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/layer2.json#matches/2017461/ball_distance/10_20/detected"
+     ],
+     "value": 0.715806,
+     "x": "10-20"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/layer2.json#matches/2017461/ball_distance/20_30/detected"
+     ],
+     "value": 0.456118,
+     "x": "20-30"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/layer2.json#matches/2017461/ball_distance/30_40/detected"
+     ],
+     "value": 0.280199,
+     "x": "30-40"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/layer2.json#matches/2017461/ball_distance/40_plus/detected"
+     ],
+     "value": 0.137716,
+     "x": "40+"
+    }
+   ]
+  },
+  {
+   "group": "held-out",
+   "kind": "median",
+   "match": "median",
+   "panel": "a",
+   "points": [
+    {
+     "formula": "median",
+     "refs": [
+      "heldout/layer2.json#matches/1899585/ball_distance/00_05/detected",
+      "heldout/layer2.json#matches/1927964/ball_distance/00_05/detected",
+      "heldout/layer2.json#matches/1953632/ball_distance/00_05/detected",
+      "heldout/layer2.json#matches/1986691/ball_distance/00_05/detected",
+      "heldout/layer2.json#matches/2006229/ball_distance/00_05/detected",
+      "heldout/layer2.json#matches/2006363/ball_distance/00_05/detected",
+      "heldout/layer2.json#matches/2007721/ball_distance/00_05/detected",
+      "heldout/layer2.json#matches/2013725/ball_distance/00_05/detected",
+      "heldout/layer2.json#matches/2016236/ball_distance/00_05/detected",
+      "heldout/layer2.json#matches/2017461/ball_distance/00_05/detected"
+     ],
+     "value": 0.86021,
+     "x": "0-5"
+    },
+    {
+     "formula": "median",
+     "refs": [
+      "heldout/layer2.json#matches/1899585/ball_distance/05_10/detected",
+      "heldout/layer2.json#matches/1927964/ball_distance/05_10/detected",
+      "heldout/layer2.json#matches/1953632/ball_distance/05_10/detected",
+      "heldout/layer2.json#matches/1986691/ball_distance/05_10/detected",
+      "heldout/layer2.json#matches/2006229/ball_distance/05_10/detected",
+      "heldout/layer2.json#matches/2006363/ball_distance/05_10/detected",
+      "heldout/layer2.json#matches/2007721/ball_distance/05_10/detected",
+      "heldout/layer2.json#matches/2013725/ball_distance/05_10/detected",
+      "heldout/layer2.json#matches/2016236/ball_distance/05_10/detected",
+      "heldout/layer2.json#matches/2017461/ball_distance/05_10/detected"
+     ],
+     "value": 0.836082,
+     "x": "5-10"
+    },
+    {
+     "formula": "median",
+     "refs": [
+      "heldout/layer2.json#matches/1899585/ball_distance/10_20/detected",
+      "heldout/layer2.json#matches/1927964/ball_distance/10_20/detected",
+      "heldout/layer2.json#matches/1953632/ball_distance/10_20/detected",
+      "heldout/layer2.json#matches/1986691/ball_distance/10_20/detected",
+      "heldout/layer2.json#matches/2006229/ball_distance/10_20/detected",
+      "heldout/layer2.json#matches/2006363/ball_distance/10_20/detected",
+      "heldout/layer2.json#matches/2007721/ball_distance/10_20/detected",
+      "heldout/layer2.json#matches/2013725/ball_distance/10_20/detected",
+      "heldout/layer2.json#matches/2016236/ball_distance/10_20/detected",
+      "heldout/layer2.json#matches/2017461/ball_distance/10_20/detected"
+     ],
+     "value": 0.763433,
+     "x": "10-20"
+    },
+    {
+     "formula": "median",
+     "refs": [
+      "heldout/layer2.json#matches/1899585/ball_distance/20_30/detected",
+      "heldout/layer2.json#matches/1927964/ball_distance/20_30/detected",
+      "heldout/layer2.json#matches/1953632/ball_distance/20_30/detected",
+      "heldout/layer2.json#matches/1986691/ball_distance/20_30/detected",
+      "heldout/layer2.json#matches/2006229/ball_distance/20_30/detected",
+      "heldout/layer2.json#matches/2006363/ball_distance/20_30/detected",
+      "heldout/layer2.json#matches/2007721/ball_distance/20_30/detected",
+      "heldout/layer2.json#matches/2013725/ball_distance/20_30/detected",
+      "heldout/layer2.json#matches/2016236/ball_distance/20_30/detected",
+      "heldout/layer2.json#matches/2017461/ball_distance/20_30/detected"
+     ],
+     "value": 0.5765345,
+     "x": "20-30"
+    },
+    {
+     "formula": "median",
+     "refs": [
+      "heldout/layer2.json#matches/1899585/ball_distance/30_40/detected",
+      "heldout/layer2.json#matches/1927964/ball_distance/30_40/detected",
+      "heldout/layer2.json#matches/1953632/ball_distance/30_40/detected",
+      "heldout/layer2.json#matches/1986691/ball_distance/30_40/detected",
+      "heldout/layer2.json#matches/2006229/ball_distance/30_40/detected",
+      "heldout/layer2.json#matches/2006363/ball_distance/30_40/detected",
+      "heldout/layer2.json#matches/2007721/ball_distance/30_40/detected",
+      "heldout/layer2.json#matches/2013725/ball_distance/30_40/detected",
+      "heldout/layer2.json#matches/2016236/ball_distance/30_40/detected",
+      "heldout/layer2.json#matches/2017461/ball_distance/30_40/detected"
+     ],
+     "value": 0.38498,
+     "x": "30-40"
+    },
+    {
+     "formula": "median",
+     "refs": [
+      "heldout/layer2.json#matches/1899585/ball_distance/40_plus/detected",
+      "heldout/layer2.json#matches/1927964/ball_distance/40_plus/detected",
+      "heldout/layer2.json#matches/1953632/ball_distance/40_plus/detected",
+      "heldout/layer2.json#matches/1986691/ball_distance/40_plus/detected",
+      "heldout/layer2.json#matches/2006229/ball_distance/40_plus/detected",
+      "heldout/layer2.json#matches/2006363/ball_distance/40_plus/detected",
+      "heldout/layer2.json#matches/2007721/ball_distance/40_plus/detected",
+      "heldout/layer2.json#matches/2013725/ball_distance/40_plus/detected",
+      "heldout/layer2.json#matches/2016236/ball_distance/40_plus/detected",
+      "heldout/layer2.json#matches/2017461/ball_distance/40_plus/detected"
+     ],
+     "value": 0.1681635,
+     "x": "40+"
+    }
+   ]
+  },
+  {
+   "group": "calibration",
+   "kind": "match",
+   "match": "1874553",
+   "panel": "b",
+   "points": [
+    {
+     "formula": "value",
+     "refs": [
+      "layer2.json#matches/1874553/reacquisition/by_band/le_1s/frame_share"
+     ],
+     "value": 0.004405,
+     "x": "up to 1 s"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "layer2.json#matches/1874553/reacquisition/by_band/1_5s/frame_share"
+     ],
+     "value": 0.175333,
+     "x": "1-5 s"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "layer2.json#matches/1874553/reacquisition/by_band/5_20s/frame_share"
+     ],
+     "value": 0.447135,
+     "x": "5-20 s"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "layer2.json#matches/1874553/reacquisition/by_band/gt_20s/frame_share"
+     ],
+     "value": 0.373127,
+     "x": "over 20 s"
+    }
+   ]
+  },
+  {
+   "group": "calibration",
+   "kind": "match",
+   "match": "1886347",
+   "panel": "b",
+   "points": [
+    {
+     "formula": "value",
+     "refs": [
+      "layer2.json#matches/1886347/reacquisition/by_band/le_1s/frame_share"
+     ],
+     "value": 0.003612,
+     "x": "up to 1 s"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "layer2.json#matches/1886347/reacquisition/by_band/1_5s/frame_share"
+     ],
+     "value": 0.178397,
+     "x": "1-5 s"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "layer2.json#matches/1886347/reacquisition/by_band/5_20s/frame_share"
+     ],
+     "value": 0.426944,
+     "x": "5-20 s"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "layer2.json#matches/1886347/reacquisition/by_band/gt_20s/frame_share"
+     ],
+     "value": 0.391047,
+     "x": "over 20 s"
+    }
+   ]
+  },
+  {
+   "group": "calibration",
+   "kind": "match",
+   "match": "1925299",
+   "panel": "b",
+   "points": [
+    {
+     "formula": "value",
+     "refs": [
+      "layer2.json#matches/1925299/reacquisition/by_band/le_1s/frame_share"
+     ],
+     "value": 0.00441,
+     "x": "up to 1 s"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "layer2.json#matches/1925299/reacquisition/by_band/1_5s/frame_share"
+     ],
+     "value": 0.167936,
+     "x": "1-5 s"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "layer2.json#matches/1925299/reacquisition/by_band/5_20s/frame_share"
+     ],
+     "value": 0.435472,
+     "x": "5-20 s"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "layer2.json#matches/1925299/reacquisition/by_band/gt_20s/frame_share"
+     ],
+     "value": 0.392182,
+     "x": "over 20 s"
+    }
+   ]
+  },
+  {
+   "group": "calibration",
+   "kind": "match",
+   "match": "1959846",
+   "panel": "b",
+   "points": [
+    {
+     "formula": "value",
+     "refs": [
+      "layer2.json#matches/1959846/reacquisition/by_band/le_1s/frame_share"
+     ],
+     "value": 0.003713,
+     "x": "up to 1 s"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "layer2.json#matches/1959846/reacquisition/by_band/1_5s/frame_share"
+     ],
+     "value": 0.17258,
+     "x": "1-5 s"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "layer2.json#matches/1959846/reacquisition/by_band/5_20s/frame_share"
+     ],
+     "value": 0.463867,
+     "x": "5-20 s"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "layer2.json#matches/1959846/reacquisition/by_band/gt_20s/frame_share"
+     ],
+     "value": 0.359841,
+     "x": "over 20 s"
+    }
+   ]
+  },
+  {
+   "group": "calibration",
+   "kind": "match",
+   "match": "1996435",
+   "panel": "b",
+   "points": [
+    {
+     "formula": "value",
+     "refs": [
+      "layer2.json#matches/1996435/reacquisition/by_band/le_1s/frame_share"
+     ],
+     "value": 0.003209,
+     "x": "up to 1 s"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "layer2.json#matches/1996435/reacquisition/by_band/1_5s/frame_share"
+     ],
+     "value": 0.195034,
+     "x": "1-5 s"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "layer2.json#matches/1996435/reacquisition/by_band/5_20s/frame_share"
+     ],
+     "value": 0.405611,
+     "x": "5-20 s"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "layer2.json#matches/1996435/reacquisition/by_band/gt_20s/frame_share"
+     ],
+     "value": 0.396147,
+     "x": "over 20 s"
+    }
+   ]
+  },
+  {
+   "group": "calibration",
+   "kind": "match",
+   "match": "1996436",
+   "panel": "b",
+   "points": [
+    {
+     "formula": "value",
+     "refs": [
+      "layer2.json#matches/1996436/reacquisition/by_band/le_1s/frame_share"
+     ],
+     "value": 0.003741,
+     "x": "up to 1 s"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "layer2.json#matches/1996436/reacquisition/by_band/1_5s/frame_share"
+     ],
+     "value": 0.179743,
+     "x": "1-5 s"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "layer2.json#matches/1996436/reacquisition/by_band/5_20s/frame_share"
+     ],
+     "value": 0.419182,
+     "x": "5-20 s"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "layer2.json#matches/1996436/reacquisition/by_band/gt_20s/frame_share"
+     ],
+     "value": 0.397334,
+     "x": "over 20 s"
+    }
+   ]
+  },
+  {
+   "group": "calibration",
+   "kind": "match",
+   "match": "2007448",
+   "panel": "b",
+   "points": [
+    {
+     "formula": "value",
+     "refs": [
+      "layer2.json#matches/2007448/reacquisition/by_band/le_1s/frame_share"
+     ],
+     "value": 0.003391,
+     "x": "up to 1 s"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "layer2.json#matches/2007448/reacquisition/by_band/1_5s/frame_share"
+     ],
+     "value": 0.166241,
+     "x": "1-5 s"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "layer2.json#matches/2007448/reacquisition/by_band/5_20s/frame_share"
+     ],
+     "value": 0.452655,
+     "x": "5-20 s"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "layer2.json#matches/2007448/reacquisition/by_band/gt_20s/frame_share"
+     ],
+     "value": 0.377713,
+     "x": "over 20 s"
+    }
+   ]
+  },
+  {
+   "group": "calibration",
+   "kind": "match",
+   "match": "2010085",
+   "panel": "b",
+   "points": [
+    {
+     "formula": "value",
+     "refs": [
+      "layer2.json#matches/2010085/reacquisition/by_band/le_1s/frame_share"
+     ],
+     "value": 0.005599,
+     "x": "up to 1 s"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "layer2.json#matches/2010085/reacquisition/by_band/1_5s/frame_share"
+     ],
+     "value": 0.177627,
+     "x": "1-5 s"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "layer2.json#matches/2010085/reacquisition/by_band/5_20s/frame_share"
+     ],
+     "value": 0.466219,
+     "x": "5-20 s"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "layer2.json#matches/2010085/reacquisition/by_band/gt_20s/frame_share"
+     ],
+     "value": 0.350555,
+     "x": "over 20 s"
+    }
+   ]
+  },
+  {
+   "group": "calibration",
+   "kind": "match",
+   "match": "2011166",
+   "panel": "b",
+   "points": [
+    {
+     "formula": "value",
+     "refs": [
+      "layer2.json#matches/2011166/reacquisition/by_band/le_1s/frame_share"
+     ],
+     "value": 0.00473,
+     "x": "up to 1 s"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "layer2.json#matches/2011166/reacquisition/by_band/1_5s/frame_share"
+     ],
+     "value": 0.169607,
+     "x": "1-5 s"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "layer2.json#matches/2011166/reacquisition/by_band/5_20s/frame_share"
+     ],
+     "value": 0.443061,
+     "x": "5-20 s"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "layer2.json#matches/2011166/reacquisition/by_band/gt_20s/frame_share"
+     ],
+     "value": 0.382602,
+     "x": "over 20 s"
+    }
+   ]
+  },
+  {
+   "group": "calibration",
+   "kind": "match",
+   "match": "2015213",
+   "panel": "b",
+   "points": [
+    {
+     "formula": "value",
+     "refs": [
+      "layer2.json#matches/2015213/reacquisition/by_band/le_1s/frame_share"
+     ],
+     "value": 0.004966,
+     "x": "up to 1 s"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "layer2.json#matches/2015213/reacquisition/by_band/1_5s/frame_share"
+     ],
+     "value": 0.159062,
+     "x": "1-5 s"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "layer2.json#matches/2015213/reacquisition/by_band/5_20s/frame_share"
+     ],
+     "value": 0.4424,
+     "x": "5-20 s"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "layer2.json#matches/2015213/reacquisition/by_band/gt_20s/frame_share"
+     ],
+     "value": 0.393572,
+     "x": "over 20 s"
+    }
+   ]
+  },
+  {
+   "group": "calibration",
+   "kind": "median",
+   "match": "median",
+   "panel": "b",
+   "points": [
+    {
+     "formula": "median",
+     "refs": [
+      "layer2.json#matches/1874553/reacquisition/by_band/le_1s/frame_share",
+      "layer2.json#matches/1886347/reacquisition/by_band/le_1s/frame_share",
+      "layer2.json#matches/1925299/reacquisition/by_band/le_1s/frame_share",
+      "layer2.json#matches/1959846/reacquisition/by_band/le_1s/frame_share",
+      "layer2.json#matches/1996435/reacquisition/by_band/le_1s/frame_share",
+      "layer2.json#matches/1996436/reacquisition/by_band/le_1s/frame_share",
+      "layer2.json#matches/2007448/reacquisition/by_band/le_1s/frame_share",
+      "layer2.json#matches/2010085/reacquisition/by_band/le_1s/frame_share",
+      "layer2.json#matches/2011166/reacquisition/by_band/le_1s/frame_share",
+      "layer2.json#matches/2015213/reacquisition/by_band/le_1s/frame_share"
+     ],
+     "value": 0.004073,
+     "x": "up to 1 s"
+    },
+    {
+     "formula": "median",
+     "refs": [
+      "layer2.json#matches/1874553/reacquisition/by_band/1_5s/frame_share",
+      "layer2.json#matches/1886347/reacquisition/by_band/1_5s/frame_share",
+      "layer2.json#matches/1925299/reacquisition/by_band/1_5s/frame_share",
+      "layer2.json#matches/1959846/reacquisition/by_band/1_5s/frame_share",
+      "layer2.json#matches/1996435/reacquisition/by_band/1_5s/frame_share",
+      "layer2.json#matches/1996436/reacquisition/by_band/1_5s/frame_share",
+      "layer2.json#matches/2007448/reacquisition/by_band/1_5s/frame_share",
+      "layer2.json#matches/2010085/reacquisition/by_band/1_5s/frame_share",
+      "layer2.json#matches/2011166/reacquisition/by_band/1_5s/frame_share",
+      "layer2.json#matches/2015213/reacquisition/by_band/1_5s/frame_share"
+     ],
+     "value": 0.1739565,
+     "x": "1-5 s"
+    },
+    {
+     "formula": "median",
+     "refs": [
+      "layer2.json#matches/1874553/reacquisition/by_band/5_20s/frame_share",
+      "layer2.json#matches/1886347/reacquisition/by_band/5_20s/frame_share",
+      "layer2.json#matches/1925299/reacquisition/by_band/5_20s/frame_share",
+      "layer2.json#matches/1959846/reacquisition/by_band/5_20s/frame_share",
+      "layer2.json#matches/1996435/reacquisition/by_band/5_20s/frame_share",
+      "layer2.json#matches/1996436/reacquisition/by_band/5_20s/frame_share",
+      "layer2.json#matches/2007448/reacquisition/by_band/5_20s/frame_share",
+      "layer2.json#matches/2010085/reacquisition/by_band/5_20s/frame_share",
+      "layer2.json#matches/2011166/reacquisition/by_band/5_20s/frame_share",
+      "layer2.json#matches/2015213/reacquisition/by_band/5_20s/frame_share"
+     ],
+     "value": 0.4427305,
+     "x": "5-20 s"
+    },
+    {
+     "formula": "median",
+     "refs": [
+      "layer2.json#matches/1874553/reacquisition/by_band/gt_20s/frame_share",
+      "layer2.json#matches/1886347/reacquisition/by_band/gt_20s/frame_share",
+      "layer2.json#matches/1925299/reacquisition/by_band/gt_20s/frame_share",
+      "layer2.json#matches/1959846/reacquisition/by_band/gt_20s/frame_share",
+      "layer2.json#matches/1996435/reacquisition/by_band/gt_20s/frame_share",
+      "layer2.json#matches/1996436/reacquisition/by_band/gt_20s/frame_share",
+      "layer2.json#matches/2007448/reacquisition/by_band/gt_20s/frame_share",
+      "layer2.json#matches/2010085/reacquisition/by_band/gt_20s/frame_share",
+      "layer2.json#matches/2011166/reacquisition/by_band/gt_20s/frame_share",
+      "layer2.json#matches/2015213/reacquisition/by_band/gt_20s/frame_share"
+     ],
+     "value": 0.3868245,
+     "x": "over 20 s"
+    }
+   ]
+  },
+  {
+   "group": "held-out",
+   "kind": "match",
+   "match": "1899585",
+   "panel": "b",
+   "points": [
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/layer2.json#matches/1899585/reacquisition/by_band/le_1s/frame_share"
+     ],
+     "value": 0.002613,
+     "x": "up to 1 s"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/layer2.json#matches/1899585/reacquisition/by_band/1_5s/frame_share"
+     ],
+     "value": 0.15513,
+     "x": "1-5 s"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/layer2.json#matches/1899585/reacquisition/by_band/5_20s/frame_share"
+     ],
+     "value": 0.433925,
+     "x": "5-20 s"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/layer2.json#matches/1899585/reacquisition/by_band/gt_20s/frame_share"
+     ],
+     "value": 0.408332,
+     "x": "over 20 s"
+    }
+   ]
+  },
+  {
+   "group": "held-out",
+   "kind": "match",
+   "match": "1927964",
+   "panel": "b",
+   "points": [
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/layer2.json#matches/1927964/reacquisition/by_band/le_1s/frame_share"
+     ],
+     "value": 0.004286,
+     "x": "up to 1 s"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/layer2.json#matches/1927964/reacquisition/by_band/1_5s/frame_share"
+     ],
+     "value": 0.188501,
+     "x": "1-5 s"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/layer2.json#matches/1927964/reacquisition/by_band/5_20s/frame_share"
+     ],
+     "value": 0.44578,
+     "x": "5-20 s"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/layer2.json#matches/1927964/reacquisition/by_band/gt_20s/frame_share"
+     ],
+     "value": 0.361434,
+     "x": "over 20 s"
+    }
+   ]
+  },
+  {
+   "group": "held-out",
+   "kind": "match",
+   "match": "1953632",
+   "panel": "b",
+   "points": [
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/layer2.json#matches/1953632/reacquisition/by_band/le_1s/frame_share"
+     ],
+     "value": 0.003381,
+     "x": "up to 1 s"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/layer2.json#matches/1953632/reacquisition/by_band/1_5s/frame_share"
+     ],
+     "value": 0.214695,
+     "x": "1-5 s"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/layer2.json#matches/1953632/reacquisition/by_band/5_20s/frame_share"
+     ],
+     "value": 0.466797,
+     "x": "5-20 s"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/layer2.json#matches/1953632/reacquisition/by_band/gt_20s/frame_share"
+     ],
+     "value": 0.315127,
+     "x": "over 20 s"
+    }
+   ]
+  },
+  {
+   "group": "held-out",
+   "kind": "match",
+   "match": "1986691",
+   "panel": "b",
+   "points": [
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/layer2.json#matches/1986691/reacquisition/by_band/le_1s/frame_share"
+     ],
+     "value": 0.00322,
+     "x": "up to 1 s"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/layer2.json#matches/1986691/reacquisition/by_band/1_5s/frame_share"
+     ],
+     "value": 0.193139,
+     "x": "1-5 s"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/layer2.json#matches/1986691/reacquisition/by_band/5_20s/frame_share"
+     ],
+     "value": 0.444165,
+     "x": "5-20 s"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/layer2.json#matches/1986691/reacquisition/by_band/gt_20s/frame_share"
+     ],
+     "value": 0.359476,
+     "x": "over 20 s"
+    }
+   ]
+  },
+  {
+   "group": "held-out",
+   "kind": "match",
+   "match": "2006229",
+   "panel": "b",
+   "points": [
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/layer2.json#matches/2006229/reacquisition/by_band/le_1s/frame_share"
+     ],
+     "value": 0.005998,
+     "x": "up to 1 s"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/layer2.json#matches/2006229/reacquisition/by_band/1_5s/frame_share"
+     ],
+     "value": 0.199321,
+     "x": "1-5 s"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/layer2.json#matches/2006229/reacquisition/by_band/5_20s/frame_share"
+     ],
+     "value": 0.464259,
+     "x": "5-20 s"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/layer2.json#matches/2006229/reacquisition/by_band/gt_20s/frame_share"
+     ],
+     "value": 0.330421,
+     "x": "over 20 s"
+    }
+   ]
+  },
+  {
+   "group": "held-out",
+   "kind": "match",
+   "match": "2006363",
+   "panel": "b",
+   "points": [
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/layer2.json#matches/2006363/reacquisition/by_band/le_1s/frame_share"
+     ],
+     "value": 0.005946,
+     "x": "up to 1 s"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/layer2.json#matches/2006363/reacquisition/by_band/1_5s/frame_share"
+     ],
+     "value": 0.186257,
+     "x": "1-5 s"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/layer2.json#matches/2006363/reacquisition/by_band/5_20s/frame_share"
+     ],
+     "value": 0.461442,
+     "x": "5-20 s"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/layer2.json#matches/2006363/reacquisition/by_band/gt_20s/frame_share"
+     ],
+     "value": 0.346355,
+     "x": "over 20 s"
+    }
+   ]
+  },
+  {
+   "group": "held-out",
+   "kind": "match",
+   "match": "2007721",
+   "panel": "b",
+   "points": [
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/layer2.json#matches/2007721/reacquisition/by_band/le_1s/frame_share"
+     ],
+     "value": 0.004219,
+     "x": "up to 1 s"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/layer2.json#matches/2007721/reacquisition/by_band/1_5s/frame_share"
+     ],
+     "value": 0.179693,
+     "x": "1-5 s"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/layer2.json#matches/2007721/reacquisition/by_band/5_20s/frame_share"
+     ],
+     "value": 0.452379,
+     "x": "5-20 s"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/layer2.json#matches/2007721/reacquisition/by_band/gt_20s/frame_share"
+     ],
+     "value": 0.363708,
+     "x": "over 20 s"
+    }
+   ]
+  },
+  {
+   "group": "held-out",
+   "kind": "match",
+   "match": "2013725",
+   "panel": "b",
+   "points": [
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/layer2.json#matches/2013725/reacquisition/by_band/le_1s/frame_share"
+     ],
+     "value": 0.004999,
+     "x": "up to 1 s"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/layer2.json#matches/2013725/reacquisition/by_band/1_5s/frame_share"
+     ],
+     "value": 0.156989,
+     "x": "1-5 s"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/layer2.json#matches/2013725/reacquisition/by_band/5_20s/frame_share"
+     ],
+     "value": 0.466425,
+     "x": "5-20 s"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/layer2.json#matches/2013725/reacquisition/by_band/gt_20s/frame_share"
+     ],
+     "value": 0.371587,
+     "x": "over 20 s"
+    }
+   ]
+  },
+  {
+   "group": "held-out",
+   "kind": "match",
+   "match": "2016236",
+   "panel": "b",
+   "points": [
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/layer2.json#matches/2016236/reacquisition/by_band/le_1s/frame_share"
+     ],
+     "value": 0.004291,
+     "x": "up to 1 s"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/layer2.json#matches/2016236/reacquisition/by_band/1_5s/frame_share"
+     ],
+     "value": 0.174546,
+     "x": "1-5 s"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/layer2.json#matches/2016236/reacquisition/by_band/5_20s/frame_share"
+     ],
+     "value": 0.445846,
+     "x": "5-20 s"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/layer2.json#matches/2016236/reacquisition/by_band/gt_20s/frame_share"
+     ],
+     "value": 0.375316,
+     "x": "over 20 s"
+    }
+   ]
+  },
+  {
+   "group": "held-out",
+   "kind": "match",
+   "match": "2017461",
+   "panel": "b",
+   "points": [
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/layer2.json#matches/2017461/reacquisition/by_band/le_1s/frame_share"
+     ],
+     "value": 0.00613,
+     "x": "up to 1 s"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/layer2.json#matches/2017461/reacquisition/by_band/1_5s/frame_share"
+     ],
+     "value": 0.189324,
+     "x": "1-5 s"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/layer2.json#matches/2017461/reacquisition/by_band/5_20s/frame_share"
+     ],
+     "value": 0.474061,
+     "x": "5-20 s"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/layer2.json#matches/2017461/reacquisition/by_band/gt_20s/frame_share"
+     ],
+     "value": 0.330484,
+     "x": "over 20 s"
+    }
+   ]
+  },
+  {
+   "group": "held-out",
+   "kind": "median",
+   "match": "median",
+   "panel": "b",
+   "points": [
+    {
+     "formula": "median",
+     "refs": [
+      "heldout/layer2.json#matches/1899585/reacquisition/by_band/le_1s/frame_share",
+      "heldout/layer2.json#matches/1927964/reacquisition/by_band/le_1s/frame_share",
+      "heldout/layer2.json#matches/1953632/reacquisition/by_band/le_1s/frame_share",
+      "heldout/layer2.json#matches/1986691/reacquisition/by_band/le_1s/frame_share",
+      "heldout/layer2.json#matches/2006229/reacquisition/by_band/le_1s/frame_share",
+      "heldout/layer2.json#matches/2006363/reacquisition/by_band/le_1s/frame_share",
+      "heldout/layer2.json#matches/2007721/reacquisition/by_band/le_1s/frame_share",
+      "heldout/layer2.json#matches/2013725/reacquisition/by_band/le_1s/frame_share",
+      "heldout/layer2.json#matches/2016236/reacquisition/by_band/le_1s/frame_share",
+      "heldout/layer2.json#matches/2017461/reacquisition/by_band/le_1s/frame_share"
+     ],
+     "value": 0.0042885,
+     "x": "up to 1 s"
+    },
+    {
+     "formula": "median",
+     "refs": [
+      "heldout/layer2.json#matches/1899585/reacquisition/by_band/1_5s/frame_share",
+      "heldout/layer2.json#matches/1927964/reacquisition/by_band/1_5s/frame_share",
+      "heldout/layer2.json#matches/1953632/reacquisition/by_band/1_5s/frame_share",
+      "heldout/layer2.json#matches/1986691/reacquisition/by_band/1_5s/frame_share",
+      "heldout/layer2.json#matches/2006229/reacquisition/by_band/1_5s/frame_share",
+      "heldout/layer2.json#matches/2006363/reacquisition/by_band/1_5s/frame_share",
+      "heldout/layer2.json#matches/2007721/reacquisition/by_band/1_5s/frame_share",
+      "heldout/layer2.json#matches/2013725/reacquisition/by_band/1_5s/frame_share",
+      "heldout/layer2.json#matches/2016236/reacquisition/by_band/1_5s/frame_share",
+      "heldout/layer2.json#matches/2017461/reacquisition/by_band/1_5s/frame_share"
+     ],
+     "value": 0.187379,
+     "x": "1-5 s"
+    },
+    {
+     "formula": "median",
+     "refs": [
+      "heldout/layer2.json#matches/1899585/reacquisition/by_band/5_20s/frame_share",
+      "heldout/layer2.json#matches/1927964/reacquisition/by_band/5_20s/frame_share",
+      "heldout/layer2.json#matches/1953632/reacquisition/by_band/5_20s/frame_share",
+      "heldout/layer2.json#matches/1986691/reacquisition/by_band/5_20s/frame_share",
+      "heldout/layer2.json#matches/2006229/reacquisition/by_band/5_20s/frame_share",
+      "heldout/layer2.json#matches/2006363/reacquisition/by_band/5_20s/frame_share",
+      "heldout/layer2.json#matches/2007721/reacquisition/by_band/5_20s/frame_share",
+      "heldout/layer2.json#matches/2013725/reacquisition/by_band/5_20s/frame_share",
+      "heldout/layer2.json#matches/2016236/reacquisition/by_band/5_20s/frame_share",
+      "heldout/layer2.json#matches/2017461/reacquisition/by_band/5_20s/frame_share"
+     ],
+     "value": 0.4569105,
+     "x": "5-20 s"
+    },
+    {
+     "formula": "median",
+     "refs": [
+      "heldout/layer2.json#matches/1899585/reacquisition/by_band/gt_20s/frame_share",
+      "heldout/layer2.json#matches/1927964/reacquisition/by_band/gt_20s/frame_share",
+      "heldout/layer2.json#matches/1953632/reacquisition/by_band/gt_20s/frame_share",
+      "heldout/layer2.json#matches/1986691/reacquisition/by_band/gt_20s/frame_share",
+      "heldout/layer2.json#matches/2006229/reacquisition/by_band/gt_20s/frame_share",
+      "heldout/layer2.json#matches/2006363/reacquisition/by_band/gt_20s/frame_share",
+      "heldout/layer2.json#matches/2007721/reacquisition/by_band/gt_20s/frame_share",
+      "heldout/layer2.json#matches/2013725/reacquisition/by_band/gt_20s/frame_share",
+      "heldout/layer2.json#matches/2016236/reacquisition/by_band/gt_20s/frame_share",
+      "heldout/layer2.json#matches/2017461/reacquisition/by_band/gt_20s/frame_share"
+     ],
+     "value": 0.360455,
+     "x": "over 20 s"
+    }
+   ]
+  },
+  {
+   "group": "calibration",
+   "kind": "match",
+   "match": "pressure_index",
+   "panel": "c",
+   "points": [
+    {
+     "formula": "diff",
+     "refs": [
+      "reliability.csv#match_id=1874553,metric=pressure_index,ball_stratum=all,variant=V0:mean",
+      "reliability.csv#match_id=1874553,metric=pressure_index,ball_stratum=all,variant=V1:mean"
+     ],
+     "value": -0.005501,
+     "x": "1874553"
+    },
+    {
+     "formula": "diff",
+     "refs": [
+      "reliability.csv#match_id=1886347,metric=pressure_index,ball_stratum=all,variant=V0:mean",
+      "reliability.csv#match_id=1886347,metric=pressure_index,ball_stratum=all,variant=V1:mean"
+     ],
+     "value": -0.014511,
+     "x": "1886347"
+    },
+    {
+     "formula": "diff",
+     "refs": [
+      "reliability.csv#match_id=1925299,metric=pressure_index,ball_stratum=all,variant=V0:mean",
+      "reliability.csv#match_id=1925299,metric=pressure_index,ball_stratum=all,variant=V1:mean"
+     ],
+     "value": -0.01362,
+     "x": "1925299"
+    },
+    {
+     "formula": "diff",
+     "refs": [
+      "reliability.csv#match_id=1959846,metric=pressure_index,ball_stratum=all,variant=V0:mean",
+      "reliability.csv#match_id=1959846,metric=pressure_index,ball_stratum=all,variant=V1:mean"
+     ],
+     "value": -0.02351,
+     "x": "1959846"
+    },
+    {
+     "formula": "diff",
+     "refs": [
+      "reliability.csv#match_id=1996435,metric=pressure_index,ball_stratum=all,variant=V0:mean",
+      "reliability.csv#match_id=1996435,metric=pressure_index,ball_stratum=all,variant=V1:mean"
+     ],
+     "value": -0.007575,
+     "x": "1996435"
+    },
+    {
+     "formula": "diff",
+     "refs": [
+      "reliability.csv#match_id=1996436,metric=pressure_index,ball_stratum=all,variant=V0:mean",
+      "reliability.csv#match_id=1996436,metric=pressure_index,ball_stratum=all,variant=V1:mean"
+     ],
+     "value": -0.026057,
+     "x": "1996436"
+    },
+    {
+     "formula": "diff",
+     "refs": [
+      "reliability.csv#match_id=2007448,metric=pressure_index,ball_stratum=all,variant=V0:mean",
+      "reliability.csv#match_id=2007448,metric=pressure_index,ball_stratum=all,variant=V1:mean"
+     ],
+     "value": -0.025655,
+     "x": "2007448"
+    },
+    {
+     "formula": "diff",
+     "refs": [
+      "reliability.csv#match_id=2010085,metric=pressure_index,ball_stratum=all,variant=V0:mean",
+      "reliability.csv#match_id=2010085,metric=pressure_index,ball_stratum=all,variant=V1:mean"
+     ],
+     "value": -0.011291,
+     "x": "2010085"
+    },
+    {
+     "formula": "diff",
+     "refs": [
+      "reliability.csv#match_id=2011166,metric=pressure_index,ball_stratum=all,variant=V0:mean",
+      "reliability.csv#match_id=2011166,metric=pressure_index,ball_stratum=all,variant=V1:mean"
+     ],
+     "value": -0.009608,
+     "x": "2011166"
+    },
+    {
+     "formula": "diff",
+     "refs": [
+      "reliability.csv#match_id=2015213,metric=pressure_index,ball_stratum=all,variant=V0:mean",
+      "reliability.csv#match_id=2015213,metric=pressure_index,ball_stratum=all,variant=V1:mean"
+     ],
+     "value": -0.0406,
+     "x": "2015213"
+    }
+   ]
+  },
+  {
+   "group": "calibration",
+   "kind": "median",
+   "match": "pressure_index",
+   "panel": "c",
+   "points": [
+    {
+     "formula": "median_of_points",
+     "of": [
+      -0.005501,
+      -0.014511,
+      -0.01362,
+      -0.02351,
+      -0.007575,
+      -0.026057,
+      -0.025655,
+      -0.011291,
+      -0.009608,
+      -0.0406
+     ],
+     "value": -0.0140655,
+     "x": "median"
+    }
+   ]
+  },
+  {
+   "group": "held-out",
+   "kind": "match",
+   "match": "pressure_index",
+   "panel": "c",
+   "points": [
+    {
+     "formula": "diff",
+     "refs": [
+      "heldout/reliability.csv#match_id=1899585,metric=pressure_index,ball_stratum=all,variant=V0:mean",
+      "heldout/reliability.csv#match_id=1899585,metric=pressure_index,ball_stratum=all,variant=V1:mean"
+     ],
+     "value": -0.015339,
+     "x": "1899585"
+    },
+    {
+     "formula": "diff",
+     "refs": [
+      "heldout/reliability.csv#match_id=1927964,metric=pressure_index,ball_stratum=all,variant=V0:mean",
+      "heldout/reliability.csv#match_id=1927964,metric=pressure_index,ball_stratum=all,variant=V1:mean"
+     ],
+     "value": -0.004327,
+     "x": "1927964"
+    },
+    {
+     "formula": "diff",
+     "refs": [
+      "heldout/reliability.csv#match_id=1953632,metric=pressure_index,ball_stratum=all,variant=V0:mean",
+      "heldout/reliability.csv#match_id=1953632,metric=pressure_index,ball_stratum=all,variant=V1:mean"
+     ],
+     "value": -0.020076,
+     "x": "1953632"
+    },
+    {
+     "formula": "diff",
+     "refs": [
+      "heldout/reliability.csv#match_id=1986691,metric=pressure_index,ball_stratum=all,variant=V0:mean",
+      "heldout/reliability.csv#match_id=1986691,metric=pressure_index,ball_stratum=all,variant=V1:mean"
+     ],
+     "value": -0.007233,
+     "x": "1986691"
+    },
+    {
+     "formula": "diff",
+     "refs": [
+      "heldout/reliability.csv#match_id=2006229,metric=pressure_index,ball_stratum=all,variant=V0:mean",
+      "heldout/reliability.csv#match_id=2006229,metric=pressure_index,ball_stratum=all,variant=V1:mean"
+     ],
+     "value": -0.016837,
+     "x": "2006229"
+    },
+    {
+     "formula": "diff",
+     "refs": [
+      "heldout/reliability.csv#match_id=2006363,metric=pressure_index,ball_stratum=all,variant=V0:mean",
+      "heldout/reliability.csv#match_id=2006363,metric=pressure_index,ball_stratum=all,variant=V1:mean"
+     ],
+     "value": -0.010207,
+     "x": "2006363"
+    },
+    {
+     "formula": "diff",
+     "refs": [
+      "heldout/reliability.csv#match_id=2007721,metric=pressure_index,ball_stratum=all,variant=V0:mean",
+      "heldout/reliability.csv#match_id=2007721,metric=pressure_index,ball_stratum=all,variant=V1:mean"
+     ],
+     "value": -0.012601,
+     "x": "2007721"
+    },
+    {
+     "formula": "diff",
+     "refs": [
+      "heldout/reliability.csv#match_id=2013725,metric=pressure_index,ball_stratum=all,variant=V0:mean",
+      "heldout/reliability.csv#match_id=2013725,metric=pressure_index,ball_stratum=all,variant=V1:mean"
+     ],
+     "value": -0.03377,
+     "x": "2013725"
+    },
+    {
+     "formula": "diff",
+     "refs": [
+      "heldout/reliability.csv#match_id=2016236,metric=pressure_index,ball_stratum=all,variant=V0:mean",
+      "heldout/reliability.csv#match_id=2016236,metric=pressure_index,ball_stratum=all,variant=V1:mean"
+     ],
+     "value": -0.018197,
+     "x": "2016236"
+    },
+    {
+     "formula": "diff",
+     "refs": [
+      "heldout/reliability.csv#match_id=2017461,metric=pressure_index,ball_stratum=all,variant=V0:mean",
+      "heldout/reliability.csv#match_id=2017461,metric=pressure_index,ball_stratum=all,variant=V1:mean"
+     ],
+     "value": -0.029434,
+     "x": "2017461"
+    }
+   ]
+  },
+  {
+   "group": "held-out",
+   "kind": "median",
+   "match": "pressure_index",
+   "panel": "c",
+   "points": [
+    {
+     "formula": "median_of_points",
+     "of": [
+      -0.015339,
+      -0.004327,
+      -0.020076,
+      -0.007233,
+      -0.016837,
+      -0.010207,
+      -0.012601,
+      -0.03377,
+      -0.018197,
+      -0.029434
+     ],
+     "value": -0.016088,
+     "x": "median"
+    }
+   ]
+  },
+  {
+   "group": "calibration",
+   "kind": "match",
+   "match": "pressure_index",
+   "panel": "d",
+   "points": [
+    {
+     "formula": "value",
+     "refs": [
+      "amputation.csv#match_id=1874553,metric=pressure_index,band=all:mean_abs_error"
+     ],
+     "value": 0.029571,
+     "x": "1874553"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "amputation.csv#match_id=1886347,metric=pressure_index,band=all:mean_abs_error"
+     ],
+     "value": 0.028646,
+     "x": "1886347"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "amputation.csv#match_id=1925299,metric=pressure_index,band=all:mean_abs_error"
+     ],
+     "value": 0.019241,
+     "x": "1925299"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "amputation.csv#match_id=1959846,metric=pressure_index,band=all:mean_abs_error"
+     ],
+     "value": 0.043657,
+     "x": "1959846"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "amputation.csv#match_id=1996435,metric=pressure_index,band=all:mean_abs_error"
+     ],
+     "value": 0.029552,
+     "x": "1996435"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "amputation.csv#match_id=1996436,metric=pressure_index,band=all:mean_abs_error"
+     ],
+     "value": 0.040563,
+     "x": "1996436"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "amputation.csv#match_id=2007448,metric=pressure_index,band=all:mean_abs_error"
+     ],
+     "value": 0.035594,
+     "x": "2007448"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "amputation.csv#match_id=2010085,metric=pressure_index,band=all:mean_abs_error"
+     ],
+     "value": 0.023308,
+     "x": "2010085"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "amputation.csv#match_id=2011166,metric=pressure_index,band=all:mean_abs_error"
+     ],
+     "value": 0.047211,
+     "x": "2011166"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "amputation.csv#match_id=2015213,metric=pressure_index,band=all:mean_abs_error"
+     ],
+     "value": 0.049455,
+     "x": "2015213"
+    }
+   ]
+  },
+  {
+   "group": "calibration",
+   "kind": "median",
+   "match": "pressure_index",
+   "panel": "d",
+   "points": [
+    {
+     "formula": "median_of_points",
+     "of": [
+      0.029571,
+      0.028646,
+      0.019241,
+      0.043657,
+      0.029552,
+      0.040563,
+      0.035594,
+      0.023308,
+      0.047211,
+      0.049455
+     ],
+     "value": 0.0325825,
+     "x": "median"
+    }
+   ]
+  },
+  {
+   "group": "held-out",
+   "kind": "match",
+   "match": "pressure_index",
+   "panel": "d",
+   "points": [
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/amputation.csv#match_id=1899585,metric=pressure_index,band=all:mean_abs_error"
+     ],
+     "value": 0.0391,
+     "x": "1899585"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/amputation.csv#match_id=1927964,metric=pressure_index,band=all:mean_abs_error"
+     ],
+     "value": 0.027177,
+     "x": "1927964"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/amputation.csv#match_id=1953632,metric=pressure_index,band=all:mean_abs_error"
+     ],
+     "value": 0.036469,
+     "x": "1953632"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/amputation.csv#match_id=1986691,metric=pressure_index,band=all:mean_abs_error"
+     ],
+     "value": 0.036843,
+     "x": "1986691"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/amputation.csv#match_id=2006229,metric=pressure_index,band=all:mean_abs_error"
+     ],
+     "value": 0.03448,
+     "x": "2006229"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/amputation.csv#match_id=2006363,metric=pressure_index,band=all:mean_abs_error"
+     ],
+     "value": 0.032904,
+     "x": "2006363"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/amputation.csv#match_id=2007721,metric=pressure_index,band=all:mean_abs_error"
+     ],
+     "value": 0.038492,
+     "x": "2007721"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/amputation.csv#match_id=2013725,metric=pressure_index,band=all:mean_abs_error"
+     ],
+     "value": 0.042113,
+     "x": "2013725"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/amputation.csv#match_id=2016236,metric=pressure_index,band=all:mean_abs_error"
+     ],
+     "value": 0.034701,
+     "x": "2016236"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/amputation.csv#match_id=2017461,metric=pressure_index,band=all:mean_abs_error"
+     ],
+     "value": 0.046188,
+     "x": "2017461"
+    }
+   ]
+  },
+  {
+   "group": "held-out",
+   "kind": "median",
+   "match": "pressure_index",
+   "panel": "d",
+   "points": [
+    {
+     "formula": "median_of_points",
+     "of": [
+      0.0391,
+      0.027177,
+      0.036469,
+      0.036843,
+      0.03448,
+      0.032904,
+      0.038492,
+      0.042113,
+      0.034701,
+      0.046188
+     ],
+     "value": 0.036656,
+     "x": "median"
+    }
+   ]
+  },
+  {
+   "group": "calibration",
+   "kind": "match",
+   "match": "nearest_rival_m",
+   "panel": "c",
+   "points": [
+    {
+     "formula": "diff",
+     "refs": [
+      "reliability.csv#match_id=1874553,metric=nearest_rival_m,ball_stratum=all,variant=V0:mean",
+      "reliability.csv#match_id=1874553,metric=nearest_rival_m,ball_stratum=all,variant=V1:mean"
+     ],
+     "value": -0.015784,
+     "x": "1874553"
+    },
+    {
+     "formula": "diff",
+     "refs": [
+      "reliability.csv#match_id=1886347,metric=nearest_rival_m,ball_stratum=all,variant=V0:mean",
+      "reliability.csv#match_id=1886347,metric=nearest_rival_m,ball_stratum=all,variant=V1:mean"
+     ],
+     "value": -0.012321,
+     "x": "1886347"
+    },
+    {
+     "formula": "diff",
+     "refs": [
+      "reliability.csv#match_id=1925299,metric=nearest_rival_m,ball_stratum=all,variant=V0:mean",
+      "reliability.csv#match_id=1925299,metric=nearest_rival_m,ball_stratum=all,variant=V1:mean"
+     ],
+     "value": -0.013668,
+     "x": "1925299"
+    },
+    {
+     "formula": "diff",
+     "refs": [
+      "reliability.csv#match_id=1959846,metric=nearest_rival_m,ball_stratum=all,variant=V0:mean",
+      "reliability.csv#match_id=1959846,metric=nearest_rival_m,ball_stratum=all,variant=V1:mean"
+     ],
+     "value": -0.047153,
+     "x": "1959846"
+    },
+    {
+     "formula": "diff",
+     "refs": [
+      "reliability.csv#match_id=1996435,metric=nearest_rival_m,ball_stratum=all,variant=V0:mean",
+      "reliability.csv#match_id=1996435,metric=nearest_rival_m,ball_stratum=all,variant=V1:mean"
+     ],
+     "value": -0.032844,
+     "x": "1996435"
+    },
+    {
+     "formula": "diff",
+     "refs": [
+      "reliability.csv#match_id=1996436,metric=nearest_rival_m,ball_stratum=all,variant=V0:mean",
+      "reliability.csv#match_id=1996436,metric=nearest_rival_m,ball_stratum=all,variant=V1:mean"
+     ],
+     "value": -0.00835,
+     "x": "1996436"
+    },
+    {
+     "formula": "diff",
+     "refs": [
+      "reliability.csv#match_id=2007448,metric=nearest_rival_m,ball_stratum=all,variant=V0:mean",
+      "reliability.csv#match_id=2007448,metric=nearest_rival_m,ball_stratum=all,variant=V1:mean"
+     ],
+     "value": -0.146717,
+     "x": "2007448"
+    },
+    {
+     "formula": "diff",
+     "refs": [
+      "reliability.csv#match_id=2010085,metric=nearest_rival_m,ball_stratum=all,variant=V0:mean",
+      "reliability.csv#match_id=2010085,metric=nearest_rival_m,ball_stratum=all,variant=V1:mean"
+     ],
+     "value": -0.042144,
+     "x": "2010085"
+    },
+    {
+     "formula": "diff",
+     "refs": [
+      "reliability.csv#match_id=2011166,metric=nearest_rival_m,ball_stratum=all,variant=V0:mean",
+      "reliability.csv#match_id=2011166,metric=nearest_rival_m,ball_stratum=all,variant=V1:mean"
+     ],
+     "value": -0.062246,
+     "x": "2011166"
+    },
+    {
+     "formula": "diff",
+     "refs": [
+      "reliability.csv#match_id=2015213,metric=nearest_rival_m,ball_stratum=all,variant=V0:mean",
+      "reliability.csv#match_id=2015213,metric=nearest_rival_m,ball_stratum=all,variant=V1:mean"
+     ],
+     "value": 0.043775,
+     "x": "2015213"
+    }
+   ]
+  },
+  {
+   "group": "calibration",
+   "kind": "median",
+   "match": "nearest_rival_m",
+   "panel": "c",
+   "points": [
+    {
+     "formula": "median_of_points",
+     "of": [
+      -0.015784,
+      -0.012321,
+      -0.013668,
+      -0.047153,
+      -0.032844,
+      -0.00835,
+      -0.146717,
+      -0.042144,
+      -0.062246,
+      0.043775
+     ],
+     "value": -0.024314,
+     "x": "median"
+    }
+   ]
+  },
+  {
+   "group": "held-out",
+   "kind": "match",
+   "match": "nearest_rival_m",
+   "panel": "c",
+   "points": [
+    {
+     "formula": "diff",
+     "refs": [
+      "heldout/reliability.csv#match_id=1899585,metric=nearest_rival_m,ball_stratum=all,variant=V0:mean",
+      "heldout/reliability.csv#match_id=1899585,metric=nearest_rival_m,ball_stratum=all,variant=V1:mean"
+     ],
+     "value": -0.122573,
+     "x": "1899585"
+    },
+    {
+     "formula": "diff",
+     "refs": [
+      "heldout/reliability.csv#match_id=1927964,metric=nearest_rival_m,ball_stratum=all,variant=V0:mean",
+      "heldout/reliability.csv#match_id=1927964,metric=nearest_rival_m,ball_stratum=all,variant=V1:mean"
+     ],
+     "value": -0.071576,
+     "x": "1927964"
+    },
+    {
+     "formula": "diff",
+     "refs": [
+      "heldout/reliability.csv#match_id=1953632,metric=nearest_rival_m,ball_stratum=all,variant=V0:mean",
+      "heldout/reliability.csv#match_id=1953632,metric=nearest_rival_m,ball_stratum=all,variant=V1:mean"
+     ],
+     "value": 0.005976,
+     "x": "1953632"
+    },
+    {
+     "formula": "diff",
+     "refs": [
+      "heldout/reliability.csv#match_id=1986691,metric=nearest_rival_m,ball_stratum=all,variant=V0:mean",
+      "heldout/reliability.csv#match_id=1986691,metric=nearest_rival_m,ball_stratum=all,variant=V1:mean"
+     ],
+     "value": -0.050304,
+     "x": "1986691"
+    },
+    {
+     "formula": "diff",
+     "refs": [
+      "heldout/reliability.csv#match_id=2006229,metric=nearest_rival_m,ball_stratum=all,variant=V0:mean",
+      "heldout/reliability.csv#match_id=2006229,metric=nearest_rival_m,ball_stratum=all,variant=V1:mean"
+     ],
+     "value": -0.009455,
+     "x": "2006229"
+    },
+    {
+     "formula": "diff",
+     "refs": [
+      "heldout/reliability.csv#match_id=2006363,metric=nearest_rival_m,ball_stratum=all,variant=V0:mean",
+      "heldout/reliability.csv#match_id=2006363,metric=nearest_rival_m,ball_stratum=all,variant=V1:mean"
+     ],
+     "value": -0.053565,
+     "x": "2006363"
+    },
+    {
+     "formula": "diff",
+     "refs": [
+      "heldout/reliability.csv#match_id=2007721,metric=nearest_rival_m,ball_stratum=all,variant=V0:mean",
+      "heldout/reliability.csv#match_id=2007721,metric=nearest_rival_m,ball_stratum=all,variant=V1:mean"
+     ],
+     "value": -0.087006,
+     "x": "2007721"
+    },
+    {
+     "formula": "diff",
+     "refs": [
+      "heldout/reliability.csv#match_id=2013725,metric=nearest_rival_m,ball_stratum=all,variant=V0:mean",
+      "heldout/reliability.csv#match_id=2013725,metric=nearest_rival_m,ball_stratum=all,variant=V1:mean"
+     ],
+     "value": -0.006387,
+     "x": "2013725"
+    },
+    {
+     "formula": "diff",
+     "refs": [
+      "heldout/reliability.csv#match_id=2016236,metric=nearest_rival_m,ball_stratum=all,variant=V0:mean",
+      "heldout/reliability.csv#match_id=2016236,metric=nearest_rival_m,ball_stratum=all,variant=V1:mean"
+     ],
+     "value": -0.048844,
+     "x": "2016236"
+    },
+    {
+     "formula": "diff",
+     "refs": [
+      "heldout/reliability.csv#match_id=2017461,metric=nearest_rival_m,ball_stratum=all,variant=V0:mean",
+      "heldout/reliability.csv#match_id=2017461,metric=nearest_rival_m,ball_stratum=all,variant=V1:mean"
+     ],
+     "value": -0.15729,
+     "x": "2017461"
+    }
+   ]
+  },
+  {
+   "group": "held-out",
+   "kind": "median",
+   "match": "nearest_rival_m",
+   "panel": "c",
+   "points": [
+    {
+     "formula": "median_of_points",
+     "of": [
+      -0.122573,
+      -0.071576,
+      0.005976,
+      -0.050304,
+      -0.009455,
+      -0.053565,
+      -0.087006,
+      -0.006387,
+      -0.048844,
+      -0.15729
+     ],
+     "value": -0.0519345,
+     "x": "median"
+    }
+   ]
+  },
+  {
+   "group": "calibration",
+   "kind": "match",
+   "match": "nearest_rival_m",
+   "panel": "d",
+   "points": [
+    {
+     "formula": "value",
+     "refs": [
+      "amputation.csv#match_id=1874553,metric=nearest_rival_m,band=all:mean_abs_error"
+     ],
+     "value": 0.205047,
+     "x": "1874553"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "amputation.csv#match_id=1886347,metric=nearest_rival_m,band=all:mean_abs_error"
+     ],
+     "value": 0.415862,
+     "x": "1886347"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "amputation.csv#match_id=1925299,metric=nearest_rival_m,band=all:mean_abs_error"
+     ],
+     "value": 0.203206,
+     "x": "1925299"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "amputation.csv#match_id=1959846,metric=nearest_rival_m,band=all:mean_abs_error"
+     ],
+     "value": 0.310369,
+     "x": "1959846"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "amputation.csv#match_id=1996435,metric=nearest_rival_m,band=all:mean_abs_error"
+     ],
+     "value": 0.262992,
+     "x": "1996435"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "amputation.csv#match_id=1996436,metric=nearest_rival_m,band=all:mean_abs_error"
+     ],
+     "value": 0.37579,
+     "x": "1996436"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "amputation.csv#match_id=2007448,metric=nearest_rival_m,band=all:mean_abs_error"
+     ],
+     "value": 0.382809,
+     "x": "2007448"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "amputation.csv#match_id=2010085,metric=nearest_rival_m,band=all:mean_abs_error"
+     ],
+     "value": 0.278968,
+     "x": "2010085"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "amputation.csv#match_id=2011166,metric=nearest_rival_m,band=all:mean_abs_error"
+     ],
+     "value": 0.324532,
+     "x": "2011166"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "amputation.csv#match_id=2015213,metric=nearest_rival_m,band=all:mean_abs_error"
+     ],
+     "value": 0.498957,
+     "x": "2015213"
+    }
+   ]
+  },
+  {
+   "group": "calibration",
+   "kind": "median",
+   "match": "nearest_rival_m",
+   "panel": "d",
+   "points": [
+    {
+     "formula": "median_of_points",
+     "of": [
+      0.205047,
+      0.415862,
+      0.203206,
+      0.310369,
+      0.262992,
+      0.37579,
+      0.382809,
+      0.278968,
+      0.324532,
+      0.498957
+     ],
+     "value": 0.3174505,
+     "x": "median"
+    }
+   ]
+  },
+  {
+   "group": "held-out",
+   "kind": "match",
+   "match": "nearest_rival_m",
+   "panel": "d",
+   "points": [
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/amputation.csv#match_id=1899585,metric=nearest_rival_m,band=all:mean_abs_error"
+     ],
+     "value": 0.3572,
+     "x": "1899585"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/amputation.csv#match_id=1927964,metric=nearest_rival_m,band=all:mean_abs_error"
+     ],
+     "value": 0.273585,
+     "x": "1927964"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/amputation.csv#match_id=1953632,metric=nearest_rival_m,band=all:mean_abs_error"
+     ],
+     "value": 0.426001,
+     "x": "1953632"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/amputation.csv#match_id=1986691,metric=nearest_rival_m,band=all:mean_abs_error"
+     ],
+     "value": 0.291182,
+     "x": "1986691"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/amputation.csv#match_id=2006229,metric=nearest_rival_m,band=all:mean_abs_error"
+     ],
+     "value": 0.413008,
+     "x": "2006229"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/amputation.csv#match_id=2006363,metric=nearest_rival_m,band=all:mean_abs_error"
+     ],
+     "value": 0.286631,
+     "x": "2006363"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/amputation.csv#match_id=2007721,metric=nearest_rival_m,band=all:mean_abs_error"
+     ],
+     "value": 0.333486,
+     "x": "2007721"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/amputation.csv#match_id=2013725,metric=nearest_rival_m,band=all:mean_abs_error"
+     ],
+     "value": 0.512119,
+     "x": "2013725"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/amputation.csv#match_id=2016236,metric=nearest_rival_m,band=all:mean_abs_error"
+     ],
+     "value": 0.267991,
+     "x": "2016236"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/amputation.csv#match_id=2017461,metric=nearest_rival_m,band=all:mean_abs_error"
+     ],
+     "value": 0.342493,
+     "x": "2017461"
+    }
+   ]
+  },
+  {
+   "group": "held-out",
+   "kind": "median",
+   "match": "nearest_rival_m",
+   "panel": "d",
+   "points": [
+    {
+     "formula": "median_of_points",
+     "of": [
+      0.3572,
+      0.273585,
+      0.426001,
+      0.291182,
+      0.413008,
+      0.286631,
+      0.333486,
+      0.512119,
+      0.267991,
+      0.342493
+     ],
+     "value": 0.3379895,
+     "x": "median"
+    }
+   ]
+  },
+  {
+   "group": "calibration",
+   "kind": "match",
+   "match": "line_height_m",
+   "panel": "c",
+   "points": [
+    {
+     "formula": "diff",
+     "refs": [
+      "reliability.csv#match_id=1874553,metric=line_height_m,ball_stratum=all,variant=V0:mean",
+      "reliability.csv#match_id=1874553,metric=line_height_m,ball_stratum=all,variant=V1:mean"
+     ],
+     "value": 10.030472,
+     "x": "1874553"
+    },
+    {
+     "formula": "diff",
+     "refs": [
+      "reliability.csv#match_id=1886347,metric=line_height_m,ball_stratum=all,variant=V0:mean",
+      "reliability.csv#match_id=1886347,metric=line_height_m,ball_stratum=all,variant=V1:mean"
+     ],
+     "value": 12.078411,
+     "x": "1886347"
+    },
+    {
+     "formula": "diff",
+     "refs": [
+      "reliability.csv#match_id=1925299,metric=line_height_m,ball_stratum=all,variant=V0:mean",
+      "reliability.csv#match_id=1925299,metric=line_height_m,ball_stratum=all,variant=V1:mean"
+     ],
+     "value": 11.751514,
+     "x": "1925299"
+    },
+    {
+     "formula": "diff",
+     "refs": [
+      "reliability.csv#match_id=1959846,metric=line_height_m,ball_stratum=all,variant=V0:mean",
+      "reliability.csv#match_id=1959846,metric=line_height_m,ball_stratum=all,variant=V1:mean"
+     ],
+     "value": 11.521186,
+     "x": "1959846"
+    },
+    {
+     "formula": "diff",
+     "refs": [
+      "reliability.csv#match_id=1996435,metric=line_height_m,ball_stratum=all,variant=V0:mean",
+      "reliability.csv#match_id=1996435,metric=line_height_m,ball_stratum=all,variant=V1:mean"
+     ],
+     "value": 8.65416,
+     "x": "1996435"
+    },
+    {
+     "formula": "diff",
+     "refs": [
+      "reliability.csv#match_id=1996436,metric=line_height_m,ball_stratum=all,variant=V0:mean",
+      "reliability.csv#match_id=1996436,metric=line_height_m,ball_stratum=all,variant=V1:mean"
+     ],
+     "value": 10.661782,
+     "x": "1996436"
+    },
+    {
+     "formula": "diff",
+     "refs": [
+      "reliability.csv#match_id=2007448,metric=line_height_m,ball_stratum=all,variant=V0:mean",
+      "reliability.csv#match_id=2007448,metric=line_height_m,ball_stratum=all,variant=V1:mean"
+     ],
+     "value": 12.688289,
+     "x": "2007448"
+    },
+    {
+     "formula": "diff",
+     "refs": [
+      "reliability.csv#match_id=2010085,metric=line_height_m,ball_stratum=all,variant=V0:mean",
+      "reliability.csv#match_id=2010085,metric=line_height_m,ball_stratum=all,variant=V1:mean"
+     ],
+     "value": 9.811719,
+     "x": "2010085"
+    },
+    {
+     "formula": "diff",
+     "refs": [
+      "reliability.csv#match_id=2011166,metric=line_height_m,ball_stratum=all,variant=V0:mean",
+      "reliability.csv#match_id=2011166,metric=line_height_m,ball_stratum=all,variant=V1:mean"
+     ],
+     "value": 13.88516,
+     "x": "2011166"
+    },
+    {
+     "formula": "diff",
+     "refs": [
+      "reliability.csv#match_id=2015213,metric=line_height_m,ball_stratum=all,variant=V0:mean",
+      "reliability.csv#match_id=2015213,metric=line_height_m,ball_stratum=all,variant=V1:mean"
+     ],
+     "value": 8.954336,
+     "x": "2015213"
+    }
+   ]
+  },
+  {
+   "group": "calibration",
+   "kind": "median",
+   "match": "line_height_m",
+   "panel": "c",
+   "points": [
+    {
+     "formula": "median_of_points",
+     "of": [
+      10.030472,
+      12.078411,
+      11.751514,
+      11.521186,
+      8.65416,
+      10.661782,
+      12.688289,
+      9.811719,
+      13.88516,
+      8.954336
+     ],
+     "value": 11.091484,
+     "x": "median"
+    }
+   ]
+  },
+  {
+   "group": "held-out",
+   "kind": "match",
+   "match": "line_height_m",
+   "panel": "c",
+   "points": [
+    {
+     "formula": "diff",
+     "refs": [
+      "heldout/reliability.csv#match_id=1899585,metric=line_height_m,ball_stratum=all,variant=V0:mean",
+      "heldout/reliability.csv#match_id=1899585,metric=line_height_m,ball_stratum=all,variant=V1:mean"
+     ],
+     "value": 12.375282,
+     "x": "1899585"
+    },
+    {
+     "formula": "diff",
+     "refs": [
+      "heldout/reliability.csv#match_id=1927964,metric=line_height_m,ball_stratum=all,variant=V0:mean",
+      "heldout/reliability.csv#match_id=1927964,metric=line_height_m,ball_stratum=all,variant=V1:mean"
+     ],
+     "value": 8.84682,
+     "x": "1927964"
+    },
+    {
+     "formula": "diff",
+     "refs": [
+      "heldout/reliability.csv#match_id=1953632,metric=line_height_m,ball_stratum=all,variant=V0:mean",
+      "heldout/reliability.csv#match_id=1953632,metric=line_height_m,ball_stratum=all,variant=V1:mean"
+     ],
+     "value": 7.279975,
+     "x": "1953632"
+    },
+    {
+     "formula": "diff",
+     "refs": [
+      "heldout/reliability.csv#match_id=1986691,metric=line_height_m,ball_stratum=all,variant=V0:mean",
+      "heldout/reliability.csv#match_id=1986691,metric=line_height_m,ball_stratum=all,variant=V1:mean"
+     ],
+     "value": 12.034615,
+     "x": "1986691"
+    },
+    {
+     "formula": "diff",
+     "refs": [
+      "heldout/reliability.csv#match_id=2006229,metric=line_height_m,ball_stratum=all,variant=V0:mean",
+      "heldout/reliability.csv#match_id=2006229,metric=line_height_m,ball_stratum=all,variant=V1:mean"
+     ],
+     "value": 7.192511,
+     "x": "2006229"
+    },
+    {
+     "formula": "diff",
+     "refs": [
+      "heldout/reliability.csv#match_id=2006363,metric=line_height_m,ball_stratum=all,variant=V0:mean",
+      "heldout/reliability.csv#match_id=2006363,metric=line_height_m,ball_stratum=all,variant=V1:mean"
+     ],
+     "value": 9.555829,
+     "x": "2006363"
+    },
+    {
+     "formula": "diff",
+     "refs": [
+      "heldout/reliability.csv#match_id=2007721,metric=line_height_m,ball_stratum=all,variant=V0:mean",
+      "heldout/reliability.csv#match_id=2007721,metric=line_height_m,ball_stratum=all,variant=V1:mean"
+     ],
+     "value": 8.031221,
+     "x": "2007721"
+    },
+    {
+     "formula": "diff",
+     "refs": [
+      "heldout/reliability.csv#match_id=2013725,metric=line_height_m,ball_stratum=all,variant=V0:mean",
+      "heldout/reliability.csv#match_id=2013725,metric=line_height_m,ball_stratum=all,variant=V1:mean"
+     ],
+     "value": 9.987151,
+     "x": "2013725"
+    },
+    {
+     "formula": "diff",
+     "refs": [
+      "heldout/reliability.csv#match_id=2016236,metric=line_height_m,ball_stratum=all,variant=V0:mean",
+      "heldout/reliability.csv#match_id=2016236,metric=line_height_m,ball_stratum=all,variant=V1:mean"
+     ],
+     "value": 13.200224,
+     "x": "2016236"
+    },
+    {
+     "formula": "diff",
+     "refs": [
+      "heldout/reliability.csv#match_id=2017461,metric=line_height_m,ball_stratum=all,variant=V0:mean",
+      "heldout/reliability.csv#match_id=2017461,metric=line_height_m,ball_stratum=all,variant=V1:mean"
+     ],
+     "value": 9.582859,
+     "x": "2017461"
+    }
+   ]
+  },
+  {
+   "group": "held-out",
+   "kind": "median",
+   "match": "line_height_m",
+   "panel": "c",
+   "points": [
+    {
+     "formula": "median_of_points",
+     "of": [
+      12.375282,
+      8.84682,
+      7.279975,
+      12.034615,
+      7.192511,
+      9.555829,
+      8.031221,
+      9.987151,
+      13.200224,
+      9.582859
+     ],
+     "value": 9.569344,
+     "x": "median"
+    }
+   ]
+  },
+  {
+   "group": "calibration",
+   "kind": "match",
+   "match": "line_height_m",
+   "panel": "d",
+   "points": [
+    {
+     "formula": "value",
+     "refs": [
+      "amputation.csv#match_id=1874553,metric=line_height_m,band=all:mean_abs_error"
+     ],
+     "value": 0.850652,
+     "x": "1874553"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "amputation.csv#match_id=1886347,metric=line_height_m,band=all:mean_abs_error"
+     ],
+     "value": 0.870234,
+     "x": "1886347"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "amputation.csv#match_id=1925299,metric=line_height_m,band=all:mean_abs_error"
+     ],
+     "value": 0.881163,
+     "x": "1925299"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "amputation.csv#match_id=1959846,metric=line_height_m,band=all:mean_abs_error"
+     ],
+     "value": 0.844077,
+     "x": "1959846"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "amputation.csv#match_id=1996435,metric=line_height_m,band=all:mean_abs_error"
+     ],
+     "value": 0.93175,
+     "x": "1996435"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "amputation.csv#match_id=1996436,metric=line_height_m,band=all:mean_abs_error"
+     ],
+     "value": 1.000244,
+     "x": "1996436"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "amputation.csv#match_id=2007448,metric=line_height_m,band=all:mean_abs_error"
+     ],
+     "value": 0.899899,
+     "x": "2007448"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "amputation.csv#match_id=2010085,metric=line_height_m,band=all:mean_abs_error"
+     ],
+     "value": 0.787278,
+     "x": "2010085"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "amputation.csv#match_id=2011166,metric=line_height_m,band=all:mean_abs_error"
+     ],
+     "value": 0.918818,
+     "x": "2011166"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "amputation.csv#match_id=2015213,metric=line_height_m,band=all:mean_abs_error"
+     ],
+     "value": 1.390989,
+     "x": "2015213"
+    }
+   ]
+  },
+  {
+   "group": "calibration",
+   "kind": "median",
+   "match": "line_height_m",
+   "panel": "d",
+   "points": [
+    {
+     "formula": "median_of_points",
+     "of": [
+      0.850652,
+      0.870234,
+      0.881163,
+      0.844077,
+      0.93175,
+      1.000244,
+      0.899899,
+      0.787278,
+      0.918818,
+      1.390989
+     ],
+     "value": 0.890531,
+     "x": "median"
+    }
+   ]
+  },
+  {
+   "group": "held-out",
+   "kind": "match",
+   "match": "line_height_m",
+   "panel": "d",
+   "points": [
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/amputation.csv#match_id=1899585,metric=line_height_m,band=all:mean_abs_error"
+     ],
+     "value": 0.945359,
+     "x": "1899585"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/amputation.csv#match_id=1927964,metric=line_height_m,band=all:mean_abs_error"
+     ],
+     "value": 1.17299,
+     "x": "1927964"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/amputation.csv#match_id=1953632,metric=line_height_m,band=all:mean_abs_error"
+     ],
+     "value": 1.037086,
+     "x": "1953632"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/amputation.csv#match_id=1986691,metric=line_height_m,band=all:mean_abs_error"
+     ],
+     "value": 0.898659,
+     "x": "1986691"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/amputation.csv#match_id=2006229,metric=line_height_m,band=all:mean_abs_error"
+     ],
+     "value": 0.979365,
+     "x": "2006229"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/amputation.csv#match_id=2006363,metric=line_height_m,band=all:mean_abs_error"
+     ],
+     "value": 0.943307,
+     "x": "2006363"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/amputation.csv#match_id=2007721,metric=line_height_m,band=all:mean_abs_error"
+     ],
+     "value": 0.96351,
+     "x": "2007721"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/amputation.csv#match_id=2013725,metric=line_height_m,band=all:mean_abs_error"
+     ],
+     "value": 1.202836,
+     "x": "2013725"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/amputation.csv#match_id=2016236,metric=line_height_m,band=all:mean_abs_error"
+     ],
+     "value": 1.017141,
+     "x": "2016236"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/amputation.csv#match_id=2017461,metric=line_height_m,band=all:mean_abs_error"
+     ],
+     "value": 1.091461,
+     "x": "2017461"
+    }
+   ]
+  },
+  {
+   "group": "held-out",
+   "kind": "median",
+   "match": "line_height_m",
+   "panel": "d",
+   "points": [
+    {
+     "formula": "median_of_points",
+     "of": [
+      0.945359,
+      1.17299,
+      1.037086,
+      0.898659,
+      0.979365,
+      0.943307,
+      0.96351,
+      1.202836,
+      1.017141,
+      1.091461
+     ],
+     "value": 0.998253,
+     "x": "median"
+    }
+   ]
+  },
+  {
+   "group": "calibration",
+   "kind": "match",
+   "match": "line_reaction_m",
+   "panel": "c",
+   "points": [
+    {
+     "formula": "diff",
+     "refs": [
+      "reliability.csv#match_id=1874553,metric=line_reaction_m,ball_stratum=all,variant=V0:mean",
+      "reliability.csv#match_id=1874553,metric=line_reaction_m,ball_stratum=all,variant=V1:mean"
+     ],
+     "value": 1.356492,
+     "x": "1874553"
+    },
+    {
+     "formula": "diff",
+     "refs": [
+      "reliability.csv#match_id=1886347,metric=line_reaction_m,ball_stratum=all,variant=V0:mean",
+      "reliability.csv#match_id=1886347,metric=line_reaction_m,ball_stratum=all,variant=V1:mean"
+     ],
+     "value": 1.09406,
+     "x": "1886347"
+    },
+    {
+     "formula": "diff",
+     "refs": [
+      "reliability.csv#match_id=1925299,metric=line_reaction_m,ball_stratum=all,variant=V0:mean",
+      "reliability.csv#match_id=1925299,metric=line_reaction_m,ball_stratum=all,variant=V1:mean"
+     ],
+     "value": 1.401708,
+     "x": "1925299"
+    },
+    {
+     "formula": "diff",
+     "refs": [
+      "reliability.csv#match_id=1959846,metric=line_reaction_m,ball_stratum=all,variant=V0:mean",
+      "reliability.csv#match_id=1959846,metric=line_reaction_m,ball_stratum=all,variant=V1:mean"
+     ],
+     "value": 1.067381,
+     "x": "1959846"
+    },
+    {
+     "formula": "diff",
+     "refs": [
+      "reliability.csv#match_id=1996435,metric=line_reaction_m,ball_stratum=all,variant=V0:mean",
+      "reliability.csv#match_id=1996435,metric=line_reaction_m,ball_stratum=all,variant=V1:mean"
+     ],
+     "value": 0.688294,
+     "x": "1996435"
+    },
+    {
+     "formula": "diff",
+     "refs": [
+      "reliability.csv#match_id=1996436,metric=line_reaction_m,ball_stratum=all,variant=V0:mean",
+      "reliability.csv#match_id=1996436,metric=line_reaction_m,ball_stratum=all,variant=V1:mean"
+     ],
+     "value": 0.625321,
+     "x": "1996436"
+    },
+    {
+     "formula": "diff",
+     "refs": [
+      "reliability.csv#match_id=2007448,metric=line_reaction_m,ball_stratum=all,variant=V0:mean",
+      "reliability.csv#match_id=2007448,metric=line_reaction_m,ball_stratum=all,variant=V1:mean"
+     ],
+     "value": 1.36537,
+     "x": "2007448"
+    },
+    {
+     "formula": "diff",
+     "refs": [
+      "reliability.csv#match_id=2010085,metric=line_reaction_m,ball_stratum=all,variant=V0:mean",
+      "reliability.csv#match_id=2010085,metric=line_reaction_m,ball_stratum=all,variant=V1:mean"
+     ],
+     "value": 1.447977,
+     "x": "2010085"
+    },
+    {
+     "formula": "diff",
+     "refs": [
+      "reliability.csv#match_id=2011166,metric=line_reaction_m,ball_stratum=all,variant=V0:mean",
+      "reliability.csv#match_id=2011166,metric=line_reaction_m,ball_stratum=all,variant=V1:mean"
+     ],
+     "value": 1.456754,
+     "x": "2011166"
+    },
+    {
+     "formula": "diff",
+     "refs": [
+      "reliability.csv#match_id=2015213,metric=line_reaction_m,ball_stratum=all,variant=V0:mean",
+      "reliability.csv#match_id=2015213,metric=line_reaction_m,ball_stratum=all,variant=V1:mean"
+     ],
+     "value": 1.377334,
+     "x": "2015213"
+    }
+   ]
+  },
+  {
+   "group": "calibration",
+   "kind": "median",
+   "match": "line_reaction_m",
+   "panel": "c",
+   "points": [
+    {
+     "formula": "median_of_points",
+     "of": [
+      1.356492,
+      1.09406,
+      1.401708,
+      1.067381,
+      0.688294,
+      0.625321,
+      1.36537,
+      1.447977,
+      1.456754,
+      1.377334
+     ],
+     "value": 1.360931,
+     "x": "median"
+    }
+   ]
+  },
+  {
+   "group": "held-out",
+   "kind": "match",
+   "match": "line_reaction_m",
+   "panel": "c",
+   "points": [
+    {
+     "formula": "diff",
+     "refs": [
+      "heldout/reliability.csv#match_id=1899585,metric=line_reaction_m,ball_stratum=all,variant=V0:mean",
+      "heldout/reliability.csv#match_id=1899585,metric=line_reaction_m,ball_stratum=all,variant=V1:mean"
+     ],
+     "value": 0.993214,
+     "x": "1899585"
+    },
+    {
+     "formula": "diff",
+     "refs": [
+      "heldout/reliability.csv#match_id=1927964,metric=line_reaction_m,ball_stratum=all,variant=V0:mean",
+      "heldout/reliability.csv#match_id=1927964,metric=line_reaction_m,ball_stratum=all,variant=V1:mean"
+     ],
+     "value": 0.979438,
+     "x": "1927964"
+    },
+    {
+     "formula": "diff",
+     "refs": [
+      "heldout/reliability.csv#match_id=1953632,metric=line_reaction_m,ball_stratum=all,variant=V0:mean",
+      "heldout/reliability.csv#match_id=1953632,metric=line_reaction_m,ball_stratum=all,variant=V1:mean"
+     ],
+     "value": 0.789326,
+     "x": "1953632"
+    },
+    {
+     "formula": "diff",
+     "refs": [
+      "heldout/reliability.csv#match_id=1986691,metric=line_reaction_m,ball_stratum=all,variant=V0:mean",
+      "heldout/reliability.csv#match_id=1986691,metric=line_reaction_m,ball_stratum=all,variant=V1:mean"
+     ],
+     "value": 0.846166,
+     "x": "1986691"
+    },
+    {
+     "formula": "diff",
+     "refs": [
+      "heldout/reliability.csv#match_id=2006229,metric=line_reaction_m,ball_stratum=all,variant=V0:mean",
+      "heldout/reliability.csv#match_id=2006229,metric=line_reaction_m,ball_stratum=all,variant=V1:mean"
+     ],
+     "value": 0.809952,
+     "x": "2006229"
+    },
+    {
+     "formula": "diff",
+     "refs": [
+      "heldout/reliability.csv#match_id=2006363,metric=line_reaction_m,ball_stratum=all,variant=V0:mean",
+      "heldout/reliability.csv#match_id=2006363,metric=line_reaction_m,ball_stratum=all,variant=V1:mean"
+     ],
+     "value": 1.751151,
+     "x": "2006363"
+    },
+    {
+     "formula": "diff",
+     "refs": [
+      "heldout/reliability.csv#match_id=2007721,metric=line_reaction_m,ball_stratum=all,variant=V0:mean",
+      "heldout/reliability.csv#match_id=2007721,metric=line_reaction_m,ball_stratum=all,variant=V1:mean"
+     ],
+     "value": 0.931531,
+     "x": "2007721"
+    },
+    {
+     "formula": "diff",
+     "refs": [
+      "heldout/reliability.csv#match_id=2013725,metric=line_reaction_m,ball_stratum=all,variant=V0:mean",
+      "heldout/reliability.csv#match_id=2013725,metric=line_reaction_m,ball_stratum=all,variant=V1:mean"
+     ],
+     "value": 1.338847,
+     "x": "2013725"
+    },
+    {
+     "formula": "diff",
+     "refs": [
+      "heldout/reliability.csv#match_id=2016236,metric=line_reaction_m,ball_stratum=all,variant=V0:mean",
+      "heldout/reliability.csv#match_id=2016236,metric=line_reaction_m,ball_stratum=all,variant=V1:mean"
+     ],
+     "value": 1.908356,
+     "x": "2016236"
+    },
+    {
+     "formula": "diff",
+     "refs": [
+      "heldout/reliability.csv#match_id=2017461,metric=line_reaction_m,ball_stratum=all,variant=V0:mean",
+      "heldout/reliability.csv#match_id=2017461,metric=line_reaction_m,ball_stratum=all,variant=V1:mean"
+     ],
+     "value": 1.718086,
+     "x": "2017461"
+    }
+   ]
+  },
+  {
+   "group": "held-out",
+   "kind": "median",
+   "match": "line_reaction_m",
+   "panel": "c",
+   "points": [
+    {
+     "formula": "median_of_points",
+     "of": [
+      0.993214,
+      0.979438,
+      0.789326,
+      0.846166,
+      0.809952,
+      1.751151,
+      0.931531,
+      1.338847,
+      1.908356,
+      1.718086
+     ],
+     "value": 0.986326,
+     "x": "median"
+    }
+   ]
+  },
+  {
+   "group": "calibration",
+   "kind": "match",
+   "match": "line_reaction_m",
+   "panel": "d",
+   "points": [
+    {
+     "formula": "value",
+     "refs": [
+      "amputation.csv#match_id=1874553,metric=line_reaction_m,band=all:mean_abs_error"
+     ],
+     "value": 0.356872,
+     "x": "1874553"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "amputation.csv#match_id=1886347,metric=line_reaction_m,band=all:mean_abs_error"
+     ],
+     "value": 0.367594,
+     "x": "1886347"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "amputation.csv#match_id=1925299,metric=line_reaction_m,band=all:mean_abs_error"
+     ],
+     "value": 0.33733,
+     "x": "1925299"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "amputation.csv#match_id=1959846,metric=line_reaction_m,band=all:mean_abs_error"
+     ],
+     "value": 0.411965,
+     "x": "1959846"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "amputation.csv#match_id=1996435,metric=line_reaction_m,band=all:mean_abs_error"
+     ],
+     "value": 0.348119,
+     "x": "1996435"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "amputation.csv#match_id=1996436,metric=line_reaction_m,band=all:mean_abs_error"
+     ],
+     "value": 0.443838,
+     "x": "1996436"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "amputation.csv#match_id=2007448,metric=line_reaction_m,band=all:mean_abs_error"
+     ],
+     "value": 0.40983,
+     "x": "2007448"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "amputation.csv#match_id=2010085,metric=line_reaction_m,band=all:mean_abs_error"
+     ],
+     "value": 0.393484,
+     "x": "2010085"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "amputation.csv#match_id=2011166,metric=line_reaction_m,band=all:mean_abs_error"
+     ],
+     "value": 0.451493,
+     "x": "2011166"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "amputation.csv#match_id=2015213,metric=line_reaction_m,band=all:mean_abs_error"
+     ],
+     "value": 0.460941,
+     "x": "2015213"
+    }
+   ]
+  },
+  {
+   "group": "calibration",
+   "kind": "median",
+   "match": "line_reaction_m",
+   "panel": "d",
+   "points": [
+    {
+     "formula": "median_of_points",
+     "of": [
+      0.356872,
+      0.367594,
+      0.33733,
+      0.411965,
+      0.348119,
+      0.443838,
+      0.40983,
+      0.393484,
+      0.451493,
+      0.460941
+     ],
+     "value": 0.401657,
+     "x": "median"
+    }
+   ]
+  },
+  {
+   "group": "held-out",
+   "kind": "match",
+   "match": "line_reaction_m",
+   "panel": "d",
+   "points": [
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/amputation.csv#match_id=1899585,metric=line_reaction_m,band=all:mean_abs_error"
+     ],
+     "value": 0.424859,
+     "x": "1899585"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/amputation.csv#match_id=1927964,metric=line_reaction_m,band=all:mean_abs_error"
+     ],
+     "value": 0.39803,
+     "x": "1927964"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/amputation.csv#match_id=1953632,metric=line_reaction_m,band=all:mean_abs_error"
+     ],
+     "value": 0.45483,
+     "x": "1953632"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/amputation.csv#match_id=1986691,metric=line_reaction_m,band=all:mean_abs_error"
+     ],
+     "value": 0.363927,
+     "x": "1986691"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/amputation.csv#match_id=2006229,metric=line_reaction_m,band=all:mean_abs_error"
+     ],
+     "value": 0.406599,
+     "x": "2006229"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/amputation.csv#match_id=2006363,metric=line_reaction_m,band=all:mean_abs_error"
+     ],
+     "value": 0.34317,
+     "x": "2006363"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/amputation.csv#match_id=2007721,metric=line_reaction_m,band=all:mean_abs_error"
+     ],
+     "value": 0.437852,
+     "x": "2007721"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/amputation.csv#match_id=2013725,metric=line_reaction_m,band=all:mean_abs_error"
+     ],
+     "value": 0.485515,
+     "x": "2013725"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/amputation.csv#match_id=2016236,metric=line_reaction_m,band=all:mean_abs_error"
+     ],
+     "value": 0.405603,
+     "x": "2016236"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/amputation.csv#match_id=2017461,metric=line_reaction_m,band=all:mean_abs_error"
+     ],
+     "value": 0.374167,
+     "x": "2017461"
+    }
+   ]
+  },
+  {
+   "group": "held-out",
+   "kind": "median",
+   "match": "line_reaction_m",
+   "panel": "d",
+   "points": [
+    {
+     "formula": "median_of_points",
+     "of": [
+      0.424859,
+      0.39803,
+      0.45483,
+      0.363927,
+      0.406599,
+      0.34317,
+      0.437852,
+      0.485515,
+      0.405603,
+      0.374167
+     ],
+     "value": 0.406101,
+     "x": "median"
+    }
+   ]
+  },
+  {
+   "group": "calibration",
+   "kind": "match",
+   "match": "block_width_m",
+   "panel": "c",
+   "points": [
+    {
+     "formula": "diff",
+     "refs": [
+      "reliability.csv#match_id=1874553,metric=block_width_m,ball_stratum=all,variant=V0:mean",
+      "reliability.csv#match_id=1874553,metric=block_width_m,ball_stratum=all,variant=V1:mean"
+     ],
+     "value": -0.928909,
+     "x": "1874553"
+    },
+    {
+     "formula": "diff",
+     "refs": [
+      "reliability.csv#match_id=1886347,metric=block_width_m,ball_stratum=all,variant=V0:mean",
+      "reliability.csv#match_id=1886347,metric=block_width_m,ball_stratum=all,variant=V1:mean"
+     ],
+     "value": -0.066425,
+     "x": "1886347"
+    },
+    {
+     "formula": "diff",
+     "refs": [
+      "reliability.csv#match_id=1925299,metric=block_width_m,ball_stratum=all,variant=V0:mean",
+      "reliability.csv#match_id=1925299,metric=block_width_m,ball_stratum=all,variant=V1:mean"
+     ],
+     "value": -1.139361,
+     "x": "1925299"
+    },
+    {
+     "formula": "diff",
+     "refs": [
+      "reliability.csv#match_id=1959846,metric=block_width_m,ball_stratum=all,variant=V0:mean",
+      "reliability.csv#match_id=1959846,metric=block_width_m,ball_stratum=all,variant=V1:mean"
+     ],
+     "value": -1.156274,
+     "x": "1959846"
+    },
+    {
+     "formula": "diff",
+     "refs": [
+      "reliability.csv#match_id=1996435,metric=block_width_m,ball_stratum=all,variant=V0:mean",
+      "reliability.csv#match_id=1996435,metric=block_width_m,ball_stratum=all,variant=V1:mean"
+     ],
+     "value": -0.964137,
+     "x": "1996435"
+    },
+    {
+     "formula": "diff",
+     "refs": [
+      "reliability.csv#match_id=1996436,metric=block_width_m,ball_stratum=all,variant=V0:mean",
+      "reliability.csv#match_id=1996436,metric=block_width_m,ball_stratum=all,variant=V1:mean"
+     ],
+     "value": 0.707168,
+     "x": "1996436"
+    },
+    {
+     "formula": "diff",
+     "refs": [
+      "reliability.csv#match_id=2007448,metric=block_width_m,ball_stratum=all,variant=V0:mean",
+      "reliability.csv#match_id=2007448,metric=block_width_m,ball_stratum=all,variant=V1:mean"
+     ],
+     "value": -0.727744,
+     "x": "2007448"
+    },
+    {
+     "formula": "diff",
+     "refs": [
+      "reliability.csv#match_id=2010085,metric=block_width_m,ball_stratum=all,variant=V0:mean",
+      "reliability.csv#match_id=2010085,metric=block_width_m,ball_stratum=all,variant=V1:mean"
+     ],
+     "value": -2.64587,
+     "x": "2010085"
+    },
+    {
+     "formula": "diff",
+     "refs": [
+      "reliability.csv#match_id=2011166,metric=block_width_m,ball_stratum=all,variant=V0:mean",
+      "reliability.csv#match_id=2011166,metric=block_width_m,ball_stratum=all,variant=V1:mean"
+     ],
+     "value": 0.325637,
+     "x": "2011166"
+    },
+    {
+     "formula": "diff",
+     "refs": [
+      "reliability.csv#match_id=2015213,metric=block_width_m,ball_stratum=all,variant=V0:mean",
+      "reliability.csv#match_id=2015213,metric=block_width_m,ball_stratum=all,variant=V1:mean"
+     ],
+     "value": 0.51272,
+     "x": "2015213"
+    }
+   ]
+  },
+  {
+   "group": "calibration",
+   "kind": "median",
+   "match": "block_width_m",
+   "panel": "c",
+   "points": [
+    {
+     "formula": "median_of_points",
+     "of": [
+      -0.928909,
+      -0.066425,
+      -1.139361,
+      -1.156274,
+      -0.964137,
+      0.707168,
+      -0.727744,
+      -2.64587,
+      0.325637,
+      0.51272
+     ],
+     "value": -0.8283265,
+     "x": "median"
+    }
+   ]
+  },
+  {
+   "group": "held-out",
+   "kind": "match",
+   "match": "block_width_m",
+   "panel": "c",
+   "points": [
+    {
+     "formula": "diff",
+     "refs": [
+      "heldout/reliability.csv#match_id=1899585,metric=block_width_m,ball_stratum=all,variant=V0:mean",
+      "heldout/reliability.csv#match_id=1899585,metric=block_width_m,ball_stratum=all,variant=V1:mean"
+     ],
+     "value": -1.063449,
+     "x": "1899585"
+    },
+    {
+     "formula": "diff",
+     "refs": [
+      "heldout/reliability.csv#match_id=1927964,metric=block_width_m,ball_stratum=all,variant=V0:mean",
+      "heldout/reliability.csv#match_id=1927964,metric=block_width_m,ball_stratum=all,variant=V1:mean"
+     ],
+     "value": -1.140233,
+     "x": "1927964"
+    },
+    {
+     "formula": "diff",
+     "refs": [
+      "heldout/reliability.csv#match_id=1953632,metric=block_width_m,ball_stratum=all,variant=V0:mean",
+      "heldout/reliability.csv#match_id=1953632,metric=block_width_m,ball_stratum=all,variant=V1:mean"
+     ],
+     "value": 0.660175,
+     "x": "1953632"
+    },
+    {
+     "formula": "diff",
+     "refs": [
+      "heldout/reliability.csv#match_id=1986691,metric=block_width_m,ball_stratum=all,variant=V0:mean",
+      "heldout/reliability.csv#match_id=1986691,metric=block_width_m,ball_stratum=all,variant=V1:mean"
+     ],
+     "value": -0.894513,
+     "x": "1986691"
+    },
+    {
+     "formula": "diff",
+     "refs": [
+      "heldout/reliability.csv#match_id=2006229,metric=block_width_m,ball_stratum=all,variant=V0:mean",
+      "heldout/reliability.csv#match_id=2006229,metric=block_width_m,ball_stratum=all,variant=V1:mean"
+     ],
+     "value": -0.077321,
+     "x": "2006229"
+    },
+    {
+     "formula": "diff",
+     "refs": [
+      "heldout/reliability.csv#match_id=2006363,metric=block_width_m,ball_stratum=all,variant=V0:mean",
+      "heldout/reliability.csv#match_id=2006363,metric=block_width_m,ball_stratum=all,variant=V1:mean"
+     ],
+     "value": -1.87395,
+     "x": "2006363"
+    },
+    {
+     "formula": "diff",
+     "refs": [
+      "heldout/reliability.csv#match_id=2007721,metric=block_width_m,ball_stratum=all,variant=V0:mean",
+      "heldout/reliability.csv#match_id=2007721,metric=block_width_m,ball_stratum=all,variant=V1:mean"
+     ],
+     "value": 0.005408,
+     "x": "2007721"
+    },
+    {
+     "formula": "diff",
+     "refs": [
+      "heldout/reliability.csv#match_id=2013725,metric=block_width_m,ball_stratum=all,variant=V0:mean",
+      "heldout/reliability.csv#match_id=2013725,metric=block_width_m,ball_stratum=all,variant=V1:mean"
+     ],
+     "value": -0.307749,
+     "x": "2013725"
+    },
+    {
+     "formula": "diff",
+     "refs": [
+      "heldout/reliability.csv#match_id=2016236,metric=block_width_m,ball_stratum=all,variant=V0:mean",
+      "heldout/reliability.csv#match_id=2016236,metric=block_width_m,ball_stratum=all,variant=V1:mean"
+     ],
+     "value": -0.518512,
+     "x": "2016236"
+    },
+    {
+     "formula": "diff",
+     "refs": [
+      "heldout/reliability.csv#match_id=2017461,metric=block_width_m,ball_stratum=all,variant=V0:mean",
+      "heldout/reliability.csv#match_id=2017461,metric=block_width_m,ball_stratum=all,variant=V1:mean"
+     ],
+     "value": -1.285517,
+     "x": "2017461"
+    }
+   ]
+  },
+  {
+   "group": "held-out",
+   "kind": "median",
+   "match": "block_width_m",
+   "panel": "c",
+   "points": [
+    {
+     "formula": "median_of_points",
+     "of": [
+      -1.063449,
+      -1.140233,
+      0.660175,
+      -0.894513,
+      -0.077321,
+      -1.87395,
+      0.005408,
+      -0.307749,
+      -0.518512,
+      -1.285517
+     ],
+     "value": -0.7065125,
+     "x": "median"
+    }
+   ]
+  },
+  {
+   "group": "calibration",
+   "kind": "match",
+   "match": "block_width_m",
+   "panel": "d",
+   "points": [
+    {
+     "formula": "value",
+     "refs": [
+      "amputation.csv#match_id=1874553,metric=block_width_m,band=all:mean_abs_error"
+     ],
+     "value": 2.83889,
+     "x": "1874553"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "amputation.csv#match_id=1886347,metric=block_width_m,band=all:mean_abs_error"
+     ],
+     "value": 2.25951,
+     "x": "1886347"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "amputation.csv#match_id=1925299,metric=block_width_m,band=all:mean_abs_error"
+     ],
+     "value": 2.2177,
+     "x": "1925299"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "amputation.csv#match_id=1959846,metric=block_width_m,band=all:mean_abs_error"
+     ],
+     "value": 1.956139,
+     "x": "1959846"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "amputation.csv#match_id=1996435,metric=block_width_m,band=all:mean_abs_error"
+     ],
+     "value": 1.870115,
+     "x": "1996435"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "amputation.csv#match_id=1996436,metric=block_width_m,band=all:mean_abs_error"
+     ],
+     "value": 2.116378,
+     "x": "1996436"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "amputation.csv#match_id=2007448,metric=block_width_m,band=all:mean_abs_error"
+     ],
+     "value": 2.417948,
+     "x": "2007448"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "amputation.csv#match_id=2010085,metric=block_width_m,band=all:mean_abs_error"
+     ],
+     "value": 2.81763,
+     "x": "2010085"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "amputation.csv#match_id=2011166,metric=block_width_m,band=all:mean_abs_error"
+     ],
+     "value": 2.521852,
+     "x": "2011166"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "amputation.csv#match_id=2015213,metric=block_width_m,band=all:mean_abs_error"
+     ],
+     "value": 3.316264,
+     "x": "2015213"
+    }
+   ]
+  },
+  {
+   "group": "calibration",
+   "kind": "median",
+   "match": "block_width_m",
+   "panel": "d",
+   "points": [
+    {
+     "formula": "median_of_points",
+     "of": [
+      2.83889,
+      2.25951,
+      2.2177,
+      1.956139,
+      1.870115,
+      2.116378,
+      2.417948,
+      2.81763,
+      2.521852,
+      3.316264
+     ],
+     "value": 2.338729,
+     "x": "median"
+    }
+   ]
+  },
+  {
+   "group": "held-out",
+   "kind": "match",
+   "match": "block_width_m",
+   "panel": "d",
+   "points": [
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/amputation.csv#match_id=1899585,metric=block_width_m,band=all:mean_abs_error"
+     ],
+     "value": 2.435219,
+     "x": "1899585"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/amputation.csv#match_id=1927964,metric=block_width_m,band=all:mean_abs_error"
+     ],
+     "value": 2.454928,
+     "x": "1927964"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/amputation.csv#match_id=1953632,metric=block_width_m,band=all:mean_abs_error"
+     ],
+     "value": 2.285407,
+     "x": "1953632"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/amputation.csv#match_id=1986691,metric=block_width_m,band=all:mean_abs_error"
+     ],
+     "value": 2.130658,
+     "x": "1986691"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/amputation.csv#match_id=2006229,metric=block_width_m,band=all:mean_abs_error"
+     ],
+     "value": 2.075323,
+     "x": "2006229"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/amputation.csv#match_id=2006363,metric=block_width_m,band=all:mean_abs_error"
+     ],
+     "value": 2.360087,
+     "x": "2006363"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/amputation.csv#match_id=2007721,metric=block_width_m,band=all:mean_abs_error"
+     ],
+     "value": 2.283912,
+     "x": "2007721"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/amputation.csv#match_id=2013725,metric=block_width_m,band=all:mean_abs_error"
+     ],
+     "value": 2.893932,
+     "x": "2013725"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/amputation.csv#match_id=2016236,metric=block_width_m,band=all:mean_abs_error"
+     ],
+     "value": 2.901363,
+     "x": "2016236"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/amputation.csv#match_id=2017461,metric=block_width_m,band=all:mean_abs_error"
+     ],
+     "value": 2.795792,
+     "x": "2017461"
+    }
+   ]
+  },
+  {
+   "group": "held-out",
+   "kind": "median",
+   "match": "block_width_m",
+   "panel": "d",
+   "points": [
+    {
+     "formula": "median_of_points",
+     "of": [
+      2.435219,
+      2.454928,
+      2.285407,
+      2.130658,
+      2.075323,
+      2.360087,
+      2.283912,
+      2.893932,
+      2.901363,
+      2.795792
+     ],
+     "value": 2.397653,
+     "x": "median"
+    }
+   ]
+  },
+  {
+   "group": "calibration",
+   "kind": "match",
+   "match": "block_length_m",
+   "panel": "c",
+   "points": [
+    {
+     "formula": "diff",
+     "refs": [
+      "reliability.csv#match_id=1874553,metric=block_length_m,ball_stratum=all,variant=V0:mean",
+      "reliability.csv#match_id=1874553,metric=block_length_m,ball_stratum=all,variant=V1:mean"
+     ],
+     "value": -30.119952,
+     "x": "1874553"
+    },
+    {
+     "formula": "diff",
+     "refs": [
+      "reliability.csv#match_id=1886347,metric=block_length_m,ball_stratum=all,variant=V0:mean",
+      "reliability.csv#match_id=1886347,metric=block_length_m,ball_stratum=all,variant=V1:mean"
+     ],
+     "value": -32.30547,
+     "x": "1886347"
+    },
+    {
+     "formula": "diff",
+     "refs": [
+      "reliability.csv#match_id=1925299,metric=block_length_m,ball_stratum=all,variant=V0:mean",
+      "reliability.csv#match_id=1925299,metric=block_length_m,ball_stratum=all,variant=V1:mean"
+     ],
+     "value": -23.13367,
+     "x": "1925299"
+    },
+    {
+     "formula": "diff",
+     "refs": [
+      "reliability.csv#match_id=1959846,metric=block_length_m,ball_stratum=all,variant=V0:mean",
+      "reliability.csv#match_id=1959846,metric=block_length_m,ball_stratum=all,variant=V1:mean"
+     ],
+     "value": -27.27531,
+     "x": "1959846"
+    },
+    {
+     "formula": "diff",
+     "refs": [
+      "reliability.csv#match_id=1996435,metric=block_length_m,ball_stratum=all,variant=V0:mean",
+      "reliability.csv#match_id=1996435,metric=block_length_m,ball_stratum=all,variant=V1:mean"
+     ],
+     "value": -25.308273,
+     "x": "1996435"
+    },
+    {
+     "formula": "diff",
+     "refs": [
+      "reliability.csv#match_id=1996436,metric=block_length_m,ball_stratum=all,variant=V0:mean",
+      "reliability.csv#match_id=1996436,metric=block_length_m,ball_stratum=all,variant=V1:mean"
+     ],
+     "value": -30.97254,
+     "x": "1996436"
+    },
+    {
+     "formula": "diff",
+     "refs": [
+      "reliability.csv#match_id=2007448,metric=block_length_m,ball_stratum=all,variant=V0:mean",
+      "reliability.csv#match_id=2007448,metric=block_length_m,ball_stratum=all,variant=V1:mean"
+     ],
+     "value": -31.8456,
+     "x": "2007448"
+    },
+    {
+     "formula": "diff",
+     "refs": [
+      "reliability.csv#match_id=2010085,metric=block_length_m,ball_stratum=all,variant=V0:mean",
+      "reliability.csv#match_id=2010085,metric=block_length_m,ball_stratum=all,variant=V1:mean"
+     ],
+     "value": -21.760764,
+     "x": "2010085"
+    },
+    {
+     "formula": "diff",
+     "refs": [
+      "reliability.csv#match_id=2011166,metric=block_length_m,ball_stratum=all,variant=V0:mean",
+      "reliability.csv#match_id=2011166,metric=block_length_m,ball_stratum=all,variant=V1:mean"
+     ],
+     "value": -34.525347,
+     "x": "2011166"
+    },
+    {
+     "formula": "diff",
+     "refs": [
+      "reliability.csv#match_id=2015213,metric=block_length_m,ball_stratum=all,variant=V0:mean",
+      "reliability.csv#match_id=2015213,metric=block_length_m,ball_stratum=all,variant=V1:mean"
+     ],
+     "value": -23.176332,
+     "x": "2015213"
+    }
+   ]
+  },
+  {
+   "group": "calibration",
+   "kind": "median",
+   "match": "block_length_m",
+   "panel": "c",
+   "points": [
+    {
+     "formula": "median_of_points",
+     "of": [
+      -30.119952,
+      -32.30547,
+      -23.13367,
+      -27.27531,
+      -25.308273,
+      -30.97254,
+      -31.8456,
+      -21.760764,
+      -34.525347,
+      -23.176332
+     ],
+     "value": -28.697631,
+     "x": "median"
+    }
+   ]
+  },
+  {
+   "group": "held-out",
+   "kind": "match",
+   "match": "block_length_m",
+   "panel": "c",
+   "points": [
+    {
+     "formula": "diff",
+     "refs": [
+      "heldout/reliability.csv#match_id=1899585,metric=block_length_m,ball_stratum=all,variant=V0:mean",
+      "heldout/reliability.csv#match_id=1899585,metric=block_length_m,ball_stratum=all,variant=V1:mean"
+     ],
+     "value": -37.304466,
+     "x": "1899585"
+    },
+    {
+     "formula": "diff",
+     "refs": [
+      "heldout/reliability.csv#match_id=1927964,metric=block_length_m,ball_stratum=all,variant=V0:mean",
+      "heldout/reliability.csv#match_id=1927964,metric=block_length_m,ball_stratum=all,variant=V1:mean"
+     ],
+     "value": -18.054513,
+     "x": "1927964"
+    },
+    {
+     "formula": "diff",
+     "refs": [
+      "heldout/reliability.csv#match_id=1953632,metric=block_length_m,ball_stratum=all,variant=V0:mean",
+      "heldout/reliability.csv#match_id=1953632,metric=block_length_m,ball_stratum=all,variant=V1:mean"
+     ],
+     "value": -23.748927,
+     "x": "1953632"
+    },
+    {
+     "formula": "diff",
+     "refs": [
+      "heldout/reliability.csv#match_id=1986691,metric=block_length_m,ball_stratum=all,variant=V0:mean",
+      "heldout/reliability.csv#match_id=1986691,metric=block_length_m,ball_stratum=all,variant=V1:mean"
+     ],
+     "value": -23.337186,
+     "x": "1986691"
+    },
+    {
+     "formula": "diff",
+     "refs": [
+      "heldout/reliability.csv#match_id=2006229,metric=block_length_m,ball_stratum=all,variant=V0:mean",
+      "heldout/reliability.csv#match_id=2006229,metric=block_length_m,ball_stratum=all,variant=V1:mean"
+     ],
+     "value": -17.073461,
+     "x": "2006229"
+    },
+    {
+     "formula": "diff",
+     "refs": [
+      "heldout/reliability.csv#match_id=2006363,metric=block_length_m,ball_stratum=all,variant=V0:mean",
+      "heldout/reliability.csv#match_id=2006363,metric=block_length_m,ball_stratum=all,variant=V1:mean"
+     ],
+     "value": -26.306561,
+     "x": "2006363"
+    },
+    {
+     "formula": "diff",
+     "refs": [
+      "heldout/reliability.csv#match_id=2007721,metric=block_length_m,ball_stratum=all,variant=V0:mean",
+      "heldout/reliability.csv#match_id=2007721,metric=block_length_m,ball_stratum=all,variant=V1:mean"
+     ],
+     "value": -27.945037,
+     "x": "2007721"
+    },
+    {
+     "formula": "diff",
+     "refs": [
+      "heldout/reliability.csv#match_id=2013725,metric=block_length_m,ball_stratum=all,variant=V0:mean",
+      "heldout/reliability.csv#match_id=2013725,metric=block_length_m,ball_stratum=all,variant=V1:mean"
+     ],
+     "value": -23.904245,
+     "x": "2013725"
+    },
+    {
+     "formula": "diff",
+     "refs": [
+      "heldout/reliability.csv#match_id=2016236,metric=block_length_m,ball_stratum=all,variant=V0:mean",
+      "heldout/reliability.csv#match_id=2016236,metric=block_length_m,ball_stratum=all,variant=V1:mean"
+     ],
+     "value": -27.141441,
+     "x": "2016236"
+    },
+    {
+     "formula": "diff",
+     "refs": [
+      "heldout/reliability.csv#match_id=2017461,metric=block_length_m,ball_stratum=all,variant=V0:mean",
+      "heldout/reliability.csv#match_id=2017461,metric=block_length_m,ball_stratum=all,variant=V1:mean"
+     ],
+     "value": -23.624334,
+     "x": "2017461"
+    }
+   ]
+  },
+  {
+   "group": "held-out",
+   "kind": "median",
+   "match": "block_length_m",
+   "panel": "c",
+   "points": [
+    {
+     "formula": "median_of_points",
+     "of": [
+      -37.304466,
+      -18.054513,
+      -23.748927,
+      -23.337186,
+      -17.073461,
+      -26.306561,
+      -27.945037,
+      -23.904245,
+      -27.141441,
+      -23.624334
+     ],
+     "value": -23.826586,
+     "x": "median"
+    }
+   ]
+  },
+  {
+   "group": "calibration",
+   "kind": "match",
+   "match": "block_length_m",
+   "panel": "d",
+   "points": [
+    {
+     "formula": "value",
+     "refs": [
+      "amputation.csv#match_id=1874553,metric=block_length_m,band=all:mean_abs_error"
+     ],
+     "value": 4.256289,
+     "x": "1874553"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "amputation.csv#match_id=1886347,metric=block_length_m,band=all:mean_abs_error"
+     ],
+     "value": 1.408225,
+     "x": "1886347"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "amputation.csv#match_id=1925299,metric=block_length_m,band=all:mean_abs_error"
+     ],
+     "value": 2.65506,
+     "x": "1925299"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "amputation.csv#match_id=1959846,metric=block_length_m,band=all:mean_abs_error"
+     ],
+     "value": 1.24365,
+     "x": "1959846"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "amputation.csv#match_id=1996435,metric=block_length_m,band=all:mean_abs_error"
+     ],
+     "value": 1.168331,
+     "x": "1996435"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "amputation.csv#match_id=1996436,metric=block_length_m,band=all:mean_abs_error"
+     ],
+     "value": 5.062913,
+     "x": "1996436"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "amputation.csv#match_id=2007448,metric=block_length_m,band=all:mean_abs_error"
+     ],
+     "value": 4.109694,
+     "x": "2007448"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "amputation.csv#match_id=2010085,metric=block_length_m,band=all:mean_abs_error"
+     ],
+     "value": 2.784771,
+     "x": "2010085"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "amputation.csv#match_id=2011166,metric=block_length_m,band=all:mean_abs_error"
+     ],
+     "value": 3.931689,
+     "x": "2011166"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "amputation.csv#match_id=2015213,metric=block_length_m,band=all:mean_abs_error"
+     ],
+     "value": 2.280847,
+     "x": "2015213"
+    }
+   ]
+  },
+  {
+   "group": "calibration",
+   "kind": "median",
+   "match": "block_length_m",
+   "panel": "d",
+   "points": [
+    {
+     "formula": "median_of_points",
+     "of": [
+      4.256289,
+      1.408225,
+      2.65506,
+      1.24365,
+      1.168331,
+      5.062913,
+      4.109694,
+      2.784771,
+      3.931689,
+      2.280847
+     ],
+     "value": 2.7199155,
+     "x": "median"
+    }
+   ]
+  },
+  {
+   "group": "held-out",
+   "kind": "match",
+   "match": "block_length_m",
+   "panel": "d",
+   "points": [
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/amputation.csv#match_id=1899585,metric=block_length_m,band=all:mean_abs_error"
+     ],
+     "value": 2.121015,
+     "x": "1899585"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/amputation.csv#match_id=1927964,metric=block_length_m,band=all:mean_abs_error"
+     ],
+     "value": 1.680566,
+     "x": "1927964"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/amputation.csv#match_id=1953632,metric=block_length_m,band=all:mean_abs_error"
+     ],
+     "value": 1.090767,
+     "x": "1953632"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/amputation.csv#match_id=1986691,metric=block_length_m,band=all:mean_abs_error"
+     ],
+     "value": 1.735092,
+     "x": "1986691"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/amputation.csv#match_id=2006229,metric=block_length_m,band=all:mean_abs_error"
+     ],
+     "value": 1.477027,
+     "x": "2006229"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/amputation.csv#match_id=2006363,metric=block_length_m,band=all:mean_abs_error"
+     ],
+     "value": 5.952191,
+     "x": "2006363"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/amputation.csv#match_id=2007721,metric=block_length_m,band=all:mean_abs_error"
+     ],
+     "value": 0.07939,
+     "x": "2007721"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/amputation.csv#match_id=2013725,metric=block_length_m,band=all:mean_abs_error"
+     ],
+     "value": 4.579932,
+     "x": "2013725"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/amputation.csv#match_id=2016236,metric=block_length_m,band=all:mean_abs_error"
+     ],
+     "value": 1.646335,
+     "x": "2016236"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/amputation.csv#match_id=2017461,metric=block_length_m,band=all:mean_abs_error"
+     ],
+     "value": 2.798466,
+     "x": "2017461"
+    }
+   ]
+  },
+  {
+   "group": "held-out",
+   "kind": "median",
+   "match": "block_length_m",
+   "panel": "d",
+   "points": [
+    {
+     "formula": "median_of_points",
+     "of": [
+      2.121015,
+      1.680566,
+      1.090767,
+      1.735092,
+      1.477027,
+      5.952191,
+      0.07939,
+      4.579932,
+      1.646335,
+      2.798466
+     ],
+     "value": 1.707829,
+     "x": "median"
+    }
+   ]
+  },
+  {
+   "group": "calibration",
+   "kind": "match",
+   "match": "block_area_m2",
+   "panel": "c",
+   "points": [
+    {
+     "formula": "diff",
+     "refs": [
+      "reliability.csv#match_id=1874553,metric=block_area_m2,ball_stratum=all,variant=V0:mean",
+      "reliability.csv#match_id=1874553,metric=block_area_m2,ball_stratum=all,variant=V1:mean"
+     ],
+     "value": -1364.191324,
+     "x": "1874553"
+    },
+    {
+     "formula": "diff",
+     "refs": [
+      "reliability.csv#match_id=1886347,metric=block_area_m2,ball_stratum=all,variant=V0:mean",
+      "reliability.csv#match_id=1886347,metric=block_area_m2,ball_stratum=all,variant=V1:mean"
+     ],
+     "value": -1294.155972,
+     "x": "1886347"
+    },
+    {
+     "formula": "diff",
+     "refs": [
+      "reliability.csv#match_id=1925299,metric=block_area_m2,ball_stratum=all,variant=V0:mean",
+      "reliability.csv#match_id=1925299,metric=block_area_m2,ball_stratum=all,variant=V1:mean"
+     ],
+     "value": -807.194915,
+     "x": "1925299"
+    },
+    {
+     "formula": "diff",
+     "refs": [
+      "reliability.csv#match_id=1959846,metric=block_area_m2,ball_stratum=all,variant=V0:mean",
+      "reliability.csv#match_id=1959846,metric=block_area_m2,ball_stratum=all,variant=V1:mean"
+     ],
+     "value": -1105.310916,
+     "x": "1959846"
+    },
+    {
+     "formula": "diff",
+     "refs": [
+      "reliability.csv#match_id=1996435,metric=block_area_m2,ball_stratum=all,variant=V0:mean",
+      "reliability.csv#match_id=1996435,metric=block_area_m2,ball_stratum=all,variant=V1:mean"
+     ],
+     "value": -1083.708483,
+     "x": "1996435"
+    },
+    {
+     "formula": "diff",
+     "refs": [
+      "reliability.csv#match_id=1996436,metric=block_area_m2,ball_stratum=all,variant=V0:mean",
+      "reliability.csv#match_id=1996436,metric=block_area_m2,ball_stratum=all,variant=V1:mean"
+     ],
+     "value": -1327.284351,
+     "x": "1996436"
+    },
+    {
+     "formula": "diff",
+     "refs": [
+      "reliability.csv#match_id=2007448,metric=block_area_m2,ball_stratum=all,variant=V0:mean",
+      "reliability.csv#match_id=2007448,metric=block_area_m2,ball_stratum=all,variant=V1:mean"
+     ],
+     "value": -1272.881746,
+     "x": "2007448"
+    },
+    {
+     "formula": "diff",
+     "refs": [
+      "reliability.csv#match_id=2010085,metric=block_area_m2,ball_stratum=all,variant=V0:mean",
+      "reliability.csv#match_id=2010085,metric=block_area_m2,ball_stratum=all,variant=V1:mean"
+     ],
+     "value": -1011.559161,
+     "x": "2010085"
+    },
+    {
+     "formula": "diff",
+     "refs": [
+      "reliability.csv#match_id=2011166,metric=block_area_m2,ball_stratum=all,variant=V0:mean",
+      "reliability.csv#match_id=2011166,metric=block_area_m2,ball_stratum=all,variant=V1:mean"
+     ],
+     "value": -1294.140204,
+     "x": "2011166"
+    },
+    {
+     "formula": "diff",
+     "refs": [
+      "reliability.csv#match_id=2015213,metric=block_area_m2,ball_stratum=all,variant=V0:mean",
+      "reliability.csv#match_id=2015213,metric=block_area_m2,ball_stratum=all,variant=V1:mean"
+     ],
+     "value": -993.582171,
+     "x": "2015213"
+    }
+   ]
+  },
+  {
+   "group": "calibration",
+   "kind": "median",
+   "match": "block_area_m2",
+   "panel": "c",
+   "points": [
+    {
+     "formula": "median_of_points",
+     "of": [
+      -1364.191324,
+      -1294.155972,
+      -807.194915,
+      -1105.310916,
+      -1083.708483,
+      -1327.284351,
+      -1272.881746,
+      -1011.559161,
+      -1294.140204,
+      -993.582171
+     ],
+     "value": -1189.096331,
+     "x": "median"
+    }
+   ]
+  },
+  {
+   "group": "held-out",
+   "kind": "match",
+   "match": "block_area_m2",
+   "panel": "c",
+   "points": [
+    {
+     "formula": "diff",
+     "refs": [
+      "heldout/reliability.csv#match_id=1899585,metric=block_area_m2,ball_stratum=all,variant=V0:mean",
+      "heldout/reliability.csv#match_id=1899585,metric=block_area_m2,ball_stratum=all,variant=V1:mean"
+     ],
+     "value": -1554.061866,
+     "x": "1899585"
+    },
+    {
+     "formula": "diff",
+     "refs": [
+      "heldout/reliability.csv#match_id=1927964,metric=block_area_m2,ball_stratum=all,variant=V0:mean",
+      "heldout/reliability.csv#match_id=1927964,metric=block_area_m2,ball_stratum=all,variant=V1:mean"
+     ],
+     "value": -811.147596,
+     "x": "1927964"
+    },
+    {
+     "formula": "diff",
+     "refs": [
+      "heldout/reliability.csv#match_id=1953632,metric=block_area_m2,ball_stratum=all,variant=V0:mean",
+      "heldout/reliability.csv#match_id=1953632,metric=block_area_m2,ball_stratum=all,variant=V1:mean"
+     ],
+     "value": -1002.797103,
+     "x": "1953632"
+    },
+    {
+     "formula": "diff",
+     "refs": [
+      "heldout/reliability.csv#match_id=1986691,metric=block_area_m2,ball_stratum=all,variant=V0:mean",
+      "heldout/reliability.csv#match_id=1986691,metric=block_area_m2,ball_stratum=all,variant=V1:mean"
+     ],
+     "value": -1014.381628,
+     "x": "1986691"
+    },
+    {
+     "formula": "diff",
+     "refs": [
+      "heldout/reliability.csv#match_id=2006229,metric=block_area_m2,ball_stratum=all,variant=V0:mean",
+      "heldout/reliability.csv#match_id=2006229,metric=block_area_m2,ball_stratum=all,variant=V1:mean"
+     ],
+     "value": -724.359126,
+     "x": "2006229"
+    },
+    {
+     "formula": "diff",
+     "refs": [
+      "heldout/reliability.csv#match_id=2006363,metric=block_area_m2,ball_stratum=all,variant=V0:mean",
+      "heldout/reliability.csv#match_id=2006363,metric=block_area_m2,ball_stratum=all,variant=V1:mean"
+     ],
+     "value": -1206.272954,
+     "x": "2006363"
+    },
+    {
+     "formula": "diff",
+     "refs": [
+      "heldout/reliability.csv#match_id=2007721,metric=block_area_m2,ball_stratum=all,variant=V0:mean",
+      "heldout/reliability.csv#match_id=2007721,metric=block_area_m2,ball_stratum=all,variant=V1:mean"
+     ],
+     "value": -1252.24435,
+     "x": "2007721"
+    },
+    {
+     "formula": "diff",
+     "refs": [
+      "heldout/reliability.csv#match_id=2013725,metric=block_area_m2,ball_stratum=all,variant=V0:mean",
+      "heldout/reliability.csv#match_id=2013725,metric=block_area_m2,ball_stratum=all,variant=V1:mean"
+     ],
+     "value": -913.213076,
+     "x": "2013725"
+    },
+    {
+     "formula": "diff",
+     "refs": [
+      "heldout/reliability.csv#match_id=2016236,metric=block_area_m2,ball_stratum=all,variant=V0:mean",
+      "heldout/reliability.csv#match_id=2016236,metric=block_area_m2,ball_stratum=all,variant=V1:mean"
+     ],
+     "value": -1254.791727,
+     "x": "2016236"
+    },
+    {
+     "formula": "diff",
+     "refs": [
+      "heldout/reliability.csv#match_id=2017461,metric=block_area_m2,ball_stratum=all,variant=V0:mean",
+      "heldout/reliability.csv#match_id=2017461,metric=block_area_m2,ball_stratum=all,variant=V1:mean"
+     ],
+     "value": -975.189397,
+     "x": "2017461"
+    }
+   ]
+  },
+  {
+   "group": "held-out",
+   "kind": "median",
+   "match": "block_area_m2",
+   "panel": "c",
+   "points": [
+    {
+     "formula": "median_of_points",
+     "of": [
+      -1554.061866,
+      -811.147596,
+      -1002.797103,
+      -1014.381628,
+      -724.359126,
+      -1206.272954,
+      -1252.24435,
+      -913.213076,
+      -1254.791727,
+      -975.189397
+     ],
+     "value": -1008.5893655,
+     "x": "median"
+    }
+   ]
+  },
+  {
+   "group": "calibration",
+   "kind": "match",
+   "match": "block_area_m2",
+   "panel": "d",
+   "points": [
+    {
+     "formula": "value",
+     "refs": [
+      "amputation.csv#match_id=1874553,metric=block_area_m2,band=all:mean_abs_error"
+     ],
+     "value": 142.1708,
+     "x": "1874553"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "amputation.csv#match_id=1886347,metric=block_area_m2,band=all:mean_abs_error"
+     ],
+     "value": 42.855204,
+     "x": "1886347"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "amputation.csv#match_id=1925299,metric=block_area_m2,band=all:mean_abs_error"
+     ],
+     "value": 71.076763,
+     "x": "1925299"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "amputation.csv#match_id=1959846,metric=block_area_m2,band=all:mean_abs_error"
+     ],
+     "value": 113.88032,
+     "x": "1959846"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "amputation.csv#match_id=1996435,metric=block_area_m2,band=all:mean_abs_error"
+     ],
+     "value": 93.816864,
+     "x": "1996435"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "amputation.csv#match_id=1996436,metric=block_area_m2,band=all:mean_abs_error"
+     ],
+     "value": 186.666722,
+     "x": "1996436"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "amputation.csv#match_id=2007448,metric=block_area_m2,band=all:mean_abs_error"
+     ],
+     "value": 246.215637,
+     "x": "2007448"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "amputation.csv#match_id=2010085,metric=block_area_m2,band=all:mean_abs_error"
+     ],
+     "value": 155.379278,
+     "x": "2010085"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "amputation.csv#match_id=2011166,metric=block_area_m2,band=all:mean_abs_error"
+     ],
+     "value": 123.873169,
+     "x": "2011166"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "amputation.csv#match_id=2015213,metric=block_area_m2,band=all:mean_abs_error"
+     ],
+     "value": 239.354762,
+     "x": "2015213"
+    }
+   ]
+  },
+  {
+   "group": "calibration",
+   "kind": "median",
+   "match": "block_area_m2",
+   "panel": "d",
+   "points": [
+    {
+     "formula": "median_of_points",
+     "of": [
+      142.1708,
+      42.855204,
+      71.076763,
+      113.88032,
+      93.816864,
+      186.666722,
+      246.215637,
+      155.379278,
+      123.873169,
+      239.354762
+     ],
+     "value": 133.0219845,
+     "x": "median"
+    }
+   ]
+  },
+  {
+   "group": "held-out",
+   "kind": "match",
+   "match": "block_area_m2",
+   "panel": "d",
+   "points": [
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/amputation.csv#match_id=1899585,metric=block_area_m2,band=all:mean_abs_error"
+     ],
+     "value": 143.491989,
+     "x": "1899585"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/amputation.csv#match_id=1927964,metric=block_area_m2,band=all:mean_abs_error"
+     ],
+     "value": 178.964371,
+     "x": "1927964"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/amputation.csv#match_id=1953632,metric=block_area_m2,band=all:mean_abs_error"
+     ],
+     "value": 94.898297,
+     "x": "1953632"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/amputation.csv#match_id=1986691,metric=block_area_m2,band=all:mean_abs_error"
+     ],
+     "value": 118.026238,
+     "x": "1986691"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/amputation.csv#match_id=2006229,metric=block_area_m2,band=all:mean_abs_error"
+     ],
+     "value": 164.725893,
+     "x": "2006229"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/amputation.csv#match_id=2006363,metric=block_area_m2,band=all:mean_abs_error"
+     ],
+     "value": 185.083635,
+     "x": "2006363"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/amputation.csv#match_id=2007721,metric=block_area_m2,band=all:mean_abs_error"
+     ],
+     "value": 28.589818,
+     "x": "2007721"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/amputation.csv#match_id=2013725,metric=block_area_m2,band=all:mean_abs_error"
+     ],
+     "value": 179.263418,
+     "x": "2013725"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/amputation.csv#match_id=2016236,metric=block_area_m2,band=all:mean_abs_error"
+     ],
+     "value": 117.149021,
+     "x": "2016236"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/amputation.csv#match_id=2017461,metric=block_area_m2,band=all:mean_abs_error"
+     ],
+     "value": 106.562339,
+     "x": "2017461"
+    }
+   ]
+  },
+  {
+   "group": "held-out",
+   "kind": "median",
+   "match": "block_area_m2",
+   "panel": "d",
+   "points": [
+    {
+     "formula": "median_of_points",
+     "of": [
+      143.491989,
+      178.964371,
+      94.898297,
+      118.026238,
+      164.725893,
+      185.083635,
+      28.589818,
+      179.263418,
+      117.149021,
+      106.562339
+     ],
+     "value": 130.7591135,
+     "x": "median"
+    }
+   ]
+  }
+ ],
+ "sources": {
+  "amputation.csv": "0822c629bc7d1266542c930aaf39e1a7f8523d46efa13f77c1a0b1c977b86a45",
+  "calibration.json": "7ec16e6b8a072ee665cc787527ec2fc2dc4625e3b69f1745ec4cc34a4de04814",
+  "heldout/amputation.csv": "983a90b166cced9a3e7d60cd8f393cae8334f7bc669b19b959466e1aff75f8c1",
+  "heldout/layer2.json": "da94cdb2395ef151ddb149bcbe24245276ed5af9f00e22d642f9873081d498fe",
+  "heldout/reliability.csv": "b7ea18430931df798b93e037f18e3e9769915679d750554cb89db02913f4f7de",
+  "layer2.json": "27b9ff8269d49ec8abe9583567f2dc332e631c06594b56541c817742bafd1fa4",
+  "reliability.csv": "35871bec6c4c35db31601aedece11fcd3f793ed7dde52a570b5439156c6c8a67"
+ }
+}

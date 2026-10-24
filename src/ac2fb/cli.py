@@ -9,7 +9,7 @@ from collections.abc import Sequence
 from pathlib import Path
 from typing import Any
 
-from ac2fb import __version__
+from ac2fb import __version__, figures
 from ac2fb.defence.calibration import write_calibration_report
 from ac2fb.defence.design import write_design_report
 from ac2fb.defence.power import probe_verdicts, write_power_report
@@ -121,6 +121,33 @@ def build_parser() -> argparse.ArgumentParser:
     )
     amputation.add_argument(
         "--check", action="store_true", help="compare the file with a recomputation, write nothing"
+    )
+    figs = commands.add_parser(
+        "figures",
+        help="draw the two figures of the README from reports/ into reports/figures/",
+        description=(
+            "Figure 1 (layer 2, the 20 matches) and figure 2 (layer 3, calibration: it died "
+            "before any held-out reading), each an SVG and a sidecar JSON with every plotted "
+            "value and label number and the artefact cell it comes from. Reads only the "
+            "committed files of reports/ and reports/heldout/. --check draws them again and "
+            "compares every byte with the committed files (exit 1 if any differs); it writes "
+            "nothing."
+        ),
+    )
+    figs.add_argument(
+        "--reports-dir",
+        type=Path,
+        default=_REPORTS,
+        help="where the reports are read from (default: reports/)",
+    )
+    figs.add_argument(
+        "--out-dir",
+        type=Path,
+        default=None,
+        help="where the figures go, or are read from with --check (default: REPORTS_DIR/figures)",
+    )
+    figs.add_argument(
+        "--check", action="store_true", help="compare the files with a recomputation, write nothing"
     )
     cadence = commands.add_parser(
         "cadence",
@@ -496,6 +523,31 @@ def _amputation(match_ids: Sequence[int] | None, reports_dir: Path, do_check: bo
     return 0 if result.ok else 1
 
 
+def _figures(reports_dir: Path, out_dir: Path, do_check: bool) -> int:
+    sources = {name: _committed(reports_dir / name) for name in figures.INPUTS}
+    absent = [name for name, content in sources.items() if content is None]
+    if absent:
+        print(f"missing in {reports_dir}: {', '.join(absent)}", file=sys.stderr)
+        return 2
+    files = {name: content for name, content in sources.items() if content is not None}
+    if not do_check:
+        out_dir.mkdir(parents=True, exist_ok=True)
+        built = figures.build(files)
+        for name, content in built.files.items():
+            (out_dir / name).write_bytes(content)
+            print(f"wrote {out_dir / name}")
+        return 0
+    result = figures.check(files, {name: _committed(out_dir / name) for name in figures.OUTPUTS})
+    print(
+        f"verified: {result.files} files, {result.points} plotted values and {result.labels} "
+        f"labels, each from its artefact cell, {len(files)} reports read"
+    )
+    for problem in result.problems:
+        print(f"  - {problem}")
+    print("figures: OK" if result.ok else "figures: FAILED")
+    return 0 if result.ok else 1
+
+
 def _status() -> int:
     split = load_split()
     status = guard_status()
@@ -523,6 +575,8 @@ def main(argv: Sequence[str] | None = None) -> int:
         return _reliability(args.match, args.reports_dir, args.check)
     if args.command == "amputation":
         return _amputation(args.match, args.reports_dir, args.check)
+    if args.command == "figures":
+        return _figures(args.reports_dir, args.out_dir or args.reports_dir / "figures", args.check)
     if args.command == "cadence":
         return _cadence(args.match, args.reports_dir)
     if args.command == "s1":

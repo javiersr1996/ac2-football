@@ -1,0 +1,749 @@
+{
+ "figure": "fig2_layer3",
+ "labels": [
+  {
+   "numbers": [
+    {
+     "as": "0.364",
+     "decimals": 3,
+     "formula": "value",
+     "refs": [
+      "calibration.json#criteria/D3/values/floor"
+     ],
+     "value": 0.364304
+    }
+   ],
+   "text": "D3 floor 0.364"
+  },
+  {
+   "numbers": [
+    {
+     "as": "10",
+     "decimals": 0,
+     "formula": "count",
+     "refs": [
+      "calibration.json#beside/V2/classes/0/matches"
+     ],
+     "value": 10.0
+    },
+    {
+     "as": "10",
+     "decimals": 0,
+     "formula": "count",
+     "refs": [
+      "calibration.json#matches"
+     ],
+     "value": 10.0
+    }
+   ],
+   "text": "V2: none extrapolated (10 of 10 matches)"
+  },
+  {
+   "numbers": [
+    {
+     "as": "-0.193",
+     "decimals": 3,
+     "formula": "value",
+     "refs": [
+      "calibration.json#criteria/D3/values/effect"
+     ],
+     "value": -0.19268
+    },
+    {
+     "as": "0.364",
+     "decimals": 3,
+     "formula": "value",
+     "refs": [
+      "calibration.json#criteria/D3/values/floor"
+     ],
+     "value": 0.364304
+    },
+    {
+     "as": "0.182",
+     "decimals": 3,
+     "formula": "value",
+     "refs": [
+      "calibration.json#criteria/D3/values/pretrend"
+     ],
+     "value": 0.182152
+    }
+   ],
+   "text": "D3 kills layer 3 at the calibration half: effect -0.193 sd, floor 0.364 sd, pre-trend 0.182 sd."
+  },
+  {
+   "numbers": [
+    {
+     "as": "0.0005",
+     "decimals": 4,
+     "formula": "value",
+     "refs": [
+      "calibration.json#variants/V0/bar/p"
+     ],
+     "value": 0.0005
+    },
+    {
+     "as": "8",
+     "decimals": 0,
+     "formula": "value",
+     "refs": [
+      "calibration.json#variants/V0/bar/agreeing"
+     ],
+     "value": 8.0
+    },
+    {
+     "as": "10",
+     "decimals": 0,
+     "formula": "value",
+     "refs": [
+      "calibration.json#variants/V0/bar/matches"
+     ],
+     "value": 10.0
+    }
+   ],
+   "text": "V0 passed its own bar (p = 0.0005, 8 of 10 matches agree): the kill is D3 alone."
+  },
+  {
+   "numbers": [
+    {
+     "as": "0",
+     "decimals": 0,
+     "formula": "value",
+     "refs": [
+      "calibration.json#beside/V2/classes/1/used"
+     ],
+     "value": 0.0
+    }
+   ],
+   "text": "V2 with one extrapolated player or more has 0 usable units: no estimate."
+  }
+ ],
+ "series": [
+  {
+   "group": "V0",
+   "kind": "match",
+   "match": "match",
+   "panel": "a",
+   "points": [
+    {
+     "formula": "value",
+     "refs": [
+      "calibration.json#variants/V0/matches/1874553/effect"
+     ],
+     "value": -0.131169,
+     "x": "1874553"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "calibration.json#variants/V0/matches/1886347/effect"
+     ],
+     "value": -0.252899,
+     "x": "1886347"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "calibration.json#variants/V0/matches/1925299/effect"
+     ],
+     "value": -0.363575,
+     "x": "1925299"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "calibration.json#variants/V0/matches/1959846/effect"
+     ],
+     "value": -0.108608,
+     "x": "1959846"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "calibration.json#variants/V0/matches/1996435/effect"
+     ],
+     "value": -0.255448,
+     "x": "1996435"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "calibration.json#variants/V0/matches/1996436/effect"
+     ],
+     "value": -0.266723,
+     "x": "1996436"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "calibration.json#variants/V0/matches/2007448/effect"
+     ],
+     "value": -0.24888,
+     "x": "2007448"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "calibration.json#variants/V0/matches/2010085/effect"
+     ],
+     "value": 0.000477,
+     "x": "2010085"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "calibration.json#variants/V0/matches/2011166/effect"
+     ],
+     "value": -0.352923,
+     "x": "2011166"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "calibration.json#variants/V0/matches/2015213/effect"
+     ],
+     "value": 0.093377,
+     "x": "2015213"
+    }
+   ]
+  },
+  {
+   "group": "V0",
+   "kind": "pooled",
+   "match": "pooled",
+   "panel": "a",
+   "points": [
+    {
+     "formula": "value",
+     "refs": [
+      "calibration.json#variants/V0/t"
+     ],
+     "value": -0.19268,
+     "x": "pooled"
+    }
+   ]
+  },
+  {
+   "group": "V1",
+   "kind": "match",
+   "match": "match",
+   "panel": "a",
+   "points": [
+    {
+     "formula": "value",
+     "refs": [
+      "calibration.json#variants/V1/matches/1874553/effect"
+     ],
+     "value": -0.140508,
+     "x": "1874553"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "calibration.json#variants/V1/matches/1886347/effect"
+     ],
+     "value": -0.244748,
+     "x": "1886347"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "calibration.json#variants/V1/matches/1925299/effect"
+     ],
+     "value": -0.373079,
+     "x": "1925299"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "calibration.json#variants/V1/matches/1959846/effect"
+     ],
+     "value": -0.106557,
+     "x": "1959846"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "calibration.json#variants/V1/matches/1996435/effect"
+     ],
+     "value": -0.304473,
+     "x": "1996435"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "calibration.json#variants/V1/matches/1996436/effect"
+     ],
+     "value": -0.283419,
+     "x": "1996436"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "calibration.json#variants/V1/matches/2007448/effect"
+     ],
+     "value": -0.24192,
+     "x": "2007448"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "calibration.json#variants/V1/matches/2010085/effect"
+     ],
+     "value": 0.021903,
+     "x": "2010085"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "calibration.json#variants/V1/matches/2011166/effect"
+     ],
+     "value": -0.332956,
+     "x": "2011166"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "calibration.json#variants/V1/matches/2015213/effect"
+     ],
+     "value": 0.05616,
+     "x": "2015213"
+    }
+   ]
+  },
+  {
+   "group": "V1",
+   "kind": "pooled",
+   "match": "pooled",
+   "panel": "a",
+   "points": [
+    {
+     "formula": "value",
+     "refs": [
+      "calibration.json#variants/V1/t"
+     ],
+     "value": -0.199717,
+     "x": "pooled"
+    }
+   ]
+  },
+  {
+   "group": "V2",
+   "kind": "match",
+   "match": "match",
+   "panel": "a",
+   "points": [
+    {
+     "formula": "value",
+     "refs": [
+      "calibration.json#beside/V2/classes/0/matches/1874553/effect"
+     ],
+     "value": -0.140508,
+     "x": "1874553"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "calibration.json#beside/V2/classes/0/matches/1886347/effect"
+     ],
+     "value": -0.244748,
+     "x": "1886347"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "calibration.json#beside/V2/classes/0/matches/1925299/effect"
+     ],
+     "value": -0.373079,
+     "x": "1925299"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "calibration.json#beside/V2/classes/0/matches/1959846/effect"
+     ],
+     "value": -0.106557,
+     "x": "1959846"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "calibration.json#beside/V2/classes/0/matches/1996435/effect"
+     ],
+     "value": -0.304473,
+     "x": "1996435"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "calibration.json#beside/V2/classes/0/matches/1996436/effect"
+     ],
+     "value": -0.283419,
+     "x": "1996436"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "calibration.json#beside/V2/classes/0/matches/2007448/effect"
+     ],
+     "value": -0.24192,
+     "x": "2007448"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "calibration.json#beside/V2/classes/0/matches/2010085/effect"
+     ],
+     "value": 0.021903,
+     "x": "2010085"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "calibration.json#beside/V2/classes/0/matches/2011166/effect"
+     ],
+     "value": -0.332956,
+     "x": "2011166"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "calibration.json#beside/V2/classes/0/matches/2015213/effect"
+     ],
+     "value": 0.05616,
+     "x": "2015213"
+    }
+   ]
+  },
+  {
+   "group": "V2",
+   "kind": "pooled",
+   "match": "pooled",
+   "panel": "a",
+   "points": [
+    {
+     "formula": "value",
+     "refs": [
+      "calibration.json#beside/V2/classes/0/t"
+     ],
+     "value": -0.199717,
+     "x": "pooled"
+    }
+   ]
+  },
+  {
+   "group": "V0",
+   "kind": "match",
+   "match": "match",
+   "panel": "b",
+   "points": [
+    {
+     "formula": "value",
+     "refs": [
+      "calibration.json#variants/V0/matches/1874553/pretrend"
+     ],
+     "value": 0.062268,
+     "x": "1874553"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "calibration.json#variants/V0/matches/1886347/pretrend"
+     ],
+     "value": 0.143804,
+     "x": "1886347"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "calibration.json#variants/V0/matches/1925299/pretrend"
+     ],
+     "value": 0.270071,
+     "x": "1925299"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "calibration.json#variants/V0/matches/1959846/pretrend"
+     ],
+     "value": 0.225463,
+     "x": "1959846"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "calibration.json#variants/V0/matches/1996435/pretrend"
+     ],
+     "value": 0.201172,
+     "x": "1996435"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "calibration.json#variants/V0/matches/1996436/pretrend"
+     ],
+     "value": 0.061271,
+     "x": "1996436"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "calibration.json#variants/V0/matches/2007448/pretrend"
+     ],
+     "value": 0.397045,
+     "x": "2007448"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "calibration.json#variants/V0/matches/2010085/pretrend"
+     ],
+     "value": 0.11284,
+     "x": "2010085"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "calibration.json#variants/V0/matches/2011166/pretrend"
+     ],
+     "value": 0.102776,
+     "x": "2011166"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "calibration.json#variants/V0/matches/2015213/pretrend"
+     ],
+     "value": 0.272345,
+     "x": "2015213"
+    }
+   ]
+  },
+  {
+   "group": "V0",
+   "kind": "pooled",
+   "match": "pooled",
+   "panel": "b",
+   "points": [
+    {
+     "formula": "value",
+     "refs": [
+      "calibration.json#variants/V0/pretrend_sd"
+     ],
+     "value": 0.182152,
+     "x": "pooled"
+    }
+   ]
+  },
+  {
+   "group": "V1",
+   "kind": "match",
+   "match": "match",
+   "panel": "b",
+   "points": [
+    {
+     "formula": "value",
+     "refs": [
+      "calibration.json#variants/V1/matches/1874553/pretrend"
+     ],
+     "value": 0.069936,
+     "x": "1874553"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "calibration.json#variants/V1/matches/1886347/pretrend"
+     ],
+     "value": 0.159932,
+     "x": "1886347"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "calibration.json#variants/V1/matches/1925299/pretrend"
+     ],
+     "value": 0.24039,
+     "x": "1925299"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "calibration.json#variants/V1/matches/1959846/pretrend"
+     ],
+     "value": 0.236411,
+     "x": "1959846"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "calibration.json#variants/V1/matches/1996435/pretrend"
+     ],
+     "value": 0.243887,
+     "x": "1996435"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "calibration.json#variants/V1/matches/1996436/pretrend"
+     ],
+     "value": 0.055205,
+     "x": "1996436"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "calibration.json#variants/V1/matches/2007448/pretrend"
+     ],
+     "value": 0.420912,
+     "x": "2007448"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "calibration.json#variants/V1/matches/2010085/pretrend"
+     ],
+     "value": 0.124568,
+     "x": "2010085"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "calibration.json#variants/V1/matches/2011166/pretrend"
+     ],
+     "value": 0.161843,
+     "x": "2011166"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "calibration.json#variants/V1/matches/2015213/pretrend"
+     ],
+     "value": 0.216845,
+     "x": "2015213"
+    }
+   ]
+  },
+  {
+   "group": "V1",
+   "kind": "pooled",
+   "match": "pooled",
+   "panel": "b",
+   "points": [
+    {
+     "formula": "value",
+     "refs": [
+      "calibration.json#variants/V1/pretrend_sd"
+     ],
+     "value": 0.190513,
+     "x": "pooled"
+    }
+   ]
+  },
+  {
+   "group": "V2",
+   "kind": "match",
+   "match": "match",
+   "panel": "b",
+   "points": [
+    {
+     "formula": "value",
+     "refs": [
+      "calibration.json#beside/V2/classes/0/matches/1874553/pretrend"
+     ],
+     "value": 0.069936,
+     "x": "1874553"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "calibration.json#beside/V2/classes/0/matches/1886347/pretrend"
+     ],
+     "value": 0.159932,
+     "x": "1886347"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "calibration.json#beside/V2/classes/0/matches/1925299/pretrend"
+     ],
+     "value": 0.24039,
+     "x": "1925299"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "calibration.json#beside/V2/classes/0/matches/1959846/pretrend"
+     ],
+     "value": 0.236411,
+     "x": "1959846"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "calibration.json#beside/V2/classes/0/matches/1996435/pretrend"
+     ],
+     "value": 0.243887,
+     "x": "1996435"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "calibration.json#beside/V2/classes/0/matches/1996436/pretrend"
+     ],
+     "value": 0.055205,
+     "x": "1996436"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "calibration.json#beside/V2/classes/0/matches/2007448/pretrend"
+     ],
+     "value": 0.420912,
+     "x": "2007448"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "calibration.json#beside/V2/classes/0/matches/2010085/pretrend"
+     ],
+     "value": 0.124568,
+     "x": "2010085"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "calibration.json#beside/V2/classes/0/matches/2011166/pretrend"
+     ],
+     "value": 0.161843,
+     "x": "2011166"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "calibration.json#beside/V2/classes/0/matches/2015213/pretrend"
+     ],
+     "value": 0.216845,
+     "x": "2015213"
+    }
+   ]
+  },
+  {
+   "group": "V2",
+   "kind": "pooled",
+   "match": "pooled",
+   "panel": "b",
+   "points": [
+    {
+     "formula": "value",
+     "refs": [
+      "calibration.json#beside/V2/classes/0/pretrend_sd"
+     ],
+     "value": 0.190513,
+     "x": "pooled"
+    }
+   ]
+  }
+ ],
+ "sources": {
+  "calibration.json": "7ec16e6b8a072ee665cc787527ec2fc2dc4625e3b69f1745ec4cc34a4de04814"
+ }
+}

@@ -5,6 +5,7 @@ description = "Football entry to the SkillCorner Analytics Cup 2.0."
 requires-python = ">=3.13"
 dependencies = [
     "ftbase",
+    "matplotlib>=3.11.2",
     "numpy>=2.5.4",
     "pyarrow>=26.0.0",
 ]

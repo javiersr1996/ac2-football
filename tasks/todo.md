@@ -2827,6 +2827,11 @@ su test sintético con el fallo plantado (una sonda que no puede fallar no prote
   y `video_script_check.py` OK (lo que corre el paso nuevo de CI). **Para Javier:** leer el guion
   en voz alta y cronometrar; si pasa de 60 s, recortar la fila 6 o la 11 (el gate avisa si cambia
   el recuento).
+  Corrección (2026-10-24), commit `f006d07`: la frase 12 decía "one match builds in about 9
+  seconds" sin decir dónde (el jurado señaló lo mismo en el README); ahora "Code and protocol are
+  on GitHub, whose runners build one match in about 9 seconds". 148 palabras habladas, 59 s;
+  gate (`words: 148 (max 150), 59 s`, `video_script_check: OK`, ruff, format, `mypy src`, los 44
+  tests, `readme_check` OK) en verde.
 - [ ] J6. **[Javier]** `ac2-football` público (si no lo era; la base lo es desde J2); `full-build`
   en verde del commit entregado y el tag de la base que fija `uv.lock` presente en el repo público.
 - [ ] J7. **[Javier]** Grabar el vídeo con su voz (máximo 1 minuto) y subirlo a YouTube

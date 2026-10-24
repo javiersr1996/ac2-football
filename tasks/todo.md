@@ -2478,10 +2478,44 @@ su test sintético con el fallo plantado (una sonda que no puede fallar no prote
   `pytest --collect-only`), CI de Ubuntu de la tarea 27 y run verde de `full-build` citados. Gate
   local: ruff, format, `mypy src` y `pytest` de `test_compare_heldout_script.py` y
   `test_figures.py`; la suite completa tarda más de 30 min aquí y la corre CI al hacer push.
-- [ ] 29. `sonnet` API pública mínima y documentada (`reliability.sensitivity`,
+- [x] 29. `sonnet` API pública mínima y documentada (`reliability.sensitivity`,
   `reliability.amputate`, `protocol.data` como lector guardado del silver de la base, esquema del
   Parquet largo con `gap_len`) y un
   `examples/sensitivity.py` que corre sobre el sintético. Aceptación: el ejemplo corre en CI.
+  Hecho (2026-10-24), commit `0a2a509` (sin push). **Superficie pública, sin código nuevo en
+  `src/`:** los nombres de la tarea ya existían, con comportamiento y entrada en
+  `FUNCTION_ROUTES` (`tests/test_public_routes.py`), así que no hay rutas nuevas y la tabla no
+  cambia. Mapa: `reliability.sensitivity` es `ac2fb.reliability.sensitivity.sensitivity` (y
+  `sensitivity_by_size`, `Window`, `WindowFrames`, `Reading`); `reliability.amputate` es
+  `ac2fb.reliability.amputate.amputate` más `hiding`; `protocol.data` es el lector guardado
+  (`read_frames`, `read_events`, `read_dim`), que sigue siendo la única puerta (el ejemplo no la
+  usa, y `test_single_door.py` sigue en verde); el esquema largo es `long.LONG_SCHEMA`.
+  **Dónde está documentado:** docstring de `ac2fb/reliability/__init__.py` (cuatro pasos, cada
+  nombre resuelto por `test_every_documented_name_resolves_and_is_exported` contra el `__all__`
+  de su módulo, sin reexportar nada para no duplicar rutas); el esquema del Parquet largo se
+  escribe una vez, en `LONG_SCHEMA`, y `test_the_long_schema_is_one_thing_in_code_and_in_its_docstring`
+  ata `LONG_COLUMNS`, el esquema y el docstring de `long.py` (nombre y tipo de cada columna,
+  `gap_len` int32).
+  **Ejemplo:** `examples/sensitivity.py` construye en memoria un partido sintético con forma de
+  silver (11 contra 11, 2.000 fotogramas, huecos sembrados) y recorre `long_table`,
+  `metric_units`, `sensitivity` y `amputate`; no lee ficheros ni `data/`. Salida (artefacto:
+  `uv run python examples/sensitivity.py`): `line_height_m: V0 n=45 mean=8.86 m, V1 n=31
+  mean=8.90 m, extrapolated=0.139, amputation n=31 mean_abs_error=0.078 m (synthetic numbers, not
+  findings)`. **Corre en CI de dos formas:** `tests/test_public_api.py` lo lanza como subproceso
+  con `FTBASE_DATA_ROOT` inexistente y directorio vacío, y comprueba la línea entera y que
+  0 < n(V1) < n(V0); y un paso nuevo de `ci.yml` lo corre y falla si falta el aviso. Ninguno
+  puede saltarse (el conftest cuenta los skips como fallo; el paso es de `run`, sin condición).
+  **Mutaciones** (sobre copias del árbol en `scratchpad/mut29`, script `mutate29.sh`, ninguna en el
+  árbol de trabajo): (a) un nombre no exportado en el docstring de `reliability`: cae
+  `test_every_documented_name_...`; (b) una columna `extra` añadida a `LONG_SCHEMA` y
+  `LONG_COLUMNS` y no al docstring: cae `test_the_long_schema_...` (y de paso el ejemplo, porque
+  `long_table` ya no arma el esquema); (c) el ejemplo sin el aviso: cae
+  `test_the_example_runs_...`; (d) el ejemplo con `open("data/x")`: caen
+  `test_the_example_reads_no_file` y el de ejecución. **Gate local:** ruff, format, `mypy src`
+  y `pytest` (674 pasan, 18 min) de `test_public_api.py`, `test_public_routes.py`, `test_single_door.py` y
+  `test_figures.py`; la suite completa tarda más de 30 min aquí y la corre CI al hacer push.
+  Cambiar `src/` mueve `code_tree_sha` (solo un docstring, sin cambio de comportamiento ni de
+  bytes de ningún comando).
 - [x] 30. `sonnet` `full-build.yml`: `workflow_dispatch`, caché de `data/raw` por huella del
   manifiesto, build completo, todos los `--check` y los dos bloques de `clean_clone_check.sh` en
   `ubuntu-latest`. Aceptación: una ejecución en verde con su enlace; el árbol queda limpio. Rama

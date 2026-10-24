@@ -2468,8 +2468,11 @@ su test sintético con el fallo plantado (una sonda que no puede fallar no prote
   corría en `ubuntu-latest` y la diferencia fijada solo se produjo y verificó en la imagen
   `ubuntu-26.04` (runs 40098167554, 40099424687 y 40109287550 lo imprimen); `a797db3` fija
   `runs-on: ubuntu-26.04` (`ci.yml` sigue en `ubuntu-latest`) y el paso del reservado imprime
-  `ldd --version | head -1`. La versión de glibc de esa imagen: PENDIENTE DE CONFIRMAR (los logs
-  no la imprimen; la dará el próximo run). No va en `heldout_linux_diff.txt` porque el script lo
+  `ldd --version | head -1`. La versión de glibc de esa imagen la imprime el run 40110756564 (el
+  primero en `ubuntu-26.04` fijado, en verde: `ldd (Ubuntu GLIBC 2.43-2ubuntu2.4) 2.43` y
+  `heldout: OK` con la diferencia fijada); la sonda de Docker corrió sobre otra glibc (2.41-12 de
+  Debian), así que la diferencia del reservado se verificó con 2.43. No va en
+  `heldout_linux_diff.txt` porque el script lo
   compara byte a byte. (4) En el mismo commit, el comentario de `full-build.yml` ya no dice
   "byte for byte" sin más: nombra la diferencia fijada. (2) `323b881` añade
   `scripts/hypot_platform_probe.log` (Windows nativo, Docker `python:3.13` con glibc 2.41-12 y

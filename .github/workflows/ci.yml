@@ -40,6 +40,8 @@ jobs:
       - run: uv run mypy src
       - name: README gate (words, figures, every number against the artefact it cites)
         run: uv run python scripts/readme_check.py
+      - name: Video script gate (spoken words, every number against the artefact it cites)
+        run: uv run python scripts/video_script_check.py
       - name: Tests (a skipped test fails the run, see tests/conftest.py)
         run: uv run pytest -q
       - name: Example on the synthetic match (no data; it fails if the line or its disclaimer is gone)

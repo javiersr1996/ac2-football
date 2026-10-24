@@ -10,13 +10,14 @@
 #   committed-dir  default: reports/heldout/ of the repo this script is in.
 set -euo pipefail
 
-reproduced="${1:?usage: $0 <reproduced-dir> [committed-dir]}"
 here="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-committed="${2:-$here/reports/heldout}"
+# Both directories as absolute paths first: the listing below changes directory.
+reproduced="$(cd "${1:?usage: $0 <reproduced-dir> [committed-dir]}" && pwd)"
+committed="$(cd "${2:-$here/reports/heldout}" && pwd)"
 
 failed=0
 compared=0
-names="$( (cd "$committed" && ls; cd "$reproduced" && ls) | sort -u)"
+names="$( (cd "$committed" && ls -A; cd "$reproduced" && ls -A) | sort -u)"
 for name in $names; do
   if [ ! -f "$committed/$name" ]; then
     echo "  - $name: reproduced, but not committed"; failed=1; continue

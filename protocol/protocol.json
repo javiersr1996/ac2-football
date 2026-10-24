@@ -2,7 +2,7 @@
   "stage": "dead",
   "code_tree_sha": null,
   "verdict": {
-    "about": "Recorded on 2026-10-20, after the adversarial review of task 22 closed and before any held-out match was read: the calibration half did not pass, so D5 kills layer 3. This protocol is never frozen for a reading, layer 3 is never computed on the held-out, and the entry publishes the negative per match (branch B). Only the stage and this block change; every other field is as it was written before any outcome. The held-out is read at most once, for layer 2 only, under its own protocol (protocol/layer2.json), which computes nothing of layer 3.",
+    "about": "Recorded on 2026-10-20, after the adversarial review of task 22 closed and before any held-out match was read: the calibration half did not pass, so D5 kills layer 3. This protocol is never frozen for a reading, layer 3 is never computed on the held-out, and the entry publishes the negative per match (branch B). Only the stage and this block change for the verdict. After reports/calibration.json was written (a0a3b68, regenerated at c0eefa9), commits aa1edf9 and 10b2820 reworded six texts (units.requirements, units.outcome_undefined, outcome.period_end, outcome.ball_out_of_play, strata.undefined and one open convention) to say that the ball rows of a unit lie in the period of t, which the code already required; no threshold, constant or other field moved, and every other field is as it was written before any outcome. The held-out is read at most once, for layer 2 only, under its own protocol (protocol/layer2.json), which computes nothing of layer 3.",
     "criterion": "D5",
     "killed_by": [
       "D3"

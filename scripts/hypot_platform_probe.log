@@ -1,0 +1,8 @@
+== Windows 11 native, uv run python scripts/hypot_platform_probe.py write win.npz
+numpy 2.5.4: wrote 4000000 pairs to win.npz
+== Docker python:3.13 (Debian glibc 2.41), pip install numpy==2.5.4; ldd --version | head -1; python scripts/hypot_platform_probe.py write linux.npz
+ldd (Debian GLIBC 2.41-12+deb13u4) 2.41
+numpy 2.5.4: wrote 4000000 pairs to linux.npz
+== Windows 11 native, uv run python scripts/hypot_platform_probe.py compare win.npz linux.npz
+hypot: 681117 of 4000000 results differ in bits
+sqrt: 0 of 4000000 results differ in bits

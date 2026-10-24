@@ -27,6 +27,8 @@ for name in $names; do
   compared=$((compared + 1))
   if ! cmp -s "$committed/$name" "$reproduced/$name"; then
     echo "  - $name: differs from the reproduction"; failed=1
+    # Name what differs: the first 20 differing lines, committed then reproduced.
+    diff "$committed/$name" "$reproduced/$name" | grep '^[<>]' | head -n 40 | sed 's/^/      /' || true
   fi
 done
 if [ "$compared" -eq 0 ]; then

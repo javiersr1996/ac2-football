@@ -343,6 +343,37 @@ def test_each_panel_reads_the_cell_it_names(documents: dict[str, dict[str, Any]]
             assert where[s["group"]] in p["refs"][0], p["refs"]
 
 
+def category_problems(document: dict[str, Any]) -> list[str]:
+    """The numbers of an axis label of panels a and b are those of the key of its cell."""
+    found = []
+    for s in document["series"]:
+        if s["panel"] not in ("a", "b"):
+            continue
+        for p in s["points"]:
+            key = re.search(r"/(ball_distance|by_band)/([^/]+)", p["refs"][0])
+            assert key, p["refs"]
+            wanted = [int(n) for n in re.findall(r"\d+", key.group(2))]
+            drawn = [int(n) for n in re.findall(r"\d+", p["x"])]
+            if wanted != drawn:
+                found.append(f"{p['x']!r} is not {key.group(2)}")
+    return found
+
+
+def test_each_axis_label_carries_the_numbers_of_its_key(built: figures.Built) -> None:
+    """On what the code draws now, so a label typed apart from its key fails even if the
+    committed files were regenerated from it."""
+    document = json.loads(built.files[SIDECARS[0]])
+    assert category_problems(document) == []
+    for edit in (("5-10", "5-15"), ("up to 1 s", "up to 2 s"), ("40+", "45+")):
+        planted = mutated(
+            document,
+            lambda d, e=edit: [
+                p.update(x=e[1]) for s in d["series"] for p in s["points"] if p["x"] == e[0]
+            ],
+        )
+        assert category_problems(planted) != [], edit
+
+
 def test_the_sidecars_hold_every_match_of_both_halves(documents: dict[str, dict[str, Any]]) -> None:
     assert coverage_problems(documents) == []
 

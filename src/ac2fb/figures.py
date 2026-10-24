@@ -28,12 +28,16 @@ import json
 import statistics
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
+from itertools import pairwise
 from typing import Any, cast
 
 import matplotlib
 from matplotlib.axes import Axes
 from matplotlib.figure import Figure
 from matplotlib.lines import Line2D
+
+from ac2fb.reliability.runs import BANDS as BAND_CUTS
+from ac2fb.reliability.visibility import BALL_DISTANCE_EDGES
 
 __all__ = ["INPUTS", "OUTPUTS", "Built", "CheckResult", "build", "check"]
 
@@ -56,15 +60,27 @@ MARKER = {CAL: "o", HELD: "s"}
 STYLE = {CAL: "-", HELD: "--"}
 PREFIX = {CAL: "", HELD: "heldout/"}
 
-BINS = [
-    ("00_05", "0-5"),
-    ("05_10", "5-10"),
-    ("10_20", "10-20"),
-    ("20_30", "20-30"),
-    ("30_40", "30-40"),
-    ("40_plus", "40+"),
-]
-BANDS = [("le_1s", "up to 1 s"), ("1_5s", "1-5 s"), ("5_20s", "5-20 s"), ("gt_20s", "over 20 s")]
+
+def _bins() -> list[tuple[str, str]]:
+    """Key and axis label of each ball-distance bin, both read from the edges of the reports."""
+    edges = [0, *(int(e) for e in BALL_DISTANCE_EDGES)]
+    bins = [(f"{lo:02d}_{hi:02d}", f"{lo}-{hi}") for lo, hi in zip(edges, edges[1:], strict=False)]
+    return [*bins, (f"{edges[-1]}_plus", f"{edges[-1]}+")]
+
+
+def _bands() -> list[tuple[str, str]]:
+    """Key and axis label of each gap band, read from the cuts (frames at 10 Hz) of the runs."""
+    cuts = [0, *(cut // 10 for _, cut in BAND_CUTS[:-1])]
+    first, *middle = BAND_CUTS[:-1]
+    names = [(first[0], f"up to {cuts[1]} s")]
+    names += [
+        (k, f"{lo}-{hi} s") for (k, _), (lo, hi) in zip(middle, pairwise(cuts[1:]), strict=True)
+    ]
+    return [*names, (BAND_CUTS[-1][0], f"over {cuts[-1]} s")]
+
+
+BINS = _bins()
+BANDS = _bands()
 METRICS = [
     ("pressure_index", "Pressure index"),
     ("nearest_rival_m", "Nearest rival (m)"),

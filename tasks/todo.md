@@ -2676,6 +2676,9 @@ su test sintético con el fallo plantado (una sonda que no puede fallar no prote
   10 Hz; no interpolo entre fotogramas para no inventar posiciones), apto para 16:9; la elegida
   tiene un defensor con 121 s de hueco, real pero llamativo ("121.4 s"); los defensores incluyen al
   portero; el texto del clip está en inglés.
+  En el runner (2026-10-24): `full-build` run 40117288163, `ubuntu-26.04`, en verde, con
+  `clip: OK` (100 fotogramas redibujados y con hash, sidecar byte a byte, still por píxeles, vídeo
+  por el hash de su comentario); CI del push con ffmpeg, runs 40117288550 y 40117322501, en verde.
 - [ ] J5. **[Javier, opcional]** Abrir el issue en kloppy con el texto de la 10.
 
 ## Fase 5: entrega (lun 7 dic a vie 18 dic)

@@ -322,6 +322,19 @@ def test_the_sentences_of_the_bar_and_the_empty_class_follow_the_artefact() -> N
     assert "V2 is V1" not in label_texts(files)[4]
 
 
+def test_the_strips_of_panels_c_and_d_are_anchored_at_zero() -> None:
+    """Panel d holds errors of about 1 m beside panel c's shifts of tens of metres. The anchor
+    keeps 0 in every strip, so d reads as small; the mutation (drop the anchor) lifts d's low
+    limit above 0 and the error fills the strip."""
+    low, high = figures._strip_xlim([0.8, 1.4])
+    assert low < 0 < 0.8 < 1.4 < high
+    assert abs(high - 1.4 - 0.06 * 1.4) < 1e-9  # the pad is 6 % of the anchored range
+    low, high = figures._strip_xlim([-37.3, 0.7])
+    assert low < -37.3 and 0.7 < high
+    low, high = figures._strip_xlim([0.0, 0.0])  # a flat strip still has a width
+    assert low < 0 < high
+
+
 def test_a_match_missing_from_a_variant_is_an_error_not_a_shorter_line() -> None:
     files = read_inputs(REPORTS)
     calibration = json.loads(files["calibration.json"])

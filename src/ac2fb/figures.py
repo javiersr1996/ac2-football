@@ -215,6 +215,18 @@ def _label(
     return text, {"text": text, "numbers": shown}
 
 
+def _strip_xlim(values: Sequence[float]) -> tuple[float, float]:
+    """The x-limits of a strip of figure 1, panels c and d: anchored at 0, with a 6 % pad.
+
+    Without the anchor an error of 0.8 to 1.4 m in d would fill its strip as -37 to +0.7 m
+    fills c, and "filling costs little" would not be visible.
+    """
+    anchored = [*values, 0.0]
+    low, high = min(anchored), max(anchored)
+    pad = (high - low) * 0.06 or 1.0
+    return low - pad, high + pad
+
+
 def _matches(rep: _Reports, group: str) -> list[str]:
     return sorted(rep.json(f"{PREFIX[group]}layer2.json")["matches"])
 
@@ -404,11 +416,8 @@ def _fig1(rep: _Reports) -> _Drawn:
             mine = [s for s in series if s["panel"] == panel and s["match"] == key]
             values = [p["value"] for s in mine for p in s["points"]]
             if panel == "c":
-                values.append(0.0)
                 ax.axvline(0, color=GREY, lw=0.8, zorder=1)
-            low, high = min(values), max(values)
-            pad = (high - low) * 0.06 or 1.0
-            ax.set_xlim(low - pad, high + pad)
+            ax.set_xlim(*_strip_xlim(values))
             ax.ticklabel_format(useOffset=False, style="plain", axis="x")
             for s in mine:
                 g, y = s["group"], 0.2 if s["group"] == CAL else -0.2

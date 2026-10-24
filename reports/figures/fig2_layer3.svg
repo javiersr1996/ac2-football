@@ -778,7 +778,7 @@ z
    <text style="font-size: 8.5px; font-family: 'DejaVu Sans'; text-anchor: start; fill: #222222" x="14.4" y="519.16834" transform="rotate(-0 14.4 519.16834)">V0 passed its own bar (p = 0.0005, 8 of 10 matches agree): the kill is D3 alone.</text>
   </g>
   <g id="text_34">
-   <text style="font-size: 8.5px; font-family: 'DejaVu Sans'; text-anchor: start; fill: #222222" x="14.4" y="542.92834" transform="rotate(-0 14.4 542.92834)">V2 with one extrapolated player or more has 0 usable units: no estimate.</text>
+   <text style="font-size: 8.5px; font-family: 'DejaVu Sans'; text-anchor: start; fill: #222222" x="14.4" y="542.92834" transform="rotate(-0 14.4 542.92834)">V2 with one extrapolated player has 0 usable units, with two or more 0: no estimate.</text>
   </g>
  </g>
  <defs>

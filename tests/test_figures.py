@@ -32,7 +32,7 @@ REPORTS = ROOT / "reports"
 COMMITTED = REPORTS / "figures"
 FIXED = re.compile(r"\b[VD]\d\b|[Ll]ayer \d")  # names, not claims: V0, D3, layer 2
 SIDECARS = (f"{figures.FIG1}.json", f"{figures.FIG2}.json")
-POINTS, NUMBERS = 594, 12
+POINTS, NUMBERS = 594, 13
 
 
 def read_inputs(root: Path) -> dict[str, bytes]:
@@ -284,6 +284,34 @@ def test_a_missing_report_is_refused_not_drawn(tmp_path: Path) -> None:
     (reports / "heldout" / "layer2.json").unlink()
     code, _ = run_check(reports, out)
     assert code == 2
+
+
+def label_texts(files: dict[str, bytes]) -> list[str]:
+    return [lab["text"] for lab in json.loads(figures.build(files).files[SIDECARS[1]])["labels"]]
+
+
+def test_the_sentences_of_the_bar_and_the_empty_class_follow_the_artefact() -> None:
+    files = read_inputs(REPORTS)
+    calibration = json.loads(files["calibration.json"])
+    now = label_texts(files)
+    assert "V0 passed its own bar" in now[3] and now[3].endswith("the kill is D3 alone.")
+    assert "has 0 usable units, with two or more 0: no estimate." in now[4]
+    calibration["variants"]["V0"]["bar"]["passed"] = False
+    calibration["criteria"]["D5"]["killing"] = ["D3", "D4"]
+    calibration["beside"]["V2"]["classes"]["2_or_more"]["used"] = 7
+    files["calibration.json"] = json.dumps(calibration).encode()
+    planted = label_texts(files)
+    assert "V0 failed its own bar" in planted[3] and "the kill is D3 and D4." in planted[3]
+    assert "with two or more 7:" in planted[4]
+
+
+def test_a_match_missing_from_a_variant_is_an_error_not_a_shorter_line() -> None:
+    files = read_inputs(REPORTS)
+    calibration = json.loads(files["calibration.json"])
+    del calibration["beside"]["V2"]["classes"]["0"]["matches"][calibration["matches"][0].__str__()]
+    files["calibration.json"] = json.dumps(calibration).encode()
+    with pytest.raises(KeyError):
+        figures.build(files)
 
 
 def test_one_changed_cell_moves_one_plotted_value(tmp_path: Path) -> None:

@@ -112,9 +112,18 @@
       "calibration.json#beside/V2/classes/1/used"
      ],
      "value": 0.0
+    },
+    {
+     "as": "0",
+     "decimals": 0,
+     "formula": "value",
+     "refs": [
+      "calibration.json#beside/V2/classes/2_or_more/used"
+     ],
+     "value": 0.0
     }
    ],
-   "text": "V2 with one extrapolated player or more has 0 usable units: no estimate."
+   "text": "V2 with one extrapolated player has 0 usable units, with two or more 0: no estimate."
   }
  ],
  "series": [

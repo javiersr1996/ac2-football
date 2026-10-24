@@ -453,12 +453,7 @@ def _fig2(rep: _Reports) -> _Drawn:
         for v, _, _, _ in VARIANTS:
             points = []
             for m in matches:
-                try:  # V2 with no extrapolated player has no estimate in two of the matches
-                    points.append(
-                        _point(rep, m, "value", [f"{cal}#{where[v]}/matches/{m}/{column}"])
-                    )
-                except KeyError:
-                    continue
+                points.append(_point(rep, m, "value", [f"{cal}#{where[v]}/matches/{m}/{column}"]))
             series.append(_series(panel, v, "match", "match", points))
             total = _point(rep, "pooled", "value", [f"{cal}#{where[v]}/{pooled}"])
             series.append(_series(panel, v, "pooled", "pooled", [total]))
@@ -478,17 +473,22 @@ def _fig2(rep: _Reports) -> _Drawn:
         ("value", [floor], 3),
         ("value", [f"{cal}#criteria/D3/values/pretrend"], 3),
     )
+    passed = "passed" if rep.resolve(f"{cal}#variants/V0/bar/passed") else "failed"
+    killing = rep.resolve(f"{cal}#criteria/D5/killing")
+    alone = " alone" if len(killing) == 1 else ""
     bar = _label(
         rep,
-        "V0 passed its own bar (p = {0}, {1} of {2} matches agree): the kill is D3 alone.",
+        f"V0 {passed} its own bar (p = {{0}}, {{1}} of {{2}} matches agree): "
+        f"the kill is {' and '.join(killing)}{alone}.",
         ("value", [f"{cal}#variants/V0/bar/p"], 4),
         ("value", [f"{cal}#variants/V0/bar/agreeing"], 0),
         ("value", [f"{cal}#variants/V0/bar/matches"], 0),
     )
     empty = _label(
         rep,
-        "V2 with one extrapolated player or more has {0} usable units: no estimate.",
+        "V2 with one extrapolated player has {0} usable units, with two or more {1}: no estimate.",
         ("value", [f"{cal}#beside/V2/classes/1/used"], 0),
+        ("value", [f"{cal}#beside/V2/classes/2_or_more/used"], 0),
     )
 
     height = 7.9

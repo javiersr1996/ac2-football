@@ -21,7 +21,9 @@ permissions:
 
 jobs:
   full-build:
-    runs-on: ubuntu-latest
+    # Pinned image: the Linux held-out difference (scripts/heldout_linux_diff.txt) was produced and
+    # verified on ubuntu-26.04; another image may ship another libm and change it.
+    runs-on: ubuntu-26.04
     timeout-minutes: 120
     env:
       MATCH: "1874553"
@@ -133,8 +135,9 @@ jobs:
       # inside `ac2fb heldout read`, in a checkout whose HEAD holds the code frozen for the reading,
       # and HEAD here does not (the code has moved on). So the reading is reproduced in a git
       # worktree at the reading commit, with its own environment from that commit's uv.lock, and its
-      # three artefacts are compared byte for byte with reports/heldout/. With this step the 20
-      # matches are verified. Layer 3 died before any reading, so only layer 2 has a held-out half.
+      # three artefacts are compared with reports/heldout/ byte for byte, except the one pinned
+      # player-frame difference below. With this step the 20 matches are verified.
+      # Layer 3 died before any reading, so only layer 2 has a held-out half.
       - name: Held-out half, reproduced from the reading commit
         run: |
           reading="$(git log --format=%H --grep='^Read the held-out for layer 2: the single reading$' HEAD)"
@@ -142,6 +145,7 @@ jobs:
             echo "expected exactly one reading commit, found: ${reading:-none}"; exit 1
           fi
           echo "reading commit: $reading"
+          ldd --version | head -1
           git worktree add --detach "$RUNNER_TEMP/reading" "$reading"
           cd "$RUNNER_TEMP/reading"
           uv sync --locked

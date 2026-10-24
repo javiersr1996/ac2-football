@@ -1,0 +1,320 @@
+{
+ "about": "Every number of README.md that is not allow-listed, in order of appearance, with the artefact and key it comes from. scripts/readme_check.py pairs them one to one and checks each value at the README's rounding; the note only says where the number sits.",
+ "numbers": [
+  {
+   "number": "20",
+   "src": "protocol/split.json:calibration,heldout",
+   "note": "...as detected or extrapolated. In the 20"
+  },
+  {
+   "number": "56.2",
+   "src": "reports/layer2.json:summary.detection.player_detected.median",
+   "note": "...w about half: a per-match median of 56.2"
+  },
+  {
+   "number": "10",
+   "src": "protocol/split.json:calibration",
+   "note": "...half: a per-match median of 56.2% ( 10"
+  },
+  {
+   "number": "57.0",
+   "src": "reports/heldout/layer2.json:summary.detection.player_detected.median",
+   "note": "...6.2% (10 calibration matches) and 57.0"
+  },
+  {
+   "number": "10",
+   "src": "protocol/split.json:heldout",
+   "note": "...0 calibration matches) and 57.0% ( 10"
+  },
+  {
+   "number": "20",
+   "src": "reports/layer2.json:summary.reacquisition.by_band.gt_20s.closed_jump_median.median",
+   "note": "...does not. After a gap of more than 20"
+  },
+  {
+   "number": "0.203",
+   "src": "reports/layer2.json:summary.reacquisition.by_band.gt_20s.closed_jump_median.median",
+   "note": "...an 20 s a player reappears a median 0.203"
+  },
+  {
+   "number": "0.43",
+   "src": "reports/layer2.json:summary.reacquisition.by_band.gt_20s.jump_p90.median",
+   "note": "...03 m from its filled position (p90 0.43"
+  },
+  {
+   "number": "0.63",
+   "src": "reports/layer2.json:summary.reacquisition.by_band.gt_20s.jump_p99.median",
+   "note": "...its filled position (p90 0.43, p99 0.63"
+  },
+  {
+   "number": "0.198",
+   "src": "reports/layer2.json:summary.steps.detected_to_detected.p50.median",
+   "note": "...ion (p90 0.43, p99 0.63), against 0.198"
+  },
+  {
+   "number": "0.45",
+   "src": "reports/layer2.json:summary.steps.detected_to_detected.p90.median",
+   "note": "....43, p99 0.63), against 0.198 m ( 0.45"
+  },
+  {
+   "number": "0.67",
+   "src": "reports/layer2.json:summary.steps.detected_to_detected.p99.median",
+   "note": "...99 0.63), against 0.198 m (0.45, 0.67"
+  },
+  {
+   "number": "0.190",
+   "src": "reports/heldout/layer2.json:summary.reacquisition.by_band.gt_20s.closed_jump_median.median",
+   "note": "...ted step, in calibration; held-out, 0.190"
+  },
+  {
+   "number": "0.41",
+   "src": "reports/heldout/layer2.json:summary.reacquisition.by_band.gt_20s.jump_p90.median",
+   "note": "...in calibration; held-out, 0.190 m ( 0.41"
+  },
+  {
+   "number": "0.66",
+   "src": "reports/heldout/layer2.json:summary.reacquisition.by_band.gt_20s.jump_p99.median",
+   "note": "...bration; held-out, 0.190 m (0.41, 0.66"
+  },
+  {
+   "number": "0.201",
+   "src": "reports/heldout/layer2.json:summary.steps.detected_to_detected.p50.median",
+   "note": "...ut, 0.190 m (0.41, 0.66) against 0.201"
+  },
+  {
+   "number": "0.45",
+   "src": "reports/heldout/layer2.json:summary.steps.detected_to_detected.p90.median",
+   "note": "...m (0.41, 0.66) against 0.201 m ( 0.45"
+  },
+  {
+   "number": "0.68",
+   "src": "reports/heldout/layer2.json:summary.steps.detected_to_detected.p99.median",
+   "note": "...1, 0.66) against 0.201 m (0.45, 0.68"
+  },
+  {
+   "number": "20",
+   "src": "reports/layer2.json:summary.reacquisition.by_band.gt_20s.frame_share.median",
+   "note": "...0.201 m (0.45, 0.68). Gaps over 20"
+  },
+  {
+   "number": "38.7",
+   "src": "reports/layer2.json:summary.reacquisition.by_band.gt_20s.frame_share.median",
+   "note": "...(0.45, 0.68). Gaps over 20 s hold 38.7"
+  },
+  {
+   "number": "36.0",
+   "src": "reports/heldout/layer2.json:summary.reacquisition.by_band.gt_20s.frame_share.median",
+   "note": "...8). Gaps over 20 s hold 38.7% and 36.0"
+  },
+  {
+   "number": "3.19.1",
+   "src": "docs/kloppy_issue_draft.md:kloppy version",
+   "note": "...e filled frames (Figure 1b). kloppy 3.19.1"
+  },
+  {
+   "number": "10",
+   "src": "protocol/split.json:calibration",
+   "note": "...sue_draft.md`).  **Sensitivity (n = 10"
+  },
+  {
+   "number": "+7.2",
+   "src": "reports/figures/fig1_layer2.json:series.63.points.0.of.*(min)",
+   "note": "...s near it. Seen-only line height is +7.2"
+  },
+  {
+   "number": "+13.2",
+   "src": "reports/figures/fig1_layer2.json:series.63.points.0.of.*(max)",
+   "note": ".... Seen-only line height is +7.2 to +13.2"
+  },
+  {
+   "number": "+8.7",
+   "src": "reports/figures/fig1_layer2.json:series.61.points.0.of.*(min)",
+   "note": "...to +13.2 m higher in the held-out ( +8.7"
+  },
+  {
+   "number": "+13.9",
+   "src": "reports/figures/fig1_layer2.json:series.61.points.0.of.*(max)",
+   "note": "...m higher in the held-out (+8.7 to +13.9"
+  },
+  {
+   "number": "-37.3",
+   "src": "reports/figures/fig1_layer2.json:series.87.points.0.of.*(min)",
+   "note": "....9 m in calibration), block length -37.3"
+  },
+  {
+   "number": "-17.1",
+   "src": "reports/figures/fig1_layer2.json:series.87.points.0.of.*(max)",
+   "note": "...alibration), block length -37.3 to -17.1"
+  },
+  {
+   "number": "-34.5",
+   "src": "reports/figures/fig1_layer2.json:series.85.points.0.of.*(min)",
+   "note": "...), block length -37.3 to -17.1 m ( -34.5"
+  },
+  {
+   "number": "-21.8",
+   "src": "reports/figures/fig1_layer2.json:series.85.points.0.of.*(max)",
+   "note": "...ength -37.3 to -17.1 m (-34.5 to -21.8"
+  },
+  {
+   "number": "9",
+   "src": "reports/figures/fig1_layer2.json:series.55.points.0.of.*(count below zero)",
+   "note": "...tion and pressure; nearest rival in 9"
+  },
+  {
+   "number": "10",
+   "src": "reports/figures/fig1_layer2.json:series.53.points.0.of.*(count below zero)",
+   "note": "...nd pressure; nearest rival in 9 of 10"
+  },
+  {
+   "number": "8",
+   "src": "reports/figures/fig1_layer2.json:series.79.points.0.of.*(count below zero)",
+   "note": "...9 of 10, width mixed (narrower in 8"
+  },
+  {
+   "number": "7",
+   "src": "reports/figures/fig1_layer2.json:series.77.points.0.of.*(count below zero)",
+   "note": "...0, width mixed (narrower in 8 and 7"
+  },
+  {
+   "number": "10",
+   "src": "protocol/split.json:heldout",
+   "note": "...dth mixed (narrower in 8 and 7 of 10"
+  },
+  {
+   "number": "0.90",
+   "src": "reports/figures/fig1_layer2.json:series.67.points.0.of.*(min)",
+   "note": "...raight line through a gap is off by 0.90"
+  },
+  {
+   "number": "1.20",
+   "src": "reports/figures/fig1_layer2.json:series.67.points.0.of.*(max)",
+   "note": "...ne through a gap is off by 0.90 to 1.20"
+  },
+  {
+   "number": "+7",
+   "src": "reports/figures/fig1_layer2.json:series.63.points.0.of.*(min)",
+   "note": "...on line height (Figure 1d), against +7"
+  },
+  {
+   "number": "+14",
+   "src": "reports/figures/fig1_layer2.json:series.61.points.0.of.*(max)",
+   "note": "...height (Figure 1d), against +7 to +14"
+  },
+  {
+   "number": "1.3",
+   "src": "protocol/protocol.json:window.seconds",
+   "note": "...ce the ball's advance over the next 1.3"
+  },
+  {
+   "number": "-0.19",
+   "src": "reports/calibration.json:criteria.D3.values.effect",
+   "note": "...e any outcome. The pooled effect is -0.19"
+  },
+  {
+   "number": "8",
+   "src": "reports/calibration.json:variants.V0.bar.agreeing",
+   "note": "...ed effect is -0.19 sd, negative in 8"
+  },
+  {
+   "number": "10",
+   "src": "reports/calibration.json:variants.V0.bar.matches",
+   "note": "...ect is -0.19 sd, negative in 8 of 10"
+  },
+  {
+   "number": "0.0005",
+   "src": "reports/calibration.json:variants.V0.bar.p",
+   "note": "...8 of 10 matches, permutation p = 0.0005"
+  },
+  {
+   "number": "0.18",
+   "src": "reports/calibration.json:criteria.D3.values.pretrend",
+   "note": "...y differed before the reception, by 0.18"
+  },
+  {
+   "number": "95",
+   "src": "reports/calibration.json:criteria.D3.values.pretrend / criteria.D3.values.effect",
+   "note": "...before the reception, by 0.18 sd, 95"
+  },
+  {
+   "number": "50",
+   "src": "protocol/protocol.json:death_criteria.D3.ratio",
+   "note": "...sd, 95% of the effect, above the 50"
+  },
+  {
+   "number": "-0.20",
+   "src": "reports/calibration.json:criteria.D4.values.t_v1",
+   "note": ".... Seen-only players change nothing ( -0.20"
+  },
+  {
+   "number": "-0.36",
+   "src": "reports/calibration.json:variants.V0.matches.*.effect (min)",
+   "note": "...re 2. Effect per calibration match, -0.36"
+  },
+  {
+   "number": "+0.09",
+   "src": "reports/calibration.json:variants.V0.matches.*.effect (max)",
+   "note": "...ct per calibration match, -0.36 to +0.09"
+  },
+  {
+   "number": "0.18",
+   "src": "reports/calibration.json:criteria.D3.values.pretrend",
+   "note": "..., and the pre-reception difference, 0.18"
+  },
+  {
+   "number": "0.36",
+   "src": "reports/calibration.json:criteria.D3.values.floor",
+   "note": "...0.18 sd. Grey band: the D3 floor, 0.36"
+  },
+  {
+   "number": "3.13",
+   "src": "pyproject.toml:project.requires-python",
+   "note": "...://docs.astral.sh/uv/), git, Python 3.13"
+  },
+  {
+   "number": "5",
+   "src": "Full build run 39782141426, step README block quick, sum of the `downloaded:` lines = 95,624,493 B",
+   "note": "...ntested on macOS. Quick (one match, 5"
+  },
+  {
+   "number": "95.6",
+   "src": "Full build run 39782141426, step README block quick, sum of the `downloaded:` lines = 95,624,493 B",
+   "note": "...n macOS. Quick (one match, 5 files, 95.6"
+  },
+  {
+   "number": "9",
+   "src": "same run, `CLEAN CLONE OK in 9 s`",
+   "note": "...one match, 5 files, 95.6 MB, about 9"
+  },
+  {
+   "number": "85",
+   "src": "Full build run 39782141426, step README block full, sum of the `downloaded:` lines = 1,919,842,163 B; the manifest lists 1,823,448,331 B of it in the 20 Git LFS files",
+   "note": "...-- clean-clone:quick:end -->  Full ( 85"
+  },
+  {
+   "number": "1.9",
+   "src": "Full build run 39782141426, step README block full, sum of the `downloaded:` lines = 1,919,842,163 B; the manifest lists 1,823,448,331 B of it in the 20 Git LFS files",
+   "note": "...lone:quick:end -->  Full (85 files, 1.9"
+  },
+  {
+   "number": "1.8",
+   "src": "Full build run 40117288163, step README block full, `CLEAN CLONE OK in 202 s` with the raw files cached; the cold run 39782141426 took 174 s before `ac2fb amputation` joined the block",
+   "note": "...k:end -->  Full (85 files, 1.9 GB, 1.8"
+  },
+  {
+   "number": "3",
+   "src": "Full build run 40117288163, step README block full, `CLEAN CLONE OK in 202 s` with the raw files cached; the cold run 39782141426 took 174 s before `ac2fb amputation` joined the block",
+   "note": "....9 GB, 1.8 GB of it Git LFS, about 3"
+  },
+  {
+   "number": "26.04",
+   "src": ".github/workflows/full-build.yml:runs-on",
+   "note": "...Windows machine; on Linux (`ubuntu- 26.04"
+  },
+  {
+   "number": "v0.1.0",
+   "src": "pyproject.toml:tool.uv.sources.ftbase.tag",
+   "note": "...ner open data (MIT), pinned at tag ` v0.1.0"
+  }
+ ]
+}

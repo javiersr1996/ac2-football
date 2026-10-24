@@ -1,21 +1,22 @@
-"""Gate on the README: length, structure, honest numbers, no placeholders (task 31).
+"""Gate on the README: length, structure, honest numbers, no placeholders (tasks 31 and 33).
 
     uv run python scripts/readme_check.py [--root DIR]
 
 Exit 0 when every rule holds, 1 otherwise; it prints the words, figures + tables, numbers checked
-and each failure. The rules, all on ``README.md``:
+and each failure. The rules, on ``README.md`` and its sidecar ``README.src.json``:
 
-* Words <= 1000: whitespace-separated tokens of the whole text, fenced code included, HTML
-  comments (``<!-- ... -->``, ``src`` ones too) removed.
-* Figures (images) plus Markdown tables <= 2, fences excluded.
+* Words <= 1000: whitespace-separated tokens of the raw file, fenced code and HTML comments
+  included. The raw file is the counted text, so ``wc -w README.md`` gives the same number.
+* Figures (images) plus Markdown tables <= 2, fences and comments excluded.
 * The literal sentence that the synthetic fixtures produce no figure is present.
-* No ``PENDING(`` left anywhere, comments included.
-* Every number is either cited or allow-listed. A number cited by ``<!-- src: file:key -->``
-  must equal the cited value at the README's rounding. The comment cites the numbers written
-  since the previous comment or sentence/paragraph end. An uncited number fails unless it is in
-  ``ALLOWED`` below.
+* No ``PENDING(`` left anywhere.
+* Every number of the README is either allow-listed (``ALLOWED`` below) or the next entry of
+  ``README.src.json``: ``{"numbers": [{"number": "<as written>", "src": "<citation>"}, ...]}``
+  in order of appearance (a ``note`` per entry is free text). A README number with no entry,
+  an entry with no README number, or the two out of order fails; so does a cited value that
+  is not the written number at the README's rounding.
 
-The ``src`` syntax (what the README uses):
+The ``src`` syntax:
 
 * ``path/to/file.json:dotted.key`` or ``pyproject.toml:dotted.key``. A JSON object key may itself
   contain dots (``summary`` in ``reports/layer2.json`` does), so the longest matching key wins.
@@ -25,8 +26,8 @@ The ``src`` syntax (what the README uses):
 * ``a / b``: the ratio of two keys of the same file.
 * A list value stands for its length. Durations in a key (``gt_20s``, ``1_5s``) stand for
   their numbers ("more than 20 s").
-* Any other file (``docs/*.md``, ``uv.lock``, ``scripts/*.log``): ``path:phrase``; the phrase must
-  be on a line of the file and the cited number must be written on that same line.
+* Any other file (``docs/*.md``, ``uv.lock``, ``.github/workflows/*.yml``): ``path:phrase``; the
+  phrase must be on a line of the file and the cited number must be written on that same line.
 * A CI run, ``Full build run <id>``, ``same run`` (after one) or an ``actions/runs/<id>`` URL:
   only the presence of the citation is checked. The numbers it covers (sizes, durations) are NOT
   verified; there is no network here.
@@ -44,7 +45,6 @@ import json
 import re
 import sys
 import tomllib
-from bisect import bisect_right
 from dataclasses import dataclass, field
 from decimal import ROUND_HALF_UP, Decimal, InvalidOperation
 from pathlib import Path
@@ -52,6 +52,7 @@ from typing import Any
 
 MAX_WORDS = 1000
 MAX_FIGURES_AND_TABLES = 2
+SIDECAR = "README.src.json"
 # The sentence of the README's last section. A decision: the task names it, not its words.
 REQUIRED_SENTENCE = (
     "Synthetic fixtures are used only for tests and produce no figure in this README."
@@ -62,15 +63,13 @@ ALLOWED: list[tuple[str, str, int]] = [
     ("edition name", r"Analytics Cup 2\.0", 0),
     ("year or season", r"\b20\d\d(?:/\d\d)?\b", 0),
     ("figure number", r"\bFigure \d+", 0),
-    ("layer number", r"\b[Ll]ayer [23]\b", 0),
+    ("layer number", r"\b[Ll]ayer [123]\b", 0),
     ("match id of the quick run", r"--match (\d+)", 1),
 ]
 
-CITE0 = 0xE000  # private-use characters stand in the text for the src comments
 COMMENT = re.compile(r"<!--(.*?)-->", re.DOTALL)
-SRC = re.compile(r"\s*src:\s*(.*?)\s*", re.DOTALL)
 TOKEN = re.compile(r"(?<![\w.])([+-]?)(v?)((?:\d{1,3}(?:,\d{3})+|\d+)(?:[./]\d+)*)(?!\w)")
-CUT = re.compile(r"\n[ \t]*\n|(?<=[.!?])\s+(?=[A-Z*_(\[`\"])")
+PENDING = re.compile(r"PENDING\([^)\n]*\)?")
 CI = re.compile(
     r"(?:Full build run (?P<run>\d{6,})|(?P<same>same run)\b"
     r"|https://github\.com/\S+/actions/runs/(?P<url>\d+))"
@@ -83,7 +82,7 @@ IMAGE = re.compile(r"!\[[^\]]*\]\([^)]*\)|<img\b")
 
 
 class SrcError(Exception):
-    """A src comment that does not resolve."""
+    """A src citation that does not resolve."""
 
 
 @dataclass
@@ -232,7 +231,7 @@ def resolve(src: str, root: Path, seen_ci: bool) -> Candidates:
 
 @dataclass
 class Token:
-    raw: str
+    raw: str  # as written: sign, optional v, digits
     sign: str
     text: str  # digits as written, without separators, sign or v
     percent: bool
@@ -295,38 +294,51 @@ def count_structure(clean: str) -> tuple[int, int]:
     return figures, tables
 
 
+def sidecar_entries(root: Path, report: Report) -> list[tuple[str, str]]:
+    """The ``(number, src)`` pairs of README.src.json, in order; a bad file is a failure."""
+    path = root / SIDECAR
+    if not path.is_file():
+        report.failures.append(f"{SIDECAR}: missing")
+        return []
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+        entries = data["numbers"]
+    except (ValueError, KeyError, TypeError) as exc:
+        report.failures.append(f"{SIDECAR}: not an object with a 'numbers' list ({exc})")
+        return []
+    pairs: list[tuple[str, str]] = []
+    for i, entry in enumerate(entries, 1):
+        if (
+            not isinstance(entry, dict)
+            or not isinstance(entry.get("number"), str)
+            or not isinstance(entry.get("src"), str)
+        ):
+            report.failures.append(f"{SIDECAR}: entry {i} needs string 'number' and 'src'")
+            return []
+        pairs.append((entry["number"], entry["src"]))
+    return pairs
+
+
 def check(root: Path, readme: str = "README.md") -> Report:
     report = Report()
     text = (root / readme).read_text(encoding="utf-8").replace("\r\n", "\n")
 
-    clean = COMMENT.sub("", text)
-    report.words = len(clean.split())
+    report.words = len(text.split())
     if report.words > MAX_WORDS:
         report.failures.append(f"words: {report.words} > {MAX_WORDS}")
 
-    report.figures, report.tables = count_structure(clean)
+    report.figures, report.tables = count_structure(COMMENT.sub("", text))
     if report.figures + report.tables > MAX_FIGURES_AND_TABLES:
         report.failures.append(
             f"figures + tables: {report.figures} + {report.tables} > {MAX_FIGURES_AND_TABLES}"
         )
 
-    if REQUIRED_SENTENCE not in " ".join(clean.split()):
+    if REQUIRED_SENTENCE not in " ".join(text.split()):
         report.failures.append(f"missing sentence: {REQUIRED_SENTENCE!r}")
 
-    for m in re.finditer(r"PENDING\([^)\n]*\)?", text):
+    for m in PENDING.finditer(text):
         report.failures.append(f"pending: {m.group(0)!r} is still in the README")
-
-    cites: list[str] = []
-
-    def mark(m: re.Match[str]) -> str:
-        found = SRC.fullmatch(m.group(1)) if m.group(1).lstrip().startswith("src:") else None
-        if found is None:
-            return ""
-        cites.append(found.group(1))
-        return chr(CITE0 + len(cites) - 1)
-
-    marked = COMMENT.sub(mark, text)
-    marked = re.sub(r"PENDING\([^)\n]*\)?", lambda m: " " * len(m.group(0)), marked)
+    marked = PENDING.sub(lambda m: " " * len(m.group(0)), text)
 
     exempt: list[tuple[int, int]] = []
     corpus: list[str] = []  # reports text, read once and only if a match id is met
@@ -341,58 +353,63 @@ def check(root: Path, readme: str = "README.md") -> Report:
                         f"number: {m.group(id_group)!r} ({label}) is in no artifact of reports/"
                     )
 
-    cuts = [(m.start(), None) for m in CUT.finditer(marked)]
-    cuts += [(m.start(), ord(m.group(0)) - CITE0) for m in re.finditer("[-]", marked)]
-    cuts.sort(key=lambda c: c[0])
-    ends = [c[0] for c in cuts]
-
-    uncited: list[Token] = []
-    cited: dict[int, list[Token]] = {}
+    tokens: list[Token] = []
     for m in TOKEN.finditer(marked):
         if any(a <= m.start(3) < b for a, b in exempt):
             report.allowed += 1
             continue
-        tail = re.match(r"[-]*%", marked[m.end() :])
-        tok = Token(
-            m.group(0), m.group(1), m.group(3).replace(",", ""), tail is not None, m.start()
+        tokens.append(
+            Token(
+                m.group(0),
+                m.group(1),
+                m.group(3).replace(",", ""),
+                marked.startswith("%", m.end()),
+                m.start(),
+            )
         )
-        index = bisect_right(ends, m.start())
-        cite = cuts[index][1] if index < len(cuts) else None
-        if cite is None:
-            uncited.append(tok)
-        else:
-            cited.setdefault(cite, []).append(tok)
 
-    for tok in uncited:
-        report.number_failures += 1
-        report.failures.append(f"number: {context(marked, tok)} has no src and is not allowed")
+    entries = sidecar_entries(root, report)
+    pairs: list[tuple[Token, str]] = []
+    for i, (tok, (written, src)) in enumerate(zip(tokens, entries, strict=False), 1):
+        if tok.raw != written:
+            report.failures.append(
+                f"number: {context(marked, tok)} is number {i} of the README but entry {i} of "
+                f"{SIDECAR} is {written!r} ({src}): missing or out of order"
+            )
+            report.number_failures += len(tokens) - len(pairs)
+            break
+        pairs.append((tok, src))
+    else:
+        if len(tokens) > len(entries):
+            for tok in tokens[len(entries) :]:
+                report.number_failures += 1
+                report.failures.append(f"number: {context(marked, tok)} has no entry in {SIDECAR}")
+        for i, (written, src) in enumerate(entries[len(tokens) :], len(tokens) + 1):
+            report.failures.append(
+                f"src: entry {i} of {SIDECAR}, {written!r} ({src}), has no number in the README"
+            )
 
     seen_ci = False
-    for cite, src in enumerate(cites):
-        tokens = cited.get(cite, [])
+    for tok, src in pairs:
         try:
             cand = resolve(src, root, seen_ci)
         except SrcError as exc:
             report.failures.append(f"src: {src!r}: {exc}")
-            report.number_failures += len(tokens)
+            report.number_failures += 1
             continue
         seen_ci = seen_ci or cand.ci
-        if not tokens:
-            report.failures.append(f"src: {src!r} sits after no number")
-        for tok in tokens:
-            if cand.ci:
-                report.ci_only += 1
-            elif agrees(tok, cand):
-                report.matched += 1
-            else:
-                report.number_failures += 1
-                report.failures.append(f"number: {context(marked, tok)} does not match {src!r}")
+        if cand.ci:
+            report.ci_only += 1
+        elif agrees(tok, cand):
+            report.matched += 1
+        else:
+            report.number_failures += 1
+            report.failures.append(f"number: {context(marked, tok)} does not match {src!r}")
     return report
 
 
 def context(marked: str, tok: Token) -> str:
-    around = marked[max(0, tok.start - 30) : tok.start + len(tok.raw) + 15]
-    around = re.sub(r"[-]", "", around).replace("\n", " ")
+    around = marked[max(0, tok.start - 30) : tok.start + len(tok.raw) + 15].replace("\n", " ")
     return f"{tok.raw!r} in '...{around}...'"
 
 

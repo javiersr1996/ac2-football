@@ -2554,10 +2554,53 @@ su test sintético con el fallo plantado (una sonda que no puede fallar no prote
   Desviaciones: el medido local de `layer2` + `calibration` + `reliability` fue 38 min por
   contención de la máquina (el run de CI, 150 s el bloque entero); el primer intento de dispatch
   falló al parsear el YAML (`runner` no existe en el `env` del job), sin descargar nada.
-- [ ] 31. `sonnet` `scripts/readme_check.py` y su test: palabras del README (todo el texto, bloques
+- [x] 31. `sonnet` `scripts/readme_check.py` y su test: palabras del README (todo el texto, bloques
   de código incluidos, sin comentarios HTML) ≤ 1000, figuras más tablas ≤ 2, cada número del README
   presente en algún artefacto de `reports/`, y la frase literal de que los fixtures sintéticos no
   producen cifra alguna. Mutaciones: 1001 palabras, tercera tabla, número inventado, frase borrada.
+  **Hecho (2026-10-24)**, commit `361eeac` (script y `tests/test_readme_check.py`, 27 tests). Comando
+  de la puerta V: `uv run python scripts/readme_check.py` (sale 0/1; imprime palabras, figuras +
+  tablas, números comprobados y cada fallo). No está en `ci.yml` (fallaría hasta la 33); los tests
+  sí corren en CI con pytest, sobre READMEs sintéticos en directorios temporales.
+  **Reglas** (más estrictas que el texto de la tarea, según la propuesta de la 33): palabras = trozos
+  separados por espacio de todo el texto, código incluido, sin ningún comentario HTML; figuras
+  (`![](...)`, `<img`) más tablas Markdown, fuera de bloques de código; la frase literal
+  `Synthetic fixtures are used only for tests and produce no figure in this README.` (la del README
+  actual; la fijé yo, el texto de la tarea no da las palabras); ningún `PENDING(`, ni en comentarios;
+  cada número con `<!-- src: -->` debe igualar el valor citado al redondeo escrito (mitad hacia
+  arriba), `%` contra valor × 100, sin signo = magnitud, con `+`/`-` = signo; un número sin `src`
+  falla salvo lista permitida. Un comentario `src` cubre los números escritos desde el comentario o
+  fin de frase/párrafo anterior. Sintaxis aceptada (la del README): `fichero.json|toml:clave.con.puntos`
+  (la clave más larga que exista gana, porque `summary` de `layer2.json` tiene claves con punto),
+  `*` con `(min)`, `(max)` o `(count below zero)` (y se acepta el número de elementos, "8 de 10"),
+  varias claves con coma (se acepta su suma: 10 + 10 = 20 partidos), cociente `a / b`, lista = su
+  longitud, duraciones en la clave (`gt_20s`, `1_5s`) = "más de 20 s"; otro fichero (`docs/*.md`,
+  `uv.lock`, `scripts/*.log`): `fichero:frase`, la frase debe estar en una línea y el número en esa
+  misma línea; ejecución de CI (`Full build run <id>`, `same run`, URL `actions/runs/<id>`): **solo
+  se comprueba que la cita exista, no el valor** (sin red); se imprime aparte.
+  **Lista permitida** (`ALLOWED` en el script): `Analytics Cup 2.0`, años y temporadas (`20dd`,
+  `20dd/dd`), `Figure N`, `Layer 2|3`, y `--match <id>` (este además debe aparecer en algún
+  artefacto de `reports/`). No se comprueban unidades salvo `%` (m, s, MB) ni cuentan los números en
+  palabras ("four", "eleven").
+  **Mutaciones** (cada una es un test que falla, con el límite a ambos lados): 1000 palabras pasan y
+  1001 fallan; las palabras de un comentario no cuentan; el código sí cuenta; 1 figura + 1 tabla
+  pasan y una segunda tabla, una segunda imagen o un `<img>` fallan; una tabla en un bloque de
+  código, en un comentario o una regla `---` no son tabla; número inventado (215 por 214) y sin
+  `src` (42, en prosa y en código); frase borrada o cambiada en una palabra (partida en dos líneas
+  sí vale); redondeo desfasado un paso (56.1, 56.3), mitad hacia arriba (0.5625 = 56.3 %), signo;
+  clave inexistente, fichero inexistente, frase inexistente, fichero fuera del repo; `PENDING(` en
+  texto y en comentario; `src` sin número; `*` sin modificador; CI con `same run` sin ejecución
+  previa. Para validar los tests, 21 mutaciones plantadas en el propio script (umbrales, `>=`,
+  redondeo, `%`, signo, `PENDING`, comentarios, fences, `src` sin número, lista permitida, etc.):
+  20 matadas (más el redondeo mitad hacia abajo, aparte), 1 equivalente superviviente (`not sep or not rest.strip()`: otro error salta igual).
+  **Resultado sobre el README actual** (no se tocó): 928 palabras, 2 figuras + 0 tablas, 60 números
+  (39 iguales a su `src`, 7 solo con cita de CI, 14 permitidos, 0 fallidos). Falla en 3 cosas, todas
+  `PENDING(`: `held-out reading` y dos `task 27`. Ninguna clave citada deja de resolver. Los 7
+  números de CI (95.6 MB, 5 y 85 ficheros, 1.9 GB, 1.8 GB, 9 s, 3 min) quedan sin comprobar su valor
+  por diseño, y el 1.9 GB sigue sin redondear desde el manifiesto (1.823.448.331 B, ver la 33).
+  Decisiones por si Javier quiere cambiarlas: la frase exacta; que un número sin signo valga por su
+  magnitud (el efecto está en el JSON como -0.19268 y el README dice 0.19); que `8 of 10` acepte el
+  total de elementos; que las palabras cuenten por separación de espacios (los fences y `##` suman).
 - [ ] 32. `sonnet` Clip de 10 s para el vídeo: una recepción con los defensores detectados en
   relleno y los extrapolados en hueco con su `gap_len`, desde silver por `ac2fb clip` (matplotlib).
 - [ ] J5. **[Javier, opcional]** Abrir el issue en kloppy con el texto de la 10.

@@ -2695,6 +2695,46 @@ su test sintético con el fallo plantado (una sonda que no puede fallar no prote
   (así cubre también tamaños y versiones, que no viven en `reports/`). Los tamaños de descarga
   (95.6 MB, 1.9 GB) vienen del README anterior y los re-mide la 30: el manifiesto suma
   1.823.448.331 B (choque 1), que no redondea a 1.9 GB.
+  **Borrador final (2026-10-24)**, commits `1928453` (README) y `e4c7141` (`readme_check` como
+  paso de `ci.yml`, tras `mypy`); sin push. `uv run python scripts/readme_check.py`: `words: 994
+  (max 1000)`, `figures + tables: 2 + 0 = 2`, `numbers: 79 checked, 59 equal to their src, 7
+  covered by a CI citation only (presence, not value), 13 allow-listed, 0 failed`, `readme_check:
+  OK`. **Qué cambió frente al borrador:** (1) la entrada da las dos mitades (56,2 % y 57,0 % de
+  jugador-frames detectados, mediana por partido) y el veredicto de la capa 2 por partido, con
+  rangos del sidecar `reports/figures/fig1_layer2.json` (`series.N.points.0.of.*(min|max|count
+  below zero)`, las listas `of` de las medianas por métrica y mitad): altura de línea V1 − V0 de
+  +7,2 a +13,2 m en el reservado (+8,7 a +13,9 en calibración), positiva en 10 de 10; longitud
+  −37,3 a −17,1 m (−34,5 a −21,8), negativa en 10 de 10; área, reacción y presión 10 de 10; rival
+  9 de 10 en las dos mitades; anchura mixta (estrecha en 8 y 7 de 10); leído como selección (la
+  cámara sigue al balón), no como ruido. (2) "Extrapolated is interpolated" con las claves
+  `reacquisition` de `layer2.json` (las de la figura 1b) en vez de `runs`: salto al reaparecer
+  tras más de 20 s 0,203 m frente a 0,198 m de paso visto (calibración), 0,190 frente a 0,201
+  (reservado); pasos dentro del hueco 0,130 y 0,125 m; los huecos de más de 20 s tienen el 38,7 %
+  y el 36,0 % de los frames rellenados. (3) Amputación por partido del reservado (línea 0,90 a
+  1,20 m, anchura 2,1 a 2,9, longitud 0,1 a 6,0), de la figura 1d. (4) Capa 3 contada como
+  resultado, efectos con signo (−0,19 sd, −0,20 sd), "That is the result". (5) "Method in short"
+  reducido a la puerta, el `--check` y la reproducción: byte a byte en Windows; en Linux
+  (`ubuntu-26.04`, citado de `full-build.yml:runs-on`) un player-frame cruza un borde de banda,
+  fijado en `scripts/heldout_linux_diff.txt`. (6) Rutas de las figuras corregidas a
+  `reports/figures/*.svg` (el borrador apuntaba a `figures/*.png`, inexistentes). (7) El tiempo
+  del bloque completo cita el run 40117288163 (202 s, caché caliente; el comentario nombra el frío
+  39782141426, 174 s antes de que `amputation` entrara en el bloque); tamaños, del run frío. Los
+  7 números de CI siguen sin comprobar valor (diseño de la 31). (8) Procedencia en primera persona.
+  Bloques de código idénticos a `HEAD` (diff vacío); imágenes resuelven; LF; sin `PENDING(`.
+  **Sin artefacto, fuera del README:** el crecimiento del error de amputación banda a banda por
+  partido (8, 10, 10, 10, 10, 8, 7 en el reservado) y la fracción extrapolada por métrica, que
+  solo imprime `scripts/layer2_summary.py` (se dice "growing with gap length" sin cifra); la
+  glibc 2.43 del runner (solo en este plan y en el log del run). **Mutaciones** (11, sobre copia
+  del README, `mutate_readme.py` en el scratchpad de la sesión; todas caen y nombran el número):
+  salto 0,203→0,204; mínimo +7,2→+7,3; máximo −17,1→−17,2 y su signo; recuento 8→9; signo del
+  efecto; cociente 95→94; porcentaje 38,7→38,6; reservado 57,0→56,9; `ubuntu-24.04`; kloppy
+  3.19.2. Gate local en verde: `readme_check`, ruff, format, `mypy src`, `pytest
+  tests/test_readme_check.py` (27). **Pendiente para `[x]`:** simulación del jurado (Fable) y
+  lectura de Javier. Decisiones a juzgar: `reacquisition` y no `runs` para el salto (la figura 1b
+  usa `reacquisition`; con `runs` el borrador decía 0,217 frente a 0,198); citas por índice de
+  serie (`series.63`), frágiles si `figures.py` reordena, pero `readme_check` corre en CI; "Method
+  in short" ya no repite V0/V1; "10 of 10" lo valida el número de elementos de la lista, no el
+  recuento del signo (tolerancia de la 31).
 - [ ] 34. `sonnet` Guion del vídeo (≤ 60 s, unas 140 palabras, voz de Javier) con plano por frase
   (figura 1, figura 2, clip de la 32); cada cifra con su artefacto.
 - [ ] J6. **[Javier]** `ac2-football` público (si no lo era; la base lo es desde J2); `full-build`

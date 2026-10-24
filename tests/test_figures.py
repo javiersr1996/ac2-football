@@ -300,14 +300,26 @@ def test_the_sentences_of_the_bar_and_the_empty_class_follow_the_artefact() -> N
     calibration = json.loads(files["calibration.json"])
     now = label_texts(files)
     assert "V0 passed its own bar" in now[3] and now[3].endswith("the kill is D3 alone.")
-    assert "has 0 usable units, with two or more 0: no estimate." in now[4]
+    assert now[4] == (
+        "Units with an extrapolated player at the reception, 280 with one and 38 with two or "
+        "more, fill no cell: V2 is V1, no estimate for them."
+    )
     calibration["variants"]["V0"]["bar"]["passed"] = False
     calibration["criteria"]["D5"]["killing"] = ["D3", "D4"]
     calibration["beside"]["V2"]["classes"]["2_or_more"]["used"] = 7
     files["calibration.json"] = json.dumps(calibration).encode()
     planted = label_texts(files)
     assert "V0 failed its own bar" in planted[3] and "the kill is D3 and D4." in planted[3]
-    assert "with two or more 7:" in planted[4]
+    # A class with usable units: the sentence no longer says that V2 is V1.
+    assert planted[4] == (
+        "Units with an extrapolated player at the reception: 280 with one, 38 with more."
+    )
+    # V2's class with none differing from V1 in one match: not "V2 is V1" either.
+    calibration = json.loads(read_inputs(REPORTS)["calibration.json"])
+    first = calibration["matches"][0].__str__()
+    calibration["beside"]["V2"]["classes"]["0"]["matches"][first]["effect"] += 0.01
+    files["calibration.json"] = json.dumps(calibration).encode()
+    assert "V2 is V1" not in label_texts(files)[4]
 
 
 def test_a_match_missing_from_a_variant_is_an_error_not_a_shorter_line() -> None:

@@ -105,25 +105,25 @@
   {
    "numbers": [
     {
-     "as": "0",
+     "as": "280",
      "decimals": 0,
      "formula": "value",
      "refs": [
-      "calibration.json#beside/V2/classes/1/used"
+      "calibration.json#beside/V2/classes/1/units"
      ],
-     "value": 0.0
+     "value": 280.0
     },
     {
-     "as": "0",
+     "as": "38",
      "decimals": 0,
      "formula": "value",
      "refs": [
-      "calibration.json#beside/V2/classes/2_or_more/used"
+      "calibration.json#beside/V2/classes/2_or_more/units"
      ],
-     "value": 0.0
+     "value": 38.0
     }
    ],
-   "text": "V2 with one extrapolated player has 0 usable units, with two or more 0: no estimate."
+   "text": "Units with an extrapolated player at the reception, 280 with one and 38 with two or more, fill no cell: V2 is V1, no estimate for them."
   }
  ],
  "series": [

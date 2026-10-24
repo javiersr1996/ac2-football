@@ -485,11 +485,28 @@ def _fig2(rep: _Reports) -> _Drawn:
         ("value", [f"{cal}#variants/V0/bar/agreeing"], 0),
         ("value", [f"{cal}#variants/V0/bar/matches"], 0),
     )
+    # The units with an extrapolated player at the reception fill no cell (used = 0 in both
+    # classes) and the class with none is V1 unit for unit: said only when the artefact says so.
+    none_used = all(
+        rep.resolve(f"{cal}#beside/V2/classes/{c}/used") == 0 for c in ("1", "2_or_more")
+    )
+    v2_is_v1 = all(
+        rep.resolve(f"{cal}#beside/V2/classes/0/matches/{m}/effect")
+        == rep.resolve(f"{cal}#variants/V1/matches/{m}/effect")
+        for m in matches
+    )
+    if none_used and v2_is_v1:
+        wording = (
+            "Units with an extrapolated player at the reception, {0} with one and {1} with two or "
+            "more, fill no cell: V2 is V1, no estimate for them."
+        )
+    else:
+        wording = "Units with an extrapolated player at the reception: {0} with one, {1} with more."
     empty = _label(
         rep,
-        "V2 with one extrapolated player has {0} usable units, with two or more {1}: no estimate.",
-        ("value", [f"{cal}#beside/V2/classes/1/used"], 0),
-        ("value", [f"{cal}#beside/V2/classes/2_or_more/used"], 0),
+        wording,
+        ("value", [f"{cal}#beside/V2/classes/1/units"], 0),
+        ("value", [f"{cal}#beside/V2/classes/2_or_more/units"], 0),
     )
 
     height = 7.9

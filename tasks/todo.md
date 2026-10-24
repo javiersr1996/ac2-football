@@ -2766,3 +2766,12 @@ su test sintético con el fallo plantado (una sonda que no puede fallar no prote
   de todo `ac2-football` (sin commit de importación: todo es nuevo) y del diff de la base desde su
   importación (`git diff <import>..HEAD` en `ftbase`), repetida sobre los arreglos hasta que no
   salga nada alto ni medio.
+  **Decisión de Javier (2026-10-24): Fable** (`model: fable`) en la revisión adversarial de V y
+  en sus pasadas, en una simulación del jurado (un lector con solo las bases y el repo puntúa la
+  entrada) antes de cerrar el README, y en la 33 y la 34; Sonnet en lo mecánico.
+  Para la revisión de V, tolerancias de `readme_check` (31) que conviene juzgar: un número sin
+  signo casa con la magnitud (el README dice 0.19 y el efecto es -0.19268), "8 of 10" acepta dos
+  recuentos, se aceptan sumas de claves (10 + 10 = 20), y la frase de los fixtures sintéticos es
+  la del borrador actual. Y del clip (32): `ci.yml` instala ffmpeg (los tests del vídeo lo
+  necesitan, sin skip), la etiqueta "121.4 s" es real pero llamativa, texto en inglés y
+  "defenders" incluye al portero.

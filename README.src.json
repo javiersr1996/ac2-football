@@ -298,13 +298,13 @@
   },
   {
    "number": "1.8",
-   "src": "Full build run 40117288163, step README block full, `CLEAN CLONE OK in 202 s` with the raw files cached; the cold run 39782141426 took 174 s before `ac2fb amputation` joined the block",
+   "src": "Full build run 40117288163, step README block full, `CLEAN CLONE OK in 202 s` with the raw files cached (run 40136059795: 207 s); the cold run 39782141426 took 174 s before `ac2fb amputation` joined the block",
    "note": "...k:end -->  Full (85 files, 1.9 GB, 1.8"
   },
   {
-   "number": "3",
-   "src": "Full build run 40117288163, step README block full, `CLEAN CLONE OK in 202 s` with the raw files cached; the cold run 39782141426 took 174 s before `ac2fb amputation` joined the block",
-   "note": "....9 GB, 1.8 GB of it Git LFS, about 3"
+   "number": "3.5",
+   "src": "Full build run 40117288163, step README block full, `CLEAN CLONE OK in 202 s` with the raw files cached (run 40136059795: 207 s); the cold run 39782141426 took 174 s before `ac2fb amputation` joined the block",
+   "note": "....9 GB, 1.8 GB of it Git LFS, about 3.5"
   },
   {
    "number": "26.04",

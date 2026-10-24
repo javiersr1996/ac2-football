@@ -18,7 +18,7 @@ Layer 1 is ingestion (`ftbase`). Layer 2 measures what the camera saw: each play
 
 ## Layer 3: killed as designed
 
-The pre-registered kill rule fired in calibration; that is the published result. Does pressure on the receiver reduce the ball's advance over the next 1.3 s, within strata of the incoming ball? The pooled effect is -0.19 sd, negative in 8 of 10 matches, permutation p = 0.0005: it passes the bar. It dies on D3: pressed and free units already differed before the reception, by 0.18 sd, 95% of the effect, above the 50% limit set in advance. Seen-only players change nothing (-0.20 sd): gaps do not explain it. The held-out was never opened for it (stage `dead`).
+The pre-registered kill rule (`protocol/protocol.json`, committed before any outcome) fired in calibration; that is the published result. Does pressure on the receiver reduce the ball's advance over the next 1.3 s, within strata of the incoming ball? The pooled effect is -0.19 sd, negative in 8 of 10 matches, permutation p = 0.0005: it passes the bar. It dies on D3: pressed and free units already differed before the reception, by 0.18 sd, 95% of the effect, above the 50% limit set in advance. Seen-only players change nothing (-0.20 sd): gaps do not explain it. The held-out was never opened for it (stage `dead`).
 
 ![Figure 2](reports/figures/fig2_layer3.svg)
 
@@ -26,7 +26,7 @@ The pre-registered kill rule fired in calibration; that is the published result.
 
 ## Reproduce
 
-Needs [uv](https://docs.astral.sh/uv/), git, Python 3.13 or later, plus ffmpeg (`ac2fb clip`, tests); run on Windows and GitHub's Linux runners, untested on macOS. Quick (one match, 5 files, 95.6 MB, about 9 s on a GitHub runner, environment installed):
+Needs [uv](https://docs.astral.sh/uv/), git, Python 3.13 or later, plus ffmpeg (`ac2fb clip`, tests); run on Windows and GitHub's Linux runners, untested on macOS. Quick (one match, 5 files, 95.6 MB, about 9 s on a GitHub runner, packages cached):
 
 <!-- clean-clone:quick:start -->
 ```bash
@@ -38,7 +38,7 @@ uv run ftbase bronze && uv run ftbase silver && uv run ac2fb layer2 --match 1874
 ```
 <!-- clean-clone:quick:end -->
 
-Full (85 files, 1.9 GB, 1.8 GB of it Git LFS, about 3 min on a GitHub runner, data cached; mind SkillCorner's quota):
+Full (85 files, 1.9 GB, 1.8 GB of it Git LFS, about 3.5 min on a GitHub runner, data cached; mind SkillCorner's quota):
 
 <!-- clean-clone:full:start -->
 ```bash

@@ -1,0 +1,19 @@
+baseline: 25 passed in 30.09s
+CAUGHT: label number printed off by 0.001 -> 3 failing: test_check_fails_when_a_drawn_number_changes_in_the_svg_only, test_every_plotted_value_and_label_number_resolves, test_the_svg_walk_flags_a_typed_numb
+CAUGHT: D3 floor rounded to 2 decimals -> 2 failing: test_check_fails_when_a_drawn_number_changes_in_the_svg_only, test_the_svg_walk_flags_a_typed_number_and_a_dropped_label
+CAUGHT: floor label drawn but not in the sidecar -> 4 failing: test_check_says_what_it_verified_and_writes_nothing, test_committed_figures_are_what_the_code_draws, test_every_plotted_value_and_label_number_resolve
+CAUGHT: typed 10 in the calibration label -> 3 failing: test_every_plotted_value_and_label_number_resolves, test_one_changed_cell_moves_one_plotted_value, test_the_resolver_flags_a_planted_fault
+CAUGHT: panel b reads the wrong column -> 1 failing: test_each_panel_reads_the_cell_it_names
+CAUGHT: panel d reads the p90 not the mean -> 2 failing: test_each_panel_reads_the_cell_it_names, test_one_changed_cell_moves_one_plotted_value
+panel c reads stratum backward: REDRAW FAILED ["KeyError: 'reliability.csv#match_id=1874553,metric=pressure_index,ball_stratum=backward,variant=V0:mean: 0 rows'"]
+CAUGHT: thick line is the mean, not the median -> 2 failing: test_every_plotted_value_and_label_number_resolves, test_one_changed_cell_moves_one_plotted_value
+CAUGHT: V1 plotted from V0 effect -> 1 failing: test_each_panel_reads_the_cell_it_names
+CAUGHT: held-out half read from the calibration file -> 3 failing: test_each_panel_reads_the_cell_it_names, test_one_changed_cell_moves_one_plotted_value, test_the_sidecars_hold_every_match_of_both_halves
+CAUGHT: sidecar written with CRLF -> 1 failing: test_committed_figures_are_what_the_code_draws
+CAUGHT: check ignores the SVG -> 2 failing: test_check_fails_when_a_committed_file_is_missing_or_edited, test_check_fails_when_a_drawn_number_changes_in_the_svg_only
+CAUGHT: check exits 0 on a difference -> 5 failing: test_check_fails_when_a_committed_file_is_missing_or_edited, test_check_fails_when_a_drawn_number_changes_in_the_svg_only, test_check_fails_when_a_hel
+CAUGHT: check also writes the files -> 5 failing: test_check_fails_when_a_committed_file_is_missing_or_edited, test_check_fails_when_a_drawn_number_changes_in_the_svg_only, test_check_fails_when_a_hel
+CAUGHT: check does not say how much it verified -> 1 failing: test_check_says_what_it_verified_and_writes_nothing
+CAUGHT: a held-out match dropped from the lines -> 4 failing: test_check_says_what_it_verified_and_writes_nothing, test_committed_figures_are_what_the_code_draws, test_every_plotted_value_and_label_number_resolve
+CAUGHT: hash salt moved by the clock -> 4 failing: test_check_fails_when_an_artefact_value_changes, test_check_says_what_it_verified_and_writes_nothing, test_committed_figures_are_what_the_code_draws, 
+SURVIVED: diamond marker for the held-out half (portability) -> 0 failing: 

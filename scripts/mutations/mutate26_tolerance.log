@@ -1,0 +1,3 @@
+BASELINE (unmutated copy): exit 0; 126 passed in 8.24s
+KILLED: direction without the tolerance at its cut | 1 failed, 123 passed in 6.98s | tests/test_reliability_metrics.py::test_a_ball_on_the_cut_give_or_take_float_noise_is_lateral
+TOTAL: 1 of 1 killed

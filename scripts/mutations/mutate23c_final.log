@@ -1,0 +1,27 @@
+killed: M1 no history check in read :: 1 of 1 named tests fail
+killed: M3 no freeze before the reading :: 1 of 1 named tests fail
+killed: M4 several readings :: 2 of 2 named tests fail
+killed: M5 frozen after a reading :: 2 of 2 named tests fail
+killed: M6 no diff since the freeze :: 2 of 2 named tests fail
+killed: M7 record need not name the freeze :: 1 of 1 named tests fail
+killed: M8 record names HEAD :: 1 of 1 named tests fail
+killed: M9 no import check :: 1 of 1 named tests fail
+killed: M10 no interpreter check :: 1 of 1 named tests fail
+killed: M11 reads a subset :: 1 of 1 named tests fail
+killed: M12 duplicate reads :: 1 of 1 named tests fail
+killed: M14 a gone file is not edited :: 1 of 1 named tests fail
+killed: M16 interpreter as a string prefix :: 1 of 1 named tests fail
+killed: M17 a failure as a refusal :: 1 of 1 named tests fail
+killed: M18 the caller's commands accepted :: 1 of 1 named tests fail
+killed: P1 HEAD's history through every parent :: 2 of 2 named tests fail
+killed: P1b readings simplified :: 1 of 1 named tests fail
+killed: P2 readings of HEAD only :: 2 of 2 named tests fail
+killed: P3 shallow clone admitted :: 1 of 1 named tests fail
+killed: P4 a name installed twice :: 1 of 1 named tests fail
+killed: P4b one place seen twice is two :: 1 of 1 named tests fail
+killed: P5 imports from anywhere :: 2 of 2 named tests fail
+killed: P6 read stage sees every branch :: 1 of 1 named tests fail
+killed: P7 RECORD of the git packages only :: 1 of 1 named tests fail
+killed: Q1 a reading by its stage alone :: 1 of 1 named tests fail
+killed: Q2 a broken layer2.json elsewhere stops the guard :: 1 of 1 named tests fail
+26 of 26 killed; survived: []

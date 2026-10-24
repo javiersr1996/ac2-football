@@ -1,0 +1,5 @@
+fill_last_position: unit tests FAIL (killed): 1 failed, 1 passed in 2.63s
+fill_last_position: realdata amputation --check (2010085) exit 1: verified: 42 rows, 420 cells, 1 matches; 119 problem(s); first:   - 2010085/pressure_index/le_1s mean_error: file '-0.012852', code '-0.128052'
+reaction_same_period_fix: unit tests PASS (survives): 121 passed in 51.96s
+reaction_same_period_fix: realdata reliability --check (all) exit 0: verified: 695 rows, 10425 cells, 10 matches; 0 problem(s); first: 
+done

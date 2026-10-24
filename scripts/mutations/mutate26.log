@@ -1,0 +1,30 @@
+BASELINE (unmutated copy): exit 0; 125 passed in 8.19s
+KILLED: fill holds the last detected position | 1 failed, 1 passed in 0.47s | tests/test_amputate.py::test_the_fill_is_the_straight_line_between_the_detections[0.05-30-50]
+KILLED: fill leaves the hidden frames detected | 1 failed, 1 passed in 0.44s | tests/test_amputate.py::test_the_fill_is_the_straight_line_between_the_detections[0.05-30-50]
+KILLED: error with the sign flipped | 1 failed, 4 passed in 0.43s | tests/test_amputate.py::test_a_curved_path_gives_the_analytic_error[0.001-30-50]
+KILLED: ends stay where the gap was put (no move out) | 1 failed, 7 passed in 0.45s | tests/test_amputate.py::test_the_ends_move_out_to_the_nearest_detection
+KILLED: ends cross the break between periods | 1 failed, 7 passed in 0.46s | tests/test_amputate.py::test_the_ends_move_out_to_the_nearest_detection
+KILLED: hiding probability is the detected share | 1 failed, 11 passed in 0.53s | tests/test_amputate.py::test_the_hiding_is_the_match_s_own
+KILLED: pool keeps the open gaps | 1 failed, 11 passed in 0.58s | tests/test_amputate.py::test_the_hiding_is_the_match_s_own
+KILLED: pool keeps every sampled frame | 1 failed, 11 passed in 0.62s | tests/test_amputate.py::test_the_hiding_is_the_match_s_own
+KILLED: hidden when the draw is above the probability | 1 failed in 0.42s | tests/test_amputate.py::test_a_gap_of_nothing_changes_nothing
+KILLED: unit binned by its shortest gap | 1 failed, 10 passed in 0.68s | tests/test_amputate.py::test_a_unit_goes_to_the_band_of_its_longest_gap
+KILLED: every V0 unit amputated, not only V1 | 1 failed, 12 passed in 0.70s | tests/test_amputate.py::test_only_the_v1_units_are_amputated[1]
+KILLED: a unit without the ball at t is not skipped | 1 failed, 9 passed in 0.86s | tests/test_amputate.py::test_a_unit_without_the_ball_at_t_is_skipped
+KILLED: one stream for every match (seed without the match) | 1 failed, 18 passed in 25.75s | tests/test_amputate.py::test_the_draws_are_fixed_and_no_match_or_metric_moves_another
+KILLED: every metric on the stream of the first | 1 failed, 18 passed in 1.59s | tests/test_amputate.py::test_the_draws_are_fixed_and_no_match_or_metric_moves_another
+KILLED: direction without the attack sign | 1 failed, 118 passed in 9.43s | tests/test_reliability_metrics.py::test_the_direction_equals_the_one_of_the_incoming_ball_stratum[1]
+SURVIVED: direction without the tolerance at its cut | 125 passed in 7.26s | 
+KILLED: direction across the break between periods | 1 failed, 118 passed in 7.44s | tests/test_reliability_metrics.py::test_the_direction_equals_the_one_of_the_incoming_ball_stratum[1]
+KILLED: each stratum given every unit | 1 failed, 39 passed in 4.41s | tests/test_reliability_table.py::test_the_reaction_is_split_by_the_direction_of_the_incoming_ball
+KILLED: check_csv compares one column fewer | 1 failed, 19 passed in 1.34s | tests/test_amputate.py::test_the_check_passes_and_counts_what_it_compared
+KILLED: check_csv does not see a missing row | 1 failed, 20 passed in 1.56s | tests/test_amputate.py::test_the_check_sees_a_mutated_cell_in_every_column[match_id]
+KILLED: writer with CRLF | 1 failed, 17 passed in 0.97s | tests/test_amputate.py::test_the_table_has_every_metric_and_band_in_order
+KILLED: amputation command exits 0 on a failed check | 1 failed, 31 passed in 2.28s | tests/test_amputate.py::test_the_command_writes_and_checks_and_says_how_much_it_verified
+KILLED: layer2 check compares only the numbers | 1 failed, 33 passed in 3.02s | tests/test_layer2_check.py::test_the_check_passes_and_counts_every_value
+KILLED: layer2 check ignores a missing value | 1 failed, 35 passed in 3.50s | tests/test_layer2_check.py::test_the_check_sees_a_missing_or_extra_value
+KILLED: layer2 check ignores a carriage return | 1 failed, 36 passed in 3.73s | tests/test_layer2_check.py::test_the_check_refuses_a_file_it_cannot_trust
+KILLED: layer2 check accepts another rendering | 1 failed, 36 passed in 4.56s | tests/test_layer2_check.py::test_the_check_refuses_a_file_it_cannot_trust
+KILLED: layer2 --check writes the long Parquet | 1 failed, 37 passed in 3.33s | tests/test_layer2_check.py::test_the_command_checks_says_how_much_and_writes_nothing
+KILLED: layer2 --check does not say how much it verified | 1 failed, 37 passed in 3.85s | tests/test_layer2_check.py::test_the_command_checks_says_how_much_and_writes_nothing
+TOTAL: 27 of 28 killed

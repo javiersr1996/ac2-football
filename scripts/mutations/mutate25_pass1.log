@@ -1,0 +1,40 @@
+BASELINE (unmutated copy): exit 0; 73 passed in 3.38s
+KILLED: make_metric: sign of period 1 always | 1 failed, 6 passed in 0.64s | tests/test_reliability_metrics.py::test_both_teams_in_both_periods_give_the_same_metric[pressure.make_metric-2]
+KILLED: make_metric: no sign (always +1) | 1 failed, 6 passed in 0.67s | tests/test_reliability_metrics.py::test_both_teams_in_both_periods_give_the_same_metric[pressure.make_metric-2]
+KILLED: make_metric: sign of team 1 always | 1 failed, 6 passed in 0.57s | tests/test_reliability_metrics.py::test_both_teams_in_both_periods_give_the_same_metric[pressure.make_metric-2]
+KILLED: pressure_index: sign of period 1 always | 1 failed, 8 passed in 0.67s | tests/test_reliability_metrics.py::test_both_teams_in_both_periods_give_the_same_metric[pressure_index-2]
+KILLED: pressure_index: no sign (always +1) | 1 failed, 8 passed in 0.61s | tests/test_reliability_metrics.py::test_both_teams_in_both_periods_give_the_same_metric[pressure_index-2]
+KILLED: pressure_index: sign of team 1 always | 1 failed, 8 passed in 0.73s | tests/test_reliability_metrics.py::test_both_teams_in_both_periods_give_the_same_metric[pressure_index-2]
+KILLED: line: sign of period 1 always | 1 failed, 10 passed in 0.77s | tests/test_reliability_metrics.py::test_both_teams_in_both_periods_give_the_same_metric[line_height-2]
+KILLED: line: no sign (always +1) | 1 failed, 10 passed in 0.75s | tests/test_reliability_metrics.py::test_both_teams_in_both_periods_give_the_same_metric[line_height-2]
+KILLED: line: sign of team 1 always | 1 failed, 10 passed in 0.90s | tests/test_reliability_metrics.py::test_both_teams_in_both_periods_give_the_same_metric[line_height-2]
+KILLED: sensitivity ignores is_detected (V1 = V0) | 1 failed, 5 passed in 1.32s | tests/test_reliability_metrics.py::test_the_variants_follow_who_was_detected
+KILLED: line metric reports no players | 1 failed, 1 passed in 0.78s | tests/test_reliability_metrics.py::test_the_line_height_and_its_reaction_are_the_planted_ones
+KILLED: pressure_index reports no players | 1 failed in 0.60s | tests/test_reliability_metrics.py::test_the_pressure_and_the_nearest_rival_are_the_planted_ones
+KILLED: block reports no players | 1 failed, 3 passed in 0.78s | tests/test_reliability_metrics.py::test_the_block_is_the_planted_one
+KILLED: make_metric: near = weights > 0 | 1 failed, 14 passed in 1.05s | tests/test_reliability_metrics.py::test_the_near_cut_is_between_float_noise_and_a_real_weight[collinear
+SURVIVED: score_receptions: near = weights > 0 | 73 passed in 4.71s | 
+KILLED: pressure_index: near = weights > 0 | 1 failed, 15 passed in 1.01s | tests/test_reliability_metrics.py::test_the_near_cut_is_between_float_noise_and_a_real_weight[collinear
+KILLED: tolerance as large as a real weight (1e-9) | 1 failed, 21 passed in 0.79s | tests/test_reliability_metrics.py::test_the_near_cut_is_between_float_noise_and_a_real_weight[a
+KILLED: line keeps the goalkeeper | 1 failed, 1 passed in 0.44s | tests/test_reliability_metrics.py::test_the_line_height_and_its_reaction_are_the_planted_ones
+KILLED: line ranks by x without the sign | 1 failed, 10 passed in 0.74s | tests/test_reliability_metrics.py::test_both_teams_in_both_periods_give_the_same_metric[line_height-2]
+KILLED: line takes the shallowest four | 1 failed, 1 passed in 0.47s | tests/test_reliability_metrics.py::test_the_line_height_and_its_reaction_are_the_planted_ones
+KILLED: reaction does not need the line at t - W | 1 failed, 2 passed in 0.55s | tests/test_reliability_metrics.py::test_a_line_needs_the_four_listed_at_both_ends
+KILLED: reaction subtracts a height without the sign | 1 failed, 12 passed in 0.71s | tests/test_reliability_metrics.py::test_both_teams_in_both_periods_give_the_same_metric[line_reaction-2]
+KILLED: block of four players is a block | 1 failed, 3 passed in 0.47s | tests/test_reliability_metrics.py::test_the_block_is_the_planted_one
+KILLED: block extremes by percentiles | 1 failed, 3 passed in 0.38s | tests/test_reliability_metrics.py::test_the_block_is_the_planted_one
+KILLED: block area as the sum | 1 failed, 3 passed in 0.42s | tests/test_reliability_metrics.py::test_the_block_is_the_planted_one
+KILLED: block ties: second of the lowest | 1 failed, 3 passed in 0.44s | tests/test_reliability_metrics.py::test_the_block_is_the_planted_one
+KILLED: nearest rival: the farthest | 1 failed in 0.36s | tests/test_reliability_metrics.py::test_the_pressure_and_the_nearest_rival_are_the_planted_ones
+KILLED: weights: cos without the half | 1 failed in 0.34s | tests/test_reliability_metrics.py::test_the_pressure_and_the_nearest_rival_are_the_planted_ones
+KILLED: check compares no cell | 1 failed, 43 passed in 1.36s | tests/test_reliability_table.py::test_the_check_sees_a_mutated_cell_in_every_column[0-n]
+KILLED: check compares only the first four columns | 1 failed, 39 passed in 1.10s | tests/test_reliability_table.py::test_the_check_passes_and_counts_what_it_compared
+KILLED: check stops at the first row | 1 failed, 39 passed in 1.13s | tests/test_reliability_table.py::test_the_check_passes_and_counts_what_it_compared
+KILLED: check ignores a missing row | 1 failed, 40 passed in 1.06s | tests/test_reliability_table.py::test_the_check_sees_a_mutated_cell_in_every_column[0-match_id]
+KILLED: check ignores a carriage return | 1 failed, 69 passed in 2.70s | tests/test_reliability_table.py::test_the_check_refuses_a_file_it_cannot_trust
+KILLED: check does not count cells | 1 failed, 39 passed in 1.48s | tests/test_reliability_table.py::test_the_check_passes_and_counts_what_it_compared
+KILLED: writer ends lines with CRLF | 1 failed, 38 passed in 1.29s | tests/test_reliability_table.py::test_the_file_has_lf_and_no_nan
+SURVIVED: writer leaves NaN | 73 passed in 2.84s | 
+KILLED: command prints no counts | 1 failed, 71 passed in 2.10s | tests/test_reliability_table.py::test_the_command_writes_and_checks_and_says_how_much_it_verified
+KILLED: command exits 0 on a failed check | 1 failed, 71 passed in 2.09s | tests/test_reliability_table.py::test_the_command_writes_and_checks_and_says_how_much_it_verified
+TOTAL: 36 of 38 killed

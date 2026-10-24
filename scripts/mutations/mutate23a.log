@@ -1,0 +1,10 @@
+KILLED  the gate opens in dead: 1 failed, 27 passed in 40.70s
+KILLED  killed_by is not the report's: 1 failed, 3 passed in 0.28s
+KILLED  the report's sha256 is not the file's: 1 failed, 3 passed in 0.28s
+KILLED  no verdict-iff-dead rule: 1 failed, 75 passed in 4.77s
+KILLED  empty killed_by accepted with the bar passed: 1 failed, 67 passed in 3.92s
+KILLED  killed_by may name D5: 1 failed, 64 passed in 3.76s
+KILLED  dead must record a code tree sha: 1 failed in 0.19s
+KILLED  the verdict's fields are not in the schema of dead: 1 failed, 74 passed in 4.40s
+KILLED  heldout_read_for_layer3 not checked: 1 failed, 69 passed in 4.41s
+9 of 9 killed; survivors: []

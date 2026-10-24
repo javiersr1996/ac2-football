@@ -32,6 +32,7 @@ packages = ["src/ac2fb"]
 
 [tool.ruff]
 line-length = 100
+extend-exclude = ["scripts/mutations"]  # archived session scripts, kept as they were written
 src = ["src"]
 
 [tool.ruff.lint]

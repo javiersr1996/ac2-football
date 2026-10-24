@@ -37,3 +37,5 @@ jobs:
       - run: uv run mypy src
       - name: Tests (a skipped test fails the run, see tests/conftest.py)
         run: uv run pytest -q
+      - name: Example on the synthetic match (no data; it fails if the line or its disclaimer is gone)
+        run: uv run python examples/sensitivity.py | tee /dev/stderr | grep -q "synthetic numbers, not findings"

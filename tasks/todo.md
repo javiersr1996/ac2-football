@@ -2775,8 +2775,58 @@ su test sintético con el fallo plantado (una sonda que no puede fallar no prote
   docstring. Gate local en verde: ruff, format, `mypy src`, `figures --check`, `pytest
   tests/test_figures.py tests/test_readme_check.py` (60). Bloques de código idénticos a `HEAD`;
   imágenes resuelven; LF; sin `PENDING(`.
-- [ ] 34. `sonnet` Guion del vídeo (≤ 60 s, unas 140 palabras, voz de Javier) con plano por frase
+- [x] 34. `sonnet` Guion del vídeo (≤ 60 s, unas 140 palabras, voz de Javier) con plano por frase
   (figura 1, figura 2, clip de la 32); cada cifra con su artefacto.
+  **Hecho (2026-10-24)**, commits `7098de7` (`docs/video_script.md`), `ab3d2d3`
+  (`scripts/video_script_check.py` y `tests/test_video_script_check.py`), `d8f9544` (paso en
+  `ci.yml`) y el de este registro; sin push. **Guion:** `docs/video_script.md`, en inglés, tabla
+  con una fila por frase: ventana de tiempo a 150 palabras por minuto, plano, frase tal como se
+  dice y, por cada cifra, su artefacto y clave con la sintaxis `src` de `README.src.json`, una
+  cita entre acentos graves por cifra y en orden. **146 palabras habladas, 58 s a 150 palabras
+  por minuto** (12 filas; la línea del recuento vive en el fichero y la comprueba el gate).
+  Estructura: gancho con el clip (la cámara vio 4 de 11 defensores en la recepción, el modelo
+  rellenó los otros 7, cada uno etiquetado con los segundos a su detección más cercana); hallazgo
+  de la capa 2 con el rango por partido (20 partidos, cerca de la mitad de los jugador-frames
+  vistos; solo con lo visto la línea sube de 7 a 14 m y el bloque se acorta de 17 a 37 m en todos
+  los partidos); implicación para el analista (longitud y área son sobre todo lo que la cámara
+  eligió enseñar, presión y rival más cercano sobreviven; etiquetar cada métrica con cuántos
+  jugadores se vieron); capa 3 muerta por su regla prerregistrada (efecto −0,19 sd, diferencia
+  previa 0,18 sd, "that is the published result"); y el código en GitHub (un partido en unos 9 s,
+  cita de CI). **Planos:** clip de 0 a 3 s y congelado en la recepción (`clip_still.png`,
+  contador "7 of 11"), clip de 3 a 10 s, figura 1a, figura 1c (tiras de altura de línea, longitud
+  del bloque, presión y rival), Javier a cámara, figura 2a (efecto conjunto frente al suelo D3),
+  figura 2b, Javier a cámara, README en pantalla (sección Reproduce). Cifras citadas: `clip.json`
+  (`key.defenders_seen`, `n_defenders`, `key.defenders_extrapolated`), `protocol/split.json`
+  (10 + 10), `fig1_layer2.json` (`series.63|61|87.points.0.of.*(min|max)`, las mismas claves que
+  el README), `calibration.json` (`criteria.D3.values.effect|pretrend`), run 39782141426 para los
+  9 s (solo presencia, como en el README); "Layer 3" va en la lista permitida; "about half" es
+  palabra, no numeral (el README dice lo mismo y lo respalda con 56,2 % y 57,0 %). Palabras
+  pensadas para la voz de Javier: sin "extrapolated", "interpolated" ni "amputation"; `-0.19` se
+  lee "minus zero point one nine".
+  **Gate:** `scripts/video_script_check.py`, hermano de `readme_check.py` (reutiliza su resolutor,
+  su comparación con redondeo y signo, su lista permitida y su sintaxis de citas): una tabla con
+  columnas `Sentence` y `Sources`; solo la columna `Sentence` se cuenta y se comprueba (≤ 150
+  palabras); la línea "N spoken words, S s at 150 words per minute" del fichero tiene que
+  coincidir con el recuento; cada cifra se empareja con la siguiente cita de su fila (más cifras
+  que citas, o al revés, falla y nombra la frase); las citas las resuelve `readme_check.resolve`.
+  Salida: `rows: 12`, `words: 146 (max 150), 58 s at 150 words per minute`, `numbers: 12 checked,
+  10 equal to their src, 1 covered by a CI citation only (presence, not value), 1 allow-listed, 0
+  failed`, `video_script_check: OK`. Paso nuevo en `ci.yml` tras el gate del README.
+  **Tests** (`tests/test_video_script_check.py`, 14): línea base, cifra cambiada (y un paso de
+  redondeo en un rango), cifra sin cita, cita sin cifra, 150 palabras pasan y 151 fallan, columnas
+  de plano y tiempo ni habladas ni comprobadas, signo escrito que debe coincidir, cita que no
+  resuelve (clave, fichero, run sin id, `same run` sin run anterior), recuento o duración
+  declarados falsos o ausentes, tabla sin columnas o fila corta, lista permitida y sus vecinos,
+  CRLF, el comando y su salida, y el guion real contra los artefactos reales. **Mutaciones sobre
+  el guion real** (12, en copia en el scratchpad de la sesión, `mutate34.py` y `mutate34.log`;
+  las 12 caen y nombran la fila): 4→5, 7→8, 37→38, 0,18→0,19, signo −0,19→+0,19, cita del 11
+  borrada, cita equivocada para el 7, clave mal escrita, 151 palabras, recuento 146→140, duración
+  58→55, cifra añadida sin cita. Desviación honesta: el primer borrador declaraba 145 palabras y
+  el gate lo corrigió a 146. Gate local en verde: `ruff check`, `ruff format --check`, `mypy src`,
+  `pytest tests/test_video_script_check.py tests/test_readme_check.py` (44), `readme_check.py` OK
+  y `video_script_check.py` OK (lo que corre el paso nuevo de CI). **Para Javier:** leer el guion
+  en voz alta y cronometrar; si pasa de 60 s, recortar la fila 6 o la 11 (el gate avisa si cambia
+  el recuento).
 - [ ] J6. **[Javier]** `ac2-football` público (si no lo era; la base lo es desde J2); `full-build`
   en verde del commit entregado y el tag de la base que fija `uv.lock` presente en el repo público.
 - [ ] J7. **[Javier]** Grabar el vídeo con su voz (máximo 1 minuto) y subirlo a YouTube

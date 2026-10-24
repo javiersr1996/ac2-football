@@ -2331,7 +2331,7 @@ su test sintético con el fallo plantado (una sonda que no puede fallar no prote
   el enlace SVG a sidecar es por construcción (el SVG se dibuja de las series del sidecar) y lo
   guarda el `--check` byte a byte; se arrancó Docker Desktop para la prueba en Linux. Gate local
   en verde: ruff, format, `mypy src`, `pytest -q` 1.502 pasan (66 deseleccionados).
-- [ ] 28. `sonnet` `--check` en cada comando que escribe un artefacto (recalcula y compara; con
+- [x] 28. `sonnet` `--check` en cada comando que escribe un artefacto (recalcula y compara; con
   fixtures dice cuánto verificó, `PARTIAL n/20`). Aceptación: mutar un valor de un JSON hace
   fallar su `--check`. Rama B: el de la 25 y la 26 ya existe (23); en `HEAD`, tras la lectura,
   verifica solo la calibración y lo dice (`PARTIAL 10/20`); el reservado, desde el commit de la
@@ -2339,6 +2339,76 @@ su test sintético con el fallo plantado (una sonda que no puede fallar no prote
   Cabo suelto de la 23c (2026-10-23): los scripts de mutación que citan los registros
   (`mutate23c_final.py` y los de 23a, 23b, 25 y 26) viven en scratchpads de sesión; pasarlos
   a `scripts/mutations/` para que su registro tenga artefacto en el repo (lecciones).
+  Hecho (2026-10-24), commits `68e9b78` (los `--check` y sus tests), `ef40bc4` (workflow y
+  script de comparación del reservado) y `82d232c` (scripts de mutación); el de este registro.
+  **Qué hay:** `--check` en `cadence`, `s1`, `s2`, `s3`, `power`, `design` y `calibration`
+  (además de los de `layer2`, `reliability`, `amputation`, `protocol` y `figures`). Cada uno
+  recalcula su informe por la puerta guardada, compara valor a valor con el fichero (nombra la
+  ruta que difiere, el valor que falta o sobra, el CR y el formato) y no escribe. La comparación
+  es una sola, `report.check_json` (la de `layer2` ahora la usa, mismos tests); cada módulo trae
+  su `check`. Salida: `verified: N values, M matches`, los problemas, una línea `PARTIAL n/20` y
+  `<comando>: OK|FAILED`; sale 1 si algo difiere o falta, 2 si pide un partido del reservado.
+  `PARTIAL` sale en los diez (también en `layer2`, `reliability` y `amputation`): en `HEAD` el
+  reservado no abre, así que se verifican 10 de 20 y la línea dice por qué (en los de capa 2: el
+  reservado reproduce solo desde el commit de la lectura, en un worktree; en los de capa 3: no
+  tiene mitad reservada, la capa murió antes de leer).
+  **En datos reales (salida de cada uno, `HEAD` con los 10 de calibración, segundos de pared en
+  una máquina con otras sesiones):** `cadence` 493 values 37 s; `s1` 1903 values 67 s; `s2` 5275
+  values 40 s; `s3` 2401 values 149 s; `design` 1801 values 49 s; `power` 3458 values 144 s;
+  `calibration` 7701 values 69 s; `layer2` 3558 values 38 s; `reliability` 854 rows, 12810
+  cells 180 s; `amputation` 420 rows, 4200 cells 122 s. Los diez, `10 matches`,
+  `PARTIAL 10/20 matches: ...` y `OK`, sin discrepancia con los ficheros commiteados de
+  `reports/` (ninguno que tocar). Nota: el primer lanzamiento dejó una cadena huérfana que
+  escribía en los mismos logs; se mataron y se relanzó todo, de ahí los dos `exit 0` sueltos en
+  `layer2.log` y `calibration.log`; los resultados son los de la segunda pasada.
+  **Reservado (rama B):** el código de `HEAD` no puede abrirlo (la guarda lo cierra: el código
+  cambió desde el congelado), ni debe haber ruta nueva. `full-build.yml` hace lo que pedía la
+  30: un worktree en el commit de la lectura (se busca por su asunto y debe ser uno solo; hoy
+  `4cb9351`), `uv sync --locked` allí, `ac2fb heldout read --reports-dir` (reproduce, no
+  commitea) y `scripts/compare_heldout_reading.sh` compara byte a byte los tres ficheros con
+  `reports/heldout/`. También añade al workflow los siete `--check` nuevos y `figures --check`,
+  y `fetch-depth: 0` al checkout (la guarda lee toda la historia). **No probado de punta a punta
+  en local**: no se corre `heldout read`; queda para el primer dispatch. El script de comparación
+  sí se probó con 8 casos sobre copias de `reports/heldout/`: idéntico pasa; un número de
+  `layer2.json`, una celda de `reliability.csv` y el salto de línea final cambiados, un fichero
+  no reproducido, uno no commiteado, uno de más y nada que comparar fallan (salida 1).
+  **Mutaciones.** En datos reales, sobre copia de `reports/` (`ac2fb <cmd> --check
+  --reports-dir copia`), un número cambiado por JSON, los siete caen con salida 1 y nombran el
+  valor: `cadence` `decision.cadence_frames` 1 a 2; `s1` `constants.goal_x`; `s2`
+  `constants.frame_seconds`; `s3` `constants.max_median_diff_m`; `design` `constants.d3_ratio`;
+  `power` `candidates.C1.outcomes.ball_advance.incoming_ball.rho_v0_pooled`; `calibration`
+  `beside.V0_ball_detected.agreeing` 8 a 9. En los tests (`tests/test_report_checks.py`, 46):
+  por cada uno de los siete, el primer número, el último y un texto cambiados, un valor de más,
+  el fichero ausente, un partido del reservado (salida 2), que no escribe, y `power` contra un
+  veredicto de sonda editado junto al fichero. Sobre el código, 26 (copia del árbol con su
+  propio git; `scripts/mutations/mutate28.py` y `mutate28.log`; línea base 51 verdes, **las 26
+  caen**, cada una en su test): comparación que no compara, que no ve un valor cambiado, de más
+  o que falta, que acepta CR, otro formato o un fichero ausente; sin contar valores; salida 0
+  al fallar; sin `OK/FAILED`, sin lista de problemas, sin `PARTIAL`; total de `PARTIAL` mal;
+  `layer2` diciendo que no tiene reservado; `cadence` leyendo el fichero de `s1`; `s2`
+  recalculando el informe de `s1`; `design` leyendo el de `calibration`; `power` con las sondas
+  de `reports/` en vez de las del lado del fichero; `calibration` y `s3` que reescriben antes de
+  comprobar; `s1` que no rechaza el reservado; `s1` que verifica un partido menos; `cadence`
+  recomputando otro redondeo; `layer2` que cuenta cero. La primera pasada abortó por un
+  artefacto del script (la copia no era un repositorio y un test lee `split.json` de `HEAD`);
+  se le dio su `git init`. Rutas públicas: 8 funciones nuevas y 7 comandos con `--check` en las
+  tablas de `test_public_routes` (cada una rechaza el reservado y sirve calibración).
+  **Scripts de mutación pasados a `scripts/mutations/`** (cabecera con el registro que los cita
+  y cómo correrlos; los logs al lado; LF; excluidos de ruff con `extend-exclude`, no los recoge
+  pytest): `mutate22`, `mutate23a`, `mutate23b`, `mutate23c_a`, `mutate23c_a2`,
+  `mutate23c_final`, `mutate25`, `mutate26`, `mutate27` y `mutate28`. Todos los citados se
+  encontraron. Dudas: `mutate22.py` estaba en el scratchpad del proyecto
+  football-tracking-base; el registro de la 23c dice "5 en B" sin nombrar el script, y se
+  archivaron `mutate23c_b.py` y `mutate23c_b2.py` (de `r23c/B/scripts`, con `mutate_B.log` y
+  `mutate_C.log`) por su ubicación, no por el registro. Los de la 23c restauran con
+  `git checkout`, tal como se escribieron. Quedan en los scratchpads, sin copiar, los scripts de
+  análisis de la 23c (`rd1` a `rd3`, `straddle`, etc.), que ningún registro cita.
+  **Desviaciones:** `PARTIAL` también en los de capa 3 (la tarea lo pedía para los de fixtures);
+  el `--check` de `power` lee las sondas de `--reports-dir`, el de escritura las de `reports/`;
+  `extend-exclude` en `pyproject.toml` (está en `GUARDED_CODE`, que ya no coincide con el
+  congelado, así que no afecta a la lectura hecha); el reservado se verifica por reproducción y
+  `cmp`, no con un `--check` propio, porque el código del commit de la lectura es el congelado.
+  Gate local en verde: ruff, format, `mypy src` y `pytest -q` (1.577 pasan, 66 deseleccionados).
 - [ ] 29. `sonnet` API pública mínima y documentada (`reliability.sensitivity`,
   `reliability.amputate`, `protocol.data` como lector guardado del silver de la base, esquema del
   Parquet largo con `gap_len`) y un

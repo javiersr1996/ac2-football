@@ -38,6 +38,8 @@ jobs:
       - run: uv run ruff check .
       - run: uv run ruff format --check .
       - run: uv run mypy src
+      - name: README gate (words, figures, every number against the artefact it cites)
+        run: uv run python scripts/readme_check.py
       - name: Tests (a skipped test fails the run, see tests/conftest.py)
         run: uv run pytest -q
       - name: Example on the synthetic match (no data; it fails if the line or its disclaimer is gone)

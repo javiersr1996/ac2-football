@@ -9,7 +9,7 @@ from collections.abc import Sequence
 from pathlib import Path
 from typing import Any
 
-from ac2fb import __version__, figures
+from ac2fb import __version__, clip, figures
 from ac2fb.defence import calibration, design, power, probe_s1, probe_s2, probe_s3
 from ac2fb.defence.calibration import write_calibration_report
 from ac2fb.defence.design import write_design_report
@@ -30,12 +30,14 @@ from ac2fb.protocol.data import (
 from ac2fb.reliability import amputate, cadence, report, table
 from ac2fb.reliability.cadence import write_cadence_report
 from ac2fb.reliability.long import write_long
+from ac2fb.reliability.match import load_match
 from ac2fb.reliability.reading import LAYER2_READS
 from ac2fb.reliability.report import layer2_report, write_report
 
 __all__ = ["build_parser", "main"]
 
 _REPORTS = Path(__file__).resolve().parents[2] / "reports"
+CLIP_FILES = ("clip.json", "clip_still.png", "clip.mp4")
 _PROTOCOL = Path(__file__).resolve().parents[2] / "protocol" / "protocol.json"
 
 
@@ -148,6 +150,36 @@ def build_parser() -> argparse.ArgumentParser:
         help="where the figures go, or are read from with --check (default: REPORTS_DIR/figures)",
     )
     figs.add_argument(
+        "--check", action="store_true", help="compare the files with a recomputation, write nothing"
+    )
+    clip_parser = commands.add_parser(
+        "clip",
+        help="draw the 10 s clip of the video: one reception, defenders seen and filled in",
+        description=(
+            "Layer 2 for the video: the reception of one calibration match that the rule in "
+            "ac2fb.clip picks (most defenders extrapolated, longest gap_len), drawn with the "
+            "defenders the camera saw as filled markers and the extrapolated ones hollow, "
+            "labelled with their gap_len in seconds. Writes clip.json (every number drawn), "
+            "clip_still.png and, with ffmpeg on PATH, clip.mp4. Reads through the guarded "
+            "door, so a held-out match is refused (exit 2). --check draws the frames again and "
+            "compares the sidecar byte for byte, the still and the video by the hash of their "
+            "pixels; it writes nothing."
+        ),
+    )
+    clip_parser.add_argument(
+        "--match",
+        type=int,
+        default=clip.DEFAULT_MATCH,
+        metavar="ID",
+        help=f"native match id (default: {clip.DEFAULT_MATCH}, the match of the quick block)",
+    )
+    clip_parser.add_argument(
+        "--out-dir",
+        type=Path,
+        default=_REPORTS / "clip",
+        help="where the clip goes, or is read from with --check (default: reports/clip/)",
+    )
+    clip_parser.add_argument(
         "--check", action="store_true", help="compare the files with a recomputation, write nothing"
     )
     cadence = commands.add_parser(
@@ -650,6 +682,40 @@ def _figures(reports_dir: Path, out_dir: Path, do_check: bool) -> int:
     return 0 if result.ok else 1
 
 
+def _clip(match_id: int, out_dir: Path, do_check: bool) -> int:
+    try:
+        built = clip.build(load_match(match_id), clip.DEFAULT_RULE)
+    except HeldOutLocked as exc:
+        print(f"refused: {exc}", file=sys.stderr)
+        return 2
+    except clip.NoReception as exc:
+        print(f"failed: {exc}", file=sys.stderr)
+        return 1
+    side, still, video = (out_dir / name for name in CLIP_FILES)
+    if do_check:
+        result = clip.check(built, _committed(side), _committed(still), _committed(video))
+        print(
+            f"verified: {result.frames} frames drawn again and hashed, the sidecar byte for byte, "
+            "the still by its pixels, the video by the hash in its comment (its bytes depend on "
+            "the encoder and are not compared)"
+        )
+        for problem in result.problems:
+            print(f"  - {problem}")
+        print("clip: OK" if result.ok else "clip: FAILED")
+        return 0 if result.ok else 1
+    if clip.ffmpeg() is None:
+        print("failed: ffmpeg is not on PATH, so the video cannot be encoded", file=sys.stderr)
+        return 1
+    out_dir.mkdir(parents=True, exist_ok=True)
+    side.write_bytes(built.sidecar)
+    still.write_bytes(built.still)
+    size = clip.encode_mp4(built, video)
+    print(f"wrote {side}")
+    print(f"wrote {still} ({len(built.still)} bytes)")
+    print(f"wrote {video} ({size} bytes, {built.n_frames} frames at {clip.FPS} fps)")
+    return 0
+
+
 def _status() -> int:
     split = load_split()
     status = guard_status()
@@ -679,6 +745,8 @@ def main(argv: Sequence[str] | None = None) -> int:
         return _amputation(args.match, args.reports_dir, args.check)
     if args.command == "figures":
         return _figures(args.reports_dir, args.out_dir or args.reports_dir / "figures", args.check)
+    if args.command == "clip":
+        return _clip(args.match, args.out_dir, args.check)
     if args.command == "cadence":
         return _cadence(args.match, args.reports_dir, args.check)
     if args.command == "s1":

@@ -27,6 +27,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from types import ModuleType
 from typing import Any
+from unittest import mock
 
 import numpy as np
 import pyarrow as pa
@@ -35,7 +36,7 @@ from ftbase import silver
 from gate_helpers import CAL, HELD, POISON, ROOT, Checkout, inside_the_reading
 
 import ac2fb
-from ac2fb import cli, figures
+from ac2fb import cli, clip, figures
 from ac2fb.defence import (
     bar,
     block,
@@ -318,6 +319,50 @@ def design_command(m: int) -> pa.Table:
     return served(m, True)
 
 
+SHORT_CLIP = clip.Rule(before=10, frames=40, min_seen=1)  # the synthetic periods hold 60 frames
+
+
+def a_clip(mt: match_module.MatchData) -> clip.Built:
+    return clip.build(mt, SHORT_CLIP)
+
+
+def clip_command(m: int) -> pa.Table:
+    """The ``clip`` command for one match, with the short rule the synthetic periods allow.
+
+    Exit 2 and a refusal on stderr is a refusal. It encodes a video, so ffmpeg must be on PATH.
+    """
+    err = io.StringIO()
+    with (
+        mock.patch.object(clip, "DEFAULT_RULE", SHORT_CLIP),
+        contextlib.redirect_stderr(err),
+        contextlib.redirect_stdout(io.StringIO()),
+    ):
+        code = cli.main(["clip", "--match", str(m), "--out-dir", str(Path(OUT) / f"clip-{m}")])
+    if code == 2 and "held-out" in err.getvalue():
+        raise HeldOutLocked(err.getvalue())
+    assert code == 0, err.getvalue()
+    return served(m, True)
+
+
+def clip_check_command(m: int) -> pa.Table:
+    """``clip --check`` for one match against an empty directory: a refusal is exit 2.
+
+    The files are missing, so a served match ends in exit 1 after the check read the match.
+    """
+    where = Path(tempfile.mkdtemp(prefix="ac2fb-clip-check-"))
+    err = io.StringIO()
+    with (
+        mock.patch.object(clip, "DEFAULT_RULE", SHORT_CLIP),
+        contextlib.redirect_stderr(err),
+        contextlib.redirect_stdout(io.StringIO()),
+    ):
+        code = cli.main(["clip", "--check", "--match", str(m), "--out-dir", str(where)])
+    if code == 2 and "held-out" in err.getvalue():
+        raise HeldOutLocked(err.getvalue())
+    assert code == 1, err.getvalue()
+    return served(m, True)
+
+
 REPORTS = Path(__file__).resolve().parent.parent / "reports"  # the committed probe verdicts
 VERDICTS = cli._probe_verdicts(REPORTS)
 PROBE_REPORTS = {
@@ -414,6 +459,14 @@ FUNCTION_ROUTES: dict[str, Route] = {
         )
     ),
     "ac2fb.cli.main": without_match(lambda: cli.main([])),
+    "ac2fb.clip.build": on_match(lambda mt: a_clip(mt).n_frames == SHORT_CLIP.frames),
+    "ac2fb.clip.check": on_match(lambda mt: not clip.check(a_clip(mt), None, None, None).ok),
+    "ac2fb.clip.choose": on_match(lambda mt: clip.choose(mt, SHORT_CLIP).frame.size > 0),
+    "ac2fb.clip.describe": without_match(lambda: clip.describe(clip.DEFAULT_RULE)),
+    "ac2fb.clip.encode_mp4": on_match(
+        lambda mt: clip.encode_mp4(a_clip(mt), Path(OUT) / f"clip-{mt.match_id}.mp4") > 0
+    ),
+    "ac2fb.clip.ffmpeg": without_match(clip.ffmpeg),
     "ac2fb.protocol.data.code_tree_sha": without_match(data.code_tree_sha),
     "ac2fb.protocol.data.data_dir": without_match(data.data_dir),
     "ac2fb.protocol.data.guard_status": without_match(data.guard_status),
@@ -986,6 +1039,7 @@ CLI_ROUTES: dict[tuple[str, ...], Route] = {
     ),
     ("protocol",): without_match(lambda: cli.main(["protocol", "--check"])),
     ("figures",): without_match(lambda: cli.main(["figures", "--check"])),
+    ("clip",): by_match(clip_command, clip_check_command),
     ("heldout",): without_match(lambda: cli.main(["heldout", "read", "--reports-dir", OUT])),
     ("heldout", "read"): without_match(lambda: cli.main(["heldout", "read", "--reports-dir", OUT])),
 }

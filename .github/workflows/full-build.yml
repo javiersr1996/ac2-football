@@ -130,6 +130,8 @@ jobs:
         run: FTBASE_DATA_ROOT="$FULL_ROOT" uv run ac2fb calibration --check
       - name: ac2fb figures --check
         run: uv run ac2fb figures --check
+      - name: ac2fb clip --check
+        run: FTBASE_DATA_ROOT="$FULL_ROOT" uv run ac2fb clip --check
 
       # The held-out half of those checks. Each one above says PARTIAL 10/20: the held-out opens only
       # inside `ac2fb heldout read`, in a checkout whose HEAD holds the code frozen for the reading,

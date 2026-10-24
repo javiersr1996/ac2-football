@@ -32,6 +32,9 @@ jobs:
         run: |
           uv pip show ftbase
           uv run python -c "import importlib.metadata as m; print(m.distribution('ftbase').read_text('direct_url.json'))"
+      # tests/test_clip.py encodes a video, and a test that needs ffmpeg fails without it
+      - name: ffmpeg for the clip's video tests
+        run: command -v ffmpeg || (sudo apt-get update && sudo apt-get install -y --no-install-recommends ffmpeg)
       - run: uv run ruff check .
       - run: uv run ruff format --check .
       - run: uv run mypy src

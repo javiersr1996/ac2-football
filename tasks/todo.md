@@ -2287,7 +2287,7 @@ su test sintético con el fallo plantado (una sonda que no puede fallar no prote
   Hecho (2026-10-24), commit `16446a4` (código, tests y figuras) y el de este registro. **Qué
   hay:** `src/ac2fb/figures.py` (puro: recibe los bytes de `reports/` y devuelve cuatro ficheros,
   no abre nada, la puerta única sigue única), `ac2fb figures [--reports-dir] [--out-dir] [--check]`,
-  `tests/test_figures.py` (25), matplotlib 3.11.2 con `uv add` (lock al día; `test_lock` espera
+  `tests/test_figures.py` (30 hoy), matplotlib 3.11.2 con `uv add` (lock al día; `test_lock` espera
   ahora `matplotlib` entre lo que necesita el paquete) y dos rutas nuevas en `test_public_routes`.
   Salida en `reports/figures/`: `fig1_layer2.svg|json`, `fig2_layer3.svg|json`. Lee solo
   `layer2.json`, `reliability.csv`, `amputation.csv`, `calibration.json` y los tres de
@@ -2309,7 +2309,8 @@ su test sintético con el fallo plantado (una sonda que no puede fallar no prote
   `ghcr.io/astral-sh/uv:python3.13-bookworm`, `uv sync --locked`, `figures --check` y `cmp`): los
   cuatro ficheros idénticos a los de Windows. En la primera pasada el SVG de la figura 1 difería:
   el marcador de rombo escribe `-0` en Linux y `0` en Windows; se cambió por un cuadrado y
-  `test_no_signed_zero_in_the_svg...` lo vigila. CI de Ubuntu: pendiente (sin push).
+  `test_no_signed_zero_in_the_svg...` lo vigila. CI de Ubuntu: en verde, run 40085566961 del push `18c9313`
+  (https://github.com/javiersr1996/ac2-football/actions/runs/40085566961).
   **`--check`:** redibuja y compara byte a byte; imprime `verified: 4 files, 594 plotted values
   and 7 labels, each from its artefact cell, 7 reports read`; sale 1 si algo difiere o falta, 2
   si falta un informe; no escribe.
@@ -2376,7 +2377,7 @@ su test sintético con el fallo plantado (una sonda que no puede fallar no prote
   valor: `cadence` `decision.cadence_frames` 1 a 2; `s1` `constants.goal_x`; `s2`
   `constants.frame_seconds`; `s3` `constants.max_median_diff_m`; `design` `constants.d3_ratio`;
   `power` `candidates.C1.outcomes.ball_advance.incoming_ball.rho_v0_pooled`; `calibration`
-  `beside.V0_ball_detected.agreeing` 8 a 9. En los tests (`tests/test_report_checks.py`, 46):
+  `beside.V0_ball_detected.agreeing` 8 a 9. En los tests (`tests/test_report_checks.py`, 47 hoy):
   por cada uno de los siete, el primer número, el último y un texto cambiados, un valor de más,
   el fichero ausente, un partido del reservado (salida 2), que no escribe, y `power` contra un
   veredicto de sonda editado junto al fichero. Sobre el código, 25 (copia del árbol con su
@@ -2443,7 +2444,8 @@ su test sintético con el fallo plantado (una sonda que no puede fallar no prote
   `searchsorted` sobre `BALL_DISTANCE_EDGES`) pasa por la libm de la plataforma, no correctamente
   redondeada, y glibc y la CRT de Windows no coinciden. **Evidencia** (`scripts/hypot_platform_probe.py`,
   4.000.000 pares con semilla, rango de 120 m, numpy 2.5.4 de `uv.lock`; Windows nativo contra
-  Docker `python:3.13`, glibc 2.41): `hypot: 681117 of 4000000 results differ in bits`;
+  Docker `python:3.13`, glibc 2.41; salida completa en
+  `scripts/hypot_platform_probe.log`, que repite estas dos cifras): `hypot: 681117 of 4000000 results differ in bits`;
   `sqrt: 0 of 4000000 results differ in bits` para `np.sqrt(dx*dx + dy*dy)`. Es la causa
   probable, no demostrada sobre el reservado (no se abre): la sonda muestra que `hypot` difiere
   entre plataformas y que `sqrt` no, y el cruce de un borde es lo que produce una diferencia así.
@@ -2460,7 +2462,22 @@ su test sintético con el fallo plantado (una sonda que no puede fallar no prote
   diferencia alguna, y sin la opción, falla. Mutaciones sobre el script, restauradas: ignorar el
   fichero esperado (4 tests caen), comparar solo su primera línea (2) y no fallar ante una
   diferencia sin la opción (2). Gate local en verde (1.597 pasan, 66 deseleccionados).
-  **Pendiente: un run verde de full-build** (lo despacha y cita el líder).
+  Run verde de `full-build`: https://github.com/javiersr1996/ac2-football/actions/runs/40109287550
+  (`heldout: OK`, "the differences are exactly those pinned"); CI del push, run 40109287863, en verde.
+  Revisión 27-28, pasada 2 (2026-10-24, Fable): sin altos ni medios; cuatro bajos. (1) `full-build`
+  corría en `ubuntu-latest` y la diferencia fijada solo se produjo y verificó en la imagen
+  `ubuntu-26.04` (runs 40098167554, 40099424687 y 40109287550 lo imprimen); `a797db3` fija
+  `runs-on: ubuntu-26.04` (`ci.yml` sigue en `ubuntu-latest`) y el paso del reservado imprime
+  `ldd --version | head -1`. La versión de glibc de esa imagen: PENDIENTE DE CONFIRMAR (los logs
+  no la imprimen; la dará el próximo run). No va en `heldout_linux_diff.txt` porque el script lo
+  compara byte a byte. (4) En el mismo commit, el comentario de `full-build.yml` ya no dice
+  "byte for byte" sin más: nombra la diferencia fijada. (2) `323b881` añade
+  `scripts/hypot_platform_probe.log` (Windows nativo, Docker `python:3.13` con glibc 2.41-12 y
+  numpy 2.5.4, y `compare`), repetido hoy: 681117 y 0 de 4000000, igual que el registro. (3)
+  Cifras al día en este fichero: `test_figures.py` 30, `test_report_checks.py` 47 (recontados con
+  `pytest --collect-only`), CI de Ubuntu de la tarea 27 y run verde de `full-build` citados. Gate
+  local: ruff, format, `mypy src` y `pytest` de `test_compare_heldout_script.py` y
+  `test_figures.py`; la suite completa tarda más de 30 min aquí y la corre CI al hacer push.
 - [ ] 29. `sonnet` API pública mínima y documentada (`reliability.sensitivity`,
   `reliability.amputate`, `protocol.data` como lector guardado del silver de la base, esquema del
   Parquet largo con `gap_len`) y un

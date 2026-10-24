@@ -2014,6 +2014,8 @@ su test sintético con el fallo plantado (una sonda que no puede fallar no prote
   los 10 ids de la decisión 1 y la fecha. 2 min 33 s. Artefactos en `reports/heldout/`
   (`layer2.json`, `reliability.csv`, `amputation.csv`, LF), commit `8c3ef91`. Reproducida con el
   mismo código en un directorio aparte: idéntica byte a byte en los tres, sin commit nuevo.
+  CI en rojo en `4cb9351` (run 40025760773) y en `8c3ef91` (run 40026089602): dos tests de la 23d
+  seguían exigiendo `frozen`; `2c4e4e7` los arregló (revisión V, pasada 1).
 - [x] 24. `opus` Registro de la lectura de la capa 2: cifras por partido de los 20 en
   `reliability.csv` y `amputation.csv`, con el commit de la lectura (`layer2.json` en `read`). Se
   publica como cae. Sin D6: la capa 3 no se lee en el reservado (rama B).
@@ -2913,3 +2915,37 @@ su test sintético con el fallo plantado (una sonda que no puede fallar no prote
   la del borrador actual. Y del clip (32): `ci.yml` instala ffmpeg (los tests del vídeo lo
   necesitan, sin skip), la etiqueta "121.4 s" es real pero llamativa, texto en inglés y
   "defenders" incluye al portero.
+  **Revisión V, pasada 1 (2026-10-24, Fable)**, tres frentes, ningún alto. Arreglos, commits
+  `1440af3`, `379c672`, `63e135e`, `10b42de`, `3877644` y el de este registro; sin push.
+  Medios: (1) la línea del reservado del README lleva `--expect-diff
+  scripts/heldout_linux_diff.txt` (en Windows, sin la opción). (2) Los "9 s" del README y de la
+  frase 12 del guion se dicen con el entorno ya instalado; el guion queda en 150 palabras y 60 s
+  (dos palabras recortadas en las frases 2 y 6; la línea declarada y el tiempo de la 12 al día).
+  (3) El error de relleno de la altura de línea va sobre las dos mitades, 0,79 a 1,39 m (los dos
+  extremos están en calibración, `series.65`; el reservado, `series.67`, queda dentro: 0,90 a
+  1,20 m; el `note` del sidecar lo dice), como el "+7 to +14 m" de la misma frase. (4) Las tiras
+  de la figura 1 se anclan en 0 en los dos paneles (`_strip_xlim`, un solo sitio): regenerada
+  `fig1_layer2.svg` (el sidecar no cambia, `figures --check` OK); test nuevo del ancla, y la
+  mutación de quitarla cae (`mutate_anchor.py`, scratchpad: límite inferior 0,764 > 0); las frases
+  del README ("filling costs little") y del guion (frase 6, "both near zero") siguen siendo
+  ciertas y ahora se ven. (5) `verdict.about` de `protocol.json` nombra `aa1edf9` y `10b2820`
+  (seis textos con "in the period of t" tras `calibration.json`, `a0a3b68`, regenerado en
+  `c0eefa9`); un recorrido del JSON entre `a0a3b68` y `10b2820` da 6 hojas distintas, 0 numéricas:
+  ningún umbral ni constante cambió. Ningún test fijaba la frase; `protocol --check` OK (99
+  campos, 32 reglas, 27 constantes) y `test_protocol.py` en verde. Bajos: (6) frase en el
+  registro de J4 sobre los runs rojos 40025760773 y 40026089602 y el arreglo `2c4e4e7`. (7) README:
+  ffmpeg para `ac2fb clip` y los tests; la base citada con su commit `53080bc`; "about 3 min"
+  dicho con los datos en caché; "any match but the held-out, which stays closed". La frase de los
+  fixtures sintéticos frente a `examples/sensitivity.py`: sin contradicción (el ejemplo construye
+  su partido en memoria, no es un fixture de tests, y etiqueta sus cifras "not findings"; la frase
+  habla de figuras del README), así que no se toca. (8) El patrón de años de `readme_check`
+  admite solo temporadas (`2024/25`) o un año tras un mes (`October 2026`); un `2026` suelto o
+  `2024/2025` necesitan fuente; test ampliado. No hecho, aceptado por escrito: el enmascaramiento
+  por `.gitignore` del código congelado (manipulación local deliberada, fuera del alcance de la
+  puerta). Recuento doble del README: `readme_check` 950 palabras y `wc -w README.md` 950.
+  Puertas: ruff, format, `mypy src`; `readme_check: OK` (77 números, 56 iguales, 7 solo CI, 14
+  permitidos, 0 fallos); `video_script_check: OK` (12 filas, 150 palabras, 60 s, 12 números, 0
+  fallos); `figures --check` OK (594 valores, 7 etiquetas); `protocol --check` OK; pytest de
+  `test_figures.py` (31), `test_readme_check.py`, `test_video_script_check.py` y
+  `test_protocol.py` (136). Bloques de código del README idénticos a `HEAD`; LF en los cuatro
+  ficheros editados.

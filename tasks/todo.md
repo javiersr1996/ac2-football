@@ -2949,3 +2949,18 @@ su test sintético con el fallo plantado (una sonda que no puede fallar no prote
   `test_figures.py` (31), `test_readme_check.py`, `test_video_script_check.py` y
   `test_protocol.py` (136). Bloques de código del README idénticos a `HEAD`; LF en los cuatro
   ficheros editados.
+  **Revisión V, pasada 2 (2026-10-25, Fable)**: ningún alto, un medio, tres bajos. Commits
+  `ef17f9d` (README y sidecar), `b2e7839` (`readme_check` y su test), `3b882a5` (guion, su gate y
+  su test) y el de este registro; sin push. Medio: la pasada 1 había borrado la única frase del
+  README que apuntaba a `protocol/` (y su registro no lo decía); la regla de muerte nombra ahora
+  `protocol/protocol.json`, "committed before any outcome". Bajos: el bloque completo dice "about
+  3.5 min" (202 s en el run 40117288163 y 207 s en el 40136059795, los dos con caché; la entrada
+  del sidecar cita ambos); los "9 s" del README y de la frase 12 del guion se dicen "with the
+  packages cached" (el bloque cronometrado incluye `uv sync --locked` y la descarga; lo que el
+  runner tiene es uv, Python y la caché de ruedas); el guion queda en 149 palabras y 60 s;
+  `readme_check` exime un número solo si la coincidencia permitida cubre todo su tramo
+  (`2026/10/24` ya no pasa como temporada; caso añadido al test), y el mismo arreglo, con su caso,
+  en `video_script_check.py`, que tenía la misma comprobación de solo el inicio. Recuento doble
+  del README: 955 y 955. Puertas: ruff, format, `mypy src`; `readme_check: OK` (77 números, 0
+  fallos); `video_script_check: OK` (149 palabras, 60 s, 12 números, 0 fallos); pytest de
+  `test_readme_check.py` y `test_video_script_check.py` (44).

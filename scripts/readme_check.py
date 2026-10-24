@@ -58,10 +58,12 @@ REQUIRED_SENTENCE = (
     "Synthetic fixtures are used only for tests and produce no figure in this README."
 )
 
+MONTHS = "January|February|March|April|May|June|July|August|September|October|November|December"
 # Numbers that need no citation. (label, pattern, id group whose text must occur in reports/ or 0)
 ALLOWED: list[tuple[str, str, int]] = [
     ("edition name", r"Analytics Cup 2\.0", 0),
-    ("year or season", r"\b20\d\d(?:/\d\d)?\b", 0),
+    # a year only in context: a season (2024/25) or after a month name (October 2026)
+    ("year or season", rf"\b20\d\d/\d\d\b|\b(?:{MONTHS}) 20\d\d\b", 0),
     ("figure number", r"\bFigure \d+", 0),
     ("layer number", r"\b[Ll]ayer [123]\b", 0),
     ("match id of the quick run", r"--match (\d+)", 1),

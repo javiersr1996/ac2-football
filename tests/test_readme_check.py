@@ -374,10 +374,11 @@ def test_a_ci_citation_only_has_its_presence_checked(tmp_path: Path) -> None:
 
 
 def test_allow_list_is_explicit(tmp_path: Path) -> None:
-    line = "Entry to the Analytics Cup 2.0 (2024/25 data), Layer 1, layer 2 and Figure 1."
+    line = "Analytics Cup 2.0 (2024/25 data, October 2026), Layer 1, layer 2, Figure 1."
     assert added(tmp_path, line) == []
-    # Neighbours of the allowed forms are not allowed.
-    for bad in ("Analytics Cup 3.0", "2.0 in total", "Layer 4", "Figure 1 and 7", "in 1850"):
+    # Neighbours of the allowed forms are not allowed: a bare year is any integer 2000 to 2099.
+    bads = ("Analytics Cup 3.0", "2.0 in total", "Layer 4", "Figure 1 and 7", "in 1850", "in 2026")
+    for bad in (*bads, "2026 runs", "2024/2025"):
         assert added(tmp_path, line.replace("layer 2", bad)) != [], bad
 
 

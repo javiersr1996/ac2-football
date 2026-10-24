@@ -18,7 +18,7 @@ Layer 1 is ingestion (`ftbase`). Layer 2 measures what the camera saw: each play
 
 ## Layer 3: a question that died, as designed
 
-The pre-registered kill rule fired in calibration; that is the published result. Does pressure on the receiver reduce the ball's advance over the next 1.3 s, within strata of the incoming ball? Hypotheses and kill criteria were committed in `protocol/` before any outcome. The pooled effect is -0.19 sd, negative in 8 of 10 matches, permutation p = 0.0005: it passes the bar. It dies on D3: pressed and free units already differed before the reception, by 0.18 sd, 95% of the effect, above the 50% limit set in advance. Seen-only players change nothing (-0.20 sd): gaps do not explain it. The held-out was never opened for it (stage `dead`).
+The pre-registered kill rule fired in calibration; that is the published result. Does pressure on the receiver reduce the ball's advance over the next 1.3 s, within strata of the incoming ball? Hypotheses and kill criteria were committed (`protocol/`) before any outcome. The pooled effect is -0.19 sd, negative in 8 of 10 matches, permutation p = 0.0005: it passes the bar. It dies on D3: pressed and free units already differed before the reception, by 0.18 sd, 95% of the effect, above the 50% limit set in advance. Seen-only players change nothing (-0.20 sd): gaps do not explain it. The held-out was never opened for it (stage `dead`).
 
 ![Figure 2](reports/figures/fig2_layer3.svg)
 
@@ -50,7 +50,7 @@ uv run ftbase bronze && uv run ftbase silver && uv run ac2fb layer2 && uv run ac
 ```
 <!-- clean-clone:full:end -->
 
-Every command has `--check` (recompute and compare); `ac2fb figures` redraws both figures. The held-out opens only inside `ac2fb heldout read`, at the reading commit: `git worktree add ../reading 4cb9351`, there `uv sync --locked` and `FTBASE_DATA_ROOT=../ac2-football/data uv run ac2fb heldout read --reports-dir ../heldout-check`, then back here `bash scripts/compare_heldout_reading.sh ../heldout-check` (as in `full-build.yml`). It reproduced byte for byte on my Windows machine; on Linux (`ubuntu-26.04`) one player-frame crosses a ball-distance band edge (`np.hypot` through the platform libm), pinned in `scripts/heldout_linux_diff.txt`.
+Every command has `--check` (recompute and compare); `ac2fb figures` redraws them. The held-out opens only inside `ac2fb heldout read`, at the reading commit: `git worktree add ../reading 4cb9351`, there `uv sync --locked` and `FTBASE_DATA_ROOT=../ac2-football/data uv run ac2fb heldout read --reports-dir ../heldout-check`, then back here `bash scripts/compare_heldout_reading.sh ../heldout-check` (as in `full-build.yml`). It reproduced byte for byte on my Windows machine; on Linux (`ubuntu-26.04`) one player-frame crosses a ball-distance band edge (`np.hypot` through the platform libm), pinned in `scripts/heldout_linux_diff.txt`.
 
 ## Provenance
 

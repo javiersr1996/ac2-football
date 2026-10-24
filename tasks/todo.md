@@ -2601,8 +2601,81 @@ su test sintético con el fallo plantado (una sonda que no puede fallar no prote
   Decisiones por si Javier quiere cambiarlas: la frase exacta; que un número sin signo valga por su
   magnitud (el efecto está en el JSON como -0.19268 y el README dice 0.19); que `8 of 10` acepte el
   total de elementos; que las palabras cuenten por separación de espacios (los fences y `##` suman).
-- [ ] 32. `sonnet` Clip de 10 s para el vídeo: una recepción con los defensores detectados en
+- [x] 32. `sonnet` Clip de 10 s para el vídeo: una recepción con los defensores detectados en
   relleno y los extrapolados en hueco con su `gap_len`, desde silver por `ac2fb clip` (matplotlib).
+  **Hecho (2026-10-24)**, commits `1591ce4` (comando, tests, workflows) y el de este registro con
+  `reports/clip/` y la corrección de dos tests (sin push). **Comando:** `ac2fb clip [--match ID]
+  [--out-dir DIR] [--check]`; partido por defecto 1874553 (el del bloque rápido del README; un test
+  exige que el defecto sea de calibración). Lee por `load_match`, es decir por `protocol.data`:
+  un reservado sale con exit 2 y no escribe nada. Módulo `src/ac2fb/clip.py` (puro: devuelve bytes;
+  `ffmpeg` solo en `encode_mp4`); el cuerpo de la CLI lee y escribe, como `figures`.
+  **La regla (en código, `Rule` y `describe`; el sidecar la repite):** candidatas son los eventos
+  `player_possession` con equipo y jugador (el receptor) cuyo receptor y balón están detectados en
+  el primer fotograma del evento y con al menos 4 rivales detectados ahí (para que el clip muestre
+  los dos tipos). Orden: más rivales extrapolados en ese fotograma, después el mayor `gap_len` entre
+  ellos, después periodo y fotograma (el más temprano). Gana la primera con ventana completa: 100
+  fotogramas (10 s a 10 Hz) desde 30 antes de la recepción, dentro de un periodo, con receptor,
+  balón y cada rival presentes y con `gap_len` en todos. Defensores = rivales del receptor,
+  portero incluido. **Recepción elegida** (artefacto: `reports/clip/clip.json`): partido 1874553,
+  periodo 1, fotograma 14562, pase del jugador 50968 (equipo 866); en ese fotograma 7 de 11
+  defensores extrapolados y 4 vistos, el mayor `gap_len` 1214 fotogramas (121,4 s, jugador 50999);
+  a lo largo de la ventana pasan de 7 a 4 extrapolados.
+  **Qué muestra:** campo 105 x 68 girado para que el equipo del receptor ataque a la derecha;
+  defensores detectados con marcador lleno bermellón, extrapolados con marcador hueco y su `gap_len`
+  en segundos (`gap_len` / 10, un decimal) encima; receptor con anillo negro; balón negro;
+  compañeros como puntos azules pequeños (huecos si extrapolados, sin etiqueta); a la derecha un
+  contador vivo ("7 of 11 defenders filled in by the model") y una leyenda de letra 20 pt; abajo el
+  reloj relativo a la recepción ("+0.0 s RECEPTION"). 1280 x 720, 10 fps en tiempo real, sin
+  voz ni música. Fuentes de 16 a 54 pt para que se lea en un móvil.
+  **Ficheros** (en `reports/clip/`): `clip.mp4` 153.234 B (H.264, yuv420p, 100 fotogramas, 10,0 s;
+  muy por debajo de los 3 MB), `clip_still.png` 97.806 B (fotograma de la recepción, para la
+  miniatura o el README), `clip.json` 27.041 B (LF, claves ordenadas, sin fecha). El sidecar guarda,
+  por fotograma, `detected` y `gap_len` de cada defensor, del receptor y del balón, los números
+  del contador y el hash de los píxeles de todos los fotogramas. Generar: 36 s; `--check`: 10 s.
+  **`--check`:** vuelve a dibujar los 100 fotogramas y compara el sidecar byte a byte (contiene el
+  hash sha256 de los píxeles RGB de todos los fotogramas y del de la recepción), el PNG por sus
+  píxeles decodificados (no por sus bytes, que dependen de zlib) y el MP4 por el hash que lleva en
+  su comentario (`ac2fb clip frames_sha256=...`, escrito por `encode_mp4`); los bytes del MP4 no se
+  comparan porque dependen del codificador, así que el vídeo queda atado a un dibujo pero no a su
+  contenido decodificado. No necesita ffmpeg. Estabilidad (reglas de la 27: `style.context("default")`,
+  `rc_context` fijo, sin metadatos con fecha): el hash de píxeles sale igual en Windows (matplotlib
+  3.11.2, numpy 2.5.4, pillow 13.0.0) y en Linux x86-64 (`python:3.13-slim` en Docker con esas
+  mismas versiones, ejecutando el mismo dibujo sobre la escena guardada: `3ec84354...5840` en
+  ambos). No lo he podido comprobar en el runner de GitHub: `clip --check` entra en `full-build.yml`
+  (tras `figures --check`, con el silver completo) y sin dispatch; si el runner difiere, ese paso
+  fallará y bastará bajar el `--check` del vídeo a sidecar y PNG.
+  **Rutas y puerta única:** entradas nuevas en `FUNCTION_ROUTES` (`clip.build`, `check`, `choose`,
+  `describe`, `encode_mp4`, `ffmpeg`) y `("clip",)` en `CLI_ROUTES` (el comando con una regla corta,
+  porque los periodos sintéticos tienen 60 fotogramas, y su `--check`); un reservado se rechaza y
+  uno de calibración se sirve; `test_single_door.py` en verde. **ffmpeg en CI:** los tests del
+  vídeo y las rutas de `encode_mp4` y `clip` lo necesitan y fallan sin él (no hay skip); `ci.yml`
+  gana un paso que lo instala si falta (`apt-get`). Cambia `ci.yml` aunque la tarea solo pedía
+  `full-build.yml`.
+  **Tests** (`tests/test_clip.py`, 28; `tests/test_realdata_clip.py`, 2, deseleccionados por
+  defecto): la regla con detección y `gap_len` sembrados en copias del partido sintético, cada
+  número dibujado contra la tabla larga leída aparte por la puerta, las etiquetas del pintor, el
+  color del centro de un marcador lleno y de uno hueco, el sidecar canónico, el check ante cada
+  fichero ausente o cambiado, el MP4 real (H.264, 1280x720, número de fotogramas) y la CLI.
+  **Mutaciones** (20, en un `git worktree` aparte con un script, ninguna en el árbol de trabajo;
+  las 20 matadas): orden por hueco antes que por cuenta, hueco fuera de la clave, fotograma
+  descendente, sin comprobar ventana completa, receptor no comprobado, balón no comprobado,
+  `<` por `<=` en `min_seen`, signo de ataque sin aplicar, etiqueta en fotogramas, llenos y huecos
+  intercambiados, `gap_len` desplazado uno en la escena, fecha en el sidecar, PNG comparado por
+  bytes, MP4 que solo debe existir, check que ignora el sidecar, partido por defecto reservado,
+  ficheros escritos antes de buscar ffmpeg, check que exige ffmpeg, rechazo del reservado
+  tragado (exit 1). **Desviación honesta:** 3 mutaciones sobrevivieron a la primera versión de los
+  tests (ventana con hueco, receptor y balón no comprobados) porque los casos sembrados caían
+  fuera por otra regla (`min_seen`, o rivales del propio equipo); se corrigieron los casos y las
+  tres mueren. **Gate local:** `ruff check`, `ruff format --check`, `mypy src` limpios; `pytest`
+  de `test_public_routes.py`, `test_single_door.py`, `test_clip.py` y `test_cli.py`: 693 pasan (15
+  min); tras corregir los dos tests y renombrar un campo, `test_clip.py` (28), las rutas de `clip`
+  (23) y `test_single_door.py` (86) en verde otra vez, y los 2 de `-m realdata`; la suite
+  completa tarda más de 30 min aquí y la corre CI al hacer push. Cambiar `src/` mueve
+  `code_tree_sha` (sin efecto: el reservado sigue en diseño y `layer2.json` no está congelado).
+  **Decisiones por si Javier quiere cambiarlas:** el clip va en tiempo real a 10 fps (el dato es de
+  10 Hz; no interpolo entre fotogramas para no inventar posiciones), apto para 16:9; la elegida
+  tiene un defensor con 121 s de hueco, real pero llamativo ("121.4 s"); los defensores incluyen al
+  portero; el texto del clip está en inglés.
 - [ ] J5. **[Javier, opcional]** Abrir el issue en kloppy con el texto de la 10.
 
 ## Fase 5: entrega (lun 7 dic a vie 18 dic)

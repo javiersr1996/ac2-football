@@ -115,7 +115,7 @@ def test_equal_counts_and_gaps_are_broken_by_the_earlier_frame(match: MatchData)
 def test_a_window_with_a_hole_is_skipped_however_good_it_scores(match: MatchData) -> None:
     # Frames 60 to 69 do not exist: the window of 45 (35 to 74) has a hole, and so has the one of
     # 70. Mutation (no completeness check): the planted 45 wins.
-    planted = plant(match, out={45: {81: 90, 82: 90}} | undetected(15, 1, 5))
+    planted = plant(match, out={45: {71: 90, 72: 90}} | undetected(15, 1, 5))
     scene = clip.choose(planted, SHORT)
     assert int(scene.frame[scene.key]) == 15
     assert scene.frame.tolist() == list(range(5, 45))
@@ -130,13 +130,13 @@ def test_a_window_before_the_first_frame_is_skipped(match: MatchData) -> None:
 
 def test_the_receiver_must_be_detected_at_the_reception(match: MatchData) -> None:
     # Mutation (receiver not tested): 15 wins with a receiver the camera did not see.
-    planted = plant(match, out=undetected(15, 3, 5) | undetected(100, 1, 5), receiver_out=(72, 15))
+    planted = plant(match, out=undetected(15, 2, 5) | undetected(100, 1, 5), receiver_out=(72, 15))
     assert key_of(planted) == 100
 
 
 def test_the_ball_must_be_detected_at_the_reception(match: MatchData) -> None:
     # Mutation (ball not tested): 15 wins with a ball the camera did not see.
-    planted = plant(match, out=undetected(15, 3, 5) | undetected(100, 1, 5), ball_out=15)
+    planted = plant(match, out=undetected(15, 2, 5) | undetected(100, 1, 5), ball_out=15)
     assert key_of(planted) == 100
 
 

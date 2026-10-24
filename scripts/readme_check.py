@@ -357,7 +357,7 @@ def check(root: Path, readme: str = "README.md") -> Report:
 
     tokens: list[Token] = []
     for m in TOKEN.finditer(marked):
-        if any(a <= m.start(3) < b for a, b in exempt):
+        if any(a <= m.start(3) and m.end(3) <= b for a, b in exempt):  # the whole number
             report.allowed += 1
             continue
         tokens.append(

@@ -378,7 +378,8 @@ def test_allow_list_is_explicit(tmp_path: Path) -> None:
     assert added(tmp_path, line) == []
     # Neighbours of the allowed forms are not allowed: a bare year is any integer 2000 to 2099.
     bads = ("Analytics Cup 3.0", "2.0 in total", "Layer 4", "Figure 1 and 7", "in 1850", "in 2026")
-    for bad in (*bads, "2026 runs", "2024/2025"):
+    # "2026/10/24" starts like a season: the whole number must sit inside the allowed match.
+    for bad in (*bads, "2026 runs", "2024/2025", "2026/10/24"):
         assert added(tmp_path, line.replace("layer 2", bad)) != [], bad
 
 

@@ -147,7 +147,9 @@ jobs:
           uv sync --locked
           FTBASE_DATA_ROOT="$FULL_ROOT" uv run ac2fb heldout read --reports-dir "$RUNNER_TEMP/reproduced"
           cd "$GITHUB_WORKSPACE"
-          bash scripts/compare_heldout_reading.sh "$RUNNER_TEMP/reproduced"
+          # Linux differs from the committed Windows reading by one player-frame at the 10 m edge of
+          # the ball-distance bands (np.hypot goes through the platform libm); pinned, see the record.
+          bash scripts/compare_heldout_reading.sh --expect-diff scripts/heldout_linux_diff.txt "$RUNNER_TEMP/reproduced"
       - name: Remove the worktree of the reading
         if: always()
         run: git worktree remove --force "$RUNNER_TEMP/reading" || true

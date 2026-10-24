@@ -24,10 +24,23 @@ if BASH is None:
     )
 
 
-def run(reproduced: str, committed: Path, cwd: Path) -> subprocess.CompletedProcess[str]:
+PINNED = ROOT / "scripts" / "heldout_linux_diff.txt"
+# The four values the Linux reproduction changes: one player-frame crosses the 10 m band edge.
+LINUX_CHANGES = [
+    ('"detected": 0.847193,', '"detected": 0.847209,'),
+    ('"n": 9620\n', '"n": 9621\n'),
+    ('"detected": 0.793839,', '"detected": 0.793831,'),
+    ('"n": 25126\n', '"n": 25125\n'),
+]
+
+
+def run(
+    reproduced: str, committed: Path, cwd: Path, expect: Path | None = None
+) -> subprocess.CompletedProcess[str]:
     assert BASH is not None
+    flag = ["--expect-diff", expect.as_posix()] if expect else []
     return subprocess.run(
-        [BASH, SCRIPT.as_posix(), reproduced, committed.as_posix()],
+        [BASH, SCRIPT.as_posix(), *flag, reproduced, committed.as_posix()],
         cwd=cwd,
         capture_output=True,
         text=True,
@@ -98,3 +111,79 @@ def test_an_empty_pair_has_nothing_to_compare(tmp_path: Path) -> None:
     (tmp_path / "b").mkdir()
     done = run((tmp_path / "a").as_posix(), tmp_path / "b", tmp_path)
     assert done.returncode == 1 and "no file to compare" in done.stdout
+
+
+def change(path: Path, pairs: list[tuple[str, str]]) -> None:
+    text = path.read_text(encoding="utf-8")
+    for old, new in pairs:
+        assert text.count(old) == 1, old
+        text = text.replace(old, new)
+    path.write_bytes(text.encode("utf-8"))
+
+
+# Mutations planted in the script and seen to fail these tests (2026-10-24), then restored:
+# ignoring the expected file (`! cmp -s` -> `false`): 4 fail; comparing only its first line: 2 fail;
+# not failing a difference when the option is absent: 2 fail (one old test, one new).
+
+
+def test_the_pinned_difference_passes_with_the_option(
+    pair: tuple[Path, Path], tmp_path: Path
+) -> None:
+    committed, reproduced = pair
+    change(reproduced / "layer2.json", LINUX_CHANGES)
+    done = run(reproduced.as_posix(), committed, tmp_path, PINNED)
+    assert done.returncode == 0, done.stdout + done.stderr
+    assert "exactly those pinned" in done.stdout and "heldout: OK" in done.stdout
+
+
+def test_the_pinned_difference_without_the_option_fails(
+    pair: tuple[Path, Path], tmp_path: Path
+) -> None:
+    committed, reproduced = pair
+    change(reproduced / "layer2.json", LINUX_CHANGES)
+    done = run(reproduced.as_posix(), committed, tmp_path)
+    assert done.returncode == 1 and "heldout: FAILED" in done.stdout
+
+
+def test_the_pinned_difference_plus_one_more_changed_value_fails(
+    pair: tuple[Path, Path], tmp_path: Path
+) -> None:
+    committed, reproduced = pair
+    change(
+        reproduced / "layer2.json",
+        LINUX_CHANGES
+        + [
+            (
+                '"00_05": {\n          "detected": 0.847922,',
+                '"00_05": {\n          "detected": 0.847923,',
+            )
+        ],
+    )
+    done = run(reproduced.as_posix(), committed, tmp_path, PINNED)
+    assert done.returncode == 1 and "not exactly those pinned" in done.stdout
+
+
+def test_one_more_difference_in_another_file_fails(pair: tuple[Path, Path], tmp_path: Path) -> None:
+    committed, reproduced = pair
+    change(reproduced / "layer2.json", LINUX_CHANGES)
+    target = reproduced / "amputation.csv"
+    target.write_bytes(target.read_bytes() + b"x\n")
+    done = run(reproduced.as_posix(), committed, tmp_path, PINNED)
+    assert done.returncode == 1 and "not exactly those pinned" in done.stdout
+
+
+def test_a_different_change_of_the_same_lines_fails(
+    pair: tuple[Path, Path], tmp_path: Path
+) -> None:
+    committed, reproduced = pair
+    other = [(old, new) for old, new in LINUX_CHANGES]
+    other[0] = (other[0][0], '"detected": 0.847210,')
+    change(reproduced / "layer2.json", other)
+    done = run(reproduced.as_posix(), committed, tmp_path, PINNED)
+    assert done.returncode == 1 and "not exactly those pinned" in done.stdout
+
+
+def test_identical_files_with_the_option_fail(pair: tuple[Path, Path], tmp_path: Path) -> None:
+    committed, reproduced = pair
+    done = run(reproduced.as_posix(), committed, tmp_path, PINNED)
+    assert done.returncode == 1 and "not exactly those pinned" in done.stdout

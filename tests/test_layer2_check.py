@@ -78,6 +78,15 @@ def test_the_check_sees_a_missing_or_extra_value(tmp_path: Path) -> None:
     assert "not produced by the code: extra" in checked(path).problems
 
 
+def test_a_missing_file_is_reported_before_anything_is_recomputed() -> None:
+    def never() -> str:
+        raise AssertionError("recomputed with no file to compare")
+
+    assert report.check_json("x.json", never, None).problems == ("x.json does not exist",)
+    done = report.check([], None)
+    assert (done.matches, done.values) == (0, 0) and "does not exist" in done.problems[0]
+
+
 def test_the_check_refuses_a_file_it_cannot_trust(tmp_path: Path) -> None:
     assert "does not exist" in report.check([MATCH], None).problems[0]
     path = written(tmp_path)

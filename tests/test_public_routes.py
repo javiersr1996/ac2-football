@@ -957,7 +957,7 @@ FUNCTION_ROUTES: dict[str, Route] = {
         lambda m: served(m, table.write_table([m], Path(OUT)).is_file())
     ),
     "ac2fb.reliability.report.check_json": without_match(
-        lambda: report.check_json("x.json", "{}", b"{}").ok
+        lambda: report.check_json("x.json", lambda: "{}", b"{}").ok
     ),
     "ac2fb.reliability.report.check": by_match(checked_layer2),
     "ac2fb.reliability.report.layer2_report": by_match(

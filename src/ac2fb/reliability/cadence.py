@@ -192,5 +192,6 @@ def _write(report: Mapping[str, object], reports_dir: Path) -> Path:
 
 def check(match_ids: list[int], raw: bytes | None) -> JsonCheck:
     """Recompute ``probe_cadence.json`` of the matches and compare every value with ``raw``."""
-    report = cadence_report([load_match(m) for m in match_ids])
-    return check_json(REPORT_NAME, render_report(report), raw)
+    return check_json(
+        REPORT_NAME, lambda: render_report(cadence_report([load_match(m) for m in match_ids])), raw
+    )

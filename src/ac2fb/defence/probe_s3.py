@@ -514,5 +514,6 @@ def write_s3_report(match_ids: Sequence[int], reports_dir: Path) -> Path:
 
 def check(match_ids: Sequence[int], raw: bytes | None) -> JsonCheck:
     """Recompute ``probe_s3.json`` of the matches and compare every value with ``raw``."""
-    report = s3_report([load_inputs(m) for m in match_ids])
-    return check_json(REPORT_NAME, render_report(report), raw)
+    return check_json(
+        REPORT_NAME, lambda: render_report(s3_report([load_inputs(m) for m in match_ids])), raw
+    )

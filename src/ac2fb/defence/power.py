@@ -734,4 +734,4 @@ def write_power_report(
 
 def check(match_ids: Sequence[int], alive: Mapping[str, bool], raw: bytes | None) -> JsonCheck:
     """Recompute ``power.json`` of the matches and compare every value with ``raw``."""
-    return check_json(REPORT_NAME, render_report(power_report(match_ids, alive)), raw)
+    return check_json(REPORT_NAME, lambda: render_report(power_report(match_ids, alive)), raw)

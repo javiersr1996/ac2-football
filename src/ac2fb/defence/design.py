@@ -314,4 +314,4 @@ def write_design_report(match_ids: Sequence[int], reports_dir: Path) -> Path:
 
 def check(match_ids: Sequence[int], raw: bytes | None) -> JsonCheck:
     """Recompute ``design.json`` of the matches and compare every value with ``raw``."""
-    return check_json(REPORT_NAME, render_report(design_report(match_ids)), raw)
+    return check_json(REPORT_NAME, lambda: render_report(design_report(match_ids)), raw)

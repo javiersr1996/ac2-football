@@ -15,7 +15,7 @@ from __future__ import annotations
 
 import json
 import statistics
-from collections.abc import Mapping, Sequence
+from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -213,7 +213,7 @@ def check(match_ids: Sequence[int], raw: bytes | None) -> Check:
     a value the code writes, has one it does not, differs in one (named by its path), or is not
     rendered as the code renders it. ``values`` counts what was compared.
     """
-    result = check_json(REPORT_NAME, render_report(layer2_report(match_ids)), raw)
+    result = check_json(REPORT_NAME, lambda: render_report(layer2_report(match_ids)), raw)
     return Check(len(match_ids), result.values, result.problems)
 
 
@@ -229,22 +229,24 @@ class JsonCheck:
         return not self.problems
 
 
-def check_json(name: str, fresh: str, raw: bytes | None) -> JsonCheck:
-    """Compare every value of a recomputed report (``fresh``, as rendered) with the bytes of a file.
+def check_json(name: str, fresh: Callable[[], str], raw: bytes | None) -> JsonCheck:
+    """Compare every value of a recomputed report (``fresh()``, as rendered) with a file's bytes.
 
     ``raw`` is the file ``name`` as the command line read it (``None``: there is none), so nothing
-    here opens a file. Problems: the file is missing, has a carriage return, lacks a value the
+    here opens a file. ``fresh`` is called only when there is a file: with none, nothing is read or
+    recomputed. Problems: the file is missing, has a carriage return, lacks a value the
     code writes, has one it does not, differs in one (named by its path), or is not rendered as
     the code renders it.
     """
     if raw is None:
         return JsonCheck(0, (f"{name} does not exist",))
+    text = fresh()
     problems = ["the file has a carriage return"] if b"\r" in raw else []
-    code, disk = _flat(json.loads(fresh)), _flat(json.loads(raw.decode("utf-8")))
+    code, disk = _flat(json.loads(text)), _flat(json.loads(raw.decode("utf-8")))
     problems += [f"missing from the file: {p}" for p in code if p not in disk]
     problems += [f"not produced by the code: {p}" for p in disk if p not in code]
     compared = [p for p in code if p in disk]
     problems += [f"{p}: file {disk[p]!r}, code {code[p]!r}" for p in compared if disk[p] != code[p]]
-    if not problems and raw.decode("utf-8") != fresh:
+    if not problems and raw.decode("utf-8") != text:
         problems.append("the file is not rendered as the code renders it")
     return JsonCheck(len(compared), tuple(problems))

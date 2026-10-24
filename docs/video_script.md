@@ -7,7 +7,7 @@ number, in order. `scripts/video_script_check.py` counts the spoken words (at mo
 the line below true and checks every number of the Sentence column against its citation; the
 other columns are not checked.
 
-**150 spoken words, 60 s at 150 words per minute.**
+**149 spoken words, 60 s at 150 words per minute.**
 
 Shots: the clip is `reports/clip/clip.mp4` (match 1874553, 10 s at 10 fps; the reception is at
 second 3.0 and `reports/clip/clip_still.png` is that frame), figure 1 is
@@ -28,4 +28,4 @@ second 3.0 and `reports/clip/clip_still.png` is that frame), figure 1 is
 | 9 | 0:41 to 0:46 | Figure 2, panel a: the pooled effect against the grey D3 floor | The effect was -0.19 standard deviations, but the pre-registered rule killed it. | `reports/calibration.json:criteria.D3.values.effect` |
 | 10 | 0:46 to 0:51 | Figure 2, panel b | Pressed and free receptions already differed by 0.18 before the ball arrived. | `reports/calibration.json:criteria.D3.values.pretrend` |
 | 11 | 0:51 to 0:53 | Javier on camera | That is the published result. | |
-| 12 | 0:53 to 1:00 | README on screen, the Reproduce section | Code and protocol are on GitHub, whose runners build one match in about 9 seconds once the environment is installed. | `Full build run 39782141426, step README block quick, CLEAN CLONE OK in 9 s` |
+| 12 | 0:53 to 1:00 | README on screen, the Reproduce section | Code and protocol are on GitHub, whose runners build one match in about 9 seconds with the packages cached. | `Full build run 39782141426, step README block quick, CLEAN CLONE OK in 9 s` |

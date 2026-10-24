@@ -230,6 +230,8 @@ def test_allow_listed_numbers_need_no_citation_and_their_neighbours_do(tmp_path:
     assert len(with_row(tmp_path, 5, sentence=line)) == 1  # the 7
     assert with_row(tmp_path, 5, sentence=line.replace(", with 7 metrics", "")) == []
     assert len(with_row(tmp_path, 5, sentence="Layer 4.")) == 1
+    # A date that starts like a season: the whole number must sit inside the allowed match.
+    assert len(with_row(tmp_path, 5, sentence="Read on 2026/10/24.")) == 1
     # The match id form of the README's allow-list is a plain number here.
     assert len(with_row(tmp_path, 5, sentence="Run it with --match 1874553.")) == 1
 

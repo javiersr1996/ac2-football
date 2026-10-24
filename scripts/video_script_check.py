@@ -85,7 +85,7 @@ def numbers_of(sentence: str, report: Report) -> list[Any]:
     exempt = [m.span() for pattern in ALLOWED for m in re.finditer(pattern, sentence)]
     tokens = []
     for m in rc.TOKEN.finditer(sentence):
-        if any(a <= m.start(3) < b for a, b in exempt):
+        if any(a <= m.start(3) and m.end(3) <= b for a, b in exempt):  # the whole number
             report.allowed += 1
             continue
         tokens.append(

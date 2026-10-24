@@ -2433,6 +2433,34 @@ su test sintético con el fallo plantado (una sonda que no puede fallar no prote
   y tiene `tests/test_compare_heldout_script.py` (7 casos: idéntico, relativa, un valor, falta
   uno, uno de más, uno oculto, vacío); mutación: el script anterior falla la ruta relativa y el
   fichero oculto. (8) Este registro: 25 mutaciones de código (no 26) y sin tiempos de pared.
+  Reabierto por la revisión 27-28 (ALTO 1, 2026-10-24): la mitad del reservado no se había
+  probado de punta a punta. Los runs de `full-build` 40098167554 y 40099424687 (ubuntu) fallaron
+  en el paso del reservado con las mismas líneas: `reliability.csv` y `amputation.csv` idénticos
+  byte a byte, y en `layer2.json`, partido 2007721, un player-frame cruza el borde de 10 m de las
+  bandas de distancia al balón: `ball_distance.05_10.detected` 0,847193 a 0,847209 y `.n` 9620 a
+  9621; `ball_distance.10_20.detected` 0,793839 a 0,793831 y `.n` 25126 a 25125 (commiteado en
+  Windows, reproducido en Linux). **Causa:** `np.hypot` (`visibility.py:57`, agrupado con
+  `searchsorted` sobre `BALL_DISTANCE_EDGES`) pasa por la libm de la plataforma, no correctamente
+  redondeada, y glibc y la CRT de Windows no coinciden. **Evidencia** (`scripts/hypot_platform_probe.py`,
+  4.000.000 pares con semilla, rango de 120 m, numpy 2.5.4 de `uv.lock`; Windows nativo contra
+  Docker `python:3.13`, glibc 2.41): `hypot: 681117 of 4000000 results differ in bits`;
+  `sqrt: 0 of 4000000 results differ in bits` para `np.sqrt(dx*dx + dy*dy)`. Es la causa
+  probable, no demostrada sobre el reservado (no se abre): la sonda muestra que `hypot` difiere
+  entre plataformas y que `sqrt` no, y el cruce de un borde es lo que produce una diferencia así.
+  El código del commit de la lectura está congelado, así que no se puede cambiar.
+  **Decisión de Javier (2026-10-24):** pinear la diferencia, frente a un runner de Windows o una
+  tolerancia. **Qué cambió** (`c01969a`, `3e48f8a`): `scripts/compare_heldout_reading.sh` acepta
+  `--expect-diff FICHERO`; el `diff` de cada fichero distinto, bajo una cabecera `== nombre`, debe
+  igualar FICHERO byte a byte; sin la opción, igual que antes. El fichero fijado es
+  `scripts/heldout_linux_diff.txt` (LF; generado aplicando los cuatro cambios a una copia de
+  `layer2.json` y corriendo el mismo `diff`; vive junto al script que lo lee y fuera de
+  `reports/heldout/`, que el script lista). `full-build.yml` lo pasa. Tests en
+  `tests/test_compare_heldout_script.py` (13): la diferencia fijada pasa con la opción; con un
+  valor más, con otro cambio de las mismas líneas, con otra diferencia en otro fichero, sin
+  diferencia alguna, y sin la opción, falla. Mutaciones sobre el script, restauradas: ignorar el
+  fichero esperado (4 tests caen), comparar solo su primera línea (2) y no fallar ante una
+  diferencia sin la opción (2). Gate local en verde (1.597 pasan, 66 deseleccionados).
+  **Pendiente: un run verde de full-build** (lo despacha y cita el líder).
 - [ ] 29. `sonnet` API pública mínima y documentada (`reliability.sensitivity`,
   `reliability.amputate`, `protocol.data` como lector guardado del silver de la base, esquema del
   Parquet largo con `gap_len`) y un
@@ -2486,6 +2514,8 @@ su test sintético con el fallo plantado (una sonda que no puede fallar no prote
   interpolated" y la cifra de huecos largos), capa 3, método en corto, reproducir (bloque rápido
   de un partido y bloque completo, con tiempos medidos), fixtures sintéticos solo para tests,
   reutilizar, licencia y datos. Aceptación: la 31 en verde; lectura de Javier.
+  El README debe decir que el reservado se reproduce byte a byte en Windows y que en Linux
+  difiere en ese único player-frame, fijado en CI (`scripts/heldout_linux_diff.txt`, tarea 28).
   Borrador adelantado (2026-10-22), en `README.md`: cada cifra lleva al lado
   `<!-- src: fichero:clave -->` y lo que falta dice `PENDING(...)`. Propuesta para la 31: comprobar
   cada cifra contra la clave que cita, con su redondeo, en vez de buscarla literal en `reports/`

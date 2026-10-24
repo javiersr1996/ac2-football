@@ -1764,7 +1764,7 @@ su test sintético con el fallo plantado (una sonda que no puede fallar no prote
   (se escribieron antes del commit; repetidos en HEAD salen iguales), y
   `outcome_sign_other_period_neg` cae por un `KeyError` en el mundo base, un lector correcto
   rechazado con un error visible y no un hueco.
-- [ ] 23. Rama B: registro de D5, puerta de la capa 2, revisión y congelación. **Decisiones de
+- [x] 23. Rama B: registro de D5, puerta de la capa 2, revisión y congelación. **Decisiones de
   Javier (2026-10-20), antes de escribir nada de esto:** (1) dos protocolos: `protocol.json`
   (capa 3) no se congela nunca para una lectura, como dice D5 ("the protocol is not frozen for a
   reading"), y pasa a `stage: "dead"`; la única lectura del reservado, solo para la capa 2, lleva

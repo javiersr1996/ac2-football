@@ -84,7 +84,7 @@ from ac2fb.defence.pressure import Reception
 from ac2fb.defence.probe_s3 import Phase
 from ac2fb.protocol import data
 from ac2fb.reliability.match import MatchData, locate_rows, players_at
-from ac2fb.reliability.report import render_report
+from ac2fb.reliability.report import JsonCheck, check_json, render_report
 from ac2fb.reliability.visibility import goalkeepers
 
 __all__ = [
@@ -104,6 +104,7 @@ __all__ = [
     "block_before",
     "c1_units",
     "c3_units",
+    "check",
     "candidate_power",
     "cp1_rule",
     "design_of",
@@ -729,3 +730,8 @@ def write_power_report(
     path = reports_dir / REPORT_NAME
     path.write_bytes(render_report(report).encode("utf-8"))
     return path
+
+
+def check(match_ids: Sequence[int], alive: Mapping[str, bool], raw: bytes | None) -> JsonCheck:
+    """Recompute ``power.json`` of the matches and compare every value with ``raw``."""
+    return check_json(REPORT_NAME, render_report(power_report(match_ids, alive)), raw)

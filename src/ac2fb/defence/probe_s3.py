@@ -64,7 +64,7 @@ from ac2fb.defence.block import (
 from ac2fb.protocol import data
 from ac2fb.reliability.long import long_table
 from ac2fb.reliability.match import MatchData, build_match, players_at
-from ac2fb.reliability.report import render_report
+from ac2fb.reliability.report import JsonCheck, check_json, render_report
 from ac2fb.reliability.sensitivity import Metric, Reading, Window, WindowFrames, sensitivity
 from ac2fb.reliability.visibility import goalkeepers
 
@@ -80,6 +80,7 @@ __all__ = [
     "Observed",
     "Phase",
     "definition_stats",
+    "check",
     "load_inputs",
     "make_metric",
     "match_figures",
@@ -509,3 +510,9 @@ def write_s3_report(match_ids: Sequence[int], reports_dir: Path) -> Path:
     path = reports_dir / REPORT_NAME
     path.write_bytes(render_report(report).encode("utf-8"))
     return path
+
+
+def check(match_ids: Sequence[int], raw: bytes | None) -> JsonCheck:
+    """Recompute ``probe_s3.json`` of the matches and compare every value with ``raw``."""
+    report = s3_report([load_inputs(m) for m in match_ids])
+    return check_json(REPORT_NAME, render_report(report), raw)

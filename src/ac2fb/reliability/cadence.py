@@ -46,7 +46,7 @@ from numpy.typing import NDArray
 
 from ac2fb.reliability import runs
 from ac2fb.reliability.match import MatchData, load_match
-from ac2fb.reliability.report import render_report
+from ac2fb.reliability.report import JsonCheck, check_json, render_report
 
 __all__ = [
     "KINK_THRESHOLD",
@@ -55,6 +55,7 @@ __all__ = [
     "cadence_of",
     "cadence_report",
     "kink_gaps",
+    "check",
     "match_cadence",
     "min_window",
     "write_cadence_report",
@@ -187,3 +188,9 @@ def _write(report: Mapping[str, object], reports_dir: Path) -> Path:
     path = reports_dir / REPORT_NAME
     path.write_bytes(render_report(report).encode("utf-8"))
     return path
+
+
+def check(match_ids: list[int], raw: bytes | None) -> JsonCheck:
+    """Recompute ``probe_cadence.json`` of the matches and compare every value with ``raw``."""
+    report = cadence_report([load_match(m) for m in match_ids])
+    return check_json(REPORT_NAME, render_report(report), raw)

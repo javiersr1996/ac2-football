@@ -27,7 +27,9 @@ from ac2fb.reliability.match import MatchData, load_match
 __all__ = [
     "REPORT_NAME",
     "Check",
+    "JsonCheck",
     "check",
+    "check_json",
     "layer2_report",
     "match_report",
     "render_report",
@@ -211,10 +213,33 @@ def check(match_ids: Sequence[int], raw: bytes | None) -> Check:
     a value the code writes, has one it does not, differs in one (named by its path), or is not
     rendered as the code renders it. ``values`` counts what was compared.
     """
+    result = check_json(REPORT_NAME, render_report(layer2_report(match_ids)), raw)
+    return Check(len(match_ids), result.values, result.problems)
+
+
+@dataclass(frozen=True)
+class JsonCheck:
+    """What :func:`check_json` compared (``values``) and what it found."""
+
+    values: int
+    problems: tuple[str, ...]
+
+    @property
+    def ok(self) -> bool:
+        return not self.problems
+
+
+def check_json(name: str, fresh: str, raw: bytes | None) -> JsonCheck:
+    """Compare every value of a recomputed report (``fresh``, as rendered) with the bytes of a file.
+
+    ``raw`` is the file ``name`` as the command line read it (``None``: there is none), so nothing
+    here opens a file. Problems: the file is missing, has a carriage return, lacks a value the
+    code writes, has one it does not, differs in one (named by its path), or is not rendered as
+    the code renders it.
+    """
     if raw is None:
-        return Check(0, 0, (f"{REPORT_NAME} does not exist",))
+        return JsonCheck(0, (f"{name} does not exist",))
     problems = ["the file has a carriage return"] if b"\r" in raw else []
-    fresh = render_report(layer2_report(match_ids))
     code, disk = _flat(json.loads(fresh)), _flat(json.loads(raw.decode("utf-8")))
     problems += [f"missing from the file: {p}" for p in code if p not in disk]
     problems += [f"not produced by the code: {p}" for p in disk if p not in code]
@@ -222,4 +247,4 @@ def check(match_ids: Sequence[int], raw: bytes | None) -> Check:
     problems += [f"{p}: file {disk[p]!r}, code {code[p]!r}" for p in compared if disk[p] != code[p]]
     if not problems and raw.decode("utf-8") != fresh:
         problems.append("the file is not rendered as the code renders it")
-    return Check(len(match_ids), len(compared), tuple(problems))
+    return JsonCheck(len(compared), tuple(problems))

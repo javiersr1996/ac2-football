@@ -44,7 +44,7 @@ from pathlib import Path
 from ac2fb.defence import bar, line, power, pressure
 from ac2fb.defence.pressure import INCOMING_WINDOW as W
 from ac2fb.defence.pressure import LEVELS, Reception
-from ac2fb.reliability.report import render_report
+from ac2fb.reliability.report import JsonCheck, check_json, render_report
 
 __all__ = [
     "CAUSES",
@@ -54,6 +54,7 @@ __all__ = [
     "DesignUnit",
     "design_report",
     "design_units",
+    "check",
     "excluded_by_gap",
     "match_counts",
     "pooled_pretrend",
@@ -309,3 +310,8 @@ def write_design_report(match_ids: Sequence[int], reports_dir: Path) -> Path:
     path = reports_dir / REPORT_NAME
     path.write_bytes(render_report(report).encode("utf-8"))
     return path
+
+
+def check(match_ids: Sequence[int], raw: bytes | None) -> JsonCheck:
+    """Recompute ``design.json`` of the matches and compare every value with ``raw``."""
+    return check_json(REPORT_NAME, render_report(design_report(match_ids)), raw)

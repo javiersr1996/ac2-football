@@ -10,6 +10,7 @@ from pathlib import Path
 from typing import Any
 
 from ac2fb import __version__, figures
+from ac2fb.defence import calibration, design, power, probe_s1, probe_s2, probe_s3
 from ac2fb.defence.calibration import write_calibration_report
 from ac2fb.defence.design import write_design_report
 from ac2fb.defence.power import probe_verdicts, write_power_report
@@ -26,7 +27,7 @@ from ac2fb.protocol.data import (
     load_split,
     read_heldout,
 )
-from ac2fb.reliability import amputate, report, table
+from ac2fb.reliability import amputate, cadence, report, table
 from ac2fb.reliability.cadence import write_cadence_report
 from ac2fb.reliability.long import write_long
 from ac2fb.reliability.reading import LAYER2_READS
@@ -156,6 +157,9 @@ def build_parser() -> argparse.ArgumentParser:
             "Cadence probe, descriptive: how often detected paths bend, and the shortest "
             "admissible window. Reads through the guarded door. Without --match, the "
             "calibration matches."
+            " --check recomputes the report and compares every value with the file, says "
+            "how many it verified and that the held-out half is not among them (PARTIAL "
+            "n/20), and exits 1 if any differs; it writes nothing."
         ),
     )
     cadence.add_argument(
@@ -165,7 +169,10 @@ def build_parser() -> argparse.ArgumentParser:
         "--reports-dir",
         type=Path,
         default=_REPORTS,
-        help="where probe_cadence.json goes (default: reports/)",
+        help="where probe_cadence.json goes, or is read from with --check (default: reports/)",
+    )
+    cadence.add_argument(
+        "--check", action="store_true", help="compare the file with a recomputation, write nothing"
     )
     s1 = commands.add_parser(
         "s1",
@@ -175,6 +182,9 @@ def build_parser() -> argparse.ArgumentParser:
             "the provider's pressure label, how much of it extrapolated rivals carry, and the "
             "incoming-ball strata. Reads through the guarded door. Without --match, the "
             "calibration matches."
+            " --check recomputes the report and compares every value with the file, says "
+            "how many it verified and that the held-out half is not among them (PARTIAL "
+            "n/20), and exits 1 if any differs; it writes nothing."
         ),
     )
     s1.add_argument(
@@ -184,7 +194,10 @@ def build_parser() -> argparse.ArgumentParser:
         "--reports-dir",
         type=Path,
         default=_REPORTS,
-        help="where probe_s1.json goes (default: reports/)",
+        help="where probe_s1.json goes, or is read from with --check (default: reports/)",
+    )
+    s1.add_argument(
+        "--check", action="store_true", help="compare the file with a recomputation, write nothing"
     )
     s2 = commands.add_parser(
         "s2",
@@ -195,6 +208,9 @@ def build_parser() -> argparse.ArgumentParser:
             "strata, and how many receptions keep the whole line in view. No position after "
             "the reception enters a figure. Reads through the guarded door. Without --match, the "
             "calibration matches."
+            " --check recomputes the report and compares every value with the file, says "
+            "how many it verified and that the held-out half is not among them (PARTIAL "
+            "n/20), and exits 1 if any differs; it writes nothing."
         ),
     )
     s2.add_argument(
@@ -204,7 +220,10 @@ def build_parser() -> argparse.ArgumentParser:
         "--reports-dir",
         type=Path,
         default=_REPORTS,
-        help="where probe_s2.json goes (default: reports/)",
+        help="where probe_s2.json goes, or is read from with --check (default: reports/)",
+    )
+    s2.add_argument(
+        "--check", action="store_true", help="compare the file with a recomputation, write nothing"
     )
     s3 = commands.add_parser(
         "s3",
@@ -215,6 +234,9 @@ def build_parser() -> argparse.ArgumentParser:
             "fix its ends the camera saw, and whether the block looks wider when more of it is "
             "seen. Nothing after the phase's start frame enters a figure. Reads through the "
             "guarded door. Without --match, the calibration matches."
+            " --check recomputes the report and compares every value with the file, says "
+            "how many it verified and that the held-out half is not among them (PARTIAL "
+            "n/20), and exits 1 if any differs; it writes nothing."
         ),
     )
     s3.add_argument(
@@ -224,7 +246,10 @@ def build_parser() -> argparse.ArgumentParser:
         "--reports-dir",
         type=Path,
         default=_REPORTS,
-        help="where probe_s3.json goes (default: reports/)",
+        help="where probe_s3.json goes, or is read from with --check (default: reports/)",
+    )
+    s3.add_argument(
+        "--check", action="store_true", help="compare the file with a recomputation, write nothing"
     )
     power = commands.add_parser(
         "power",
@@ -235,6 +260,9 @@ def build_parser() -> argparse.ArgumentParser:
             "with the within-possession correlation of the statistic before the instant t. "
             "Computes no outcome. Reads through the guarded door. Without --match, the "
             "calibration matches."
+            " --check recomputes the report and compares every value with the file, says "
+            "how many it verified and that the held-out half is not among them (PARTIAL "
+            "n/20), and exits 1 if any differs; it writes nothing."
         ),
     )
     power.add_argument(
@@ -244,7 +272,10 @@ def build_parser() -> argparse.ArgumentParser:
         "--reports-dir",
         type=Path,
         default=_REPORTS,
-        help="where power.json goes (default: reports/)",
+        help="where power.json goes, or is read from with --check (default: reports/)",
+    )
+    power.add_argument(
+        "--check", action="store_true", help="compare the file with a recomputation, write nothing"
     )
     design = commands.add_parser(
         "design",
@@ -255,6 +286,9 @@ def build_parser() -> argparse.ArgumentParser:
             "of the statistic before t, the MDE80 and the pooled pre-trend in sd and metres. "
             "Computes no outcome. Reads through the guarded door. Without --match, the "
             "calibration matches."
+            " --check recomputes the report and compares every value with the file, says "
+            "how many it verified and that the held-out half is not among them (PARTIAL "
+            "n/20), and exits 1 if any differs; it writes nothing."
         ),
     )
     design.add_argument(
@@ -264,7 +298,10 @@ def build_parser() -> argparse.ArgumentParser:
         "--reports-dir",
         type=Path,
         default=_REPORTS,
-        help="where design.json goes (default: reports/)",
+        help="where design.json goes, or is read from with --check (default: reports/)",
+    )
+    design.add_argument(
+        "--check", action="store_true", help="compare the file with a recomputation, write nothing"
     )
     calibration = commands.add_parser(
         "calibration",
@@ -275,6 +312,9 @@ def build_parser() -> argparse.ArgumentParser:
             "p and the calibration bar, V2 and the ball-detected units beside them, and D1 to "
             "D5, mechanical. Reads through the guarded door. Without --match, the calibration "
             "matches."
+            " --check recomputes the report and compares every value with the file, says "
+            "how many it verified and that the held-out half is not among them (PARTIAL "
+            "n/20), and exits 1 if any differs; it writes nothing."
         ),
     )
     calibration.add_argument(
@@ -284,7 +324,10 @@ def build_parser() -> argparse.ArgumentParser:
         "--reports-dir",
         type=Path,
         default=_REPORTS,
-        help="where calibration.json goes (default: reports/)",
+        help="where calibration.json goes, or is read from with --check (default: reports/)",
+    )
+    calibration.add_argument(
+        "--check", action="store_true", help="compare the file with a recomputation, write nothing"
     )
     protocol = commands.add_parser(
         "protocol",
@@ -385,81 +428,126 @@ def _protocol(do_check: bool) -> int:
     return 0 if report.ok else 1
 
 
-def _calibration(match_ids: Sequence[int] | None, reports_dir: Path) -> int:
+def _coverage(ids: Sequence[int], *, heldout_artefact: bool) -> str | None:
+    """The line that says what share of the 20 matches a ``--check`` verified, if not all."""
+    split = load_split()
+    total = len(split.calibration) + len(split.heldout)
+    if len(ids) >= total:
+        return None
+    rest = (
+        f"the {len(split.heldout)} held-out ones reproduce only from the reading commit, in a "
+        "git worktree (full-build.yml)"
+        if heldout_artefact
+        else "this artefact has no held-out half: layer 3 died before any held-out reading"
+    )
+    return f"PARTIAL {len(ids)}/{total} matches: {rest}"
+
+
+def _verdict(
+    name: str, result: report.JsonCheck, ids: Sequence[int], *, heldout_artefact: bool = False
+) -> int:
+    """Print what a JSON ``--check`` verified, its problems and its PARTIAL line; the exit code."""
+    print(f"verified: {result.values} values, {len(ids)} matches")
+    for problem in result.problems:
+        print(f"  - {problem}")
+    partial = _coverage(ids, heldout_artefact=heldout_artefact)
+    if partial:
+        print(partial)
+    print(f"{name}: OK" if result.ok else f"{name}: FAILED")
+    return 0 if result.ok else 1
+
+
+def _calibration(match_ids: Sequence[int] | None, reports_dir: Path, do_check: bool) -> int:
     ids = list(match_ids) if match_ids else list(load_split().calibration)
     try:
-        path = write_calibration_report(ids, reports_dir)
+        if not do_check:
+            print(f"wrote {write_calibration_report(ids, reports_dir)}")
+            return 0
+        result = calibration.check(ids, _committed(reports_dir / calibration.REPORT_NAME))
     except HeldOutLocked as exc:
         print(f"refused: {exc}", file=sys.stderr)
         return 2
-    print(f"wrote {path}")
-    return 0
+    return _verdict("calibration", result, ids)
 
 
-def _design(match_ids: Sequence[int] | None, reports_dir: Path) -> int:
+def _design(match_ids: Sequence[int] | None, reports_dir: Path, do_check: bool) -> int:
     ids = list(match_ids) if match_ids else list(load_split().calibration)
     try:
-        path = write_design_report(ids, reports_dir)
+        if not do_check:
+            print(f"wrote {write_design_report(ids, reports_dir)}")
+            return 0
+        result = design.check(ids, _committed(reports_dir / design.REPORT_NAME))
     except HeldOutLocked as exc:
         print(f"refused: {exc}", file=sys.stderr)
         return 2
-    print(f"wrote {path}")
-    return 0
+    return _verdict("design", result, ids)
 
 
-def _power(match_ids: Sequence[int] | None, reports_dir: Path) -> int:
+def _power(match_ids: Sequence[int] | None, reports_dir: Path, do_check: bool) -> int:
     ids = list(match_ids) if match_ids else list(load_split().calibration)
     try:
-        path = write_power_report(ids, reports_dir, _probe_verdicts(_REPORTS))
+        if not do_check:
+            print(f"wrote {write_power_report(ids, reports_dir, _probe_verdicts(_REPORTS))}")
+            return 0
+        # the probe reports beside the file checked, so a probe verdict edited there is seen
+        alive = _probe_verdicts(reports_dir)
+        result = power.check(ids, alive, _committed(reports_dir / power.REPORT_NAME))
     except HeldOutLocked as exc:
         print(f"refused: {exc}", file=sys.stderr)
         return 2
-    print(f"wrote {path}")
-    return 0
+    return _verdict("power", result, ids)
 
 
-def _s3(match_ids: Sequence[int] | None, reports_dir: Path) -> int:
+def _s3(match_ids: Sequence[int] | None, reports_dir: Path, do_check: bool) -> int:
     ids = list(match_ids) if match_ids else list(load_split().calibration)
     try:
-        path = write_s3_report(ids, reports_dir)
+        if not do_check:
+            print(f"wrote {write_s3_report(ids, reports_dir)}")
+            return 0
+        result = probe_s3.check(ids, _committed(reports_dir / probe_s3.REPORT_NAME))
     except HeldOutLocked as exc:
         print(f"refused: {exc}", file=sys.stderr)
         return 2
-    print(f"wrote {path}")
-    return 0
+    return _verdict("s3", result, ids)
 
 
-def _s2(match_ids: Sequence[int] | None, reports_dir: Path) -> int:
+def _s2(match_ids: Sequence[int] | None, reports_dir: Path, do_check: bool) -> int:
     ids = list(match_ids) if match_ids else list(load_split().calibration)
     try:
-        path = write_s2_report(ids, reports_dir)
+        if not do_check:
+            print(f"wrote {write_s2_report(ids, reports_dir)}")
+            return 0
+        result = probe_s2.check(ids, _committed(reports_dir / probe_s2.REPORT_NAME))
     except HeldOutLocked as exc:
         print(f"refused: {exc}", file=sys.stderr)
         return 2
-    print(f"wrote {path}")
-    return 0
+    return _verdict("s2", result, ids)
 
 
-def _s1(match_ids: Sequence[int] | None, reports_dir: Path) -> int:
+def _s1(match_ids: Sequence[int] | None, reports_dir: Path, do_check: bool) -> int:
     ids = list(match_ids) if match_ids else list(load_split().calibration)
     try:
-        path = write_s1_report(ids, reports_dir)
+        if not do_check:
+            print(f"wrote {write_s1_report(ids, reports_dir)}")
+            return 0
+        result = probe_s1.check(ids, _committed(reports_dir / probe_s1.REPORT_NAME))
     except HeldOutLocked as exc:
         print(f"refused: {exc}", file=sys.stderr)
         return 2
-    print(f"wrote {path}")
-    return 0
+    return _verdict("s1", result, ids)
 
 
-def _cadence(match_ids: Sequence[int] | None, reports_dir: Path) -> int:
+def _cadence(match_ids: Sequence[int] | None, reports_dir: Path, do_check: bool) -> int:
     ids = list(match_ids) if match_ids else list(load_split().calibration)
     try:
-        path = write_cadence_report(ids, reports_dir)
+        if not do_check:
+            print(f"wrote {write_cadence_report(ids, reports_dir)}")
+            return 0
+        result = cadence.check(ids, _committed(reports_dir / cadence.REPORT_NAME))
     except HeldOutLocked as exc:
         print(f"refused: {exc}", file=sys.stderr)
         return 2
-    print(f"wrote {path}")
-    return 0
+    return _verdict("cadence", result, ids)
 
 
 def _layer2(match_ids: Sequence[int] | None, reports_dir: Path, do_check: bool) -> int:
@@ -480,6 +568,9 @@ def _layer2(match_ids: Sequence[int] | None, reports_dir: Path, do_check: bool) 
     print(f"verified: {result.values} values, {result.matches} matches")
     for problem in result.problems:
         print(f"  - {problem}")
+    partial = _coverage(ids, heldout_artefact=True)
+    if partial:
+        print(partial)
     print("layer2: OK" if result.ok else "layer2: FAILED")
     return 0 if result.ok else 1
 
@@ -502,6 +593,9 @@ def _reliability(match_ids: Sequence[int] | None, reports_dir: Path, do_check: b
     print(f"verified: {result.rows} rows, {result.cells} cells, {result.matches} matches")
     for problem in result.problems:
         print(f"  - {problem}")
+    partial = _coverage(ids, heldout_artefact=True)
+    if partial:
+        print(partial)
     print("reliability: OK" if result.ok else "reliability: FAILED")
     return 0 if result.ok else 1
 
@@ -519,6 +613,9 @@ def _amputation(match_ids: Sequence[int] | None, reports_dir: Path, do_check: bo
     print(f"verified: {result.rows} rows, {result.cells} cells, {result.matches} matches")
     for problem in result.problems:
         print(f"  - {problem}")
+    partial = _coverage(ids, heldout_artefact=True)
+    if partial:
+        print(partial)
     print("amputation: OK" if result.ok else "amputation: FAILED")
     return 0 if result.ok else 1
 
@@ -578,19 +675,19 @@ def main(argv: Sequence[str] | None = None) -> int:
     if args.command == "figures":
         return _figures(args.reports_dir, args.out_dir or args.reports_dir / "figures", args.check)
     if args.command == "cadence":
-        return _cadence(args.match, args.reports_dir)
+        return _cadence(args.match, args.reports_dir, args.check)
     if args.command == "s1":
-        return _s1(args.match, args.reports_dir)
+        return _s1(args.match, args.reports_dir, args.check)
     if args.command == "s2":
-        return _s2(args.match, args.reports_dir)
+        return _s2(args.match, args.reports_dir, args.check)
     if args.command == "s3":
-        return _s3(args.match, args.reports_dir)
+        return _s3(args.match, args.reports_dir, args.check)
     if args.command == "power":
-        return _power(args.match, args.reports_dir)
+        return _power(args.match, args.reports_dir, args.check)
     if args.command == "design":
-        return _design(args.match, args.reports_dir)
+        return _design(args.match, args.reports_dir, args.check)
     if args.command == "calibration":
-        return _calibration(args.match, args.reports_dir)
+        return _calibration(args.match, args.reports_dir, args.check)
     if args.command == "protocol":
         return _protocol(args.check)
     if args.command == "heldout" and args.heldout_command == "read":

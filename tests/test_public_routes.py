@@ -191,6 +191,29 @@ def layer2_check_command(m: int) -> pa.Table:
     return served(m, True)
 
 
+def check_command(command: str, report_name: str) -> Callable[[int], pa.Table]:
+    """``<command> --check`` for one match against an empty report: a refusal is exit 2.
+
+    The file must exist: without one the check stops before it reads any match. ``power`` reads
+    the probe verdicts beside the file, so the three committed probe reports are copied there.
+    """
+
+    def route(m: int) -> pa.Table:
+        where = Path(tempfile.mkdtemp(prefix=f"ac2fb-{command}-check-"))
+        for name in cli._PROBE_REPORTS:
+            (where / name).write_bytes((REPORTS / name).read_bytes())
+        (where / report_name).write_bytes(b"{}\n")
+        err = io.StringIO()
+        with contextlib.redirect_stderr(err), contextlib.redirect_stdout(io.StringIO()):
+            code = cli.main([command, "--check", "--match", str(m), "--reports-dir", str(where)])
+        if code == 2 and "held-out" in err.getvalue():
+            raise HeldOutLocked(err.getvalue())
+        assert code in (0, 1), err.getvalue()
+        return served(m, True)
+
+    return route
+
+
 def the_hiding(mt: match_module.MatchData) -> bool:
     return len(amputate.hiding(mt).probability) == len(visibility.BALL_DISTANCE_EDGES) + 1
 
@@ -466,6 +489,9 @@ FUNCTION_ROUTES: dict[str, Route] = {
         lambda m: served(m, "verdict" in probe_s1.s1_report([probe_s1.load_inputs(m)]))
     ),
     "ac2fb.defence.probe_s1.verdict": without_match(lambda: probe_s1.verdict({})),
+    "ac2fb.defence.probe_s1.check": by_match(
+        lambda m: served(m, probe_s1.check([m], b"{}").values == 0)
+    ),
     "ac2fb.defence.probe_s1.write_s1_report": by_match(
         lambda m: served(m, probe_s1.write_s1_report([m], Path(OUT)).is_file())
     ),
@@ -515,6 +541,9 @@ FUNCTION_ROUTES: dict[str, Route] = {
         lambda: probe_s3.phases_from(
             pa.table({k: pa.array([], pa.int64()) for k in ("index", "period", "frame_start")})
         )
+    ),
+    "ac2fb.defence.probe_s3.check": by_match(
+        lambda m: served(m, probe_s3.check([m], b"{}").values == 0)
     ),
     "ac2fb.defence.probe_s3.s3_report": by_match(
         lambda m: served(m, "verdict" in probe_s3.s3_report([s3_inputs(m)]))
@@ -626,6 +655,9 @@ FUNCTION_ROUTES: dict[str, Route] = {
     "ac2fb.defence.power.probe_verdicts": without_match(
         lambda: power.probe_verdicts(PROBE_REPORTS)
     ),
+    "ac2fb.defence.power.check": by_match(
+        lambda m: served(m, power.check([m], VERDICTS, b"{}").values == 0)
+    ),
     "ac2fb.defence.power.write_power_report": by_match(
         lambda m: served(m, power.write_power_report([m], Path(OUT), VERDICTS).is_file())
     ),
@@ -646,6 +678,9 @@ FUNCTION_ROUTES: dict[str, Route] = {
         lambda: design.pooled_pretrend(tiny_units(), "V0")
     ),
     "ac2fb.defence.design.power_units": without_match(lambda: design.power_units([], "index")),
+    "ac2fb.defence.design.check": by_match(
+        lambda m: served(m, design.check([m], b"{}").values == 0)
+    ),
     "ac2fb.defence.design.write_design_report": by_match(
         lambda m: served(m, design.write_design_report([m], Path(OUT)).is_file())
     ),
@@ -709,6 +744,9 @@ FUNCTION_ROUTES: dict[str, Route] = {
     "ac2fb.defence.calibration.calibration_report": by_match(
         lambda m: served(m, "verdict" in calibration.calibration_report([m]))
     ),
+    "ac2fb.defence.calibration.check": by_match(
+        lambda m: served(m, calibration.check([m], b"{}").values == 0)
+    ),
     "ac2fb.defence.calibration.write_calibration_report": by_match(
         lambda m: served(m, calibration.write_calibration_report([m], Path(OUT)).is_file())
     ),
@@ -771,6 +809,9 @@ FUNCTION_ROUTES: dict[str, Route] = {
     "ac2fb.defence.probe_s2.match_report": by_match(
         lambda m: served(m, "instrument" in probe_s2.match_report(s2_inputs(m)))
     ),
+    "ac2fb.defence.probe_s2.check": by_match(
+        lambda m: served(m, probe_s2.check([m], b"{}").values == 0)
+    ),
     "ac2fb.defence.probe_s2.s2_report": by_match(
         lambda m: served(m, "verdict" in probe_s2.s2_report([s2_inputs(m)]))
     ),
@@ -789,6 +830,9 @@ FUNCTION_ROUTES: dict[str, Route] = {
         lambda mt: "histogram" in cadence.match_cadence(mt)
     ),
     "ac2fb.reliability.cadence.min_window": without_match(lambda: cadence.min_window([1], [3])),
+    "ac2fb.reliability.cadence.check": by_match(
+        lambda m: served(m, cadence.check([m], b"{}").values == 0)
+    ),
     "ac2fb.reliability.cadence.write_cadence_report": by_match(
         lambda m: served(m, cadence.write_cadence_report([m], Path(OUT)).is_file())
     ),
@@ -912,6 +956,9 @@ FUNCTION_ROUTES: dict[str, Route] = {
     "ac2fb.reliability.table.write_table": by_match(
         lambda m: served(m, table.write_table([m], Path(OUT)).is_file())
     ),
+    "ac2fb.reliability.report.check_json": without_match(
+        lambda: report.check_json("x.json", "{}", b"{}").ok
+    ),
     "ac2fb.reliability.report.check": by_match(checked_layer2),
     "ac2fb.reliability.report.layer2_report": by_match(
         lambda m: served(m, "inventory" in report.layer2_report([m]))
@@ -928,13 +975,15 @@ CLI_ROUTES: dict[tuple[str, ...], Route] = {
     ("layer2",): by_match(layer2_command, layer2_check_command),
     ("reliability",): by_match(reliability_command),
     ("amputation",): by_match(amputation_command),
-    ("cadence",): by_match(cadence_command),
-    ("s1",): by_match(s1_command),
-    ("s2",): by_match(s2_command),
-    ("s3",): by_match(s3_command),
-    ("power",): by_match(power_command),
-    ("design",): by_match(design_command),
-    ("calibration",): by_match(calibration_command),
+    ("cadence",): by_match(cadence_command, check_command("cadence", "probe_cadence.json")),
+    ("s1",): by_match(s1_command, check_command("s1", "probe_s1.json")),
+    ("s2",): by_match(s2_command, check_command("s2", "probe_s2.json")),
+    ("s3",): by_match(s3_command, check_command("s3", "probe_s3.json")),
+    ("power",): by_match(power_command, check_command("power", "power.json")),
+    ("design",): by_match(design_command, check_command("design", "design.json")),
+    ("calibration",): by_match(
+        calibration_command, check_command("calibration", "calibration.json")
+    ),
     ("protocol",): without_match(lambda: cli.main(["protocol", "--check"])),
     ("figures",): without_match(lambda: cli.main(["figures", "--check"])),
     ("heldout",): without_match(lambda: cli.main(["heldout", "read", "--reports-dir", OUT])),

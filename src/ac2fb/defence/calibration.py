@@ -42,13 +42,14 @@ import numpy as np
 
 from ac2fb.defence import bar, design, effect, power, pressure, probe_s1
 from ac2fb.defence.pressure import INCOMING_WINDOW as W
-from ac2fb.reliability.report import render_report
+from ac2fb.reliability.report import JsonCheck, check_json, render_report
 
 __all__ = [
     "HALF",
     "NOT_TESTABLE_IN_SEEN",
     "REPORT_NAME",
     "calibration_report",
+    "check",
     "d1",
     "d2",
     "d5",
@@ -265,3 +266,8 @@ def write_calibration_report(match_ids: Sequence[int], reports_dir: Path) -> Pat
     path = reports_dir / REPORT_NAME
     path.write_bytes(render_report(report).encode("utf-8"))
     return path
+
+
+def check(match_ids: Sequence[int], raw: bytes | None) -> JsonCheck:
+    """Recompute ``calibration.json`` of the matches and compare every value with ``raw``."""
+    return check_json(REPORT_NAME, render_report(calibration_report(match_ids)), raw)

@@ -2352,11 +2352,10 @@ su test sintético con el fallo plantado (una sonda que no puede fallar no prote
   reservado no abre, así que se verifican 10 de 20 y la línea dice por qué (en los de capa 2: el
   reservado reproduce solo desde el commit de la lectura, en un worktree; en los de capa 3: no
   tiene mitad reservada, la capa murió antes de leer).
-  **En datos reales (salida de cada uno, `HEAD` con los 10 de calibración, segundos de pared en
-  una máquina con otras sesiones):** `cadence` 493 values 37 s; `s1` 1903 values 67 s; `s2` 5275
-  values 40 s; `s3` 2401 values 149 s; `design` 1801 values 49 s; `power` 3458 values 144 s;
-  `calibration` 7701 values 69 s; `layer2` 3558 values 38 s; `reliability` 854 rows, 12810
-  cells 180 s; `amputation` 420 rows, 4200 cells 122 s. Los diez, `10 matches`,
+  **En datos reales (salida de cada uno, `HEAD` con los 10 de calibración):** `cadence` 493
+  values; `s1` 1903 values; `s2` 5275 values; `s3` 2401 values; `design` 1801 values; `power` 3458
+  values; `calibration` 7701 values; `layer2` 3558 values; `reliability` 854 rows, 12810 cells;
+  `amputation` 420 rows, 4200 cells. Los diez, `10 matches`,
   `PARTIAL 10/20 matches: ...` y `OK`, sin discrepancia con los ficheros commiteados de
   `reports/` (ninguno que tocar). Nota: el primer lanzamiento dejó una cadena huérfana que
   escribía en los mismos logs; se mataron y se relanzó todo, de ahí los dos `exit 0` sueltos en
@@ -2380,8 +2379,8 @@ su test sintético con el fallo plantado (una sonda que no puede fallar no prote
   `beside.V0_ball_detected.agreeing` 8 a 9. En los tests (`tests/test_report_checks.py`, 46):
   por cada uno de los siete, el primer número, el último y un texto cambiados, un valor de más,
   el fichero ausente, un partido del reservado (salida 2), que no escribe, y `power` contra un
-  veredicto de sonda editado junto al fichero. Sobre el código, 26 (copia del árbol con su
-  propio git; `scripts/mutations/mutate28.py` y `mutate28.log`; línea base 51 verdes, **las 26
+  veredicto de sonda editado junto al fichero. Sobre el código, 25 (copia del árbol con su
+  propio git; `scripts/mutations/mutate28.py` y `mutate28.log`; línea base 51 verdes, **las 25
   caen**, cada una en su test): comparación que no compara, que no ve un valor cambiado, de más
   o que falta, que acepta CR, otro formato o un fichero ausente; sin contar valores; salida 0
   al fallar; sin `OK/FAILED`, sin lista de problemas, sin `PARTIAL`; total de `PARTIAL` mal;
@@ -2409,6 +2408,31 @@ su test sintético con el fallo plantado (una sonda que no puede fallar no prote
   congelado, así que no afecta a la lectura hecha); el reservado se verifica por reproducción y
   `cmp`, no con un `--check` propio, porque el código del commit de la lectura es el congelado.
   Gate local en verde: ruff, format, `mypy src` y `pytest -q` (1.577 pasan, 66 deseleccionados).
+  Revisión 27-28, pasada 1 (2026-10-24), sobre `git diff 9971807..b1ca9c2`: ocho hallazgos, sin
+  tocar el paso del reservado de `full-build.yml`, `protocol/*.json`, `reports/heldout/` ni
+  `data/`. Cada mutación se plantó sobre una copia del fichero, que se restauró después.
+  (1) MEDIO, etiquetas de eje de los paneles a y b tecleadas: `4b3205f` las deriva de
+  `BALL_DISTANCE_EDGES` y de los cortes de `runs.BANDS`; el test nuevo comprueba, sobre lo que el
+  código dibuja ahora, que los números de cada etiqueta son los de la clave de su celda.
+  Mutaciones: `5-10` a `5-15` y `up to 1 s` a `up to 2 s` en el código, ambas caen (antes, con
+  los ficheros regenerados, 25 de 25 verdes). (2) MEDIO, `matplotlibrc` del usuario: `99d4f52`
+  dibuja dentro de `style.context("default")`; dos tests (un `MATPLOTLIBRC` hostil en un
+  subproceso y `rcParams` hostiles en curso). Mutación: quitar `style.context`, los dos caen.
+  (3) y (4) BAJOS, `f7a31fd`: sin `except KeyError` (un partido que falta en V2 es ahora un
+  error) y las frases "passed/failed", "the kill is ..." y las dos clases de V2 salen de
+  `variants/V0/bar/passed`, `criteria/D5/killing` y `classes/1/used` y `classes/2_or_more/used`;
+  se regeneraron `fig2_layer3.svg` y `.json` (cambió la frase de la clase vacía, un número más
+  en el sidecar). Mutaciones: la frase tecleada de nuevo y el `except KeyError` repuesto, los
+  dos tests nuevos caen. (5) BAJOS: `1de5d17`, `check_json` recibe la recomputación como
+  llamada que solo corre si hay fichero (los ocho `--check` pasan la suya; los docstrings de
+  `test_public_routes` vuelven a ser ciertos); mutación: recomputar antes de mirar si hay
+  fichero, cae el test nuevo. `7e8ea4f`: `figures --check` dice "N of 4 files found"; mutación:
+  contar siempre 4, caen dos casos. (6) `0588425`: `power --check` sin las sondas en
+  `--reports-dir` sale con 2 y nombra lo que falta; mutación: quitar la guarda, cae el test.
+  (7) `215f01e`: el script de comparación resuelve las dos rutas a absolutas, usa `ls -A`
+  y tiene `tests/test_compare_heldout_script.py` (7 casos: idéntico, relativa, un valor, falta
+  uno, uno de más, uno oculto, vacío); mutación: el script anterior falla la ruta relativa y el
+  fichero oculto. (8) Este registro: 25 mutaciones de código (no 26) y sin tiempos de pared.
 - [ ] 29. `sonnet` API pública mínima y documentada (`reliability.sensitivity`,
   `reliability.amputate`, `protocol.data` como lector guardado del silver de la base, esquema del
   Parquet largo con `gap_len`) y un

@@ -36,6 +36,7 @@ jobs:
       - uses: actions/checkout@v7.0.1
         with:
           lfs: false
+          fetch-depth: 0 # the guard of the held-out reads the whole history; the reading is a past commit
       - uses: astral-sh/setup-uv@v10.3.0
         with:
           version: "0.10.4"
@@ -111,6 +112,45 @@ jobs:
         run: FTBASE_DATA_ROOT="$FULL_ROOT" uv run ac2fb layer2 --check
       - name: ac2fb amputation --check
         run: FTBASE_DATA_ROOT="$FULL_ROOT" uv run ac2fb amputation --check
+      - name: ac2fb cadence --check
+        run: FTBASE_DATA_ROOT="$FULL_ROOT" uv run ac2fb cadence --check
+      - name: ac2fb s1 --check
+        run: FTBASE_DATA_ROOT="$FULL_ROOT" uv run ac2fb s1 --check
+      - name: ac2fb s2 --check
+        run: FTBASE_DATA_ROOT="$FULL_ROOT" uv run ac2fb s2 --check
+      - name: ac2fb s3 --check
+        run: FTBASE_DATA_ROOT="$FULL_ROOT" uv run ac2fb s3 --check
+      - name: ac2fb power --check
+        run: FTBASE_DATA_ROOT="$FULL_ROOT" uv run ac2fb power --check
+      - name: ac2fb design --check
+        run: FTBASE_DATA_ROOT="$FULL_ROOT" uv run ac2fb design --check
+      - name: ac2fb calibration --check
+        run: FTBASE_DATA_ROOT="$FULL_ROOT" uv run ac2fb calibration --check
+      - name: ac2fb figures --check
+        run: uv run ac2fb figures --check
+
+      # The held-out half of those checks. Each one above says PARTIAL 10/20: the held-out opens only
+      # inside `ac2fb heldout read`, in a checkout whose HEAD holds the code frozen for the reading,
+      # and HEAD here does not (the code has moved on). So the reading is reproduced in a git
+      # worktree at the reading commit, with its own environment from that commit's uv.lock, and its
+      # three artefacts are compared byte for byte with reports/heldout/. With this step the 20
+      # matches are verified. Layer 3 died before any reading, so only layer 2 has a held-out half.
+      - name: Held-out half, reproduced from the reading commit
+        run: |
+          reading="$(git log --format=%H --grep='^Read the held-out for layer 2: the single reading$' HEAD)"
+          if [ -z "$reading" ] || [ "$(echo "$reading" | wc -l)" -ne 1 ]; then
+            echo "expected exactly one reading commit, found: ${reading:-none}"; exit 1
+          fi
+          echo "reading commit: $reading"
+          git worktree add --detach "$RUNNER_TEMP/reading" "$reading"
+          cd "$RUNNER_TEMP/reading"
+          uv sync --locked
+          FTBASE_DATA_ROOT="$FULL_ROOT" uv run ac2fb heldout read --reports-dir "$RUNNER_TEMP/reproduced"
+          cd "$GITHUB_WORKSPACE"
+          bash scripts/compare_heldout_reading.sh "$RUNNER_TEMP/reproduced"
+      - name: Remove the worktree of the reading
+        if: always()
+        run: git worktree remove --force "$RUNNER_TEMP/reading" || true
 
       - name: Times and bytes
         if: always()

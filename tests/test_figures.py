@@ -14,14 +14,18 @@ import copy
 import csv
 import io
 import json
+import os
 import re
 import shutil
 import statistics
+import subprocess
+import sys
 from collections.abc import Callable
 from pathlib import Path
 from typing import Any
 from xml.etree import ElementTree
 
+import matplotlib
 import pytest
 
 from ac2fb import figures
@@ -312,6 +316,34 @@ def test_a_match_missing_from_a_variant_is_an_error_not_a_shorter_line() -> None
     files["calibration.json"] = json.dumps(calibration).encode()
     with pytest.raises(KeyError):
         figures.build(files)
+
+
+HOSTILE_RC = "\n".join(["axes.titlepad: 40", "xtick.major.pad: 20", "font.size: 14", ""])
+
+
+def test_a_matplotlibrc_of_the_user_moves_no_byte(tmp_path: Path) -> None:
+    rc = tmp_path / "matplotlibrc"
+    rc.write_text(HOSTILE_RC, encoding="utf-8")
+    code = "import sys; from ac2fb.cli import main; sys.exit(main(['figures', '--check']))"
+    done = subprocess.run(
+        [sys.executable, "-c", code],
+        env={**os.environ, "MATPLOTLIBRC": str(rc)},
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+        cwd=ROOT,
+        check=False,
+    )
+    assert done.returncode == 0, done.stdout + done.stderr
+    assert "figures: OK" in done.stdout
+
+
+def test_hostile_rc_params_in_force_move_no_byte(built: figures.Built) -> None:
+    with matplotlib.rc_context(
+        {"axes.titlepad": 40, "xtick.major.pad": 20, "font.size": 14, "svg.fonttype": "path"}
+    ):
+        again = figures.build(read_inputs(REPORTS))
+    assert again.files == built.files
 
 
 def test_one_changed_cell_moves_one_plotted_value(tmp_path: Path) -> None:

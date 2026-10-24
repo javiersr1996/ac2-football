@@ -32,6 +32,7 @@ from itertools import pairwise
 from typing import Any, cast
 
 import matplotlib
+import matplotlib.style
 from matplotlib.axes import Axes
 from matplotlib.figure import Figure
 from matplotlib.lines import Line2D
@@ -589,7 +590,8 @@ def build(files: Mapping[str, bytes]) -> Built:
     rep = _Reports(files)
     out: dict[str, bytes] = {}
     points = labels = 0
-    with matplotlib.rc_context(cast("Any", SVG_RC)):
+    # the defaults first, so a matplotlibrc of the user moves no byte
+    with matplotlib.style.context("default"), matplotlib.rc_context(cast("Any", SVG_RC)):
         for name, draw in ((FIG1, _fig1), (FIG2, _fig2)):
             drawn = draw(rep)
             out[f"{name}.svg"] = _svg(drawn.fig)

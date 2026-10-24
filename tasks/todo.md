@@ -2735,6 +2735,46 @@ su test sintético con el fallo plantado (una sonda que no puede fallar no prote
   serie (`series.63`), frágiles si `figures.py` reordena, pero `readme_check` corre en CI; "Method
   in short" ya no repite V0/V1; "10 of 10" lo valida el número de elementos de la lista, no el
   recuento del signo (tolerancia de la 31).
+  **Revisión tras la simulación del jurado (2026-10-24; 7,4/10, comunicación 5/10)**, commits
+  `e10d0d2` (pie de la figura 2), `538c7b8` (citas al sidecar y texto nuevo) y `ee57178` (recorte
+  a 949); sin push. **Recuento doble:** `readme_check` 949 palabras y `wc -w README.md` 949 (el
+  fichero crudo es el texto contado: las citas ya no viven en el README). Línea de la puerta:
+  `words: 949 (max 1000)`, `figures + tables: 2 + 0 = 2`, `numbers: 77 checked, 56 equal to their
+  src, 7 covered by a CI citation only (presence, not value), 14 allow-listed, 0 failed`,
+  `readme_check: OK`. **Mecanismo nuevo (punto 8):** `README.src.json` lista cada número no
+  permitido en orden de aparición (`number` tal como está escrito, `src` con la sintaxis de la 31,
+  `note` libre); `scripts/readme_check.py` empareja uno a uno (un número sin entrada, una entrada
+  sin número o un desorden fallan y nombran los dos lados), cuenta las palabras del fichero crudo
+  (comentarios incluidos: los marcadores `clean-clone` suman 12) y admite `Layer 1`.
+  `tests/test_readme_check.py` reescrito sobre el sidecar (30 tests: las tres mutaciones de la 33
+  más sidecar ausente o malformado, y las de la 31 adaptadas). Sobre el README real, 7 mutaciones
+  en copia (`mutate_sidecar.py`, scratchpad): número cambiado solo en el README, entrada borrada,
+  dos entradas permutadas, valor erróneo en los dos lados, signo invertido, suelo D3 0,37, número
+  suelto al final; las 7 caen. **Texto (puntos 1 a 7):** título real; frase para analistas;
+  capas, unidad y partición definidas antes de la figura 1, con "amputation error" definido;
+  V1 − V0 presentado como selección y no como error de relleno, con la cifra del relleno (0,90 a
+  1,20 m en la altura de línea) frente a +7 a +14 m de selección; capa 3 con la regla de muerte
+  en la primera frase; pie de la figura 2 con el suelo D3 (0,36 sd, el doble de la pretendencia);
+  colas p90 y p99 del salto tras huecos de más de 20 s frente a los pasos entre detectados, en las
+  dos mitades; kloppy en frase propia; "every metric moves the same way" fuera; un solo "n = 10
+  matches per half"; "byte for byte on my Windows machine" y "GitHub runner" dichos así; línea del
+  reservado (`git worktree add ../reading 4cb9351`, `uv sync --locked`, `heldout read
+  --reports-dir ../heldout-check`, `compare_heldout_reading.sh`), **corrida aquí tal cual está
+  escrita: `heldout: OK`, 3 ficheros byte a byte, 174 s** (worktree y directorio borrados después);
+  macOS sin probar. **Figura 2 (punto 4):** el pie de V2 decía "0 usable units"; el artefacto
+  registra 280 unidades con un jugador extrapolado en la recepción y 38 con dos o más
+  (`beside.V2.classes.*.units`), ninguna usable, y la clase sin extrapolados igual a V1 partido a
+  partido; la frase propuesta ("no unit had an extrapolated player") era falsa y se escribió desde
+  esos campos: "Units with an extrapolated player at the reception, 280 with one and 38 with two
+  or more, fill no cell: V2 is V1, no estimate for them", solo cuando `used` es 0 en las dos
+  clases y V2 iguala V1 en todos los partidos (si no, cae a los recuentos). `fig2_layer3.svg|json`
+  regenerados; `figures --check` OK; `test_figures.py` (30) planta las dos ramas. **No aplicado o
+  recortado por palabras:** "Method in short" se funde en Reproduce; los errores de amputación de
+  anchura y longitud y "inside gaps the steps are smaller" salen del texto (siguen en la figura 1d
+  y en `layer2.json`); la lista de nombres de la API en Reuse se reduce a la referencia al
+  docstring. Gate local en verde: ruff, format, `mypy src`, `figures --check`, `pytest
+  tests/test_figures.py tests/test_readme_check.py` (60). Bloques de código idénticos a `HEAD`;
+  imágenes resuelven; LF; sin `PENDING(`.
 - [ ] 34. `sonnet` Guion del vídeo (≤ 60 s, unas 140 palabras, voz de Javier) con plano por frase
   (figura 1, figura 2, clip de la 32); cada cifra con su artefacto.
 - [ ] J6. **[Javier]** `ac2-football` público (si no lo era; la base lo es desde J2); `full-build`

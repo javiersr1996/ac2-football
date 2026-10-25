@@ -145,9 +145,18 @@ def strips(doc: Mapping[str, Any], keys: Sequence[str]) -> Drawn:
     names = dict(figures.METRICS)
     height, gap = 2.0, 1.2  # the strip, then its tick labels
     total = len(keys) * height + (len(keys) - 1) * gap
-    top = (SIZE[1] - 1.7 + total) / 2  # centred under the three title lines
+    head, foot = 2.3, 0.5  # the four title lines above the strips; the last tick labels below
+    top = SIZE[1] - head - (SIZE[1] - head - foot - total) / 2  # centred between the two
     _text(
         fig, 0.7, SIZE[1] - 0.7, "c. V1 minus V0: players seen throughout the window", weight="bold"
+    )
+    # The definition the sentence leans on, in the text colour (21 pt here is 29 px on screen).
+    _text(
+        fig,
+        0.7,
+        SIZE[1] - 1.15,
+        "V1: moments where every player was seen · V0: all moments",
+        fontsize=21,
     )
     for line, words in enumerate(
         (
@@ -155,7 +164,7 @@ def strips(doc: Mapping[str, Any], keys: Sequence[str]) -> Drawn:
             "upper strip: calibration, lower strip: held-out, tick: median",
         )
     ):
-        _text(fig, 0.7, SIZE[1] - 1.15 - 0.4 * line, words, fontsize=21, color=MUTED)
+        _text(fig, 0.7, SIZE[1] - 1.55 - 0.4 * line, words, fontsize=21, color=MUTED)
     axes = {}
     for i, key in enumerate(keys):
         bottom = top - height - i * (height + gap)

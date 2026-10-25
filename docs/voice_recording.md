@@ -19,7 +19,7 @@
 
 ## Tag every metric with how many of its players were seen.
 
-## Layer three: does pressure on the receiver reduce the ball's advance?
+## The one tactical question: does pressure on the receiver reduce the ball's advance?
 
 ## The pre-registered rule killed an effect of minus zero point one nine standard deviations:
 

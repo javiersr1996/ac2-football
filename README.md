@@ -18,11 +18,11 @@ Layer 1 is ingestion (`ftbase`). Layer 2 measures what the camera saw: each play
 
 ## Layer 3: killed as designed
 
-The pre-registered kill rule (`protocol/protocol.json`, committed before any outcome) fired in calibration; that is the published result. Does pressure on the receiver reduce the ball's advance over the next 1.3 s, within strata of the incoming ball? The pooled effect is -0.19 sd, negative in 8 of 10 matches, permutation p = 0.0005: it passes the bar. It dies on D3: pressed and free units already differed before the reception, by 0.18 sd, 95% of the effect, above the 50% limit set in advance. Seen-only players change nothing (-0.20 sd): gaps do not explain it. The held-out was never opened for it (stage `dead`).
+The pre-registered kill rule (`protocol/protocol.json`, committed before any outcome) fired in calibration; that is the published result. Does pressure on the receiver reduce the ball's advance over the next 1.3 s, within strata of the incoming ball? The pooled effect is -0.19 sd, negative in 8 of 10 matches, permutation p = 0.0005: it passes the bar. It dies on D3: pressed receptions already had a more forward incoming ball than free ones, by 0.18 sd, 95% of the effect, above the 50% limit; the effect is adjusted for that difference, the rule kills it anyway, and its floor, 0.36 sd, was known before any outcome (`reports/design.json`). Seen-only players change nothing (-0.20 sd): gaps do not explain it. The held-out was never opened for it (stage `dead`).
 
 ![Figure 2](reports/figures/fig2_layer3.svg)
 
-*Figure 2. Effect per calibration match, -0.36 to +0.09 sd, and the pre-reception difference, 0.18 sd. Grey band: the D3 floor, 0.36 sd, twice the pre-trend, which an effect must reach.*
+*Figure 2. (a) Effect per calibration match, -0.36 to +0.09 sd; grey band, the D3 floor, 0.36 sd. (b) The pre-reception difference, 0.18 sd.*
 
 ## Reproduce
 

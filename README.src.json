@@ -242,6 +242,11 @@
    "note": "...sd, 95% of the effect, above the 50"
   },
   {
+   "number": "0.36",
+   "src": "reports/design.json:index_cause.pretrend.V0.d3_abs_effect_must_exceed_sd",
+   "note": "...kills it anyway, and its floor, 0.36; task 19's design, written before any outcome (commit b66e7d7, before a0a3b68); equals reports/calibration.json:criteria.D3.values.floor"
+  },
+  {
    "number": "-0.20",
    "src": "reports/calibration.json:criteria.D4.values.t_v1",
    "note": ".... Seen-only players change nothing ( -0.20"
@@ -257,14 +262,14 @@
    "note": "...ct per calibration match, -0.36 to +0.09"
   },
   {
-   "number": "0.18",
-   "src": "reports/calibration.json:criteria.D3.values.pretrend",
-   "note": "..., and the pre-reception difference, 0.18"
-  },
-  {
    "number": "0.36",
    "src": "reports/calibration.json:criteria.D3.values.floor",
-   "note": "...0.18 sd. Grey band: the D3 floor, 0.36"
+   "note": "...+0.09 sd; grey band, the D3 floor, 0.36"
+  },
+  {
+   "number": "0.18",
+   "src": "reports/calibration.json:criteria.D3.values.pretrend",
+   "note": "...sd. (b) The pre-reception difference, 0.18"
   },
   {
    "number": "3.13",

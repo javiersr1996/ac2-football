@@ -1,0 +1,57 @@
+name: macOS
+
+# Manual only: macOS minutes are billed at 10x on a private repository. The gate of ci.yml that
+# depends on the platform (install from the lockfile, the tests) plus the quick README block of
+# scripts/clean_clone_check.sh, on macos-latest. The README says "untested on macOS" until a run
+# of this workflow has passed.
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  macos:
+    runs-on: macos-latest
+    timeout-minutes: 60
+    steps:
+      # No LFS and no secrets: the base is installed from its public GitHub repo, as a judge would.
+      - uses: actions/checkout@v7.0.1
+        with:
+          lfs: false
+          fetch-depth: 0 # the guard of the held-out reads the whole history
+      - uses: astral-sh/setup-uv@v10.3.0
+        with:
+          version: "0.10.4"
+      - name: Python from .python-version
+        run: |
+          cat .python-version
+          uv python install
+      - name: Install (the base is cloned from GitHub without a token)
+        run: uv sync --locked -v
+      - name: Show the installed base and the commit it was cloned at
+        run: |
+          uv pip show ftbase
+          uv run python -c "import importlib.metadata as m; print(m.distribution('ftbase').read_text('direct_url.json'))"
+      # tests/test_clip.py encodes a video, and a test that needs ffmpeg fails without it
+      - name: ffmpeg for the clip's video tests
+        run: command -v ffmpeg || brew install ffmpeg
+      - name: Tests (a skipped test fails the run, see tests/conftest.py)
+        run: uv run pytest -q
+      # AC2_REPO: the repo is private, so the clone takes the checkout (committed state only).
+      # The block downloads its match's 5 files from SkillCorner's Git LFS (mind the quota).
+      - name: README block quick
+        shell: bash
+        run: |
+          mkdir -p "$RUNNER_TEMP/w-quick"
+          TMPDIR="$RUNNER_TEMP/w-quick" AC2_REPO="$GITHUB_WORKSPACE" \
+            bash scripts/clean_clone_check.sh quick 2>&1 | tee "$RUNNER_TEMP/quick.log"
+      - name: Times and bytes
+        if: always()
+        run: |
+          log="$RUNNER_TEMP/quick.log"
+          if [ -f "$log" ]; then
+            bytes="$(sed -n 's/^downloaded: .* (\([0-9]*\) bytes)$/\1/p' "$log" | paste -sd+ - | bc)"
+            echo "- quick: $(grep -E '^(CLEAN CLONE OK|FAIL)' "$log" | head -1); downloaded bytes: ${bytes:-0}" | tee -a "$GITHUB_STEP_SUMMARY"
+          fi

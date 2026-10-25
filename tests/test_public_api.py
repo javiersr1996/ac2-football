@@ -19,6 +19,7 @@ from __future__ import annotations
 
 import ast
 import importlib
+import inspect
 import os
 import re
 import subprocess
@@ -56,6 +57,15 @@ def test_every_documented_name_resolves_and_is_exported() -> None:
     assert "ac2fb.reliability.amputate.amputate" in names
     assert "ac2fb.protocol.data.read_frames" in names
     assert "ac2fb.reliability.sensitivity.sensitivity" in names
+
+
+def test_the_package_re_exports_nothing_so_no_module_is_shadowed() -> None:
+    # ``amputate`` and ``sensitivity`` are a module and its main function; ``cli.py`` and
+    # ``reading.py`` import the module from the package, so a re-export would break them.
+    assert ac2fb.reliability.__all__ == []
+    for name in ("amputate", "sensitivity"):
+        module = getattr(ac2fb.reliability, name)
+        assert inspect.ismodule(module) and callable(getattr(module, name)), name
 
 
 def test_the_long_schema_is_one_thing_in_code_and_in_its_docstring() -> None:

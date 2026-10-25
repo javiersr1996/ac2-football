@@ -2,7 +2,9 @@
 
 The public API for reusing it on your own silver (``examples/sensitivity.py`` runs it end to
 end on a synthetic match). Every name below is in the ``__all__`` of its module, and
-``tests/test_public_api.py`` resolves each one, so this list cannot name what is gone:
+``tests/test_public_api.py`` resolves each one, so this list cannot name what is gone. The
+package itself re-exports nothing: ``amputate`` and ``sensitivity`` are each a module and its
+main function, so a flat re-export would shadow the module.
 
 1. Read the silver through the guarded door, :mod:`ac2fb.protocol.data`:
    ``ac2fb.protocol.data.read_frames``, ``ac2fb.protocol.data.read_events`` and

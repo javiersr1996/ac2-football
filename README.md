@@ -52,7 +52,7 @@ tagged = sensitivity(metric, long_table(frames), units)[match_id]
 tagged.v0.mean, tagged.v1.mean, [(s.detected_players, s.n, s.mean) for s in tagged.v2]
 ```
 
-`examples/sensitivity.py` runs this on a synthetic match; `ac2fb.reliability` lists the public names; `CONTRIBUTING.md` says how to propose a metric. `ac2fb layer2`, `reliability` and `amputation` take `--match ID` for any calibration match; the data door refuses the held-out ones.
+`examples/sensitivity.py` runs this on a synthetic match; `ac2fb.reliability` documents the public names; `CONTRIBUTING.md` says how to propose a metric. `ac2fb layer2`, `reliability` and `amputation` take `--match ID` for any calibration match; the data door refuses the held-out ones.
 
 ## Reproduce
 

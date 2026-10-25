@@ -2777,6 +2777,36 @@ su test sintético con el fallo plantado (una sonda que no puede fallar no prote
   docstring. Gate local en verde: ruff, format, `mypy src`, `figures --check`, `pytest
   tests/test_figures.py tests/test_readme_check.py` (60). Bloques de código idénticos a `HEAD`;
   imágenes resuelven; LF; sin `PENDING(`.
+  **Jurado 2 (2026-10-25, Fable; lector sin historia: solo las bases y el repo, sin `tasks/`)**:
+  7,2/10 (relevancia 7, metodología 8, originalidad 8, comunicación 5, potencial open source 8).
+  Riesgo nuevo: el guion, a 149 palabras, solo cabía en 60 s a 150 palabras por minuto sin pausas.
+  Arreglos de un agente Fable en worktree, cada propuesta contrastada con el artefacto antes de
+  aplicarla; commits `919539d` a `7735b3b` (10) y `803896d`. (1) Guion a 134 palabras (54 s): la
+  frase 1 dice los 7 rellenados (lo que enseña el contador de `clip_still.png`) y la 2 los 4
+  vistos; la 12 sin los 9 s. (2) V0, V1 y V2 definidos en llano ("computed three ways"); la receta
+  del reservado pasa a `docs/heldout.md` con los comandos idénticos (ningún test ni flujo leía esa
+  línea del README; `full-build.yml` corre los suyos). (3) Tesis reescrita, "on the units the
+  camera saw whole" (V1 conserva unidades enteras, no jugadores sueltos, al revés de lo que
+  proponía el jurado). (4) Cifra nueva: todos vistos, mediana por partido, en el 2,4 % de las
+  fases del bloque (3,3 % en el reservado) y el 33 % de las recepciones de la línea de cuatro
+  (36 %) (`layer2.json:summary.{block,line}.all_detected.median`, `visibility.py:155` y `:193`).
+  (5) D3: la pretendencia es el avance del balón en [t − W, t]; el efecto ya está ajustado por
+  ella (`effect.py`, coeficiente de G en y = a + b x + tau G; `protocol.json:pretrend.role`, "both
+  apply", comprobado también en la sesión principal) y su suelo, 0,36 sd, se conocía antes de
+  cualquier resultado (`design.json`; `b66e7d7` antes de `a0a3b68`). (6) Reuse: `--match` sirve los
+  10 partidos de calibración (`data.py:343-345`). (9) Advertencia de la amputación, sin cifra: la
+  referencia son las unidades vistas enteras, pocas y compactas en el bloque, y el error crece con
+  el hueco (`amputation.csv`: `gt_20s` por encima del total en 70 de 70 pares métrica-partido; las
+  cifras del jurado, 17 a 32 unidades y 2,7 a 6,3 m, eran falsas y no se escriben). (10)
+  Etiquetas de las tiras de la figura 1 a 9,5 px (`figures --check` OK, sidecar idéntico). (8)
+  `macos.yml`, solo `workflow_dispatch`. No aplicado: (7) publicar el issue de kloppy (J5, de
+  Javier) y sacar el texto de la figura 2. Retoque propio en `803896d`: "the ones near the ball"
+  y "byte for byte on my Windows machine" (el jurado 1 pidió decir que es una máquina), con dos
+  palabras recortadas. Puertas: `readme_check: OK` (998 palabras, `wc -w` 998; 82 números, 61
+  iguales, 7 solo CI, 14 permitidos, 0 fallos); `video_script_check: OK` (134 palabras, 54 s, 11
+  números, 0 fallos); ruff, format, `mypy src`; pytest de los dos checkers (44) y
+  `test_figures.py`; CI run 40189342879 en verde sobre `803896d`. Margen: 2 palabras, así que la
+  próxima edición del README empieza recortando. **Pendiente para `[x]`:** lectura de Javier.
 - [x] 34. `sonnet` Guion del vídeo (≤ 60 s, unas 140 palabras, voz de Javier) con plano por frase
   (figura 1, figura 2, clip de la 32); cada cifra con su artefacto.
   **Hecho (2026-10-24)**, commits `7098de7` (`docs/video_script.md`), `ab3d2d3`
@@ -2837,7 +2867,11 @@ su test sintético con el fallo plantado (una sonda que no puede fallar no prote
 - [ ] J6. **[Javier]** `ac2-football` público (si no lo era; la base lo es desde J2); `full-build`
   en verde del commit entregado y el tag de la base que fija `uv.lock` presente en el repo público.
 - [ ] J7. **[Javier]** Grabar el vídeo con su voz (máximo 1 minuto) y subirlo a YouTube
-  (visibilidad admitida: PENDIENTE DE CONFIRMAR en las bases).
+  (visibilidad: las bases no la fijan; leídas el 2026-10-25 en el bundle de
+  pysport.org/analytics-cup, "Submission Requirements": "A YouTube video of at most one minute
+  summarising and elevator-pitching your project, presented and voiced by you or your teammate";
+  público o no listado lo ve quien tenga el enlace, privado no). La misma fuente da la final el
+  "17 or 24 February", no solo el 17.
 - [ ] J8. **[Javier]** Enviar en submissions.analytics-cup.org. Objetivo mar 15 dic; límite vie 18.
 
 ## Cómo se declara la base (cumplir "disclosed" sin parecer "lightly adapted")
@@ -2881,7 +2915,7 @@ su test sintético con el fallo plantado (una sonda que no puede fallar no prote
 
 ## Verificación
 
-- [ ] V. Verificación. Gate en los dos repos, cada uno desde su raíz, en este orden (en la base,
+- [x] V. Verificación. Gate en los dos repos, cada uno desde su raíz, en este orden (en la base,
   sin las dos últimas líneas y con `uv run ftbase provenance --check` al final):
   ```
   uv sync --locked
@@ -2964,3 +2998,26 @@ su test sintético con el fallo plantado (una sonda que no puede fallar no prote
   del README: 955 y 955. Puertas: ruff, format, `mypy src`; `readme_check: OK` (77 números, 0
   fallos); `video_script_check: OK` (149 palabras, 60 s, 12 números, 0 fallos); pytest de
   `test_readme_check.py` y `test_video_script_check.py` (44).
+  **Pasada 3 (2026-10-25)**, en la sesión principal y sin subagente, por tamaño: el diff de los
+  arreglos de la pasada 2 (`ef17f9d^..3b882a5`, 15 líneas añadidas y 12 quitadas); nada alto ni
+  medio. **Puerta local completa (2026-10-25)**, los dos repos desde su raíz (`gate.sh` en el
+  scratchpad): base en `53080bc` (= `v0.1.0`), `uv sync --locked`, ruff, format, `mypy src`,
+  pytest (35 s) y `ftbase provenance --check`, todo con salida 0; entrada en `239f305`, lo mismo
+  más `readme_check` OK, `video_script_check` OK, `clean_clone_check.sh quick` con `AC2_REPO`
+  local (53 s) y pytest `1696 passed, 68 deselected in 2287.67s`. Estáticos: `uv.lock` fija
+  `ftbase` a `git+...?tag=v0.1.0#53080bcc...`, sin `path`; `src/ac2fb/base/` no existe;
+  `LICENSE.md` en los dos repos; `protocol/protocol.json` en `dead` con `verdict.criterion` D5 y
+  rama B; `protocol/layer2.json` en `read`. CI de la base en verde sobre `53080bc` (run
+  39127612460). Tras los arreglos del jurado 2 (tarea 33), sobre `803896d`: CI run 40189342879 en
+  verde; `full-build` run 40189351880 en verde (bloque rápido 9 s, completo 202 s, `heldout: OK`
+  con exactamente la diferencia fijada); macOS run 40189349695 en verde (`macos-26-arm64`, `1696
+  passed, 68 deselected in 441.63s`, bloque rápido `CLEAN CLONE OK in 8 s`, 95.624.493 B), así
+  que el README dice ahora "GitHub's Linux and macOS runners" (997 palabras). El reservado en
+  macOS no se ha reproducido (el flujo no lo corre). El error de
+  `tests/test_clip.py::test_the_rule_ranks_by_the_number_of_extrapolated_rivals_before_their_gap`
+  en el worktree del agente (pasa solo; había dos suites a la vez en la máquina, con poca memoria)
+  no se repite en la CI de Linux ni en la de macOS. Sin revisión adversarial de los arreglos del
+  jurado 2, a sabiendas: son texto, una etiqueta de figura y un flujo manual; cada propuesta se
+  contrastó con su artefacto (el D3, también en la sesión principal) y los checkers los cubren.
+  **Cerrada para el estado actual.** El commit que se entregue vuelve a pedir `full-build` en
+  verde (J6).

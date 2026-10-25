@@ -4,7 +4,7 @@ SkillCorner marks each player-frame as detected or extrapolated. In the 20 A-Lea
 
 For analysts: block length and area are mostly what the camera chose to show, line height and reaction follow it, pressure and nearest rival survive; tag every metric with how many of its players were seen.
 
-Layer 1 is ingestion (`ftbase`). Layer 2 measures what the camera saw: each player-frame carries `is_detected`, I add `gap_len` (frames to the nearest detection), and seven metrics (local pressure, nearest rival, line height, its reaction to the incoming ball, block width, length, area) come as V0, as listed; V1, units whose players were all seen; V2, by how many of its n players were seen. A unit is a reception (pressure, rival, line) or a defensive phase (block). Layer 3 asks one question. The split came first; the held-out was read once, after the code was frozen. Amputation error: seen players hidden as the camera does, gaps filled by a straight line.
+Layer 1 is ingestion (`ftbase`). Layer 2 measures what the camera saw: each player-frame carries `is_detected`, I add `gap_len` (frames to the nearest detection), and seven metrics (local pressure, nearest rival, line height, its reaction to the incoming ball, block width, length, area) are computed three ways: V0 on every unit as listed; V1 only on units whose players were all seen; V2 split by how many of them were seen. A unit is a reception (pressure, rival, line) or a defensive phase (block). Layer 3 asks one question. The split came first; the held-out was read once, after the code was frozen. Amputation error: hide seen players as the camera does, fill with a straight line, remeasure.
 
 ![Figure 1](reports/figures/fig1_layer2.svg)
 
@@ -50,7 +50,7 @@ uv run ftbase bronze && uv run ftbase silver && uv run ac2fb layer2 && uv run ac
 ```
 <!-- clean-clone:full:end -->
 
-Every command has `--check`; `ac2fb figures` redraws them. The held-out opens only inside `ac2fb heldout read`, at the reading commit: `git worktree add ../reading 4cb9351`, there `uv sync --locked` and `FTBASE_DATA_ROOT=../ac2-football/data uv run ac2fb heldout read --reports-dir ../heldout-check`, then back here `bash scripts/compare_heldout_reading.sh --expect-diff scripts/heldout_linux_diff.txt ../heldout-check` (`full-build.yml`; Windows: no `--expect-diff`). It reproduced byte for byte on my Windows machine; on Linux (`ubuntu-26.04`) one player-frame crosses a ball-distance band edge (`np.hypot` through the platform libm): the pinned difference.
+Every command has `--check`; `ac2fb figures` redraws them. The held-out opens only inside `ac2fb heldout read`, at the reading commit (`docs/heldout.md` has the commands `full-build.yml` runs); it reproduced byte for byte on my Windows machine, and on Linux one player-frame crosses a ball-distance band edge (`np.hypot` through the platform libm), pinned in `scripts/heldout_linux_diff.txt`.
 
 ## Provenance
 

@@ -307,11 +307,6 @@
    "note": "....9 GB, 1.8 GB of it Git LFS, about 3.5"
   },
   {
-   "number": "26.04",
-   "src": ".github/workflows/full-build.yml:runs-on",
-   "note": "...Windows machine; on Linux (`ubuntu- 26.04"
-  },
-  {
    "number": "v0.1.0",
    "src": "pyproject.toml:tool.uv.sources.ftbase.tag",
    "note": "...or SkillCorner data, pinned at tag ` v0.1.0"

@@ -2,14 +2,14 @@
  "about": "Every number of README.md that is not allow-listed, in order of appearance, with the artefact and key it comes from. scripts/readme_check.py pairs them one to one and checks each value at the README's rounding; the note only says where the number sits.",
  "numbers": [
   {
-   "number": "9",
-   "src": "Full build run 39782141426, step README block quick, `CLEAN CLONE OK in 9 s`",
-   "note": "## Try it in 9 seconds"
+   "number": "96",
+   "src": "Full build run 39782141426, step README block quick, sum of the `downloaded:` lines = 95,624,493 B",
+   "note": "...One match ( 96 MB of SkillCorner data"
   },
   {
-   "number": "96",
-   "src": "same run, step README block quick, sum of the `downloaded:` lines = 95,624,493 B",
-   "note": "...One match ( 96 MB of SkillCorner data"
+   "number": "9",
+   "src": "same run, step README block quick, `CLEAN CLONE OK in 9 s`",
+   "note": "...SkillCorner data, 9 s on a GitHub runner with packages cached"
   },
   {
    "number": "20",

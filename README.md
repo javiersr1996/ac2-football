@@ -2,9 +2,9 @@
 
 **Broadcast tracking shows about half the player-frames; SkillCorner fills the rest. For seven defensive metrics, this entry measures how much of the value is the camera's choice of what to show, and tags every metric with how many of its players were seen.** Two things can move a metric: the fill (a hidden player placed wrongly) and the selection (the camera shows whole the moments near the ball). The fill error is measured by hiding seen players and refilling them with a straight line (amputation); the selection, as the metric on moments seen whole (V1) minus the metric on all moments (V0).
 
-## Try it in 9 seconds
+## Try it on one match
 
-One match, 96 MB of SkillCorner data, timed on a GitHub runner with packages cached. You get `../reports-quick/layer2.json`: how much the camera saw, by distance to the ball, and how often the back line and the block were seen whole.
+One match, 96 MB of SkillCorner data, 9 s on a GitHub runner with packages cached. You get `../reports-quick/layer2.json`: how much the camera saw, by distance to the ball, and how often the back line and the block were seen whole.
 
 <!-- clean-clone:quick:start -->
 ```bash

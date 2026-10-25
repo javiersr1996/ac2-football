@@ -1,6 +1,6 @@
 # What the camera saw: defensive metrics from broadcast tracking
 
-SkillCorner marks each player-frame as detected or extrapolated. In the 20 A-League 2024/25 matches of the Analytics Cup 2.0 the camera saw about half: a per-match median of 56.2% (10 calibration matches) and 57.0% (10 held out). Per match, I measure what each defensive metric does restricted to what was seen, and find the "extrapolated" positions interpolated with the future.
+SkillCorner marks each player-frame as detected or extrapolated. In the 20 A-League 2024/25 matches of the Analytics Cup 2.0 the camera saw about half: a per-match median of 56.2% (10 calibration matches) and 57.0% (10 held out). Per match I recompute each defensive metric on the units the camera saw whole, and show the "extrapolated" positions are interpolated: filled with the next detection in hand.
 
 For analysts: block length and area are mostly what the camera chose to show, line height and reaction follow it, pressure and nearest rival survive; tag every metric with how many of its players were seen.
 

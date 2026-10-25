@@ -1,0 +1,21 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+type: software
+title: "What the camera saw: a reliability tag for defensive metrics from broadcast tracking"
+authors:
+  - family-names: "Sánchez Rueda"
+    given-names: "Javier"
+version: 0.1.0
+license: MIT
+repository-code: "https://github.com/javiersr1996/ac2-football"
+abstract: >-
+  Entry to the SkillCorner x PySport Analytics Cup 2.0 (football). Tags defensive metrics
+  computed from SkillCorner broadcast tracking with how many of their players the camera saw,
+  separates the fill error (amputation) from the selection of the moments shown whole, and
+  publishes a pre-registered question killed by its own rule.
+keywords:
+  - football
+  - tracking data
+  - broadcast tracking
+  - reliability
+  - SkillCorner

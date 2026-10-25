@@ -36,6 +36,7 @@ import matplotlib.style
 from matplotlib.axes import Axes
 from matplotlib.figure import Figure
 from matplotlib.lines import Line2D
+from matplotlib.ticker import MaxNLocator
 
 from ac2fb.reliability.runs import BANDS as BAND_CUTS
 from ac2fb.reliability.visibility import BALL_DISTANCE_EDGES
@@ -112,7 +113,11 @@ SVG_RC: dict[str, Any] = {
     "axes.facecolor": "white",
     "savefig.facecolor": "white",
 }
-STRIP_TICK_SIZE = 9.5  # the strips of figure 1 (panels c and d): their ticks are the only scale
+# The strips of figure 1 (panels c and d): their ticks are the only scale, read at the README's
+# width (about 900 px for 8 in), so they are larger than the rest and at most four intervals.
+STRIP_TICK_SIZE = 12
+STRIP_TICK_BINS = 4
+STRIP_PITCH = 0.95  # inches from one strip to the next: the strip, its tick labels and air
 SVG_METADATA: dict[str, str | None] = {"Date": None, "Creator": None}
 INK = "#222222"
 GREY = "#777777"
@@ -364,7 +369,7 @@ def _fig1(rep: _Reports) -> _Drawn:
         rep, "held-out, {0} matches", ("count", ["heldout/layer2.json#matches"], 0)
     )
 
-    height = 11.4
+    height = 13.1
     fig = Figure(figsize=(8.0, height))
     _key(fig, 0.75, height - 0.3, CAL, t_cal)
     _key(fig, 3.2, height - 0.3, HELD, t_held)
@@ -407,8 +412,8 @@ def _fig1(rep: _Reports) -> _Drawn:
         _text(fig, left, height - 5.5, head, weight="bold")
         _text(fig, left, height - 5.75, sub, fontsize=8, color=GREY)
     for i, (key, name) in enumerate(METRICS):
-        bottom = height - 6.7 - i * 0.68
-        _text(fig, 1.55, bottom + 0.25, name, ha="right", va="center")
+        bottom = height - 6.7 - i * STRIP_PITCH
+        _text(fig, 1.55, bottom + 0.25, name, ha="right", va="center", fontsize=10)
         for panel, left in (("c", 1.7), ("d", 4.9)):
             ax = _axes(fig, left, bottom, 2.7, 0.5)
             ax.tick_params(axis="x", labelsize=STRIP_TICK_SIZE)
@@ -420,6 +425,7 @@ def _fig1(rep: _Reports) -> _Drawn:
             if panel == "c":
                 ax.axvline(0, color=GREY, lw=0.8, zorder=1)
             ax.set_xlim(*_strip_xlim(values))
+            ax.xaxis.set_major_locator(MaxNLocator(STRIP_TICK_BINS))
             ax.ticklabel_format(useOffset=False, style="plain", axis="x")
             for s in mine:
                 g, y = s["group"], 0.2 if s["group"] == CAL else -0.2

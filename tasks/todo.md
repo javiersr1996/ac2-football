@@ -2681,7 +2681,13 @@ su test sintético con el fallo plantado (una sonda que no puede fallar no prote
   En el runner (2026-10-24): `full-build` run 40117288163, `ubuntu-26.04`, en verde, con
   `clip: OK` (100 fotogramas redibujados y con hash, sidecar byte a byte, still por píxeles, vídeo
   por el hash de su comentario); CI del push con ffmpeg, runs 40117288550 y 40117322501, en verde.
-- [ ] J5. **[Javier, opcional]** Abrir el issue en kloppy con el texto de la 10.
+- [x] J5. **[Javier, opcional]** Abrir el issue en kloppy con el texto de la 10.
+  Sin abrir, por duplicado (2026-10-25; Javier autorizó abrirlo y antes se buscó): ya existe
+  PySport/kloppy#639, "SkillCorner tracking: keep the is_detected flag for players and the ball",
+  abierto el 2026-10-15 por otro usuario, con un parche y su test anunciados por un tercero en los
+  comentarios; kloppy sigue en 3.19.1 en PyPI. El README enlaza #639 ("reported upstream", cifra
+  639 citada a la primera línea del borrador, 999 palabras) y `docs/kloppy_issue_draft.md` lo dice
+  en su cabecera; el borrador queda como la reproducción que este repo comprobó.
 
 ## Fase 5: entrega (lun 7 dic a vie 18 dic)
 

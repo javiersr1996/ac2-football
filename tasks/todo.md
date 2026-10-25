@@ -2872,7 +2872,16 @@ su test sintético con el fallo plantado (una sonda que no puede fallar no prote
   tests, `readme_check` OK) en verde.
 - [ ] J6. **[Javier]** `ac2-football` público (si no lo era; la base lo es desde J2); `full-build`
   en verde del commit entregado y el tag de la base que fija `uv.lock` presente en el repo público.
-- [ ] J7. **[Javier]** Grabar el vídeo con su voz (máximo 1 minuto) y subirlo a YouTube
+- [ ] J7. **[Javier: solo la voz]** Grabar el vídeo con su voz (máximo 1 minuto) y subirlo a YouTube
+  **Reparto (2026-10-25, a petición de Javier: "yo no quiero hacer ningún video"):** el montaje
+  entero es de Claude; lo único de Javier es la nota de voz (las bases piden "voiced by you") y
+  la cuenta de YouTube. Hecho: `scripts/make_video.py` (vista previa sin voz y `--voice`, que
+  transcribe con faster-whisper, cuadra cada plano con el inicio de su frase, normaliza a -16 LUFS
+  y falla si pasa de 60,0 s), `scripts/video_panels.py` (paneles dibujados desde los sidecars, sin
+  tocar los SVG), `tests/test_make_video.py` (13; mutaciones en `08428a9`) y
+  `docs/voice_recording.md`; commits `0cc7da7` a `fa99e38`. Sin planos a cámara (filas 7 y 11,
+  tarjetas). Prueba con voz sintética de Windows (solo prueba): 52,93 s, 1920x1080, las 12 frases
+  encontradas. Falta: la nota de voz de Javier en Drive (`voz-ac2*`), el montaje final y la subida.
   (visibilidad: las bases no la fijan; leídas el 2026-10-25 en el bundle de
   pysport.org/analytics-cup, "Submission Requirements": "A YouTube video of at most one minute
   summarising and elevator-pitching your project, presented and voiced by you or your teammate";

@@ -29,4 +29,4 @@ second 3.0 and `reports/clip/clip_still.png` is that frame), figure 1 is
 | 9 | 0:38 to 0:42 | Figure 2, panel a: the pooled effect against the grey D3 floor | The pre-registered rule killed an effect of -0.19 standard deviations. | `reports/calibration.json:criteria.D3.values.effect` |
 | 10 | 0:42 to 0:46 | Figure 2, panel b | Pressed and free receptions already differed by 0.18 before the ball arrived. | `reports/calibration.json:criteria.D3.values.pretrend` |
 | 11 | 0:46 to 0:48 | Typographic card: the sentence in large type, no camera | That is the published result. | |
-| 12 | 0:48 to 0:54 | README on screen, the Reproduce section | Code and protocol are on GitHub under MIT; one match builds in seconds. | |
+| 12 | 0:48 to 0:54 | Card: "Reproduce", the repo URL, "Code and protocol under MIT", the author | Code and protocol are on GitHub under MIT; one match builds in seconds. | |

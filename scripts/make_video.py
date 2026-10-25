@@ -72,6 +72,7 @@ LEAD, PAD, TAIL = 0.3, 0.4, 1.2  # seconds kept before the first word, after the
 LIMIT = 60.0
 MAX_SPEED_UP = 1.05
 MODEL = "small.en"
+SILENCE = 1.0  # seconds of silence padded around the recording before it is transcribed
 LOUDNESS = "loudnorm=I=-16:TP=-1.5:LRA=11"
 
 Box = tuple[float, float, float, float]  # left, top, right, bottom
@@ -445,16 +446,21 @@ def transcribe(voice: Path, model_name: str) -> list[Word]:
         capture_output=True,
         check=True,
     ).stdout
+    # A second of silence each side, so a last word at the very end is heard; beam search at
+    # temperature zero only, so the same recording always gives the same words and times.
+    pad = np.zeros(int(SILENCE * 16000), dtype=np.float32)
+    audio = np.concatenate([pad, np.frombuffer(decoded, dtype=np.float32), pad])
     model = WhisperModel(model_name, device="cpu", compute_type="int8")
     segments, _ = model.transcribe(
-        np.frombuffer(decoded, dtype=np.float32),
+        audio,
         language="en",
         word_timestamps=True,
         beam_size=5,
+        temperature=0.0,
         condition_on_previous_text=False,
     )
     return [
-        Word(w.word.strip(), float(w.start), float(w.end))
+        Word(w.word.strip(), max(0.0, float(w.start) - SILENCE), max(0.0, float(w.end) - SILENCE))
         for segment in segments
         for w in segment.words or []
     ]

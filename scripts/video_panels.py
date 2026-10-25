@@ -4,8 +4,11 @@ The committed figures are drawn for a page: at 1080p their 8 pt labels are 20 px
 panel fills half the frame. Each shot of the video gets its own panel at the stage's size
 (15.2 x 8.55 in, 100 px per inch) with 22 pt type: the same values, read from
 ``reports/figures/*.json`` (the contract of the figures, every plotted value with its source),
-the same colours, markers and wording, and no neighbour cut at an edge. Nothing here reads a
-report; the committed SVGs are not touched.
+the same markers and wording, and no neighbour cut at an edge. The theme is the video's: a
+near-black ground, light text, neon green for the calibration half and orange for the held-out
+half (circles and squares as in the figures; the two keep a clear lightness gap under a
+deuteranopia simulation, which green and the palette's light orange do not), red for V2.
+Nothing here reads a report; the committed SVGs are not touched.
 """
 
 from __future__ import annotations
@@ -18,14 +21,22 @@ from typing import Any, cast
 
 import matplotlib
 import matplotlib.style
+from matplotlib import font_manager
 from matplotlib.axes import Axes
 from matplotlib.figure import Figure
 from matplotlib.lines import Line2D
 
 from ac2fb import figures
-from ac2fb.figures import CAL, COLOUR, GREY, HELD, INK, MARKER, STYLE, VARIANTS
+from ac2fb.figures import CAL, HELD, MARKER, STYLE, VARIANTS
 
 SIZE = (15.2, 8.55)  # inches: the stage of the video at 100 px per inch
+BG, PANEL, BORDER = "#0B0F0D", "#0A0E0C", "#26302A"
+TEXT, MUTED, FAINT = "#DDE5DF", "#93A198", "#7D8C83"
+AXES, GRID = "#5F6E65", "#46534B"
+GREEN, ORANGE, RED = "#32FE6B", "#FF8A3D", "#FF4D3D"
+COLOUR = {CAL: GREEN, HELD: ORANGE}
+VARIANT_COLOUR = {"V0": GREEN, "V1": ORANGE, "V2": RED}
+HEADING = "Chakra Petch"  # the heading face when its files are given; DejaVu Sans otherwise
 RC: dict[str, Any] = {
     "font.family": ["DejaVu Sans"],
     "font.size": 22,
@@ -33,12 +44,20 @@ RC: dict[str, Any] = {
     "axes.titleweight": "bold",
     "xtick.labelsize": 22,
     "ytick.labelsize": 22,
-    "axes.edgecolor": "#444444",
+    "axes.edgecolor": AXES,
     "axes.linewidth": 1.2,
     "axes.unicode_minus": False,
-    "figure.facecolor": "white",
-    "axes.facecolor": "white",
-    "savefig.facecolor": "white",
+    "text.color": TEXT,
+    "axes.labelcolor": TEXT,
+    "axes.titlecolor": TEXT,
+    "xtick.color": AXES,
+    "ytick.color": AXES,
+    "xtick.labelcolor": TEXT,
+    "ytick.labelcolor": TEXT,
+    "legend.labelcolor": TEXT,
+    "figure.facecolor": BG,
+    "axes.facecolor": BG,
+    "savefig.facecolor": BG,
 }
 Box = tuple[float, float, float, float]  # left, top, right, bottom, inches from the top left
 
@@ -74,13 +93,13 @@ def _axes(fig: Figure, left: float, bottom: float, width: float, height: float) 
     ax = fig.add_axes((left / w, bottom / h, width / w, height / h))
     for side in ("top", "right"):
         ax.spines[side].set_visible(False)
-    ax.tick_params(length=6, width=1.2, colors=INK, pad=8)
+    ax.tick_params(length=6, width=1.2, color=AXES, labelcolor=TEXT, pad=8)
     return ax
 
 
 def _text(fig: Figure, x: float, y: float, s: str, **kw: Any) -> None:
     w, h = fig.get_size_inches()
-    kw.setdefault("color", INK)
+    kw.setdefault("color", TEXT)
     fig.text(x / w, y / h, s, **kw)
 
 
@@ -101,7 +120,7 @@ def panel_a(doc: Mapping[str, Any]) -> Drawn:
             color=COLOUR[g],
             ls=STYLE[g] if med else "-",
             lw=5 if med else 1.8,
-            alpha=1.0 if med else 0.45,
+            alpha=1.0 if med else 0.5,
             marker=MARKER[g] if med else None,
             ms=12,
             zorder=3 if med else 2,
@@ -115,7 +134,7 @@ def panel_a(doc: Mapping[str, Any]) -> Drawn:
         Line2D([], [], color=COLOUR[g], ls=STYLE[g], lw=5, marker=MARKER[g], ms=12, label=label)
         for g, label in ((CAL, doc["labels"][0]["text"]), (HELD, doc["labels"][1]["text"]))
     ]
-    key.append(Line2D([], [], color=GREY, lw=1.8, alpha=0.6, label="thin: one match"))
+    key.append(Line2D([], [], color=MUTED, lw=1.8, alpha=0.8, label="thin: one match"))
     ax.legend(handles=key, loc="upper right", frameon=False, handlelength=2.2)
     return Drawn(fig, {"a": ax})
 
@@ -136,7 +155,7 @@ def strips(doc: Mapping[str, Any], keys: Sequence[str]) -> Drawn:
             "upper strip: calibration, lower strip: held-out, tick: median",
         )
     ):
-        _text(fig, 0.7, SIZE[1] - 1.15 - 0.4 * line, words, fontsize=21, color=GREY)
+        _text(fig, 0.7, SIZE[1] - 1.15 - 0.4 * line, words, fontsize=21, color=MUTED)
     axes = {}
     for i, key in enumerate(keys):
         bottom = top - height - i * (height + gap)
@@ -146,7 +165,7 @@ def strips(doc: Mapping[str, Any], keys: Sequence[str]) -> Drawn:
         ax.set_ylim(-0.5, 0.5)
         mine = [s for s in _series(doc, "c") if s["match"] == key]
         values = [p["value"] for s in mine for p in s["points"]]
-        ax.axvline(0, color=GREY, lw=1.5, zorder=1)
+        ax.axvline(0, color=MUTED, lw=1.5, zorder=1)
         ax.set_xlim(*figures._strip_xlim(values))
         ax.ticklabel_format(useOffset=False, style="plain", axis="x")
         for s in mine:
@@ -162,9 +181,9 @@ def strips(doc: Mapping[str, Any], keys: Sequence[str]) -> Drawn:
                     marker=MARKER[g],
                     ms=13,
                     c=COLOUR[g],
-                    mec="white",
+                    mec=BG,
                     mew=1.0,
-                    alpha=0.85,
+                    alpha=0.9,
                     zorder=2,
                 )
         _text(fig, 4.4, bottom + height / 2, names[key], ha="right", va="center", fontsize=26)
@@ -182,7 +201,7 @@ def layer3(doc: Mapping[str, Any]) -> Drawn:
     order = [*matches, "pooled"]
     ypos = {m: len(matches) - 1 - i for i, m in enumerate(matches)} | {"pooled": -1.0}
     shift = {"V0": 0.3, "V1": 0.0, "V2": -0.3}
-    style = {v: (colour, marker) for v, _, colour, marker in VARIANTS}
+    style = {v: (VARIANT_COLOUR[v], marker) for v, _, _, marker in VARIANTS}
     names = {v: name for v, name, _, _ in VARIANTS} | {"V2": v2_label["text"]}
     axes = {}
     for panel, left, title in (
@@ -201,19 +220,19 @@ def layer3(doc: Mapping[str, Any]) -> Drawn:
                     marker=marker,
                     ms=16 if pooled else 9,
                     c=colour,
-                    mec="black" if pooled else "white",
+                    mec=TEXT if pooled else BG,
                     mew=1.6 if pooled else 0.6,
                     zorder=3,
                 )
-        ax.axvline(0, color=GREY, lw=1.5, zorder=1)
-        ax.axhline(-0.35, color="#BBBBBB", lw=1.0, ls=":", zorder=1)
+        ax.axvline(0, color=MUTED, lw=1.5, zorder=1)
+        ax.axhline(-0.35, color=GRID, lw=1.2, ls=":", zorder=1)
         ax.set_ylim(-1.6, len(matches) + 0.5)
         ax.set_xlim(-0.5, 0.5)
         ax.set_xlabel("sd of the ball's advance")
         ax.set_title(title, loc="left", pad=14)
         if panel == "a":
-            ax.axvspan(-floor, floor, color="#DDDDDD", alpha=0.7, lw=0, zorder=0)
-            ax.text(0, len(matches) + 0.4, floor_label["text"], ha="center", va="top", color=GREY)
+            ax.axvspan(-floor, floor, color=TEXT, alpha=0.12, lw=0, zorder=0)
+            ax.text(0, len(matches) + 0.4, floor_label["text"], ha="center", va="top", color=MUTED)
             ax.set_yticks([ypos[m] for m in order], order)
         else:
             ax.set_yticks([])
@@ -221,17 +240,26 @@ def layer3(doc: Mapping[str, Any]) -> Drawn:
         axes[panel] = ax
     key = [
         Line2D([], [], ls="", marker=marker, ms=12, color=colour, label=names[v])
-        for v, _, colour, marker in VARIANTS
+        for v, (colour, marker) in style.items()
     ]
     fig.legend(handles=key, loc="upper left", ncol=2, frameon=False, bbox_to_anchor=(0.04, 0.97))
     return Drawn(fig, axes)
 
 
-def draw_all(folder: Path) -> dict[str, Drawn]:
-    """Every panel the video shows, keyed by its name in the storyboard, from ``folder``'s JSON."""
+def draw_all(folder: Path, fonts: Mapping[str, Path] | None = None) -> dict[str, Drawn]:
+    """Every panel the video shows, keyed by its name in the storyboard, from ``folder``'s JSON.
+
+    ``fonts`` are TTF files to register; with them the heading face is used, without them the
+    panels are drawn in DejaVu Sans (the geometry the tests check does not depend on the face).
+    """
     doc1 = json.loads((folder / "fig1_layer2.json").read_text(encoding="utf-8"))
     doc2 = json.loads((folder / "fig2_layer3.json").read_text(encoding="utf-8"))
-    with matplotlib.style.context("default"), matplotlib.rc_context(cast("Any", RC)):
+    rc = dict(RC)
+    if fonts:
+        for path in fonts.values():
+            font_manager.fontManager.addfont(str(path))
+        rc["font.family"] = [HEADING]
+    with matplotlib.style.context("default"), matplotlib.rc_context(cast("Any", rc)):
         return {
             "panel_a": panel_a(doc1),
             "line_height": strips(doc1, ["line_height_m"]),

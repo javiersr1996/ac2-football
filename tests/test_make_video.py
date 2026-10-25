@@ -14,6 +14,7 @@ import sys
 from pathlib import Path
 from types import ModuleType
 
+import matplotlib
 import pytest
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -226,22 +227,34 @@ def test_the_storyboard_is_consistent() -> None:
                 assert top <= scene.mark[1] < scene.mark[3] <= bottom, number
     # A window is inches only once its panel is drawn.
     assert isinstance(mv.STORYBOARD[9].box, mv.Window) and isinstance(scenes[9].box, tuple)
-    # The two rows that were "on camera" are cards, and the last one carries the repository.
+    # The two rows that were "on camera" are cards; the last one carries the repository and
+    # names the data, in words only.
     assert mv.STORYBOARD[7].source == mv.STORYBOARD[11].source == "card"
-    assert any("github.com/javiersr1996/ac2-football" in t for _, t in mv.STORYBOARD[12].card)
+    last = [t for _, t in mv.STORYBOARD[12].card]
+    assert any("github.com/javiersr1996/ac2-football" in t for t in last)
+    assert any(t.startswith("Data: SkillCorner open data") for t in last)
+
+
+def face(name: str, size: int) -> mv.ImageFont.FreeTypeFont:
+    """The video's face when a render fetched it into build/fonts, else DejaVu Sans, which is
+    wider than Chakra Petch and Roboto at the same size, so a width that passes here passes."""
+    fetched = ROOT / "build" / "fonts" / mv.FONTS[name][0].rsplit("/", 1)[1]
+    dejavu = Path(matplotlib.get_data_path()) / "fonts" / "ttf"
+    stand_in = dejavu / ("DejaVuSans-Bold.ttf" if name == "heading" else "DejaVuSans.ttf")
+    return mv.font(fetched if fetched.exists() else stand_in, size)
 
 
 def test_every_caption_fits_in_two_lines_and_every_card_line_in_the_stage() -> None:
-    face = mv.font(mv.REGULAR, mv.CAPTION_SIZE)
+    body = face("body", mv.CAPTION_SIZE)
     for sentence in SENTENCES:
-        assert 1 <= len(mv.wrap(sentence, face)) <= 2, sentence
+        assert 1 <= len(mv.wrap(sentence, body)) <= 2, sentence
     with pytest.raises(ValueError, match="4 lines"):
-        mv.wrap(" ".join(SENTENCES[:3]), face)
+        mv.wrap(" ".join(SENTENCES[:3]), body)
     stage = mv.STAGE[2] - mv.STAGE[0]
     for scene in mv.STORYBOARD.values():
         for style, text in scene.card:
-            path, size, _ = mv.CARD_STYLE[style]
-            assert mv.font(path, size).getlength(text) <= stage, text
+            name, size, _ = mv.CARD_STYLE[style]
+            assert size >= 28 and face(name, size).getlength(text) <= stage, text
 
 
 def test_the_teleprompter_says_the_script() -> None:

@@ -17,13 +17,17 @@ What is on screen comes from the repository and nothing else: ``reports/clip/cli
 still, the panels of the two figures drawn again by ``scripts/video_panels.py`` from the figures'
 sidecars at the stage's size in large type (the committed SVGs are not touched), and three
 typographic cards (rows 7, 11 and 12) whose words are the script's plus the repository URL, the
-licence and the author. Everything is written under ``build/video``.
+licence, the author and the data's name. The look is a dark theme in two Google Fonts, Chakra
+Petch for headings, labels and cards and Roboto for the captions, fetched once into ``build/``
+from pinned commits and checked by hash; no logo and no image but the repository's own. Everything
+is written under ``build/video``.
 """
 
 from __future__ import annotations
 
 import argparse
 import difflib
+import hashlib
 import importlib
 import json
 import math
@@ -31,12 +35,12 @@ import re
 import shutil
 import subprocess
 import sys
+import urllib.request
 from collections.abc import Iterator, Mapping, Sequence
 from dataclasses import dataclass, replace
 from pathlib import Path
 from typing import Any
 
-import matplotlib
 import numpy as np
 from PIL import Image, ImageDraw, ImageFont
 
@@ -49,16 +53,49 @@ SIDECARS = Path("reports") / "figures"
 CLIP = Path("reports") / "clip" / "clip.mp4"
 STILL = Path("reports") / "clip" / "clip_still.png"
 BUILD = Path("build") / "video"
-FONTS = Path(matplotlib.get_data_path()) / "fonts" / "ttf"  # the figures' own face, DejaVu Sans
-REGULAR, BOLD = FONTS / "DejaVuSans.ttf", FONTS / "DejaVuSans-Bold.ttf"
+# The faces, fetched once into build/fonts (never committed) from pinned commits of their
+# repositories: Chakra Petch (OFL) for headings, labels and cards, Roboto (Apache 2.0) for the
+# captions. Each file is checked against its sha256 before use.
+GOOGLE_FONTS = (
+    "https://raw.githubusercontent.com/google/fonts/e7db6ca603fd4862010383ff17ffd6cc4ffac1c0"
+)
+ROBOTO = (
+    "https://raw.githubusercontent.com/googlefonts/roboto/38062f4b4a0be4346d07a928408da21602545e9e"
+)
+FONTS = {
+    "heading": (
+        f"{GOOGLE_FONTS}/ofl/chakrapetch/ChakraPetch-Bold.ttf",
+        "65fbf76d95651697275e19db4d717c0e95a789ddd3476478b05292104db278a0",
+    ),
+    "label": (
+        f"{GOOGLE_FONTS}/ofl/chakrapetch/ChakraPetch-Regular.ttf",
+        "98fcd638baa5c81ff0316b7538ce330ee3b23b1302726de3526d5933a8ecf986",
+    ),
+    "body": (
+        f"{ROBOTO}/src/hinted/Roboto-Regular.ttf",
+        "56a45233d29f11b4dfb86d248e921939d115778f87325e7ae8cc108383d6664d",
+    ),
+}
+
+
+def _rgb(colour: str) -> tuple[int, int, int]:
+    return int(colour[1:3], 16), int(colour[3:5], 16), int(colour[5:7], 16)
+
 
 WIDTH, HEIGHT, FPS = 1920, 1080, 30
 STAGE = (200, 24, 1720, 879)  # left, top, right, bottom: the clip, the figures and the cards
 CAPTION_SIZE, CAPTION_WIDTH, CAPTION_BOTTOM, CAPTION_LEADING = 48, 1500, 1024, 60
-INK, GREY, BLUE, WHITE = (34, 34, 34), (119, 119, 119), (0, 114, 178), (255, 255, 255)
-MARK_FILL, MARK_EDGE = (255, 204, 0, 64), (230, 160, 0, 240)
-CARD_STYLE = {"title": (BOLD, 84, INK), "plain": (REGULAR, 60, INK), "small": (REGULAR, 40, GREY)}
-CARD_STYLE["url"] = (BOLD, 56, BLUE)
+BG, BORDER, GREEN = _rgb(panels.BG), _rgb(panels.BORDER), _rgb(panels.GREEN)  # the panels' theme
+INK, GREY, FAINT = _rgb(panels.TEXT), _rgb(panels.MUTED), _rgb(panels.FAINT)
+MARK_EDGE = (*GREEN, 240)
+CLIP_RADIUS = 24  # the clip keeps its light pitch, as a card with rounded corners and a border
+CARD_STYLE = {  # style: face, size in px, colour
+    "title": ("heading", 84, INK),
+    "url": ("heading", 56, GREEN),
+    "plain": ("label", 60, INK),
+    "small": ("label", 40, GREY),
+    "faint": ("label", 36, FAINT),
+}
 # The panels are drawn at the stage's size (100 px per inch); the pooled rows of figure 2 are
 # shown 2.2 times closer, so that panel is rendered with the headroom and is never upscaled.
 PANEL_DPI = {"layer3": 250}
@@ -150,6 +187,7 @@ STORYBOARD: dict[int, Scene] = {
             ("url", "github.com/javiersr1996/ac2-football"),
             ("plain", "Code and protocol under MIT"),
             ("small", "Javier Sánchez Rueda"),
+            ("faint", "Data: SkillCorner open data, A-League 2024/25"),
         ),
     ),
 }
@@ -506,11 +544,32 @@ def prepare_voice(voice: Path, timing: Timing, out: Path) -> None:
 # --- the pictures ---------------------------------------------------------------------------------
 
 
+def fetch_fonts(build: Path) -> dict[str, Path]:
+    """The faces of ``FONTS`` under ``build/fonts``, downloaded once and checked by sha256."""
+    folder = build / "fonts"
+    folder.mkdir(parents=True, exist_ok=True)
+    out = {}
+    for name, (url, digest) in FONTS.items():
+        path = folder / url.rsplit("/", 1)[1]
+        if not path.exists() or hashlib.sha256(path.read_bytes()).hexdigest() != digest:
+            print(f"fetching {path.name} from {url}")
+            try:
+                with urllib.request.urlopen(url, timeout=60) as response:
+                    data = response.read()
+            except OSError as exc:
+                raise SystemExit(f"could not fetch the font {path.name} from {url}: {exc}") from exc
+            if hashlib.sha256(data).hexdigest() != digest:
+                raise SystemExit(f"{path.name} from {url} does not match its sha256 in FONTS")
+            path.write_bytes(data)
+        out[name] = path
+    return out
+
+
 def render_panels(
-    root: Path, build: Path
+    root: Path, build: Path, fonts: Mapping[str, Path]
 ) -> tuple[dict[str, tuple[Image.Image, int]], dict[int, Scene]]:
     """The panels of the video as PNG, each with its pixels per inch, and the scenes in inches."""
-    drawn = panels.draw_all(root / SIDECARS)
+    drawn = panels.draw_all(root / SIDECARS, fonts)
     out = {}
     for name, panel in drawn.items():
         dpi = PANEL_DPI.get(name, PANEL_DPI_DEFAULT)
@@ -588,13 +647,21 @@ class Pictures:
     """The sources, loaded once, and the stage of a shot at a second (a full frame, no caption)."""
 
     def __init__(self, root: Path, build: Path) -> None:
-        self.fig, self.scenes = render_panels(root, build)
+        self.fonts = fetch_fonts(build)
+        self.fig, self.scenes = render_panels(root, build, self.fonts)
         self.clip = extract_clip(root, build)
         self.still = Image.open(root / STILL).convert("RGB")
         self.size = (STAGE[2] - STAGE[0], STAGE[3] - STAGE[1])
+        self._clip_mask = Image.new("L", self.size, 0)
+        ImageDraw.Draw(self._clip_mask).rounded_rectangle(
+            (0, 0, self.size[0] - 1, self.size[1] - 1), radius=CLIP_RADIUS, fill=255
+        )
         self._clip_frame: tuple[int, Image.Image] | None = None
         self._cards: dict[int, Image.Image] = {}
         self._captions: dict[str, Image.Image] = {}
+
+    def face(self, name: str, size: int) -> ImageFont.FreeTypeFont:
+        return font(self.fonts[name], size)
 
     def stage(
         self, shot: Shot, second: float, box: Box | None = None, mark_alpha: float | None = None
@@ -602,9 +669,15 @@ class Pictures:
         scene = shot.scene
         if scene.source == "card":
             return self._card(shot)
-        canvas = Image.new("RGB", (WIDTH, HEIGHT), WHITE)
+        canvas = Image.new("RGB", (WIDTH, HEIGHT), BG)
         if scene.source == "clip":
-            canvas.paste(self._clip(scene, second), STAGE[:2])
+            canvas.paste(self._clip(scene, second), STAGE[:2], self._clip_mask)
+            ImageDraw.Draw(canvas).rounded_rectangle(
+                (STAGE[0] - 2, STAGE[1] - 2, STAGE[2] + 1, STAGE[3] + 1),
+                radius=CLIP_RADIUS + 2,
+                outline=BORDER,
+                width=3,
+            )
             return canvas
         if box is None:
             box = camera(scene, second, shot.length)
@@ -653,10 +726,9 @@ class Pictures:
                 (mark[2] * dpi - px[0]) * scale,
                 (mark[3] * dpi - px[1]) * scale,
             )
-            fill = (*MARK_FILL[:3], round(MARK_FILL[3] * alpha))
             edge = (*MARK_EDGE[:3], round(MARK_EDGE[3] * alpha))
             ImageDraw.Draw(overlay).rounded_rectangle(
-                (left, top, right, bottom), radius=14, fill=fill, outline=edge, width=5
+                (left, top, right, bottom), radius=14, outline=edge, width=5
             )
             region = Image.alpha_composite(region.convert("RGBA"), overlay).convert("RGB")
         canvas.paste(
@@ -665,10 +737,10 @@ class Pictures:
 
     def _card(self, shot: Shot) -> Image.Image:
         if shot.row.number not in self._cards:
-            canvas = Image.new("RGB", (WIDTH, HEIGHT), WHITE)
+            canvas = Image.new("RGB", (WIDTH, HEIGHT), BG)
             draw = ImageDraw.Draw(canvas)
             faces = [
-                (font(CARD_STYLE[style][0], CARD_STYLE[style][1]), text, style)
+                (self.face(CARD_STYLE[style][0], CARD_STYLE[style][1]), text, style)
                 for style, text in shot.scene.card
             ]
             heights = [
@@ -676,7 +748,7 @@ class Pictures:
             ]
             total = sum(heights) + 36  # the accent bar and its gap
             y = STAGE[1] + (self.size[1] - total) // 2
-            draw.rectangle((WIDTH // 2 - 60, y, WIDTH // 2 + 60, y + 8), fill=BLUE)
+            draw.rectangle((WIDTH // 2 - 60, y, WIDTH // 2 + 60, y + 8), fill=GREEN)
             y += 36
             for (face, text, style), height in zip(faces, heights, strict=True):
                 width = face.getlength(text)
@@ -689,7 +761,7 @@ class Pictures:
 
     def caption(self, text: str) -> Image.Image:
         if text not in self._captions:
-            face = font(REGULAR, CAPTION_SIZE)
+            face = self.face("body", CAPTION_SIZE)
             lines = wrap(text, face)
             image = Image.new("RGBA", (WIDTH, CAPTION_LEADING * len(lines)), (0, 0, 0, 0))
             draw = ImageDraw.Draw(image)

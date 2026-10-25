@@ -26,7 +26,7 @@ The pre-registered kill rule (`protocol/protocol.json`, committed before any out
 
 ## Reproduce
 
-Needs [uv](https://docs.astral.sh/uv/), git, Python 3.13 or later, plus ffmpeg (`ac2fb clip`, tests); run on Windows and GitHub's Linux runners, untested on macOS. Quick (one match, 5 files, 95.6 MB, about 9 s on a GitHub runner, packages cached):
+Needs [uv](https://docs.astral.sh/uv/), git, Python 3.13 or later, plus ffmpeg (`ac2fb clip`, tests); run on Windows and GitHub's Linux and macOS runners. Quick (one match, 5 files, 95.6 MB, about 9 s on a GitHub runner, packages cached):
 
 <!-- clean-clone:quick:start -->
 ```bash

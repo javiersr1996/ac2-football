@@ -27,6 +27,26 @@
    "note": "...0 calibration matches) and 57.0% ( 10"
   },
   {
+   "number": "2.4",
+   "src": "reports/layer2.json:summary.block.all_detected.median",
+   "note": "...All were seen, per-match median, in 2.4; share of phases_of_play phases with every player of the team out of possession detected at frame_start (visibility.block_detection)"
+  },
+  {
+   "number": "3.3",
+   "src": "reports/heldout/layer2.json:summary.block.all_detected.median",
+   "note": "...in 2.4% of phases for the block ( 3.3"
+  },
+  {
+   "number": "33",
+   "src": "reports/layer2.json:summary.line.all_detected.median",
+   "note": "...for the block (3.3% held-out) and 33; share of player_possession starts with the four deepest outfield rivals all detected (visibility.defensive_line_detection, size 4)"
+  },
+  {
+   "number": "36",
+   "src": "reports/heldout/layer2.json:summary.line.all_detected.median",
+   "note": "...of receptions for the four-man line ( 36"
+  },
+  {
    "number": "20",
    "src": "reports/layer2.json:summary.reacquisition.by_band.gt_20s.closed_jump_median.median",
    "note": "...does not. After a gap of more than 20"

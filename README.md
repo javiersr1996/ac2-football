@@ -2,7 +2,7 @@
 
 SkillCorner marks each player-frame as detected or extrapolated. In the 20 A-League 2024/25 matches of the Analytics Cup 2.0 the camera saw about half: a per-match median of 56.2% (10 calibration matches) and 57.0% (10 held out). Per match I recompute each defensive metric on the units the camera saw whole, and show the "extrapolated" positions are interpolated: filled with the next detection in hand.
 
-For analysts: block length and area are mostly what the camera chose to show, line height and reaction follow it, pressure and nearest rival survive; tag every metric with how many of its players were seen.
+For analysts: block length and area are mostly what the camera chose to show, line height and reaction follow it, pressure and nearest rival survive; tag every metric with how many of its players were seen. All were seen, per-match median, in 2.4% of phases for the block (3.3% held-out) and 33% of receptions for the four-man line (36%).
 
 Layer 1 is ingestion (`ftbase`). Layer 2 measures what the camera saw: each player-frame carries `is_detected`, I add `gap_len` (frames to the nearest detection), and seven metrics (local pressure, nearest rival, line height, its reaction to the incoming ball, block width, length, area) are computed three ways: V0 on every unit as listed; V1 only on units whose players were all seen; V2 split by how many of them were seen. A unit is a reception (pressure, rival, line) or a defensive phase (block). Layer 3 asks one question. The split came first; the held-out was read once, after the code was frozen. Amputation error: hide seen players as the camera does, fill with a straight line, remeasure.
 

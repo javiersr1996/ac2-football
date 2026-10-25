@@ -21,7 +21,7 @@ m10.
 **What is read.** Positions at ``t`` and before it, through the ``lags`` asked for. Two things
 look past ``t``: :func:`seen_through`, which reads whether a player is listed and detected,
 never where; and the goalkeeper proxy, a role taken from each player's mean position over the
-whole period (task 12), which says who is left out of the line and measures no movement.
+whole period, which says who is left out of the line and measures no movement.
 """
 
 from __future__ import annotations

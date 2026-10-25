@@ -49,8 +49,8 @@ data is read:
 
 C2 survives the probe when none of the three kills it. Pressed and free use the m10 proxy (a
 rival within 5 m at ``t``); the protocol may refine the cause, not this rule. The plan marks the
-100 of criterion 3 as a hypothesis that the power analysis (task 17) revisits; the probe
-applies it as written, in every match.
+100 of criterion 3 as a hypothesis that the power analysis (:mod:`ac2fb.defence.power`)
+revisits; the probe applies it as written, in every match.
 """
 
 from __future__ import annotations

@@ -287,8 +287,9 @@ DERIVED: dict[str, str] = {
     ),
 }
 
-# Numbers no code fixes: none since the estimator (task 20) took the seed, the held-out level and
-# D4's ratio. A number a later task adds to the protocol before its code exists is declared here.
+# Numbers no code fixes: none, since the estimator (ac2fb.defence.effect) holds the seed, the
+# held-out level and D4's ratio. A number the protocol gains before its code exists is declared
+# here.
 PROTOCOL_ONLY: dict[str, str] = {}
 
 

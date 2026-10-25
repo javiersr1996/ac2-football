@@ -1,24 +1,24 @@
 """The protocol's design on a half, before any outcome: units, groups, exclusions, pre-trend, power.
 
-Task 19 (``protocol/protocol.json``). Everything here is read at ``t`` or before it: the
+The design ``protocol/protocol.json`` asks for. Everything here is read at ``t`` or before it: the
 outcome window ``(t, t + W]`` is never asked for (the only reader of the ball's advance refuses a
 negative lag, :func:`ac2fb.defence.power.ball_advance`). The report it writes,
-``reports/design.json``, gives the figures the protocol's choices change and that task 17's
-``power.json`` cannot give: the units left after the window-overlap exclusion, the groups under
-the index cut, the V1 of the protocol, and on those units the correlation of the pre statistic,
-the blocking decision, the MDE80 and the pooled pre-trend in sd (D3's floor) and in metres.
-Written before any of it was computed on a real match.
+``reports/design.json``, gives the figures the protocol's choices change and that the power
+analysis's ``power.json`` cannot give: the units left after the window-overlap exclusion, the
+groups under the index cut, the V1 of the protocol, and on those units the correlation of the
+pre statistic, the blocking decision, the MDE80 and the pooled pre-trend in sd (D3's floor) and
+in metres. Written before any of it was computed on a real match.
 
 **Units** (protocol ``units``). The *design* of a match is the labelled receptions of probe S1
 scored by :func:`ac2fb.defence.pressure.score_receptions` with a defined incoming-ball stratum
-(task 17's units). The *kept* units are those the window-overlap rule does not exclude: a unit
-whose instant lies :data:`EXCLUSION_GAP` frames or fewer after the instant of the preceding
-design unit of the same period (either team) is excluded, whether or not that preceding unit is
-itself excluded (:func:`excluded_by_gap`). On the kept units no instant lies in the outcome
-window of another kept unit.
+(the units of the power analysis). The *kept* units are those the window-overlap rule does not
+exclude: a unit whose instant lies :data:`EXCLUSION_GAP` frames or fewer after the instant of
+the preceding design unit of the same period (either team) is excluded, whether or not that
+preceding unit is itself excluded (:func:`excluded_by_gap`). On the kept units no instant lies
+in the outcome window of another kept unit.
 
 **Groups** (protocol ``cause``). Pressed when the index is at least
-:data:`~ac2fb.defence.pressure.PRESSED_INDEX`. The 5 m proxy of task 17 (a rival within
+:data:`~ac2fb.defence.pressure.PRESSED_INDEX`. The 5 m proxy of the power analysis (a rival within
 :data:`~ac2fb.defence.line.PRESSED_RADIUS` at ``t``) is carried beside it as ``proxy`` so that
 the pre-trend that cause gives on the same units is printed next to the protocol's.
 
@@ -26,8 +26,8 @@ the pre-trend that cause gives on the same units is printed next to the protocol
 rivals (positive weight at ``t``); ``extrapolated_players`` counts those not detected at ``t``;
 V1 is the kept units with none, V2's classes are 0, 1 and 2 or more.
 
-**What is written.** Per match the counts at every step, the overlap on the design (task 17's
-count, :func:`ac2fb.defence.power.window_overlap`) and on the kept units, the kept units by label
+**What is written.** Per match the counts at every step, the overlap on the design (the count of
+:func:`ac2fb.defence.power.window_overlap`) and on the kept units, the kept units by label
 level and by stratum with their pressed and V1 counts (V1's declared selection), the V2 classes,
 the share with the ball not detected at ``t``, the proxy's groups and their agreement with the
 index; and :func:`ac2fb.defence.power.candidate_power` on the kept units under the index cut
@@ -64,7 +64,7 @@ __all__ = [
 
 REPORT_NAME = "design.json"
 EXCLUSION_GAP = W  # frames: protocol units.exclusion.gap_frames_at_most, the window itself
-CAUSES: tuple[str, ...] = ("index", "proxy")  # the protocol's cause, and task 17's beside it
+CAUSES: tuple[str, ...] = ("index", "proxy")  # the protocol's cause, and the 5 m proxy beside it
 POWER_LABEL = "C1/design/ball_advance/incoming_ball"  # the random stream of the power simulation
 
 
@@ -72,7 +72,7 @@ POWER_LABEL = "C1/design/ball_advance/incoming_ball"  # the random stream of the
 class DesignUnit:
     """One design unit of a match at its instant ``t``, with everything read at or before ``t``.
 
-    ``pressed`` is the protocol's group (index cut), ``proxy_pressed`` task 17's (5 m);
+    ``pressed`` is the protocol's group (index cut), ``proxy_pressed`` the 5 m proxy's;
     ``extrapolated_players`` counts the carrier and the near rivals not detected at ``t``;
     ``pre`` is the ball's advance over ``[t - W, t]`` (``None`` without a ball row at ``t - W``
     or with it in another period); ``excluded`` whether the window-overlap rule drops the unit.
@@ -112,7 +112,7 @@ def excluded_by_gap(receptions: Sequence[Reception]) -> set[tuple[int, int]]:
 def design_units(inputs: power.C1Inputs) -> list[DesignUnit]:
     """Every design unit of a match, flagged by the exclusion rule, in order of period and frame.
 
-    Raises ``ValueError`` when a unit has no team possession (as task 17's units do).
+    Raises ``ValueError`` when a unit has no team possession (as the power analysis allows).
     """
     match = inputs.s1.match
     scored = [
@@ -151,7 +151,7 @@ def design_units(inputs: power.C1Inputs) -> list[DesignUnit]:
 
 
 def power_units(units: Sequence[DesignUnit], cause: str) -> list[power.Unit]:
-    """The kept units as task 17's units, grouped by ``cause`` (``index`` or ``proxy``)."""
+    """The kept units as :class:`power.Unit`, grouped by ``cause`` (``index`` or ``proxy``)."""
     if cause not in CAUSES:
         raise ValueError(f"unknown cause {cause!r}: one of {CAUSES}")
     return [
@@ -181,9 +181,9 @@ def _within(units: Sequence[power.Unit], cells: Sequence[str]) -> dict[str, obje
 def pooled_pretrend(units: Mapping[int, Sequence[power.Unit]], variant: str) -> dict[str, object]:
     """The pre-trend pooled over every (match, stratum) cell with the bar's weights, sd and metres.
 
-    ``sd`` is the figure D3 judges (task 17's ``pretrend.pooled_sd``); ``metres`` the same
-    pooling of the unstandardised differences; each with the floor D3 sets on the effect,
-    ``|pre-trend| / D3_RATIO``, in its own unit. Per match too.
+    ``sd`` is the figure D3 judges (``pretrend.pooled_sd`` of ``reports/power.json``); ``metres``
+    the same pooling of the unstandardised differences; each with the floor D3 sets on the
+    effect, ``|pre-trend| / D3_RATIO``, in its own unit. Per match too.
     """
     pick = [(m, u) for m in units for u in units[m] if variant == "V0" or u.v1]
     pooled = _within([u for _, u in pick], [f"{m}/{u.stratum}" for m, u in pick])

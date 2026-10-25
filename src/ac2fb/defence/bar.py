@@ -11,7 +11,7 @@ of the rest, ``s`` the sample sd (ddof 1) of all its units, ``z = d / s`` and
 ``w = n_p n_f / (n_p + n_f)``. A match's effect ``E_m`` is the ``w``-weighted mean of the ``z``
 of its cells; the pooled effect ``T`` is the ``w``-weighted mean over every cell of every match.
 
-**The bar** (the calibration bar the plan fixes for the protocol of task 19): ``T`` has the sign
+**The bar** (the calibration bar the plan fixes for the protocol): ``T`` has the sign
 of the effect ``E_m`` of at least :data:`BAR_SAME_SIGN` matches (a match without a cell never
 agrees, and no match agrees with a ``T`` of 0), and the two-sided permutation p,
 ``(1 + #{|T*| >= |T|}) / (1 + N_PERMUTATIONS)``, is at most :data:`BAR_P`: at most
@@ -19,11 +19,11 @@ agrees, and no match agrees with a ``T`` of 0), and the two-sided permutation p,
 
 **The null**, always inside a match. *Unblocked*: the cause label is permuted inside each cell.
 *Blocked by team possession* (the protocol blocks when the within-possession correlation measured
-by task 17 exceeds :data:`BLOCK_RHO`): with ``T = sum_i a_i y_i``, each possession contributes
-``S_k = sum over its units of a_i (y_i - mean of the unit's cell)`` (the ``S_k`` add up to ``T``),
-and the null flips the sign of each ``S_k`` at random, so the units of one possession never move
-apart. A permutation of labels by blocks is not defined when one possession holds both groups;
-the flip is the block null of tracklab's P5.
+by :mod:`ac2fb.defence.power` exceeds :data:`BLOCK_RHO`): with ``T = sum_i a_i y_i``, each
+possession contributes ``S_k = sum over its units of a_i (y_i - mean of the unit's cell)`` (the
+``S_k`` add up to ``T``), and the null flips the sign of each ``S_k`` at random, so the units of
+one possession never move apart. A permutation of labels by blocks is not defined when one
+possession holds both groups; the flip is the block null of tracklab's P5.
 
 **The approximation** (only to avoid drawing :data:`N_PERMUTATIONS` nulls in each replicate).
 Under the unblocked null ``T`` has mean 0 and variance exactly ``1 / sum w`` (in a cell the

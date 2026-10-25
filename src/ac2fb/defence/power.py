@@ -1,4 +1,4 @@
-"""Power of the calibration bar for each candidate alive after its probe (task 17).
+"""Power of the calibration bar for each candidate alive after its probe.
 
 The power is simulated on the real design of each candidate in the calibration matches: its
 units, their incoming-ball stratum, their cause group and their team possession, read at ``t``

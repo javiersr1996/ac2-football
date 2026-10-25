@@ -1,12 +1,12 @@
 """The calibration half under the protocol: effects, null, bars and the verdict D1 to D5.
 
-Task 21 (``protocol/protocol.json``, ``reading_order``). The first module that computes an
+The ``reading_order`` of ``protocol/protocol.json``, in code. The first module that computes an
 outcome on a real match, through the one reader of it
-(:func:`ac2fb.defence.effect.read_outcome`), with the estimator validated on synthetic worlds in
-task 20. Its report, ``reports/calibration.json``, says whether the protocol may be frozen for
-the one reading of the held-out (task 23) or the question dies here (D5, branch B). Nothing in
-it moves a threshold: every number it judges with is a constant that ``ac2fb protocol --check``
-ties to the protocol.
+(:func:`ac2fb.defence.effect.read_outcome`), with the estimator validated on synthetic worlds
+first (``tests/test_effect.py``). Its report, ``reports/calibration.json``, says whether the
+protocol may be frozen for the one reading of the held-out (``ac2fb heldout read``) or the
+question dies here (D5, branch B). Nothing in it moves a threshold: every number it judges with
+is a constant that ``ac2fb protocol --check`` ties to the protocol.
 
 **Order** (protocol ``reading_order``). (1) The design of each match, before any outcome: the
 units of :func:`ac2fb.defence.design.design_units`; D1's contrast, the median index by label
@@ -23,7 +23,7 @@ them, deciding nothing, V0 on the units with the ball detected at both ends and 
 :func:`ac2fb.defence.effect.d4` and :func:`d5`, which passes the half only when V0 passes the
 bar and none of D1 to D4 kills.
 
-**The variance factor** (task 21's requirement; the null stays the protocol's, decided before
+**The variance factor** (reported beside the null, which stays the protocol's, decided before
 any outcome). Permuting ``G`` inside a cell with ``x`` fixed ignores the correlation ``r`` of
 ``G`` and ``x`` there: the variance of the adjusted coefficient is larger by ``1 / (1 - r^2)``.
 From a cell's reported figures, ``r^2 = P_c^2 w_c / (n_c - 1)`` (``Sgx = w_c x_diff``,

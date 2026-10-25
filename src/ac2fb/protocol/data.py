@@ -265,7 +265,7 @@ def _freeze(head: str, stage: Any, reading: Any) -> tuple[str | None, list[str]]
     not count, so a worktree at the reading reproduces it. Since the freeze nothing of the code
     or of ``protocol/`` changed, save ``layer2.json`` in ``read``. A shallow clone, whose
     history is cut, is refused. Other stages have no freeze. The readings that this clone has
-    not fetched are out of its sight (accepted by Javier, 23c).
+    not fetched are out of its sight: a declared limit, not a check.
     """
     if stage not in _READABLE_STAGES:
         return None, []

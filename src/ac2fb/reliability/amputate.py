@@ -14,7 +14,7 @@ metric's players is hidden as the camera hides players in that match:
   period: the frames back to that previous detection and ahead to that next one. ``gap_len``
   so has the match's distribution, weighted by length as a frame lives it;
 - the gap is put around ``t`` with those two numbers, its ends move out to the nearest frames
-  where this player is detected (the provider fills between detections, task 12), and the
+  where this player is detected (the provider fills between detections), and the
   frames of the window inside it get the straight line between the two ends.
 
 The metric is computed again on the window so filled; the error is that value minus the seen
@@ -25,11 +25,11 @@ no detection on one side of its gap in the period, or when the metric cannot be 
 the fill.
 
 Declared: the straight line is a bound, not the provider's model (its fill is smoother than a
-seen path, but not a line: task 12); only the metric's players are hidden, each on its own draw,
-so any other player keeps its listed position; the units are those the camera saw whole, which
-are near the ball; the end of a gap is read after ``t`` (layer 2 is descriptive and computes no
-outcome). The draws come from a generator seeded by :data:`SEED`, the match and the metric, so
-the file is the same on every machine and no match moves another.
+seen path, but not a line); only the metric's players are hidden, each on its own draw, so any
+other player keeps its listed position; the units are those the camera saw whole, which are near
+the ball; the end of a gap is read after ``t`` (layer 2 is descriptive and computes no outcome).
+The draws come from a generator seeded by :data:`SEED`, the match and the metric, so the file is
+the same on every machine and no match moves another.
 """
 
 from __future__ import annotations

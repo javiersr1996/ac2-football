@@ -1,12 +1,12 @@
 """The estimator of the protocol: outcome, adjusted effect, pre-trend, null, bars and criteria.
 
-Task 20 (``protocol/protocol.json``). The design of a half (:mod:`ac2fb.defence.design`) reads
-everything at ``t`` or before it; this module is the first that reads after ``t``, and only in
-:func:`read_outcome`, the one reader of the outcome. Everything else takes
-:class:`EffectUnit`\\ s, plain data, so the estimator is a pure function of the units of a half
-and nothing here opens a file. It was validated on synthetic worlds (``tests/test_effect.py``)
-before it touched a real match; the code that judges the calibration half is the code that
-judges the held-out half.
+The ``statistic``, ``null`` and ``death_criteria`` of ``protocol/protocol.json``, in code. The
+design of a half (:mod:`ac2fb.defence.design`) reads everything at ``t`` or before it; this
+module is the first that reads after ``t``, and only in :func:`read_outcome`, the one reader of
+the outcome. Everything else takes :class:`EffectUnit`\\ s, plain data, so the estimator is a
+pure function of the units of a half and nothing here opens a file. It was validated on
+synthetic worlds (``tests/test_effect.py``) before it touched a real match; the code that judges
+the calibration half is the code that judges the held-out half.
 
 **Outcome** (protocol ``outcome``). ``y = sign * (ball_x(t + W) - ball_x(t))`` in metres, the
 ball rows listed at ``t`` and ``t + W`` whatever their ``is_detected`` flag; ``None`` without a

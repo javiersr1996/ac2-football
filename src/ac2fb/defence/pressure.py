@@ -19,7 +19,7 @@ within 10 m; a rival touching the carrier in front is 1). The goalkeeper is not 
 in the inventory's counts of rivals near the carrier. The extrapolated share of an index is the
 part of that sum that comes from rivals with ``is_detected`` false at ``t``.
 
-**The cause** (task 19, ``protocol/protocol.json`` ``cause.treatment``, written before any
+**The cause** (``protocol/protocol.json`` ``cause.treatment``, written before any
 outcome). A reception is *pressed* when its index is at least :data:`PRESSED_INDEX`: the index
 of one rival at half the radius straight between the carrier and the goal, which is the 5 m
 proxy of m10 on the goal side. The cut is not moved after the data is read.
@@ -70,7 +70,7 @@ __all__ = [
 
 GOAL_X = 52.5  # half of a 105 m pitch: the goal the carrier attacks is (sign * GOAL_X, 0)
 RADIUS = 10.0  # metres; rivals farther from the carrier weigh nothing
-PRESSED_INDEX = 0.5  # rival equivalents; the protocol's cause: pressed at or above it (task 19)
+PRESSED_INDEX = 0.5  # rival equivalents; the protocol's cause: pressed at or above it
 INCOMING_WINDOW = 13  # frames; decision.w_min_frames of reports/probe_cadence.json
 BACKWARD_CUT = 2.0  # metres of ball displacement along the attack that make it not lateral
 THIRD_CUT = 17.5  # metres from the centre line: the middle third is 35 m of 105

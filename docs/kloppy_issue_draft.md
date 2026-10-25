@@ -1,4 +1,6 @@
-**Draft, not published.**
+**Draft, not published:** the same gap was reported upstream on 2026-10-15 by another user,
+[PySport/kloppy#639](https://github.com/PySport/kloppy/issues/639), where a patch with a test is
+announced; this file stays as the reproduction this repository checked.
 
 # SkillCorner deserializer drops per-player `is_detected` (and ball `is_detected`)
 

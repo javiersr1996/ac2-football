@@ -132,6 +132,11 @@
    "note": "...e filled frames (Figure 1b). kloppy 3.19.1"
   },
   {
+   "number": "639",
+   "src": "docs/kloppy_issue_draft.md:PySport/kloppy#639",
+   "note": "...ssue_draft.md`, [reported upstream](https://github.com/PySport/kloppy/issues/639"
+  },
+  {
    "number": "10",
    "src": "protocol/split.json:calibration",
    "note": "...sue_draft.md`).  **Sensitivity (n = 10"

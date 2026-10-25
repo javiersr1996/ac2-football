@@ -14,9 +14,10 @@ and muxed. The build fails if the video would exceed 60 s; ``--speed-up`` allows
 atempo, off by default. Output: 1920x1080, 30 fps, H.264 + AAC, yuv420p, faststart.
 
 What is on screen comes from the repository and nothing else: ``reports/clip/clip.mp4`` and its
-still, the two figures drawn again by ``ac2fb.figures`` at video resolution (the committed SVGs
-are not touched), and three typographic cards (rows 7, 11 and 12) whose words are the script's
-plus the repository URL, the licence and the author. Everything is written under ``build/video``.
+still, the panels of the two figures drawn again by ``scripts/video_panels.py`` from the figures'
+sidecars at the stage's size in large type (the committed SVGs are not touched), and three
+typographic cards (rows 7, 11 and 12) whose words are the script's plus the repository URL, the
+licence and the author. Everything is written under ``build/video``.
 """
 
 from __future__ import annotations
@@ -30,22 +31,21 @@ import re
 import shutil
 import subprocess
 import sys
-from collections.abc import Iterator, Sequence
-from dataclasses import dataclass
+from collections.abc import Iterator, Mapping, Sequence
+from dataclasses import dataclass, replace
 from pathlib import Path
 from typing import Any
 
 import matplotlib
-import matplotlib.style
 import numpy as np
 from PIL import Image, ImageDraw, ImageFont
 
-from ac2fb import figures
-
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 vsc: Any = importlib.import_module("video_script_check")
+panels: Any = importlib.import_module("video_panels")
 
 SCRIPT = Path("docs") / "video_script.md"
+SIDECARS = Path("reports") / "figures"
 CLIP = Path("reports") / "clip" / "clip.mp4"
 STILL = Path("reports") / "clip" / "clip_still.png"
 BUILD = Path("build") / "video"
@@ -59,7 +59,12 @@ INK, GREY, BLUE, WHITE = (34, 34, 34), (119, 119, 119), (0, 114, 178), (255, 255
 MARK_FILL, MARK_EDGE = (255, 204, 0, 64), (230, 160, 0, 240)
 CARD_STYLE = {"title": (BOLD, 84, INK), "plain": (REGULAR, 60, INK), "small": (REGULAR, 40, GREY)}
 CARD_STYLE["url"] = (BOLD, 56, BLUE)
-DPI = 450  # the figures rendered: above the 434 px per inch of the tightest crop, so never upscaled
+# The panels are drawn at the stage's size (100 px per inch); the pooled rows of figure 2 are
+# shown 2.2 times closer, so that panel is rendered with the headroom and is never upscaled.
+PANEL_DPI = {"layer3": 250}
+PANEL_DPI_DEFAULT = 150
+FULL = (0.0, 0.0, *panels.SIZE)  # a whole panel, and the same inset by 3 %: a slow zoom in
+INSET = (0.03 * panels.SIZE[0], 0.03 * panels.SIZE[1], 0.97 * panels.SIZE[0], 0.97 * panels.SIZE[1])
 CLIP_FPS, CLIP_FRAMES = 10, 100
 LANCZOS = Image.Resampling.LANCZOS  # sharp at 1.19x for the clip; the figures only shrink
 FADE, MOVE, MARK_IN = 0.25, 0.6, 0.35  # seconds: cross-fade, camera glide, highlight fade-in
@@ -73,51 +78,68 @@ Box = tuple[float, float, float, float]  # left, top, right, bottom
 
 
 @dataclass(frozen=True)
+class Window:
+    """A rectangle in the data coordinates of a named axes of a panel, padded outwards in inches.
+
+    Resolved to a ``Box`` once the panel is drawn, so a crop sits on whole rows of the data and
+    never cuts a marker.
+    """
+
+    axes: str
+    x: tuple[float, float]
+    y: tuple[float, float]
+    pad: Box = (0.0, 0.0, 0.0, 0.0)  # left, top, right, bottom
+
+
+@dataclass(frozen=True)
 class Scene:
     """What a row shows: a source, how the shot enters, where the camera looks and what it marks.
 
-    Boxes are inches of the figure from its top left corner (``ac2fb.figures`` places every axes
-    in inches, so these follow its constants). ``box`` is where the shot ends; it starts ``zoom``
-    times wider (or at ``start``) and closes in slowly. ``mark`` is the element the sentence talks
-    about. ``enter`` is ``fade`` (cross-fade), ``move`` (the camera glides over the same figure)
-    or ``cut``. Clip shots play from ``clip_from`` and freeze at ``clip_stop``; card shots are
-    ``card`` lines of (style, text).
+    Boxes are inches of the panel from its top left corner, or a ``Window`` of its data. ``box`` is
+    where the shot ends; it starts ``zoom`` times wider (or at ``start``) and closes in slowly.
+    ``mark`` is the element the sentence talks about. ``enter`` is ``fade`` (cross-fade), ``move``
+    (the camera glides over the same panel) or ``cut``. Clip shots play from ``clip_from`` and
+    freeze at ``clip_stop``; card shots are ``card`` lines of (style, text).
     """
 
     source: str
     enter: str = "fade"
-    box: Box | None = None
+    box: Box | Window | None = None
     start: Box | None = None
     zoom: float = 1.0
-    mark: Box | None = None
+    mark: Box | Window | None = None
     clip_from: float = 0.0
     clip_stop: float | None = None
     card: tuple[tuple[str, str], ...] = ()
 
 
-# Figure 1: panel a at 0.75-4.05 x 0.9-3.8 in, the key above it at 0.3; strip i of panel c at
-# 1.7-4.4 x (6.2 + 0.68 i)-(6.7 + 0.68 i), tick labels 0.22 below, metric name to its left.
-# Figure 2: panels a and b at 1.15-4.05 and 4.95-7.85 x 0.9-5.5 in; the pooled row at y = -1 of
-# a -1.6 to 10.5 axis, 5.1 to 5.45 from the top; the D3 floor is the grey band of panel a.
+# The panels are those of scripts/video_panels.py. Figure 2's matches sit at y = 9 .. 0 and the
+# pooled row at y = -1 (markers 0.3 above and below); a window on y = -1.6 .. 1.5 holds the last
+# two matches and the pooled row, whole, with no pad or drift above (the next row's markers
+# start at y = 1.6); the marks hold the three pooled markers.
 STORYBOARD: dict[int, Scene] = {
     1: Scene("clip", enter="cut", clip_from=0.0, clip_stop=3.0),
     2: Scene("clip", enter="cut", clip_from=3.0),
-    3: Scene("fig1", box=(0.2, 0.6, 4.05, 4.35), zoom=1.04),
-    # Strip windows end in the 0.04 in between a strip's tick labels and the next strip's median
-    # tick, 6.91 + 0.68 i: no zoom there, or the neighbour's tick would peek in at the edge.
-    4: Scene("fig1", box=(0.35, 6.91, 4.7, 8.95), mark=(0.45, 7.61, 4.6, 8.27)),
-    5: Scene("fig1", enter="move", box=(0.35, 8.95, 4.7, 10.99), mark=(0.45, 9.65, 4.6, 10.33)),
-    6: Scene("fig1", enter="move", box=(0.35, 5.95, 4.7, 8.27), mark=(0.45, 6.24, 4.6, 7.61)),
+    3: Scene("panel_a", box=INSET, start=FULL),
+    4: Scene("line_height", box=INSET, start=FULL),
+    5: Scene("block_length", box=INSET, start=FULL),
+    6: Scene("pressure_rival", box=INSET, start=FULL),
     7: Scene(
         "card",
         card=(("title", "Tag every metric"), ("plain", "with how many of its players were seen.")),
     ),
-    8: Scene("fig2", box=(0.2, 0.1, 7.95, 5.84), start=(0.0, 0.0, 8.0, 5.92)),
+    8: Scene("layer3", box=INSET, start=FULL),
     9: Scene(
-        "fig2", enter="move", box=(0.6, 4.2, 4.1, 5.86), zoom=1.03, mark=(1.78, 5.03, 2.3, 5.5)
+        "layer3",
+        enter="move",
+        box=Window("a", (-0.5, 0.5), (-1.6, 1.5), pad=(1.6, 0.0, 0.2, 1.0)),
+        mark=Window("a", (-0.28, -0.12), (-1.55, -0.45)),
     ),
     10: Scene(
-        "fig2", enter="move", box=(4.4, 4.2, 7.9, 5.86), zoom=1.03, mark=(6.7, 5.03, 7.2, 5.5)
+        "layer3",
+        enter="move",
+        box=Window("b", (-0.5, 0.5), (-1.6, 1.5), pad=(0.3, 0.0, 0.2, 1.0)),
+        mark=Window("b", (0.12, 0.26), (-1.55, -0.45)),
     ),
     11: Scene("card", card=(("plain", "That is"), ("title", "the published result."))),
     12: Scene(
@@ -187,24 +209,40 @@ class Shot:
         return self.end - self.start
 
 
-def shots_of(rows: Sequence[Row], starts: Sequence[float], end: float) -> list[Shot]:
+def shots_of(
+    rows: Sequence[Row],
+    starts: Sequence[float],
+    end: float,
+    scenes: Mapping[int, Scene] = STORYBOARD,
+) -> list[Shot]:
     """One shot per row, from its start to the next one's; the last ends at ``end``."""
-    if [r.number for r in rows] != sorted(STORYBOARD):
-        raise ValueError(f"the script has {len(rows)} rows, the storyboard {len(STORYBOARD)}")
+    if [r.number for r in rows] != sorted(scenes):
+        raise ValueError(f"the script has {len(rows)} rows, the storyboard {len(scenes)}")
     if len(starts) != len(rows) or any(a >= b for a, b in zip(starts, starts[1:], strict=False)):
         raise ValueError(f"the starts must be one per row and increasing: {starts}")
     ends = [*starts[1:], end]
-    shots = [
-        Shot(r, STORYBOARD[r.number], s, e) for r, s, e in zip(rows, starts, ends, strict=True)
-    ]
+    shots = [Shot(r, scenes[r.number], s, e) for r, s, e in zip(rows, starts, ends, strict=True)]
     for one, two in zip(shots, shots[1:], strict=False):
         if two.scene.enter == "move" and one.scene.source != two.scene.source:
             raise ValueError(f"row {two.row.number} moves the camera from another source")
     return shots
 
 
-def planned(rows: Sequence[Row]) -> list[Shot]:
-    return shots_of(rows, [r.start for r in rows], rows[-1].end + TAIL)
+def planned(rows: Sequence[Row], scenes: Mapping[int, Scene] = STORYBOARD) -> list[Shot]:
+    return shots_of(rows, [r.start for r in rows], rows[-1].end + TAIL, scenes)
+
+
+def resolve(scenes: Mapping[int, Scene], drawn: Mapping[str, Any]) -> dict[int, Scene]:
+    """The scenes with every ``Window`` turned into inches of its drawn panel."""
+    out = {}
+    for number, scene in scenes.items():
+        changes = {}
+        for field in ("box", "mark"):
+            value = getattr(scene, field)
+            if isinstance(value, Window):
+                changes[field] = drawn[scene.source].window(value.axes, value.x, value.y, value.pad)
+        out[number] = replace(scene, **changes) if changes else scene
+    return out
 
 
 # --- the voice: words heard, sentences found, the clock -------------------------------------------
@@ -378,10 +416,15 @@ def fit(
     return timing
 
 
-def voiced(rows: Sequence[Row], spans: Sequence[Span], timing: Timing) -> list[Shot]:
+def voiced(
+    rows: Sequence[Row],
+    spans: Sequence[Span],
+    timing: Timing,
+    scenes: Mapping[int, Scene] = STORYBOARD,
+) -> list[Shot]:
     """The shots retimed: the first at zero, each other one when its sentence starts."""
     starts = [0.0, *(timing.clock(s.start) for s in spans[1:])]
-    return shots_of(rows, starts, timing.total)
+    return shots_of(rows, starts, timing.total, scenes)
 
 
 # --- the recording: transcribed, cut, normalised -------------------------------------------------
@@ -457,17 +500,18 @@ def prepare_voice(voice: Path, timing: Timing, out: Path) -> None:
 # --- the pictures ---------------------------------------------------------------------------------
 
 
-def render_figures(root: Path, build: Path) -> dict[str, Image.Image]:
-    """The two figures drawn again by their own code as PNG at ``DPI``; the SVGs are not touched."""
-    files = {name: (root / "reports" / name).read_bytes() for name in figures.INPUTS}
-    rep = figures._Reports(files)  # the public door returns SVG bytes; the video needs pixels
+def render_panels(
+    root: Path, build: Path
+) -> tuple[dict[str, tuple[Image.Image, int]], dict[int, Scene]]:
+    """The panels of the video as PNG, each with its pixels per inch, and the scenes in inches."""
+    drawn = panels.draw_all(root / SIDECARS)
     out = {}
-    with matplotlib.style.context("default"), matplotlib.rc_context(figures.SVG_RC):
-        for name, draw in (("fig1", figures._fig1), ("fig2", figures._fig2)):
-            path = build / f"{name}.png"
-            draw(rep).fig.savefig(path, dpi=DPI)
-            out[name] = Image.open(path).convert("RGB")
-    return out
+    for name, panel in drawn.items():
+        dpi = PANEL_DPI.get(name, PANEL_DPI_DEFAULT)
+        path = build / f"{name}.png"
+        panel.save(path, dpi)
+        out[name] = (Image.open(path).convert("RGB"), dpi)
+    return out, resolve(STORYBOARD, drawn)
 
 
 def extract_clip(root: Path, build: Path) -> Path:
@@ -529,7 +573,7 @@ def _grow(box: Box, zoom: float) -> Box:
 
 def camera(scene: Scene, second: float, length: float) -> Box:
     """Where the camera is ``second`` into a shot of ``length``: from the start box to ``box``."""
-    assert scene.box is not None
+    assert isinstance(scene.box, tuple), "a scene is resolved before it is drawn"
     start = scene.start or _grow(scene.box, scene.zoom)
     return _lerp(start, scene.box, min(1.0, second / length) if length > 0 else 1.0)
 
@@ -538,7 +582,7 @@ class Pictures:
     """The sources, loaded once, and the stage of a shot at a second (a full frame, no caption)."""
 
     def __init__(self, root: Path, build: Path) -> None:
-        self.fig = render_figures(root, build)
+        self.fig, self.scenes = render_panels(root, build)
         self.clip = extract_clip(root, build)
         self.still = Image.open(root / STILL).convert("RGB")
         self.size = (STAGE[2] - STAGE[0], STAGE[3] - STAGE[1])
@@ -560,7 +604,9 @@ class Pictures:
             box = camera(scene, second, shot.length)
         if mark_alpha is None:
             mark_alpha = _smooth((second - (MOVE if scene.enter == "move" else 0.0)) / MARK_IN)
-        self._figure(canvas, self.fig[scene.source], box, scene.mark, mark_alpha)
+        assert not isinstance(scene.mark, Window), "a scene is resolved before it is drawn"
+        image, dpi = self.fig[scene.source]
+        self._figure(canvas, image, dpi, box, scene.mark, mark_alpha)
         return canvas
 
     def _clip(self, scene: Scene, second: float) -> Image.Image:
@@ -575,9 +621,15 @@ class Pictures:
         return self._clip_frame[1]
 
     def _figure(
-        self, canvas: Image.Image, image: Image.Image, box: Box, mark: Box | None, alpha: float
+        self,
+        canvas: Image.Image,
+        image: Image.Image,
+        dpi: int,
+        box: Box,
+        mark: Box | None,
+        alpha: float,
     ) -> None:
-        px = [v * DPI for v in box]
+        px = [v * dpi for v in box]
         w, h = px[2] - px[0], px[3] - px[1]
         dx = max(0.0, -px[0]) + min(0.0, image.width - px[2])  # shifted back inside the figure
         dy = max(0.0, -px[1]) + min(0.0, image.height - px[3])
@@ -590,10 +642,10 @@ class Pictures:
         if mark is not None and alpha > 0:
             overlay = Image.new("RGBA", (dw, dh), (0, 0, 0, 0))
             left, top, right, bottom = (
-                (mark[0] * DPI - px[0]) * scale,
-                (mark[1] * DPI - px[1]) * scale,
-                (mark[2] * DPI - px[0]) * scale,
-                (mark[3] * DPI - px[1]) * scale,
+                (mark[0] * dpi - px[0]) * scale,
+                (mark[1] * dpi - px[1]) * scale,
+                (mark[2] * dpi - px[0]) * scale,
+                (mark[3] * dpi - px[1]) * scale,
             )
             fill = (*MARK_FILL[:3], round(MARK_FILL[3] * alpha))
             edge = (*MARK_EDGE[:3], round(MARK_EDGE[3] * alpha))
@@ -750,9 +802,10 @@ def main(argv: list[str] | None = None) -> int:
     sentences = [r.sentence for r in rows]
     audio: Path | None = None
     rebuild = "uv run python scripts/make_video.py"
+    pictures = Pictures(root, build)
 
     if args.voice is None:
-        shots = planned(rows)
+        shots = planned(rows, pictures.scenes)
         out = args.out or build / "preview.mp4"
     else:
         if args.words is not None:
@@ -789,13 +842,12 @@ def main(argv: list[str] | None = None) -> int:
         print(f"voice: {timing.voice:.1f} s after trimming{tempo}; video: {timing.total:.1f} s")
         audio = build / "voice.wav"
         prepare_voice(args.voice, timing, audio)
-        shots = voiced(rows, spans, timing)
+        shots = voiced(rows, spans, timing, pictures.scenes)
         out = args.out or build / "video.mp4"
         rebuild = f"uv run --with faster-whisper python scripts/make_video.py --voice {args.voice}"
         if args.speed_up:
             rebuild += " --speed-up"
 
-    pictures = Pictures(root, build)
     print(f"rendering {round(shots[-1].end * FPS)} frames at {FPS} fps")
     encode(frames(shots, pictures), out, audio)
     seconds, width, height, has_audio = probe(out)

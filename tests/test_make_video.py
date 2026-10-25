@@ -203,18 +203,29 @@ def test_a_broken_table_is_refused() -> None:
 
 
 def test_the_storyboard_is_consistent() -> None:
-    for number, scene in mv.STORYBOARD.items():
+    """Every panel shot names a drawn panel; once resolved, every box lies inside the panel, every
+    start box holds its end box and every mark lies inside its box."""
+    drawn = mv.panels.draw_all(ROOT / "reports" / "figures")
+    scenes = mv.resolve(mv.STORYBOARD, drawn)
+    width, height = mv.panels.SIZE
+    for number, scene in scenes.items():
         if scene.source == "card":
             assert scene.card and scene.box is None, number
         elif scene.source == "clip":
             assert scene.box is None and not scene.card, number
         else:
-            assert scene.source in ("fig1", "fig2") and scene.box is not None, number
+            assert scene.source in drawn and isinstance(scene.box, tuple), number
             left, top, right, bottom = scene.box
-            assert 0 <= left < right <= 8.0 and 0 <= top < bottom, number
+            assert 0 <= left < right <= width and 0 <= top < bottom <= height, number
+            if scene.start is not None:
+                assert scene.start[0] <= left and scene.start[1] <= top, number
+                assert right <= scene.start[2] and bottom <= scene.start[3], number
             if scene.mark is not None:
+                assert isinstance(scene.mark, tuple), number
                 assert left <= scene.mark[0] < scene.mark[2] <= right, number
                 assert top <= scene.mark[1] < scene.mark[3] <= bottom, number
+    # A window is inches only once its panel is drawn.
+    assert isinstance(mv.STORYBOARD[9].box, mv.Window) and isinstance(scenes[9].box, tuple)
     # The two rows that were "on camera" are cards, and the last one carries the repository.
     assert mv.STORYBOARD[7].source == mv.STORYBOARD[11].source == "card"
     assert any("github.com/javiersr1996/ac2-football" in t for _, t in mv.STORYBOARD[12].card)

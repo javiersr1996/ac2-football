@@ -310,6 +310,11 @@
    "number": "v0.1.0",
    "src": "pyproject.toml:tool.uv.sources.ftbase.tag",
    "note": "...or SkillCorner data, pinned at tag ` v0.1.0"
+  },
+  {
+   "number": "10",
+   "src": "protocol/split.json:calibration",
+   "note": "...amputation` take `--match ID` for the 10; src/ac2fb/protocol/data.py refuses every id outside protocol/split.json and the held-out outside the reading"
   }
  ]
 }

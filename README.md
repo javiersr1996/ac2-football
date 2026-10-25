@@ -58,7 +58,7 @@ Ingestion and the conformed data come from [`ftbase`](https://github.com/javiers
 
 ## Reuse
 
-`ac2fb layer2`, `ac2fb reliability` and `ac2fb amputation` take `--match ID` for any match but the held-out, which stays closed; `ac2fb.reliability` documents the Python steps that `examples/sensitivity.py` runs on a synthetic match.
+`ac2fb layer2`, `ac2fb reliability` and `ac2fb amputation` take `--match ID` for the 10 calibration matches (the door refuses the rest). On other SkillCorner data, build the three silver tables in `ftbase`'s shape and call the public steps that `examples/sensitivity.py` runs on a synthetic match; `ac2fb.reliability` lists them.
 
 ## License and data
 

@@ -18,7 +18,7 @@ uv run ftbase bronze && uv run ftbase silver && uv run ac2fb layer2 --match 1874
 
 ## What the camera does to seven metrics
 
-In the 20 A-League 2024/25 matches of the Analytics Cup 2.0 the camera saw about half the player-frames: a per-match median of 56% in the calibration half and 57% in the held-out half. Seven metrics: pressure on the receiver, nearest rival, line height, the line's reaction to the incoming ball, block width, length and area, each on its units, receptions (pressure, rival, line) or defensive phases (block). Each is computed on every unit (V0 in the figures), on the units seen whole (V1) and split by how many of its players were seen.
+In the 20 A-League 2024/25 matches of the Analytics Cup 2.0 the camera saw about half the player-frames: a per-match median of 56% in the calibration half and 57% in the held-out half. Seven metrics, per reception (pressure on the receiver, nearest rival, line height, the line's reaction to the incoming ball) or per defensive phase (block width, length and area). Each is computed on every unit (V0), on the units seen whole (V1) and split by how many of its players were seen.
 
 ![Figure 1](reports/figures/fig1_layer2.svg)
 
@@ -30,7 +30,7 @@ In the 20 A-League 2024/25 matches of the Analytics Cup 2.0 the camera saw about
 
 ## One question, killed by its own rule
 
-Layer 3 is the method on trial: one pre-registered question (does pressure on the receiver reduce the ball's advance over the next 1.3 s?) with a kill rule committed before any outcome (`protocol/protocol.json`). The rule fired and the result is published as killed: the effect, -0.19 sd, is matched 95% by a difference that was already there before the ball arrived (0.18 sd); seen-only players give the same effect (-0.20 sd), so the camera is not the cause; the held-out never opened for it.
+Layer 3 is the method on trial: one pre-registered question (does pressure on the receiver reduce the ball's advance over the next 1.3 s?) with a kill rule committed before any outcome (`protocol/protocol.json`). The rule fired and the result is published as killed: the effect, -0.19 sd, is adjusted for the ball's advance before the reception, yet on that advance pressed and free receptions already differed by 0.18 sd, 95% of the effect, and the rule refuses any effect under twice that imbalance; seen-only players give the same effect (-0.20 sd), so the camera is not the cause; the held-out never opened for it.
 
 ![Figure 2](reports/figures/fig2_layer3.svg)
 

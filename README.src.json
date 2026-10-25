@@ -122,14 +122,14 @@
    "note": "...the effect, -0.19"
   },
   {
-   "number": "95",
-   "src": "reports/calibration.json:criteria.D3.values.pretrend / criteria.D3.values.effect",
-   "note": "...is matched 95"
-  },
-  {
    "number": "0.18",
    "src": "reports/calibration.json:criteria.D3.values.pretrend",
-   "note": "...before the ball arrived ( 0.18"
+   "note": "...pressed and free receptions already differed by 0.18 sd (P, the pooled pre-trend)"
+  },
+  {
+   "number": "95",
+   "src": "reports/calibration.json:criteria.D3.values.pretrend / criteria.D3.values.effect",
+   "note": "...0.18 sd, 95% of the effect; the rule (death_criteria.D3, ratio 0.5) refuses an effect under 2 |P|, the floor criteria.D3.values.floor"
   },
   {
    "number": "-0.20",

@@ -112,6 +112,7 @@ SVG_RC: dict[str, Any] = {
     "axes.facecolor": "white",
     "savefig.facecolor": "white",
 }
+STRIP_TICK_SIZE = 9.5  # the strips of figure 1 (panels c and d): their ticks are the only scale
 SVG_METADATA: dict[str, str | None] = {"Date": None, "Creator": None}
 INK = "#222222"
 GREY = "#777777"
@@ -410,6 +411,7 @@ def _fig1(rep: _Reports) -> _Drawn:
         _text(fig, 1.55, bottom + 0.25, name, ha="right", va="center")
         for panel, left in (("c", 1.7), ("d", 4.9)):
             ax = _axes(fig, left, bottom, 2.7, 0.5)
+            ax.tick_params(axis="x", labelsize=STRIP_TICK_SIZE)
             ax.spines["left"].set_visible(False)
             ax.set_yticks([])
             ax.set_ylim(-0.5, 0.5)

@@ -1,8 +1,6 @@
 # What the camera saw: a reliability tag for defensive metrics
 
-**SkillCorner fills in the players the camera does not show, and fills them well; what moves a defensive metric is *which* moments the camera shows whole, so this entry tags every metric with how many of its players were seen.** Those moments are the ones near the ball: a metric computed on seen players only is a different sample of plays, not a better measurement. The fill itself lands within a footstep of where the player reappears.
-
-The separation: hiding seen players as the camera does and refilling them with a straight line measures the fill error (amputation); the metric on the units seen whole minus the metric on every unit measures the selection.
+**Broadcast tracking shows about half the player-frames; SkillCorner fills the rest. For seven defensive metrics, this entry measures how much of the value is the camera's choice of what to show, and tags every metric with how many of its players were seen.** Two things can move a metric: the fill (a hidden player placed wrongly) and the selection (the camera shows whole the moments near the ball). The fill error is measured by hiding seen players and refilling them with a straight line (amputation); the selection, as the metric on moments seen whole (V1) minus the metric on all moments (V0).
 
 ## Try it in 9 seconds
 
@@ -26,7 +24,7 @@ In the 20 A-League 2024/25 matches of the Analytics Cup 2.0 the camera saw about
 
 *Figure 1, per match: (a) detection by distance to the ball, (b) filled frames by gap length, (c) seen-only minus all (V1 minus V0), (d) straight-line fill error.*
 
-**The fill is good, and it is interpolation.** A predictor's error grows with the gap, so a re-detection would jump. It does not: after a gap over 20 s a player reappears a median 0.19 to 0.20 m from its filled position (held-out, calibration), the size of a step between two detections (0.20 m). The amputation error on line height is 0.8 to 1.4 m per match (Figure 1d). kloppy drops `is_detected` on SkillCorner tracking ([reported upstream](https://github.com/PySport/kloppy/issues/639)).
+**The fill behaves as an interpolation.** A predictor's error grows with the gap, so a re-detection would jump. It does not: after a gap over 20 s a player reappears a median 0.19 to 0.20 m from its filled position (held-out, calibration), the size of a step between two detections (0.20 m). A straight-line refill of seen players, the same kind of fill, errs 0.8 to 1.4 m per match on line height (Figure 1d). kloppy drops `is_detected` on SkillCorner tracking ([reported upstream](https://github.com/PySport/kloppy/issues/639)).
 
 **The selection is large.** The camera follows the ball (Figure 1a), so the units seen whole are near it. On those, line height is 7 to 14 m higher and block length 17 to 37 m shorter in every match of both halves; area, reaction and pressure keep their sign everywhere, nearest rival in 9 of 10, width is mixed. The block was seen whole in 2% to 3% of phases (per-match medians), the four-man back line in a third of receptions (33% and 36%). For analysts: block length and area are mostly what the camera chose to show, line height and reaction follow it, pressure and nearest rival survive.
 

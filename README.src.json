@@ -49,12 +49,12 @@
   {
    "number": "0.8",
    "src": "reports/figures/fig1_layer2.json:series.65.points.0.of.*(min)",
-   "note": "...moves line height by 0.8; min over both halves: calibration holds it, the held-out (series.67) is 0.90 to 1.20 m"
+   "note": "...errs 0.8; min over both halves: calibration holds it, the held-out (series.67) is 0.90 to 1.20 m"
   },
   {
    "number": "1.4",
    "src": "reports/figures/fig1_layer2.json:series.65.points.0.of.*(max)",
-   "note": "...line height by 0.8 to 1.4 m per match; max over both halves: calibration holds it"
+   "note": "...errs 0.8 to 1.4 m per match on line height; max over both halves: calibration holds it"
   },
   {
    "number": "639",

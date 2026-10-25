@@ -68,7 +68,7 @@ def test_a_misread_word_a_filler_and_a_long_pause_do_not_move_the_starts() -> No
     # Fillers: "um" before sentence 4 and "you know" inside sentence 6.
     spoken = list(SENTENCES)
     spoken[3] = "um " + spoken[3]
-    spoken[5] = spoken[5].replace("chose;", "chose; you know,")
+    spoken[5] = spoken[5].replace("choice;", "choice; you know,")
     words, starts = heard(spoken)
     expected = list(starts)
     expected[3] += 0.35  # the sentence starts at its own first word, after the filler
@@ -103,7 +103,7 @@ def test_numerals_read_as_words_match_the_script() -> None:
 
 def test_a_skipped_word_is_tolerated_and_a_missing_sentence_is_named() -> None:
     spoken = list(SENTENCES)
-    spoken[2] = spoken[2].replace("the camera saw", "camera saw")
+    spoken[2] = spoken[2].replace("about half", "half")
     words, starts = heard(spoken)
     spans = mv.align(words, SENTENCES)
     assert starts_of(spans) == starts and spans[2].heard == spans[2].words - 1

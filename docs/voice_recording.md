@@ -5,26 +5,26 @@
 3. Los números están escritos en letras, tal como se dicen en inglés: lee exactamente lo que pone, nada más.
 4. Sube el archivo (m4a, mp3, wav, ogg u opus) a Google Drive con un nombre que empiece por `voz-ac2`; el montaje (`scripts/make_video.py --voice`) lo hace Claude.
 
-## In SkillCorner's broadcast tracking, the model filled in seven of these eleven defenders.
+## SkillCorner filled in seven of these eleven defenders.
 
 ## The camera saw four; hollow markers show seconds to the nearest detection.
 
-## Across twenty matches, the camera saw about half the player-frames.
+## In twenty matches it saw about half the player-frames, those near the ball; the fill is good.
 
-## Seen players only: in every match the defensive line sits seven to fourteen metres higher,
+## On moments seen whole the line reads seven to fourteen metres higher,
 
-## the block seventeen to thirty-seven metres shorter.
+## the block seventeen to thirty-seven metres shorter: a different sample, not an error.
 
-## Block length and area are mostly what the camera chose; pressure and nearest rival survive.
+## Block length and area are mostly the camera's choice; pressure and nearest rival survive.
 
 ## Tag every metric with how many of its players were seen.
 
 ## Layer three: does pressure on the receiver reduce the ball's advance?
 
-## The pre-registered rule killed an effect of minus zero point one nine standard deviations.
+## The pre-registered rule killed an effect of minus zero point one nine standard deviations:
 
-## Pressed and free receptions already differed by zero point one eight before the ball arrived.
+## pressed and free receptions already differed by zero point one eight before the ball arrived.
 
 ## That is the published result.
 
-## Code and protocol are on GitHub under MIT; one match builds in seconds.
+## Clone it, run one match in seconds, tag your metrics.

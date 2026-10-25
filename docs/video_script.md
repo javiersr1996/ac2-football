@@ -24,9 +24,9 @@ second 3.0 and `reports/clip/clip_still.png` is that frame), figure 1 is
 | 4 | 0:14 to 0:20 | Figure 1, panel c, the line height strip | Seen players only: in every match the defensive line sits 7 to 14 metres higher, | `reports/figures/fig1_layer2.json:series.63.points.0.of.*(min)`, `reports/figures/fig1_layer2.json:series.61.points.0.of.*(max)` |
 | 5 | 0:20 to 0:23 | Figure 1, panel c, the block length strip | the block 17 to 37 metres shorter. | `reports/figures/fig1_layer2.json:series.87.points.0.of.*(max)`, `reports/figures/fig1_layer2.json:series.87.points.0.of.*(min)` |
 | 6 | 0:23 to 0:29 | Figure 1, panel c, the pressure and nearest rival strips, both near zero | Block length and area are mostly what the camera chose; pressure and nearest rival survive. | |
-| 7 | 0:29 to 0:33 | Javier on camera | Tag every metric with how many of its players were seen. | |
+| 7 | 0:29 to 0:33 | Typographic card: the sentence in large type, no camera | Tag every metric with how many of its players were seen. | |
 | 8 | 0:33 to 0:38 | Figure 2, panel a | Layer 3: does pressure on the receiver reduce the ball's advance? | |
 | 9 | 0:38 to 0:42 | Figure 2, panel a: the pooled effect against the grey D3 floor | The pre-registered rule killed an effect of -0.19 standard deviations. | `reports/calibration.json:criteria.D3.values.effect` |
 | 10 | 0:42 to 0:46 | Figure 2, panel b | Pressed and free receptions already differed by 0.18 before the ball arrived. | `reports/calibration.json:criteria.D3.values.pretrend` |
-| 11 | 0:46 to 0:48 | Javier on camera | That is the published result. | |
+| 11 | 0:46 to 0:48 | Typographic card: the sentence in large type, no camera | That is the published result. | |
 | 12 | 0:48 to 0:54 | README on screen, the Reproduce section | Code and protocol are on GitHub under MIT; one match builds in seconds. | |

@@ -92,7 +92,7 @@ BRONZE_COLUMNS = ["frame", "ball_z", "n_players", *(c for pair in CORNER_COLUMNS
 METRICS = (
     ("pressure_index", "pressure on the receiver", ""),
     ("nearest_rival_m", "nearest rival", "m"),
-    ("line_height_m", "line height", "m"),
+    ("line_height_m", "line depth", "m"),
     ("line_reaction_m", "line reaction", "m"),
     ("block_width_m", "block width", "m"),
     ("block_length_m", "block length", "m"),
@@ -372,8 +372,9 @@ def strips(reports: Mapping[str, bytes]) -> dict[str, Any]:
 
 
 def strip_claim(points: Mapping[str, Any]) -> dict[str, Any]:
-    """The sentence over the strips: line height higher and block length shorter in every match
-    of both halves, from the least to the most. Refused if a point breaks it."""
+    """The sentence over the strips: line depth greater (the back four nearer their own goal) and
+    block length shorter in every match of both halves, from the least to the most. Refused if a
+    point breaks it."""
     claim: dict[str, Any] = {}
     for metric, sign in (("line_height_m", 1), ("block_length_m", -1)):
         values = [p["value"] for g in GROUPS for p in points[metric][g]["points"]]

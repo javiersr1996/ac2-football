@@ -3,10 +3,11 @@
 Every read of the base's silver from ``ac2fb`` goes through this module: no other module of
 the package imports ``ftbase`` or opens a Parquet file, and ``tests/test_single_door.py``
 walks the code to keep it so. The readers (:func:`read_frames`, :func:`read_events`,
-:func:`read_dim`, :func:`read_bronze_events`, :func:`read_bronze_phases` and
-:func:`read_bronze_players`) take match ids, look each one up in ``protocol/split.json`` and
-refuse a held-out id with :class:`HeldOutLocked` before any file is opened. An id outside the
-split is refused too (:class:`ValueError`). Calibration matches are served in every stage.
+:func:`read_dim`, :func:`read_bronze_events`, :func:`read_bronze_phases`,
+:func:`read_bronze_players` and :func:`read_bronze_frames`) take match ids, look each one up
+in ``protocol/split.json`` and refuse a held-out id with :class:`HeldOutLocked` before any file
+is opened. An id outside the split is refused too (:class:`ValueError`). Calibration matches are
+served in every stage.
 
 Layer 3 died in calibration (``protocol/protocol.json`` in stage ``dead``, D5, branch B), so
 the held-out is read once, for layer 2 only, under ``protocol/layer2.json``. It is served
@@ -75,6 +76,7 @@ __all__ = [
     "guard_status",
     "load_split",
     "read_bronze_events",
+    "read_bronze_frames",
     "read_bronze_phases",
     "read_bronze_players",
     "read_dim",
@@ -496,6 +498,20 @@ def read_bronze_players(
     ascending id order. Only the files of the admitted matches are opened.
     """
     return _read_bronze("match_players", match_ids, columns)
+
+
+def read_bronze_frames(
+    match_ids: Sequence[int], *, columns: Sequence[str] | None = None
+) -> pa.Table:
+    """The provider's per-frame columns (bronze ``tracking_frames``) of the given matches, guarded.
+
+    Silver keeps the ball and the players of a frame; the frame's own columns stay in bronze,
+    among them the ball's height and the four corners of the camera's image on the pitch
+    (``x_`` / ``y_`` ``bottom`` / ``top`` ``left`` / ``right``, metres in silver's frame). Rows
+    are in file order; the files of the matches are stacked in ascending id order. Only the
+    files of the admitted matches are opened.
+    """
+    return _read_bronze("tracking_frames", match_ids, columns)
 
 
 def _keep(table: pa.Table, column: str, values: Iterable[str]) -> pa.Table:

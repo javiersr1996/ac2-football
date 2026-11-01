@@ -18,6 +18,7 @@ from gate_helpers import (
     FROZEN_FILES,
     GUARDED,
     HELD,
+    POISON,
     ROOT,
     Checkout,
     inside_the_reading,
@@ -69,6 +70,38 @@ def test_an_id_outside_the_split_is_refused(gate: Checkout) -> None:
 def test_match_ids_are_integers(gate: Checkout, bad: object) -> None:
     with pytest.raises(TypeError):
         data.read_frames(bad)  # type: ignore[arg-type]
+
+
+# --- the bronze frames (the camera's corners): the same guard -----------------------------------
+
+CORNERS = ["x_bottom_left", "y_bottom_left", "x_top_right", "y_top_right"]
+
+
+def test_bronze_frames_refuse_the_heldout_before_opening_its_file(
+    poisoned_gate: Checkout, poisoned_pair: Path
+) -> None:
+    # The held-out's bronze frames are garbage here: opening them would fail with another error.
+    held_file = poisoned_pair / "bronze" / "football" / "tracking_frames" / f"{HELD}.parquet"
+    assert held_file.read_bytes() == POISON
+    with pytest.raises(HeldOutLocked, match="stage 'design'"):
+        data.read_bronze_frames([HELD])
+    with pytest.raises(HeldOutLocked):
+        data.read_bronze_frames([CAL, HELD], columns=["frame"])
+    poisoned_gate.freeze("read")
+    with pytest.raises(HeldOutLocked, match="only inside `ac2fb heldout read`"):
+        data.read_bronze_frames([HELD], columns=CORNERS)
+
+
+def test_bronze_frames_serve_a_calibration_match(gate: Checkout, silver_pair: Path) -> None:
+    whole = data.read_bronze_frames([CAL])
+    assert set(whole["match_id"].to_pylist()) == {CAL} and whole.num_rows > 0
+    assert set(CORNERS) <= set(whole.column_names)
+
+
+def test_bronze_frames_return_the_columns_asked_for(gate: Checkout) -> None:
+    cut = data.read_bronze_frames([CAL], columns=["frame", *CORNERS])
+    assert cut.column_names == ["frame", *CORNERS]
+    assert cut.num_rows == data.read_bronze_frames([CAL], columns=["frame"]).num_rows
 
 
 # --- read, inside the reading: the held-out is served there and only there ---------------------

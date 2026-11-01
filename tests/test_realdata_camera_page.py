@@ -46,5 +46,7 @@ def test_a_broken_committed_sidecar_is_named_by_the_check(inputs: object) -> Non
     assert f"{cp.PAGE}: its payload differs from {cp.SIDECAR}" in problems
 
 
-def test_a_heldout_match_exits_2() -> None:
+def test_a_heldout_match_exits_2(capsys: pytest.CaptureFixture[str]) -> None:
+    # refused by the guard, not missing: without the held-out's silver both exit 2
     assert cp.main(["--check", "--match", "1899585"]) == 2
+    assert capsys.readouterr().err.startswith("refused: held-out match(es) [1899585]")

@@ -250,6 +250,8 @@ def _mutated(doc: dict[str, Any], path: str, change: Any) -> dict[str, Any]:
         ("frame_stats.seen_inside", lambda v: 0.5, "would be false"),
         ("frame_stats.filled_inside", lambda v: 0.2, "would be false"),
         ("frame_stats.clip.without_corners", lambda v: 1, "has no corners"),
+        ("fps", lambda v: v + 1, "fps is not the clip's"),
+        ("match.rows", lambda v: v[:-1], "6 metrics, reliability.csv 7"),
         ("sources.layer2\\.json", None, None),
     ],
 )

@@ -715,9 +715,9 @@ def sky_share(pg) -> float:
 def check_framing(D: Data, browser, target: str, width: int, shots: Path) -> None:
     """The broadcast fit (2.4): the receiver, the ball, the clipped frame and every defender the
     camera sees inside the canvas in the 100 frames; a defender outside it is filled in and his
-    tag waits on that edge with his seconds and an arrow; at most 10 % of the height under the
-    lowest; the median drawn height of the defenders in the canvas at least the legibility
-    floor; at most EMPTY_MAX of the stage under the band bare sky."""
+    tag waits on that edge with his seconds and an arrow; at most 10 % of the height between the
+    lowest and the counter and key; the median drawn height of the defenders in the canvas at
+    least the legibility floor; at most EMPTY_MAX of the stage under the band bare sky."""
     ctx, pg = open_page(browser, target, width=width, height=844 if width < 600 else 900)
     go(pg, "broadcast")
     w, h = pg.evaluate("[camera.camera().width, camera.camera().height]")
@@ -770,10 +770,15 @@ def check_framing(D: Data, browser, target: str, width: int, shots: Path) -> Non
         not edge_bad,
         f"left out: {sorted(D.doc['entities']['rivals']['ids'][j] for j in left_out)}; wrong at {sorted(set(edge_bad))[:5]}",
     )
+    foot = pg.evaluate(
+        "document.getElementById('foot').getBoundingClientRect().top"
+        " - document.getElementById('stage').getBoundingClientRect().top"
+    )
     R.check(
-        f"{width}px broadcast: at most 10% of the height under the lowest point",
-        (h - low) / h <= 0.10,
-        f"{(h - low) / h:.3f}",
+        f"{width}px broadcast: at most 10% of the height between the lowest point and the counter"
+        " and key under it",
+        (min(h, foot) - low) / h <= 0.10,
+        f"{(min(h, foot) - low) / h:.3f}",
     )
     R.check(
         f"{width}px broadcast: the median drawn height of the defenders in the canvas >= {LEGIBLE_PX[width]} px",
@@ -956,7 +961,7 @@ def check_numbers(D: Data, browser, target: str) -> None:
     bad, seen = [], 0
     for t in (-3.0, 0.0, 6.9):
         go(pg, "plan", t)
-        items = pg.evaluate("""() => [...document.querySelectorAll('#measure [data-path], #count [data-path]')]
+        items = pg.evaluate("""() => [...document.querySelectorAll('#measure [data-path], #count [data-path], #top [data-path]')]
             .filter(e => __vis(e) && e.classList.contains('q')).map(e => [e.dataset.path, e.dataset.value, e.textContent])""")
         for path, value, text in items:
             seen += 1
@@ -979,7 +984,7 @@ def check_numbers(D: Data, browser, target: str) -> None:
             if not ok:
                 bad.append((path, value, text))
     R.check(
-        "numbers: every number in #measure and #count is the sidecar's at its path, shown at its"
+        "numbers: every number in #measure, #count and the title band is the sidecar's at its path, shown at its"
         " rounding; the match's cells are reliability.csv's (i = 0, 30, 99)",
         seen > 100 and not bad,
         f"{seen} checked; wrong {bad[:4]}",
@@ -1022,7 +1027,7 @@ LAYOUT_JS = """() => { const de = document.documentElement, b = document.body;
   const h1 = document.querySelector('h1');
   return {iw: innerWidth, ih: innerHeight, sw: Math.max(de.scrollWidth, b.scrollWidth), body: parseFloat(getComputedStyle(b).fontSize),
           canvas: r('pitch'), small, targets, top: r('top'), ctrl: r('controls'), play: r('play'), panel: r('panel'),
-          count: r('count'), h1: {h: h1.getBoundingClientRect().height, lh: parseFloat(getComputedStyle(h1).lineHeight),
+          count: r('count'), key: r('key'), thesis: r('thesis'), h1: {h: h1.getBoundingClientRect().height, lh: parseFloat(getComputedStyle(h1).lineHeight),
           sw: h1.scrollWidth, cw: h1.clientWidth}}; }"""
 
 
@@ -1085,9 +1090,22 @@ def check_layout(D: Data, browser, target: str, width: int, shots: Path) -> None
                 and one_line,
                 f"canvas {c['width']:.0f}x{c['height']:.0f}",
             )
+        k, s = m["key"], m["thesis"]
+        R.check(
+            f"{tag}: the key (vermilion defenders, blue receiving team) and the thesis under the"
+            " title on the first screen",
+            k["top"] >= 0
+            and k["bottom"] <= m["ih"]
+            and s["top"] >= 0
+            and s["bottom"] <= m["ih"]
+            and pg.evaluate(
+                "__vis(document.getElementById('key')) && __vis(document.getElementById('thesis'))"
+            ),
+            f"key {k['top']:.0f}..{k['bottom']:.0f}, thesis {s['top']:.0f}..{s['bottom']:.0f} of {m['ih']}",
+        )
         covers = [
             b
-            for b in ((m["panel"] if view == "plan" else None), m["count"], m["top"])
+            for b in ((m["panel"] if view == "plan" else None), m["count"], m["key"], m["top"])
             if b and meets(b, c)
         ]
         z = 0.0 if view == "plan" else BODY_H
@@ -1112,7 +1130,7 @@ def check_layout(D: Data, browser, target: str, width: int, shots: Path) -> None
                 }
                 tag_hit += sum(meets(tb, k) for k in covers)
         R.check(
-            f"{tag}: the title band, the counter{' and the panel' if view == 'plan' else ''} cover no"
+            f"{tag}: the title band, the counter, the key{' and the panel' if view == 'plan' else ''} cover no"
             " player and no tag in the 100 frames",
             not under and tag_hit == 0,
             f"players under them at frames {sorted(set(under))[:6]}; tags {tag_hit}",

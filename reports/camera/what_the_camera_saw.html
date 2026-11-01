@@ -86,17 +86,24 @@ h1{font-size:clamp(26px,2.6vw,38px);line-height:1.1;margin:0;font-weight:800;let
 .key b{color:var(--ink);font-weight:600;margin-right:2px}
 .key svg{flex:none}
 .key .note{color:var(--faint)}
+/* compact screens: the key as one line over the scene (the whole key closes the Story tab) */
+.keystrip{position:absolute;left:8px;top:8px;z-index:2;display:none;align-items:center;gap:4px 10px;margin:0;
+          padding:3px 8px;list-style:none;font-size:13px;line-height:1.3;color:var(--dim);background:var(--paper);
+          border:1px solid var(--line-2);pointer-events:none;white-space:nowrap}
+.keystrip li{display:flex;align-items:center;gap:3px}
+.count .note{display:block;font-size:13px;font-weight:400;color:var(--dim);margin-top:2px}
 .no-gl{position:absolute;inset:0;margin:0;padding:24px;display:flex;align-items:center;font-size:17px;
        background:var(--paper)}
 
 /* ------------------------------------------------------------ the control bar */
-.controls{grid-area:ctrl;min-width:0;background:var(--head);color:var(--on-head);padding:8px 16px 6px;
-          display:flex;flex-wrap:wrap;align-items:flex-start;gap:4px 12px}
+/* one row: Play, the scrubber, the view; the ticks' label runs under the row */
+.controls{grid-area:ctrl;min-width:0;background:var(--head);color:var(--on-head);padding:8px 16px 22px;
+          display:flex;flex-wrap:nowrap;align-items:flex-start;gap:12px}
 .controls :focus-visible{outline-color:#fff}
 .btn{flex:none;border:1px solid #fff;background:#fff;color:var(--ink);font-size:15px;font-weight:600;
-     padding:0 14px;border-radius:3px;cursor:pointer;min-width:76px;height:44px}
+     padding:0 12px;border-radius:3px;cursor:pointer;min-width:64px;height:44px}
 .btn[disabled],.seg button[disabled]{opacity:.4;cursor:default}
-.scrubwrap{flex:1 1 150px;min-width:150px;position:relative;padding-bottom:16px}
+.scrubwrap{flex:1 1 0;min-width:64px;position:relative}
 #scrub{-webkit-appearance:none;appearance:none;display:block;width:100%;height:var(--thumb);margin:0;
        background:transparent;cursor:pointer;--f:0}
 #scrub:disabled{opacity:.4;cursor:default}
@@ -112,26 +119,44 @@ h1{font-size:clamp(26px,2.6vw,38px);line-height:1.1;margin:0;font-weight:800;let
 .ticks{position:absolute;left:0;right:0;top:calc(var(--thumb) / 2 + 8px);height:22px;font-size:12px;
        color:var(--on-head-dim)}
 .tick{position:absolute;top:0;width:1px;height:6px;background:var(--on-head-dim)}
-.tick-label{position:absolute;top:6px;white-space:nowrap;line-height:1.2;transform:translateX(-4px)}
+.tick-label{position:absolute;top:16px;white-space:nowrap;line-height:1.2;transform:translateX(-4px)}
 .tick,.tick-label{left:calc(var(--f) * (100% - var(--thumb)) + var(--thumb) / 2)}
-.toggles{flex:none;display:flex;flex-wrap:wrap;gap:4px 12px}
 .seg{flex:none;display:flex;border:1px solid var(--on-head-rule);border-radius:3px;overflow:hidden}
 .seg button{background:transparent;border:0;color:#fff;font-size:15px;padding:0 12px;cursor:pointer;
             height:44px;min-width:44px;white-space:nowrap}
 .seg button + button{border-left:1px solid var(--on-head-rule)}
 .seg button[aria-pressed=true]{background:#fff;color:var(--ink);font-weight:600}
 .seg .long{display:none}
+/* the V0/V1 switch beside the readout, on paper */
+.seg.light{border-color:var(--ink)}
+.seg.light button{color:var(--ink)}
+.seg.light button + button{border-left-color:var(--ink)}
+.seg.light button[aria-pressed=true]{background:var(--ink);color:#fff}
 
 /* ------------------------------------------------------------ the panel */
 .panel{grid-area:panel;min-width:0;min-height:0;display:flex;flex-direction:column;background:var(--paper);
        border-left:1px solid var(--line-2)}
-.readout{flex:none;padding:8px var(--gutter) 8px;border-bottom:1px solid var(--line)}
+/* the readout: this match's means of the reception's two metrics, V0 against V1, with the switch.
+   Full (a landscape window 760 px high or more): a row per metric, its n under each mean; compact:
+   one short row per metric, V0 to V1, the switch beside them. */
+.readout{flex:none;display:grid;grid-template-columns:minmax(0,1fr) auto;grid-template-areas:"cap seg" "tab tab";
+         align-items:center;gap:2px 12px;padding:6px var(--gutter) 6px;border-bottom:1px solid var(--line)}
+.readout .rcap{grid-area:cap;margin:0;font-size:13px;color:var(--faint)}
+.readout .seg{grid-area:seg;justify-self:end}
+.readout .ptab{grid-area:tab}
 .ptab{border-collapse:collapse;width:100%}
 .ptab th,.ptab td{padding:1px 10px 1px 0;border:0;text-align:left;vertical-align:baseline;line-height:1.25;
                   font-variant-numeric:tabular-nums}
-.ptab tr.ref th{padding-top:6px;font-size:15px;font-weight:600}
+.ptab tr.ref th{padding-top:4px;font-size:15px;font-weight:600}
 .ptab tr.ref:first-child th{padding-top:0}
 .ptab tr.ref th span{font-size:13px;font-weight:400;color:var(--faint)}
+.ptab.compact th{font-size:14px;font-weight:600;padding-right:12px;white-space:nowrap}
+.ptab.compact td{font-size:14px;padding-right:6px;white-space:nowrap}
+.ptab.compact .num{display:inline;font-size:15px}
+.ptab.compact .on .num{font-size:15px}
+.readout.compact{grid-template-areas:"cap seg" "tab seg";row-gap:0;padding-top:5px;padding-bottom:5px}
+.readout.compact .rcap{line-height:1.2}
+.ptab.compact th,.ptab.compact td{line-height:1.25;padding-top:0;padding-bottom:0}
 .ptab .num{display:block;font-size:16px;color:var(--dim);font-weight:600;white-space:nowrap}
 .ptab .on .num{font-size:20px;font-weight:800;color:var(--ink)}
 .ptab .on.v1 .num{color:var(--green-ink)}
@@ -176,6 +201,21 @@ h1{font-size:clamp(26px,2.6vw,38px);line-height:1.1;margin:0;font-weight:800;let
 .chart .small{font-size:12px;fill:var(--faint)}
 .legend{display:flex;flex-wrap:wrap;gap:2px 12px;font-size:13px;color:var(--dim);margin:0 0 6px}
 .legend span{display:flex;align-items:center;gap:6px}
+.vtab{border-collapse:collapse;width:100%;margin:0 0 4px;font-size:15px;table-layout:fixed}
+.vtab col.g{width:38%}
+.vtab col.c{width:5.2em}
+.vtab th,.vtab td{padding:2px 8px 2px 0;text-align:left;vertical-align:top;line-height:1.3;border:0}
+.vtab thead th{font-size:13px;font-weight:600;color:var(--faint);white-space:nowrap}
+.vtab tbody th{font-size:14px}
+.vtab thead th.c,.vtab td.c{text-align:right;font-variant-numeric:tabular-nums;padding-right:0;padding-left:6px}
+.vtab tbody th{font-weight:700;color:var(--ink);padding-right:10px}
+.vtab tr.first > *{border-top:1px solid var(--line);padding-top:4px}
+.vtab caption{caption-side:bottom;text-align:left;font-size:13px;color:var(--faint);padding-top:4px}
+ol.conclusions{padding-left:20px;margin:12px 0 8px}
+ol.conclusions li{margin:0 0 8px}
+.more{color:var(--dim)}
+.tabpanel .thesis{color:var(--ink);margin:0 0 12px;padding-bottom:10px;border-bottom:1px solid var(--line)}
+.more a{display:inline-block;padding:11px 0;margin:-11px 0}
 ol.limits{padding-left:22px;margin:0}
 ol.limits li{margin:0 0 10px;color:var(--dim)}
 code{font-family:var(--mono);font-size:15px;overflow-wrap:anywhere}
@@ -184,41 +224,57 @@ code{font-family:var(--mono);font-size:15px;overflow-wrap:anywhere}
            font-size:13px;line-height:1.45;white-space:pre-wrap;overflow-wrap:anywhere;margin:0}
 .about a{display:inline-block;padding:11px 0}
 
-@media (orientation:landscape) and (min-width:1200px) and (min-height:561px){.seg .long{display:inline}}
-/* portrait: header, stage, controls, tabs */
+@media (orientation:landscape) and (min-width:1200px) and (min-height:760px){.readout .seg .long{display:inline}}
+/* portrait: header, stage, controls, tabs; the tab list first in the panel, then the readout,
+   then a body of a fixed share of the screen; the stage takes what is left */
 @media (orientation:portrait){
-  .app{grid-template-columns:minmax(0,1fr);grid-template-rows:auto minmax(0,1.15fr) auto minmax(0,1fr);
+  .app{grid-template-columns:minmax(0,1fr);grid-template-rows:auto minmax(0,1fr) auto auto;
        grid-template-areas:"head" "stage" "ctrl" "panel"}
   .panel{border-left:0}
-}
-/* a short landscape window (a phone held sideways): the header heads the panel's column */
-@media (orientation:landscape) and (max-height:560px){
-  .app{grid-template-areas:"stage head" "stage panel" "ctrl panel"}
-}
-/* compact (either of the two): the title over the thesis; the key and the V0/V1 readout open the
-   Story tab; the counter on one line */
-@media (orientation:portrait),(max-height:560px){
+  .tablist{order:-1}
+  .tabpanel{flex:none;height:max(160px,25vh)}
   .top{display:block;padding:8px 16px 10px}
-  .eyebrow{display:none}
   h1{font-size:min(24px,7vw)}
-  .thesis{font-size:16px;margin-top:2px}
+  .thesis{margin-top:2px}
+}
+/* compact (portrait, or a window under 561 px high): no eyebrow, a smaller title, the key as a
+   strip over the scene and whole at the end of Story, the counter on one line */
+@media (orientation:portrait),(max-height:560px){
+  .eyebrow{display:none}
+  .thesis{font-size:16px}
   .tablist{padding:0}
   .tab{padding:0 4px;font-size:14px}
   .tabpanel{padding:12px 16px 16px}
-  .tabpanel .key{padding:0;border:0;background:none;font-size:14px;margin:0 0 10px}
-  .readout{padding:0 0 8px;margin:0 0 12px;border-bottom:1px solid var(--line)}
+  .tabpanel .key{padding:10px 0 0;border:0;border-top:1px solid var(--line);background:none;font-size:14px;margin:14px 0 0}
+  .keystrip{display:flex}
+  .readout{padding-left:16px;padding-right:16px}
   .foot{left:8px;right:8px;bottom:8px}
   .count{padding:3px 8px;flex:0 1 auto}
-  .count div{display:inline}
-  .count .clock{margin-left:6px}
+  .count > div:first-child{display:inline}
+  .count .clock{display:inline;margin-left:6px}
   .count .n,.count.big .n{font-size:20px}
-  .controls{padding:6px 12px 4px}
+  .controls{padding:6px 12px 22px;gap:8px}
+  .btn{min-width:56px;padding:0 8px}
+  .seg button{padding:0 9px;font-size:14px}
 }
-/* a short portrait screen: the stage takes more of what the header and the controls leave */
+@media (orientation:landscape) and (max-height:560px){
+  .top{padding:6px 16px 8px}
+  h1{font-size:22px}
+}
+/* a short screen (640 px high or less): the stage keeps its height, the key closes the Story tab */
+@media (max-height:640px){.keystrip{display:none}}
 @media (orientation:portrait) and (max-height:640px){
-  .app{grid-template-rows:auto minmax(0,1.45fr) auto minmax(0,1fr)}
+  .tick-label{display:none}
+  .controls{padding-bottom:6px}
 }
-@media (max-width:360px){.count .wd{display:none}}
+@media (max-width:420px){
+  .tab{padding:0 2px;font-size:13px}
+}
+@media (max-width:340px){.tab .n20{display:none}}
+@media (max-width:360px){
+  .count .wd{display:none}
+  .controls .seg button{padding:0 7px;font-size:13px}
+}
 </style>
 </head>
 <body>
@@ -233,10 +289,12 @@ code{font-family:var(--mono);font-size:15px;overflow-wrap:anywhere}
   <section class="stage" id="stage" aria-label="the reception">
     <canvas id="pitch" role="img" aria-label="one reception, twenty-two players and the camera's frame on the pitch"></canvas>
     <div class="tags" id="tags" aria-hidden="true"></div>
+    <ul class="keystrip" id="keystrip" aria-hidden="true"></ul>
     <div class="foot" id="foot">
       <div class="count" id="count" aria-live="off">
         <div><span class="n" id="count-n"></span> <span class="w" id="count-w"></span></div>
         <div class="clock" id="clock"></div>
+        <div class="note" id="count-note"></div>
       </div>
       <ul class="key" id="key" aria-label="key"></ul>
     </div>
@@ -253,31 +311,37 @@ code{font-family:var(--mono);font-size:15px;overflow-wrap:anywhere}
       <input type="range" id="scrub" min="0" step="1" value="0" aria-label="time in the clip">
       <div class="ticks" id="ticks"></div>
     </div>
-    <div class="toggles">
-      <div class="seg" role="group" aria-label="camera">
-        <button id="view-broadcast" type="button" aria-pressed="true">Broadcast</button>
-        <button id="view-plan" type="button" aria-pressed="false">Top-down</button>
-      </div>
-      <div class="seg" role="group" aria-label="variant">
-        <button id="variant-v0" type="button" aria-pressed="true">V0<span class="long"> every unit</span></button>
-        <button id="variant-v1" type="button" aria-pressed="false">V1<span class="long"> seen throughout</span></button>
-      </div>
+    <div class="seg" role="group" aria-label="camera">
+      <button id="view-broadcast" type="button" aria-pressed="true">Broadcast</button>
+      <button id="view-plan" type="button" aria-pressed="false">Top-down</button>
     </div>
     <p class="sr" id="stage-caption" aria-live="polite"></p>
   </div>
 
   <aside class="panel" id="panel" aria-label="the measures">
     <div class="readout" id="readout">
-      <table class="ptab" id="panel-table" aria-label="line depth and block length of this match, V0 and V1"></table>
+      <p class="rcap" id="readout-cap"></p>
+      <div class="seg light" role="group" aria-label="variant">
+        <button id="variant-v0" type="button" aria-pressed="true">V0<span class="long"> every unit</span></button>
+        <button id="variant-v1" type="button" aria-pressed="false">V1<span class="long"> seen throughout</span></button>
+      </div>
+      <table class="ptab" id="panel-table" aria-label="this match's mean line depth and block length, V0 and V1"></table>
     </div>
     <div class="tablist" id="tablist" role="tablist" aria-label="the measures">
-      <button class="tab" role="tab" type="button" id="tab-story" data-tab="story" aria-controls="tp-story" aria-selected="true">Story</button>
+      <button class="tab" role="tab" type="button" id="tab-findings" data-tab="findings" aria-controls="tp-findings" aria-selected="true">Findings</button>
+      <button class="tab" role="tab" type="button" id="tab-story" data-tab="story" aria-controls="tp-story" aria-selected="false" tabindex="-1">Story</button>
       <button class="tab" role="tab" type="button" id="tab-metrics" data-tab="metrics" aria-controls="tp-metrics" aria-selected="false" tabindex="-1">Metrics</button>
-      <button class="tab" role="tab" type="button" id="tab-matches" data-tab="matches" aria-controls="tp-matches" aria-selected="false" tabindex="-1"><span id="tab-matches-n"></span> matches</button>
+      <button class="tab" role="tab" type="button" id="tab-matches" data-tab="matches" aria-controls="tp-matches" aria-selected="false" tabindex="-1"><span class="n20"><span id="tab-matches-n"></span> </span>matches</button>
       <button class="tab" role="tab" type="button" id="tab-camera" data-tab="camera" aria-controls="tp-camera" aria-selected="false" tabindex="-1">Camera</button>
       <button class="tab" role="tab" type="button" id="tab-limits" data-tab="limits" aria-controls="tp-limits" aria-selected="false" tabindex="-1">Limits</button>
     </div>
-    <div class="tabpanel" role="tabpanel" id="tp-story" aria-labelledby="tab-story" tabindex="0">
+    <div class="tabpanel" role="tabpanel" id="tp-findings" aria-labelledby="tab-findings" tabindex="0">
+      <h2>What the camera does to seven metrics</h2>
+      <table class="vtab" id="verdict"></table>
+      <ol class="conclusions" id="conclusions"></ol>
+      <p class="more" id="more"></p>
+    </div>
+    <div class="tabpanel" role="tabpanel" id="tp-story" aria-labelledby="tab-story" tabindex="0" hidden>
       <h2>Keep only what the camera saw whole</h2>
       <p id="lead"></p>
       <p id="context"></p>
@@ -80360,8 +80424,9 @@ const E = D.entities, CAM = D.camera, U = D.units, FS = D.frame_stats;
 const STILL = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
 /* Timing, typed: storyboard 2.6, not data. Clip seconds per wall second, the freeze before the
-   rise, the rise, the measures' fade-in, the longest wall step one frame may take. */
-const RATE = 1.0, HOLD_S = 0.6, FLIGHT_S = 1.5, FADE_S = STILL ? 0 : 0.4;
+   rise (two seconds, long enough to read the frozen reception), the rise, the measures' fade-in,
+   the longest wall step one frame may take. */
+const RATE = 1.0, HOLD_S = 2.0, FLIGHT_S = 1.5, FADE_S = STILL ? 0 : 0.4;
 const STEP_MAX = 250;
 
 /* The pitch, drawn: the geometry of ac2fb.clip's pitch (metres) and the apron past its lines. */
@@ -80378,28 +80443,32 @@ const DISC_R = 1.1, EDGE_W = 0.18, HOLLOW_W = 0.35, ME_R = 0.95, ME_RING = [1.15
 const MATE_R = 0.55, MATE_W = 0.2, BALL_DISC = 0.45;
 const BODY_H = 1.8, BODY_R = 0.35, RING = [0.5, 0.75], BALL_R = 0.5;
 const FRAME_W = 0.3, OUTSIDE = 0.65, UNIT_RING = [1.55, 1.75];
-/* Opacities, drawn: a filled-in body in broadcast, a filled-in marker in V1 and its tag, a unit
-   read at another time than now. */
-const GHOST = 0.25, V1_FADE = 0.35, TAG_FADE = 0.5, OFF_TICK = 0.5;
+/* Opacities, drawn: a filled-in body in broadcast (its ring on the grass stays whole: hollow), a
+   filled-in marker or body in V1 and its tag, a unit read at another time than now. */
+const GHOST = 0.4, V1_FADE = 0.35, TAG_FADE = 0.5, OFF_TICK = 0.5;
 /* The broadcast camera (storyboard 2.4): over the point where the frame's side edges meet, at
    the drawn height of the sidecar, heading straight across the pitch with no roll. One fit for
    the whole clip: the tightest field of view that holds the clipped frame (the window the camera
    saw), the defenders near it (feet and head), the receiver and the ball inside the canvas less
    FRAME_MARGIN of it on each side, with the lowest of them BOTTOM above the bottom edge (a share
    of the canvas) and the spare height on top (and the lowest clears the counter and the key);
-   the tilt is the one that needs the least field of view, and where the width decides that, the
-   one up to TILT_MAX whose content fills the most height. A defender is near when he comes
+   among the tilts up to TILT_MAX that need at most FIT_SLACK times the least field of view, the
+   one whose content fills the most of the canvas's height: a canvas wider than the window gets
+   it at the least field of view, a squarer one looks further down and leaves no band of empty
+   sky (the bodies then lean, as a camera's do when it looks down); on a portrait screen, the one
+   that draws the bodies tallest. A defender is near when he comes
    within FIT_REACH metres of the window in some frame of the clip; one who never does is left
    out of the fit and his tag waits at the canvas's edge, an arrow toward him. The frame slides
    sideways and up or down (a lens shift) and the rise takes the shift back to zero. FOV_PLAN:
    the narrowest field of view the rise reaches before the swap to the orthographic camera.
    Degrees. */
-const FRAME_MARGIN = 0.03, BOTTOM = 0.06, FOV_PLAN = 2, TILT_MAX = 45, FIT_REACH = 20;
-const DEG = Math.PI / 180;
+const FRAME_MARGIN = 0.03, BOTTOM = 0.06, FOV_PLAN = 2, TILT_MAX = 75, FIT_SLACK = 2, FIT_REACH = 20;
+const DEG = Math.PI / 180, SCENE_R = 160, ENVELOPE_PAD = 2.5;
 
-/* Figure 1's palette (ac2fb.figures) and the clip's pitch (ac2fb.clip). */
+/* Figure 1's palette (ac2fb.figures) and the clip's pitch (ac2fb.clip), its lines darkened so they
+   hold 3:1 on the grass and in the shade outside the frame. */
 const C = {vermilion: "#D55E00", blue: "#0072B2", green: "#009E73", ink: "#222222", grey: "#777777",
-           white: "#FFFFFF", grass: "#F1F5EC", lines: "#8A9A83", sky: "#DFE3DA"};
+           white: "#FFFFFF", grass: "#F1F5EC", lines: "#70806B", sky: "#DFE3DA"};
 
 /* ------------------------------------------------------------------ helpers */
 const at = id => document.getElementById(id);
@@ -80519,8 +80588,8 @@ const WORLD = [S, 0, 0, 0, 0, 0, -S, 0, 0, 1, 0, 0, 0, 0, 0, 1];   // clip frame
 const V = (x, y, z = 0) => new THREE.Vector3(S * x, z, -S * y);
 const G = (x, y) => [S * x, -S * y];                              // clip (x, y) -> world floor (X, Z)
 
-const st = {tau: 0, phase: "idle", view: "broadcast", p: 0, variant: "V0", risen: false, tab: "story", camTab: false};
-const size = {w: 0, h: 0, compact: false, region: null, foot: null};
+const st = {tau: 0, phase: "idle", view: "broadcast", p: 0, variant: "V0", risen: false, tab: "findings", camTab: false};
+const size = {w: 0, h: 0, compact: false, band: 0, region: null, foot: null};
 let scene3, persp, ortho, active, current = null, hover = null;
 let playRaf = 0, playLast = null, holdTimer = 0, flyRaf = 0, flyLast = null, fadeRaf = 0, booting = false;
 let bodies = [], marks = [], groundRings = [], ball3, ballShadow, ballMark, shade, frameTris, frameDash;
@@ -80706,7 +80775,11 @@ function heldPoints() {
   const pts = [];
   for (let i = 0; i < N; i++) {
     for (const p of clipFrame(CAM.corners[i])) pts.push(V(p.x, p.y, 0));
-    for (const xy of [...E.rivals.xy[i].filter((_, k) => NEAR[k]), E.me.xy[i]]) pts.push(V(xy[0], xy[1], 0), V(xy[0], xy[1], BODY_H));
+    for (const xy of [...E.rivals.xy[i].filter((_, k) => NEAR[k]), E.me.xy[i]]) {
+      const feet = V(xy[0], xy[1], 0);
+      feet.body = true;                                // the next point is the head
+      pts.push(feet, V(xy[0], xy[1], BODY_H));
+    }
     pts.push(V(E.ball.xy[i][0], E.ball.xy[i][1], Math.max(E.ball.z[i], BALL_R)));
   }
   HELD = pts;
@@ -80716,33 +80789,37 @@ function heldPoints() {
     the frame's side edges meet (the clip's median) at the drawn height, heading across the pitch,
     the tilt and field of view of the tightest fit, and its lens shifts. */
 function shot() {
-  const key = `${size.w}x${size.h}:${size.foot.y}`;
+  const key = `${size.w}x${size.h}:${size.foot.y}:${size.band}`;
   if (look && look.key === key) return look;
   const eye = V(CAM.apex_median[0], CAM.apex_median[1], CAM.drawn_height_m);
   const head = eye.z > 0 ? -1 : 1;                    // toward the pitch, along world Z
   const A = size.w / size.h, inner = 1 - 2 * FRAME_MARGIN;
-  const roof = inner;
+  const roof = inner - 2 * size.band / size.h;
   const floor = -1 + 2 * Math.max(BOTTOM, (size.h - size.foot.y + 6) / size.h);
   const pts = heldPoints();
   const need = th => {
     const s = Math.sin(th), c = Math.cos(th);
-    let u0 = Infinity, u1 = -Infinity, v0 = Infinity, v1 = -Infinity;
+    let u0 = Infinity, u1 = -Infinity, v0 = Infinity, v1 = -Infinity, bodies = 0, n = 0, feetV = null;
     for (const P of pts) {
       const dx = P.x - eye.x, dy = P.y - eye.y, dz = (P.z - eye.z) * head;   // dz > 0: ahead
       const depth = dz * c - dy * s, yc = dy * c + dz * s;
       if (depth <= 0.1) return {t: Infinity};
       const u = -head * dx / depth, v = yc / depth;
       u0 = Math.min(u0, u); u1 = Math.max(u1, u); v0 = Math.min(v0, v); v1 = Math.max(v1, v);
+      // a body's height on the image: its head's v less its feet's (the point after the feet)
+      if (feetV !== null) { bodies += v - feetV; n++; feetV = null; } else if (P.body) feetV = v;
     }
-    const tv = (v1 - v0) / (roof - floor);
-    return {t: Math.max((u1 - u0) / (2 * A * inner), tv), tv, u0, u1, v0, v1};
+    const tv = (v1 - v0) / (roof - floor), t = Math.max((u1 - u0) / (2 * A * inner), tv);
+    return {t, tv, u0, u1, v0, v1, body: bodies / Math.max(n, 1) / t};
   };
-  // the least field of view; where the width decides it, the tilt (up to TILT_MAX) whose content
-  // fills the most height
+  // among the tilts within FIT_SLACK of the least field of view: on a landscape stage the one whose
+  // content fills the most of the canvas's height; on a portrait screen, where the scene is small
+  // and the camera's side the second view, the one that draws the bodies tallest
   const all = [];
   for (let d = 2; d <= TILT_MAX; d += 0.1) all.push(Object.assign(need(d * DEG), {th: d * DEG}));
   const least = Math.min(...all.map(r => r.t));
-  const best = all.filter(r => r.t <= least * 1.002).sort((a, b) => b.tv - a.tv)[0];
+  const score = PORTRAIT.matches ? r => r.body : r => r.tv / r.t;
+  const best = all.filter(r => r.t <= least * FIT_SLACK).sort((a, b) => score(b) - score(a))[0];
   const t = best.t, th = best.th;
   const sx = -(best.u0 + best.u1) / 2 / (A * t);
   const sy = floor - best.v0 / t;
@@ -80766,17 +80843,54 @@ function farZ() {
   }
   return FAR_Z;
 }
+/** World floor box (X, Z) of what a portrait plan holds: the defenders near the window, the
+    receiver and the ball over the clip, and the line, ENVELOPE_PAD metres clear. A defender far
+    from the window (the keeper here) is left out and tagged at the edge; a teammate outside the
+    box may fall off the stage or under the counter. */
+let ENV = null;
+function envelope() {
+  if (ENV) return ENV;
+  const xs = [S * U.line.value], zs = [];
+  for (let i = 0; i < N; i++) {
+    for (const p of [...E.rivals.xy[i].filter((_, k) => NEAR[k]), E.me.xy[i], E.ball.xy[i]]) {
+      const g = G(p[0], p[1]);
+      xs.push(g[0]);
+      zs.push(g[1]);
+    }
+  }
+  ENV = {x0: Math.min(...xs) - ENVELOPE_PAD, x1: Math.max(...xs) + ENVELOPE_PAD,
+         z0: Math.min(...zs) - ENVELOPE_PAD, z1: Math.max(...zs) + ENVELOPE_PAD};
+  return ENV;
+}
+/** The world depth (Z) of the block's bracket: under the near touchline, or on a portrait screen
+    just under the envelope, where the stage still shows it. */
+const bracketZ = () => (PORTRAIT.matches ? envelope().z1 + 1 : HALF_W + 3);
 /** The orthographic frame that contains the crop in the canvas's free region ("contain"); with
-    the Camera tab open, also where the frame's side edges meet and its near corners. */
+    the Camera tab open, also where the frame's side edges meet and its near corners. On a
+    portrait screen, the envelope (and with the Camera tab, the median point the side edges meet). */
 function planFrame() {
   const R = size.region;
-  const xs = D.crop.x.map(x => S * x), zs = D.crop.y.map(y => -S * y);
-  // the bracket of the block sits under the near touchline, the far edge over the far one
-  zs.push(HALF_W + bracketGap() + 1.5, ...farZ());
-  if (st.camTab) {
-    for (const p of [...CAM.apex, ...CAM.corners.flatMap(c => [c[0], c[1]])]) {
-      xs.push(S * p[0]);
-      zs.push(-S * p[1] + 2 * Math.sign(-S * p[1]));
+  let xs, zs;
+  if (PORTRAIT.matches && st.camTab) {
+    // the Camera tab on a portrait screen: the frame's near edge over the clip and where its side
+    // edges meet (the median point), the players above it out of the view
+    xs = [S * CAM.apex_median[0]];
+    zs = [-S * CAM.apex_median[1] + 3];
+    for (const c of CAM.corners) for (const p of [c[0], c[1]]) { xs.push(S * p[0]); zs.push(-S * p[1] - 6); }
+  } else if (PORTRAIT.matches) {
+    const env = envelope();
+    xs = [env.x0, env.x1];
+    zs = [env.z0, bracketZ() + 1.5];
+  } else {
+    xs = D.crop.x.map(x => S * x);
+    zs = D.crop.y.map(y => -S * y);
+    // the bracket of the block sits under the near touchline, the far edge over the far one
+    zs.push(bracketZ() + 1.5, ...farZ());
+    if (st.camTab) {
+      for (const p of [...CAM.apex, ...CAM.corners.flatMap(c => [c[0], c[1]])]) {
+        xs.push(S * p[0]);
+        zs.push(-S * p[1] + 2 * Math.sign(-S * p[1]));
+      }
     }
   }
   const X0 = Math.min(...xs), X1 = Math.max(...xs), Z0 = Math.min(...zs), Z1 = Math.max(...zs);
@@ -80785,7 +80899,6 @@ function planFrame() {
   return {halfW: size.w / 2 / k, halfH: size.h / 2 / k, k,
           centre: new THREE.Vector3((X0 + X1) / 2 + (size.w / 2 - rx) / k, 0, (Z0 + Z1) / 2 + (size.h / 2 - ry) / k)};
 }
-const bracketGap = () => 3;
 /** The camera at progress p of the rise (0 broadcast, 1 plan). Tilt only: the broadcast camera
     heads straight across the pitch and the plan's up is that heading, so nothing turns on screen.
     The field of view narrows as the distance grows, holding the frame near its final size, and at
@@ -80813,9 +80926,12 @@ function placeCamera(p) {
   const target = sh.target.clone().lerp(frame.centre, e);
   persp.fov = 2 * Math.atan(tanE) / DEG;
   persp.aspect = size.w / size.h;
-  persp.near = Math.max(0.5, dist - 400);
-  persp.far = dist + 400;
   persp.position.set(target.x, target.y + Math.sin(th) * dist, target.z - sh.head * Math.cos(th) * dist);
+  // the depth range holds the scene (the pitch, its apron and the camera's point, within SCENE_R
+  // metres of the centre), wherever the look-at point lies: a shallow tilt aims far beyond it
+  const reach = persp.position.length();
+  persp.near = Math.max(0.5, reach - SCENE_R);
+  persp.far = reach + SCENE_R;
   persp.up.set(0, 1 - e, sh.head * e).normalize();
   persp.lookAt(target);
   persp.setViewOffset(size.w, size.h, -sh.sx * (1 - e) * size.w / 2, sh.sy * (1 - e) * size.h / 2, size.w, size.h);
@@ -80831,13 +80947,13 @@ function placeCamera(p) {
    every drawn frame places them in a fixed order, each at the cheapest of eight directions by
    TAG_GAPS around its anchor whose box stays in the free region, keeps TAG_PAD pixels from every
    tag placed before it, from the ball, the counter and the key, and covers no player's anchor;
-   failing all, the spot that covers the fewest, but never another tag: a tag with no free place
-   left (a small stage) is hidden. The measures go first. A defender whose anchor falls outside the canvas
+   failing all, the spot that covers the fewest players, but never another tag or the ball: a tag
+   with no such place left (a small stage) is hidden. The measures go first. A defender whose anchor falls outside the canvas
    (one the fit leaves out, seen or filled in) has his tag on that edge, with no leader and an
    arrow toward him, at the first place along the edge from his own that clears the tags placed
    before it; a seen defender inside the canvas has no tag. In V1 the tags of the faded markers
    fade too. Pixels and degrees. */
-const TAG_GAPS = [5, 12, 22, 34, 48, 64, 84, 108, 136], TAG_TURN = 10, TAG_PAD = 3;
+const TAG_GAPS = [5, 12, 22, 34, 48, 64, 84], TAG_TURN = 10, TAG_PAD = 3;
 const ARROW = {left: ["← ", ""], right: ["", " →"], top: ["↑ ", ""], bottom: ["", " ↓"]};
 const tagLayer = at("tags");
 let tags = [];
@@ -80879,9 +80995,10 @@ function spotsOf(t) {
 function tagContent(t, P, inPlan, ix) {
   const k = t.k;
   if (t.kind === "rival") {
+    if (inPlan && st.camTab) return null;              // the Camera tab is about the frame
     const seen = E.rivals.detected[ix][k];
     return {text: (RIV[k] === KEEPER ? "GK " : "") + (seen ? "seen" : sec(E.rivals.gap[ix][k])), xy: P.rivals[k],
-            seen, faded: inPlan && st.variant === "V1" && !seen};
+            seen, faded: st.variant === "V1" && !seen};
   }
   if (t.kind === "me") return {text: "receiver", xy: P.me};
   if (!inPlan) return null;
@@ -80889,13 +81006,12 @@ function tagContent(t, P, inPlan, ix) {
     if (!st.camTab) return null;
     return {text: `where the side edges meet:\nthe virtual camera, ${CAM.drawn_height_m.toFixed(0)} m up`, xy: CAM.apex[ix], fixed: true};
   }
+  if (st.camTab) return null;                      // the Camera tab: the camera's point is the subject
+  // short on the pitch: what each is (this reception, the phase's start, V1 or not) is the counter's
   const u = U[t.unit], v1 = st.variant === "V1";
-  const off = v1 ? `
-not a V1 unit: ${u.seen.filter(Boolean).length} of ${u.seen.length} seen` : "";
-  if (t.unit === "line") return {text: `line depth ${num(u.value)} m${off}`, xy: [u.value, S * (HALF_W - 1)], fixed: true, off: v1};
+  if (t.unit === "line") return {text: `line ${num(u.value)} m`, xy: [u.value, S * (HALF_W - 1)], fixed: true, off: v1};
   const mid = (u.x[0] + u.x[1]) / 2;
-  const at0 = (size.w < 480 ? "\n" : " ") + "at the phase's start";
-  return {text: `block length ${num(u.value)} m${at0}${off}`, xy: [mid, -S * (HALF_W + bracketGap())], fixed: true, off: v1};
+  return {text: `block ${num(u.value)} m`, xy: [mid, -S * bracketZ()], fixed: true, off: v1};
 }
 /** The canvas's edge an anchor lies beyond, or "". */
 function edgeOf(a) {
@@ -80919,12 +81035,13 @@ function placeTags() {
   const apart = (b, o) => b.x >= o.x + o.w + TAG_PAD || o.x >= b.x + b.w + TAG_PAD
                        || b.y >= o.y + o.h + TAG_PAD || o.y >= b.y + b.h + TAG_PAD;
   const covers = (b, p) => p[0] > b.x - TAG_PAD && p[0] < b.x + b.w + TAG_PAD && p[1] > b.y - TAG_PAD && p[1] < b.y + b.h + TAG_PAD;
-  const F = inPlan ? size.region : {x0: 0, x1: size.w, y0: 0, y1: size.h};
+  const F = inPlan ? size.region : {x0: 0, x1: size.w, y0: size.band, y1: size.h};
   // the counter's and the key's boxes as they are now (the counter's text changes with the frame)
   const placed = ["count", "key"].map(onStage).filter(Boolean);
   for (const t of tags) {
     const c = st.view === "rising" ? null : tagContent(t, P, inPlan, ix);
-    const a = c ? project(c.xy[0], c.xy[1], c.fixed ? 0 : z) : null;
+    let a = c ? project(c.xy[0], c.xy[1], c.fixed ? 0 : z) : null;
+    if (c && c.fixed) a = [clamp(a[0], F.x0 + 4, F.x1 - 4), clamp(a[1], F.y0 + 4, F.y1 - 4)];
     const edge = c && t.kind === "rival" ? edgeOf(a) : "";
     const show = c !== null && !(c.seen && !edge);
     t.node.hidden = !show;
@@ -80964,7 +81081,7 @@ function placeTags() {
       const b = {x: clamp(a[0] + s.dx, F.x0 + 2, F.x1 - t.w - 2), y: clamp(a[1] + s.dy, F.y0 + 2, F.y1 - t.h - 2), w: t.w, h: t.h};
       const n = nearest(b, ball);
       let bad = placed.some(o => !apart(b, o)) ? 1000 : 0;
-      if (Math.hypot(n[0] - ball[0], n[1] - ball[1]) < ballR) bad += 100;
+      if (Math.hypot(n[0] - ball[0], n[1] - ball[1]) < ballR) bad += 1000;
       for (const p of people) if (covers(b, p)) bad += 10;
       if (!best || bad < best.bad) best = {b, bad};
       if (!bad) break;
@@ -81027,7 +81144,7 @@ function drawUnits(P) {
   lineTris.mat.color.set(v1 ? C.grey : C.ink);
   lineTris.mat.opacity = lineOn * fadeK;
   // the bracket: between the two players who fix the block's length at the phase's start
-  const y = -S * (HALF_W + bracketGap()), x0 = Math.min(...bu.x), x1 = Math.max(...bu.x);
+  const y = -S * bracketZ(), x0 = Math.min(...bu.x), x1 = Math.max(...bu.x);
   const p0 = G(x0, y), p1 = G(x1, y);
   if (v1) dashed(bracketTris, p0, p1, 0.25, 0.4, 0.9); else segment(bracketTris, p0, p1, 0.3);
   for (const [tip, dir] of [[p0, 1], [p1, -1]]) {
@@ -81095,11 +81212,13 @@ function drawAt(tau, draw = true) {
       if (!there) continue;
       B.body.scale.y = Math.max(1 - e, 1e-3);
       B.body.position.copy(V(xy[0], xy[1], BODY_H / 2 * B.body.scale.y));
-      B.body.material.opacity = (seen ? 1 : GHOST) * (1 - e);
+      // filled in: a ghost over a whole ring (hollow); in V1, a fainter ghost and ring
+      const keep = seen ? 1 : st.variant === "V1" ? V1_FADE : 1;
+      B.body.material.opacity = (seen ? 1 : GHOST) * keep * (1 - e);
       B.body.material.depthWrite = seen;
       B.gr.position.copy(V(xy[0], xy[1], 0));
       B.gd.position.copy(V(xy[0], xy[1], 0));
-      B.gr.material.opacity = B.gd.material.opacity = 1 - e;
+      B.gr.material.opacity = B.gd.material.opacity = keep * (1 - e);
       B.gd.visible = B.gd.visible && seen;
     }
     for (const M of marks) {
@@ -81135,7 +81254,8 @@ function drawAt(tau, draw = true) {
   scrub.style.setProperty("--f", String(ix / (N - 1)));
   scrub.setAttribute("aria-valuetext", `t = ${signed((ix - KEY) / FPS)} s`);
 }
-function drawCount(ix) {
+/** The counter at frame ix; `tallest` writes its longest note whatever the view, to measure it. */
+function drawCount(ix, tallest = false) {
   const k = D.key.defenders_extrapolated_by_frame[ix];
   at("count-n").innerHTML = `<span class="q" data-path="key.defenders_extrapolated_by_frame.${ix}" data-value="${k}">${k}</span> of `
     + `<span class="q" data-path="n_defenders" data-value="${D.n_defenders}">${D.n_defenders}</span>`;
@@ -81144,6 +81264,13 @@ function drawCount(ix) {
   at("clock").innerHTML = `<span class="q" data-path="frames.${ix}" data-value="${D.frames[ix]}">${plus(rel)} s</span>`
     + (ix === KEY ? " RECEPTION" : "");
   at("count").classList.toggle("big", ix === KEY);
+  // in plan, what the line and the block on the pitch are: this reception's, and V1 units or not
+  const lu = U.line, bu = U.block, seen = u => `${u.seen.filter(Boolean).length} of ${u.seen.length}`;
+  const plan = tallest || st.view === "plan";
+  at("count-note").textContent = !plan ? ""
+    : tallest || st.variant === "V1" ? `pitch: this reception, not V1 units (${seen(lu)} and ${seen(bu)} seen)`
+      : "pitch: this reception; the block at its phase's start";
+  at("count-note").hidden = !plan;
 }
 
 /* ==========================================================================
@@ -81179,7 +81306,7 @@ function tick(now) {
     syncUI();
     if (stops) {
       st.risen = true;
-      if (st.view === "broadcast") holdTimer = setTimeout(() => { holdTimer = 0; rise(true); }, HOLD_S * 1000);
+      if (st.view === "broadcast") holdTimer = setTimeout(() => { holdTimer = 0; mark("hold"); rise(true); }, HOLD_S * 1000);
     }
     return;
   }
@@ -81261,7 +81388,7 @@ function syncUI() {
 /* The tabs (ARIA tabs, activated on focus): a click or tap, or the arrow keys, Home and End on the
    tab list. Opening Camera takes the scene to the top-down view, framed to hold where the frame's
    side edges meet; leaving it frames the reception again. */
-const TABS = ["story", "metrics", "matches", "camera", "limits"];
+const TABS = ["findings", "story", "metrics", "matches", "camera", "limits"];
 function selectTab(name, focus = false) {
   if (!TABS.includes(name)) return false;
   for (const n of TABS) {
@@ -81337,7 +81464,7 @@ const api = {
   variant(name) {
     if (st.view === "rising" || (name !== "V0" && name !== "V1")) return false;
     st.variant = name;
-    if (st.view === "plan") drawAt(st.tau);
+    drawAt(st.tau);                      // V1 dims the filled-in bodies in broadcast too
     syncUI();
     return true;
   },
@@ -81382,7 +81509,8 @@ const api = {
     const hit = ray.ray.intersectPlane(new THREE.Plane(new THREE.Vector3(0, 1, 0), 0), new THREE.Vector3());
     return hit ? [S * hit.x, -S * hit.z] : null;
   },
-  colours: {defender: C.vermilion, team: C.blue, ring: C.ink, ball: C.ink, line: C.ink, bracket: C.grey},
+  colours: {defender: C.vermilion, team: C.blue, ring: C.ink, ball: C.ink, line: C.ink, bracket: C.grey,
+            pitchLines: C.lines, grass: C.grass, outside: OUTSIDE, ghost: GHOST},
 };
 window.camera = api;
 
@@ -81393,7 +81521,20 @@ viewP.addEventListener("click", () => api.view("plan"));
 varV0.addEventListener("click", () => api.variant("V0"));
 varV1.addEventListener("click", () => api.variant("V1"));
 scrub.addEventListener("input", () => api.seek((Number(scrub.value) - KEY) / FPS));
-document.addEventListener("visibilitychange", () => { playLast = null; flyLast = null; });
+// a hidden tab draws no frame: on return the clip and the rise resume where they were, and the
+// time away is counted as lost on the page's clock, not as a new start
+let hiddenAt = null;
+document.addEventListener("visibilitychange", () => {
+  if (document.hidden) { hiddenAt = performance.now(); return; }
+  if (hiddenAt === null) return;
+  const away = performance.now() - hiddenAt, since = hiddenAt;
+  hiddenAt = null;
+  // only when no frame was drawn while hidden (a browser may draw one more before it stops)
+  let moved = false;
+  if (playLast !== null && playLast <= since + 1) { playLast += away; moved = true; }
+  if (flyLast !== null && flyLast <= since + 1) { flyLast += away; moved = true; }
+  if (moved) stepLost += away;
+});
 at("tablist").addEventListener("click", ev => {
   const b = ev.target.closest("[role=tab]");
   if (b) selectTab(b.dataset.tab, true);
@@ -81428,9 +81569,21 @@ function panelRow(metric) {
   return `<tr class="ref"><th colspan="3">${r.words} <span>${REF[metric]}</span></th></tr>`
     + `<tr>${cell("V0")}${cell("V1")}${diff}</tr>`;
 }
-/** What follows the variant: the readout, and the variant's column of the metrics table. */
+/** One short row: the metric, its V0 mean to its V1 mean (the variant's in bold). */
+function compactRow(metric) {
+  const k = rowOf(metric), r = ROWS[k];
+  const cell = v => `<td class="${v.toLowerCase()}${v === st.variant ? " on" : ""}"><span class="num">`
+    + `${q(`match.rows.${k}.${v}.mean`, num(r[v].mean, dec(r)) + (v === "V1" ? unitOf(r) : ""))}</span></td>`;
+  return `<tr><th>${r.words}</th>${cell("V0")}<td aria-hidden="true">→</td>${cell("V1")}</tr>`;
+}
+/** What follows the variant: the readout (full, or compact under 760 px of height and on a
+    portrait screen), and the variant's column of the metrics table. */
 function updateMeasure() {
-  at("panel-table").innerHTML = panelRow("line_height_m") + panelRow("block_length_m");
+  const compact = SHORT.matches;
+  at("readout").classList.toggle("compact", compact);
+  at("panel-table").classList.toggle("compact", compact);
+  at("panel-table").innerHTML = compact ? compactRow("line_height_m") + compactRow("block_length_m")
+    : panelRow("line_height_m") + panelRow("block_length_m");
   at("metrics").querySelectorAll("td.v0, td.v1").forEach(td => td.classList.toggle("on", td.classList.contains(st.variant.toLowerCase())));
 }
 function renderMeasure() {
@@ -81445,7 +81598,8 @@ function renderMeasure() {
     + q("units.block.frame", ((D.key.frame - bu.frame) / FPS).toFixed(1) + NB + "s") + " earlier) is fixed by the goalkeeper,"
     + " filled in, " + q(`units.block.gap_len.${kk}`, (bu.gap_len[kk] / FPS).toFixed(1) + NB + "s") + " from his nearest detection.";
   const cx = D.context, bl = rowOf("block_length_m");
-  at("context").innerHTML = `In this match the camera saw ${q("context.player_detected", pct(cx.player_detected))} of the player-frames:`
+  at("context").innerHTML = `In this match the camera saw ${q("context.player_detected", pct(cx.player_detected))} of the player-frames`
+    + ` and SkillCorner filled in the rest:`
     + ` ${q("context.ball_distance.00_05", pct(cx.ball_distance["00_05"]))} of those within five metres of the ball,`
     + ` ${q("context.ball_distance.40_plus", pct(cx.ball_distance["40_plus"]))} of those farther than forty. It saw the back four whole at`
     + ` ${q("context.line.all_detected", pct(cx.line.all_detected))} of its ${q("context.line.events", thou(cx.line.events))} receptions`
@@ -81481,11 +81635,12 @@ function renderMeasure() {
   at("strips-claim").innerHTML = `V1 minus V0, match by match: the back four sit ${q("strips.claim.line_height_m.least", cl.line_height_m.least.toFixed(0))} to`
     + ` ${q("strips.claim.line_height_m.most", cl.line_height_m.most.toFixed(0))}${NB}m deeper, nearer their own goal, and block length`
     + ` ${q("strips.claim.block_length_m.least", cl.block_length_m.least.toFixed(0))} to ${q("strips.claim.block_length_m.most", cl.block_length_m.most.toFixed(0))}${NB}m`
-    + ` shorter in every match of both halves: a different sample, not an error.`;
+    + ` shorter in every match of both halves.`;
   at("strips-legend").innerHTML = `<span><svg width="12" height="12" aria-hidden="true"><circle cx="6" cy="6" r="4.5" fill="${C.blue}"/></svg>calibration (upper)</span>`
     + `<span><svg width="12" height="12" aria-hidden="true"><rect x="1.5" y="1.5" width="9" height="9" fill="${C.vermilion}"/></svg>held-out (lower)</span>`
     + `<span><svg width="14" height="14" aria-hidden="true"><circle cx="7" cy="7" r="6" fill="none" stroke="${C.ink}" stroke-width="2"/></svg>this match</span>`
     + `<span><svg width="4" height="14" aria-hidden="true"><rect width="3" height="14" fill="${C.grey}"/></svg>median of the half</span>`;
+  renderFindings();
   renderFrameSection();
   renderLimits();
   updateMeasure();
@@ -81534,8 +81689,8 @@ function renderStrips(force = false) {
     g.appendChild(el("line", {x1: labelW + 12, x2: labelW + 12 + plotW, y1: yc + 12, y2: yc + 12, stroke: "#999", "stroke-width": 0.8}));
     const ax = niceTicks(lo, hi, 4);
     for (const t of ax.ticks) {
-      g.appendChild(el("line", {x1: X(t), x2: X(t), y1: yc + 12, y2: yc + 16, stroke: "#999"}));
-      g.appendChild(el("text", {x: X(t), y: yc + 26, "text-anchor": "middle", class: "small"}, num(t, ax.d)));
+      g.appendChild(el("line", {x1: X(t), x2: X(t), y1: yc + 12, y2: yc + 15, stroke: "#999"}));
+      g.appendChild(el("text", {x: X(t), y: yc + 24, "text-anchor": "middle", class: "small"}, num(t, ax.d)));
     }
     for (const [grp, dy, colour] of [["calibration", -6, C.blue], ["held-out", 6, C.vermilion]]) {
       for (const p of s[grp].points) {
@@ -81553,10 +81708,40 @@ function renderStrips(force = false) {
       label.setAttribute("y", yc - 15);
       label.setAttribute("text-anchor", cx > labelW + plotW * 0.7 ? "end" : "start");
     }
-    y0 = yc + 30;
+    y0 = yc + 28;
   });
   svg.setAttribute("height", y0);
   svg.setAttribute("viewBox", `0 0 ${w} ${y0}`);
+}
+/* The Findings tab: the README's verdict on the seven metrics with the counts behind it (the
+   matches of each half whose V1 minus V0 has the metric's usual sign), its three conclusions, and
+   where the rest is. Every number is the sidecar's findings, read by the README's own keys. */
+const GROUP = {chosen: "Mostly what the camera chose to show", follow: "Follow it", survive: "Survive", mixed: "Mixed"};
+function renderFindings() {
+  const F = D.findings, v = name => F.numbers[name].value, fq = (name, text) => q(`findings.numbers.${name}.value`, text);
+  const body = F.verdict.map(g => g.metrics.map((m, j) => {
+    const c = F.signs[m];
+    return `<tr${j === 0 ? ' class="first"' : ""}>${j === 0 ? `<th rowspan="${g.metrics.length}">${GROUP[g.group]}</th>` : ""}`
+      + `<td>${ROWS[rowOf(m)].words}</td><td class="c">${q(`findings.signs.${m}.calibration`, c.calibration)}`
+      + `${NB}·${NB}${q(`findings.signs.${m}.held-out`, c["held-out"])}</td></tr>`;
+  }).join("")).join("");
+  const first = F.verdict[0].metrics[0];
+  at("verdict").innerHTML = `<colgroup><col class="g"><col><col class="c"></colgroup>`
+    + `<thead><tr><th>verdict</th><th>metric</th><th class="c">same sign</th></tr></thead><tbody>${body}</tbody>`
+    + `<caption>Of the ${q(`findings.signs.${first}.of`, F.signs[first].of)} matches of each half: calibration · held-out.</caption>`;
+  at("conclusions").innerHTML = [
+    `<b>The selection is large:</b> the block was seen whole in ${fq("block_whole_cal", pct(v("block_whole_cal")))} to`
+      + ` ${fq("block_whole_held", pct(v("block_whole_held")))} of phases, the back four in ${fq("line_whole_cal", pct(v("line_whole_cal")))}`
+      + ` and ${fq("line_whole_held", pct(v("line_whole_held")))} of receptions. Report V0 and V1 beside that share.`,
+    `<b>The fill behaves as an interpolation:</b> after a gap over ${fq("gap_s", v("gap_s").toFixed(0) + NB + "s")} a player reappears`
+      + ` ${fq("jump_held", v("jump_held").toFixed(2))} to ${fq("jump_cal", v("jump_cal").toFixed(2) + NB + "m")} (median) from its filled position,`
+      + ` a step between detections (${fq("step", v("step").toFixed(2) + NB + "m")}).`,
+    `<b>One question, killed by its own rule:</b> pressure on the receiver against the ball's advance over`
+      + ` ${fq("window_s", v("window_s").toFixed(1) + NB + "s")} gave ${fq("effect_sd", num(v("effect_sd"), 2) + NB + "sd")}, with a`
+      + ` ${fq("pretrend_sd", num(v("pretrend_sd"), 2) + NB + "sd")} imbalance before (${fq("pretrend_share", pct(v("pretrend_share")))} of it).`,
+  ].map(x => `<li>${x}</li>`).join("");
+  at("more").innerHTML = `More: <a href="https://github.com/javiersr1996/ac2-football#readme">the README</a>`
+    + ` and <a href="https://github.com/javiersr1996/ac2-football">the repository</a>.`;
 }
 function renderFrameSection() {
   const f = FS, a = f.area_m2, ap = f.apex;
@@ -81608,13 +81793,18 @@ function renderStatic() {
     `<b>receiving team</b>${sw(C.blue, C.ink, 6, 2.5)}receiver${sw(C.blue, C.white, 4, 1)}teammates`,
     `<svg width="22" height="12" aria-hidden="true"><rect x="1" y="1" width="20" height="10" fill="${C.grass}" stroke="${C.ink}" stroke-width="2"/></svg>camera's frame`,
   ].map(s => `<li>${s}</li>`).join("") + `<li class="note">s: to the nearest detection</li>`;
+  at("keystrip").innerHTML = [`${sw(C.vermilion, C.white, 6, 1.5)}seen`, `${sw(C.white, C.vermilion, 5, 2.5)}filled in`,
+    `<span class="note">s: to the nearest detection</span>`].map(s => `<li>${s}</li>`).join("");
   // the thesis under the title: what the camera saw of this match, what keeping it does, and what
   // that change is
-  const lr = rowOf("line_height_m"), L = ROWS[lr];
-  at("thesis").innerHTML = `The camera saw ${q("context.player_detected", pct(D.context.player_detected))} of this match's`
-    + ` player-frames; SkillCorner filled in the rest. Keep only what it saw whole and line depth reads`
-    + ` ${q(`match.rows.${lr}.V0.mean`, num(L.V0.mean))} → ${q(`match.rows.${lr}.V1.mean`, num(L.V1.mean) + NB + "m")}:`
-    + ` a different sample, not an error.`;
+  // the thesis: the twenty matches' result (the README's), one sentence; this match is the readout's
+  const cl = D.strips.claim;
+  at("thesis").innerHTML = `In all ${q("strips.claim.line_height_m.matches", cl.line_height_m.matches)} matches,`
+    + ` what the camera saw whole puts the back four ${q("strips.claim.line_height_m.least", cl.line_height_m.least.toFixed(0))} to`
+    + ` ${q("strips.claim.line_height_m.most", cl.line_height_m.most.toFixed(0))}${NB}m deeper and the block`
+    + ` ${q("strips.claim.block_length_m.least", cl.block_length_m.least.toFixed(0))} to`
+    + ` ${q("strips.claim.block_length_m.most", cl.block_length_m.most.toFixed(0))}${NB}m shorter: a different sample, not an error.`;
+  at("readout-cap").innerHTML = `This match (the camera saw ${q("context.player_detected", pct(D.context.player_detected))}): means`;
   at("tab-matches-n").innerHTML = q("strips.claim.line_height_m.matches", D.strips.claim.line_height_m.matches);
   const ticks = at("ticks");
   ticks.replaceChildren();
@@ -81658,16 +81848,19 @@ function renderStatic() {
    the stage's size, the boxes of the counter, the key and the foot that holds them, and the
    plan's free region: the stage above the foot. Pixels. */
 const COMPACT = window.matchMedia("(orientation: portrait), (max-height: 560px)");
+const SHORT = window.matchMedia("(orientation: portrait), (max-height: 759px)");
+/* a short screen (a small phone, or one held sideways): the thesis opens the Findings tab, open
+   on load, and the header is the title */
+const TINY = window.matchMedia("(max-height: 640px)");
 const PORTRAIT = window.matchMedia("(orientation: portrait)");
 function placeHomes() {
-  const key = at("key"), readout = at("readout"), story = at("tp-story");
+  const key = at("key"), story = at("tp-story"), thesis = at("thesis"), findings = at("tp-findings");
+  if (TINY.matches) {
+    if (findings.firstElementChild !== thesis) findings.prepend(thesis);
+  } else if (thesis.parentNode !== at("top")) at("top").append(thesis);
   if (COMPACT.matches) {
-    if (story.firstElementChild !== key) story.prepend(key);
-    if (key.nextElementSibling !== readout) key.after(readout);
-  } else {
-    if (key.parentNode !== at("foot")) at("foot").append(key);
-    if (readout.parentNode !== at("panel")) at("panel").prepend(readout);
-  }
+    if (story.lastElementChild !== key) story.append(key);
+  } else if (key.parentNode !== at("foot")) at("foot").append(key);
 }
 /** An element's box in the stage's pixels, or null when it is not on the stage. */
 function onStage(id) {
@@ -81681,12 +81874,13 @@ function sizeStage() {
   const box = at("stage"), w = Math.floor(box.clientWidth), h = Math.floor(box.clientHeight);
   at("app").classList.toggle("flat", !GL);
   if (!GL) return false;
-  // the foot measured at its tallest, the counter as it reads on the reception
-  drawCount(KEY);
+  // the foot measured at its tallest: the counter as it reads on the reception, with its note
+  drawCount(KEY, true);
   const foot = onStage("foot"), compact = COMPACT.matches;
   drawCount(current ? current.i : 0);
-  if (w === size.w && h === size.h && compact === size.compact && size.foot && foot.y === size.foot.y) return false;
-  Object.assign(size, {w, h, compact, region: {x0: 0, x1: w, y0: 0, y1: foot.y - 6}, foot});
+  const strip = onStage("keystrip"), band = compact && strip && strip.h > 0 ? Math.ceil(strip.y + strip.h + 4) : 0;
+  if (w === size.w && h === size.h && compact === size.compact && size.foot && foot.y === size.foot.y && band === size.band) return false;
+  Object.assign(size, {w, h, compact, band, region: {x0: 0, x1: w, y0: band, y1: foot.y - 6}, foot});
   renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
   renderer.setSize(w, h, false);
   look = null;
@@ -81744,6 +81938,8 @@ const watch = new ResizeObserver(relayout);
 watch.observe(at("stage"));
 watch.observe(at("panel"));
 COMPACT.addEventListener("change", relayout);
+SHORT.addEventListener("change", () => { relayout(); updateMeasure(); });
+TINY.addEventListener("change", relayout);
 </script>
 </body>
 </html>

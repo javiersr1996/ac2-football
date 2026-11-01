@@ -14,10 +14,11 @@ is its player); a *phase* is a ``phases_of_play`` event with a team (``t`` = its
 - ``pressure_index``: the geometric index of ``ac2fb.defence.pressure`` at ``t``, from the
   rivals within :data:`RADIUS` metres of the carrier (weight above :data:`NEAR_WEIGHT`).
 - ``nearest_rival_m``: distance in metres from the carrier to the nearest rival listed at ``t``.
-- ``line_height_m``: mean depth (x times the carrier team's attack sign) of the
-  :data:`LINE_SIZE` deepest outfield rivals at ``t``, goalkeeper left out by the proxy of
-  ``visibility.goalkeepers``; the line is chosen at ``t`` and never re-ranked.
-- ``line_reaction_m``: that line's height at ``t`` minus its height at ``t - W``, positive when
+- ``line_height_m``: mean depth (x times the carrier team's attack sign, so larger is nearer
+  the rivals' own goal) of the :data:`LINE_SIZE` deepest outfield rivals at ``t``, goalkeeper
+  left out by the proxy of ``visibility.goalkeepers``; the line is chosen at ``t`` and never
+  re-ranked.
+- ``line_reaction_m``: that line's depth at ``t`` minus its depth at ``t - W``, positive when
   it retreats, the line's reaction to the ball that came in; the window is ``[t - W, t]`` and the
   unit needs the four listed at both ends, in the same period (a break shorter than ``W`` would
   otherwise read the other period's positions with this one's sign). The line follows the ball
@@ -233,7 +234,7 @@ def line_height(match: MatchData, events: Sequence[Event]) -> Metric:
 
 
 def line_reaction(match: MatchData, events: Sequence[Event]) -> Metric:
-    """Height at ``t`` minus that at ``t - W`` of the line chosen at ``t`` (window ``[t-W, t]``)."""
+    """Depth at ``t`` minus that at ``t - W`` of the line chosen at ``t`` (window ``[t-W, t]``)."""
     return _line_metric(match, events, INCOMING_WINDOW)
 
 

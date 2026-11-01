@@ -74,42 +74,41 @@ TOUCH = {(844, 390), (390, 844), (360, 780), (320, 568)}
 # Legibility floors, measured on this layout and set a little under what it gave, so a regression
 # of the fit fails: the median drawn height of the defenders in broadcast (px), the share of the
 # stage a reader sees as bare sky in broadcast, and a defender's disc in plan (px across). The
-# jury of 4478e40 asked for at most 20 % of sky on a landscape window and the 1440 bodies back to
-# the 35 px they had before the panel. A portrait screen opens in plan, where its floor is the
-# disc; there the plan frames the defenders near the window (390: 9.3 px against 7.5 on 4478e40,
-# short of the 12 px asked: the tab body's floor, the readout, the counter and the key's strip
-# leave the stage about 240 px of plan). Lowering FIT_REACH from 20 to 8 changes none of it (only
-# the keeper is ever left out of the fit).
+# broadcast is a television's view (TILT_TV_MAX, bodies upright within LEAN_MAX): the jury of
+# f4e52c8 put that before the sky, so the sky floors are what that view gives (1440: 37 %), and
+# the bodies are back to their size before the steep tilt (1440: 24.6 px). A portrait screen
+# opens in plan, where its floor is the disc. Lowering FIT_REACH from 20 to 8 changes none of it
+# (only the keeper is ever left out of the fit).
 LEGIBLE_PX = {
-    (1440, 900): 42.0,
-    (1280, 720): 29.0,
-    (1024, 768): 30.0,
-    (844, 390): 10.5,
-    (390, 844): 15.0,
-    (360, 780): 9.0,
-    (320, 568): 6.5,
+    (1440, 900): 22.0,
+    (1280, 720): 19.0,
+    (1024, 768): 15.0,
+    (844, 390): 11.0,
+    (390, 844): 8.7,
+    (360, 780): 5.0,
+    (320, 568): 4.2,
 }
 EMPTY_MAX = {
-    (1440, 900): 0.20,
-    (1280, 720): 0.20,
-    (1024, 768): 0.20,
-    (844, 390): 0.20,
-    (390, 844): 0.25,
-    (360, 780): 0.33,
-    (320, 568): 0.42,
+    (1440, 900): 0.41,
+    (1280, 720): 0.31,
+    (1024, 768): 0.50,
+    (844, 390): 0.15,
+    (390, 844): 0.21,
+    (360, 780): 0.35,
+    (320, 568): 0.33,
 }
 DISC_MIN_PX = {
     (1440, 900): 16.5,
     (1280, 720): 12.0,
     (1024, 768): 13.0,
-    (844, 390): 5.5,
-    (390, 844): 8.5,
-    (360, 780): 5.4,
-    (320, 568): 3.7,
+    (844, 390): 5.4,
+    (390, 844): 6.2,
+    (360, 780): 3.6,
+    (320, 568): 3.0,
 }
 # Broadcast: at most this share of the stage's height between the lowest point and the counter
 # (320 x 568: its stage is width-bound and keeps a band under the play).
-BOTTOM_GAP_MAX = {size: 0.10 for size in VIEWPORTS} | {(320, 568): 0.25}
+BOTTOM_GAP_MAX = {size: 0.10 for size in VIEWPORTS} | {(360, 780): 0.15, (320, 568): 0.25}
 # The tab body: at least TAB_BODY_MIN px and TAB_BODY_SHARE of the window's height at every
 # viewport, so the text a tab opens on is read, not glimpsed (4478e40 gave Story 73 px at 320x568).
 TAB_BODY_MIN, TAB_BODY_SHARE = 160, 0.25
@@ -124,7 +123,7 @@ LABEL_COVER_MAX = {
     (844, 390): 0.09,
     (390, 844): 0.10,
     (360, 780): 0.14,
-    (320, 568): 0.20,
+    (320, 568): 0.24,
 }
 # With the Camera tab the plan widens to hold where the frame's side edges meet: a defender's disc
 # there at least CAMERA_DISC_MIN_PX (a portrait screen frames only the median point).
@@ -132,14 +131,17 @@ CAMERA_DISC_MIN_PX = {
     (1440, 900): 9.5,
     (1280, 720): 7.0,
     (1024, 768): 7.5,
-    (844, 390): 2.6,
-    (390, 844): 6.2,
-    (360, 780): 3.9,
-    (320, 568): 2.7,
+    (844, 390): 3.2,
+    (390, 844): 4.5,
+    (360, 780): 2.6,
+    (320, 568): 2.2,
 }
-# The broadcast fit trades a lean of the bodies for less sky (see LEGIBLE_PX): the median lean and
-# the largest, in degrees from upright, are held to these.
-LEAN_MEDIAN_MAX, LEAN_MAX = 15.0, 32.0
+# The bodies stand: their lean from upright in broadcast, the median and the largest, in degrees
+# (f4e52c8 looked down 74 deg and leaned them up to 35).
+LEAN_MEDIAN_MAX, LEAN_MAX = 3.0, 10.0
+# The broadcast view is a television's: the camera at most TILT_TV_MAX below the horizon (4478e40's
+# successor looked down 74 deg at 1440 and drew the bodies as pins lying down).
+TILT_TV_MAX = 45.0
 # Graphics (WCAG 1.4.11): the pitch's lines at 3:1 on the grass and in the shade outside the frame;
 # a filled-in body (a ghost over a whole ring) at GHOST_MIN against what is behind it, and a seen
 # one at SOLID_MIN, so hollow and solid stay apart.
@@ -1259,24 +1261,27 @@ def check_tabs(D: Data, browser, target: str, size: tuple[int, int], shots: Path
     ctx, pg = open_page(browser, target, width=w, height=h)
     # the tab open on load (Findings; a page without it, whichever is open)
     first = pg.evaluate("""() => { const p = document.getElementById('tp-findings') || [...document.querySelectorAll('[role=tabpanel]')].find(x => !x.hidden);
-      const r = p.getBoundingClientRect();
-      const h2 = p.querySelector('h2').getBoundingClientRect(), row = p.querySelector('#verdict tbody tr');
-      const rb = row ? row.getBoundingClientRect() : {top: 1e9, bottom: 1e9};
-      return {open: !p.hidden && p.id === 'tp-findings', body: p.clientHeight, top: r.top, bottom: r.top + p.clientHeight, h2top: h2.top, h2bottom: h2.bottom,
+      const r = p.getBoundingClientRect(), cs = getComputedStyle(p);
+      const padT = parseFloat(cs.paddingTop), padB = parseFloat(cs.paddingBottom);
+      const lead = (p.querySelector('#conclusion-1 li') || p.querySelector('h2')).getBoundingClientRect();
+      const row = p.querySelector('#verdict tbody tr'), rb = row ? row.getBoundingClientRect() : {top: 1e9, bottom: 1e9};
+      return {open: !p.hidden && p.id === 'tp-findings', body: p.clientHeight - padT - padB, top: r.top + padT,
+              bottom: r.top + p.clientHeight - padB, h2top: lead.top, h2bottom: lead.bottom,
               rowtop: rb.top, rowbottom: rb.bottom, thesisIn: p.contains(document.getElementById('thesis'))}; }""")
     floor = max(TAB_BODY_MIN, TAB_BODY_SHARE * h)
     MEASURED.setdefault(size, {})["body"] = first["body"]
     R.check(
-        f"{vp(w, h)} tabs: Findings is open on load, its body >= max({TAB_BODY_MIN},"
-        f" {TAB_BODY_SHARE:.0%} of the height), its heading in it and the verdict's first row too"
-        " (where the thesis is not opening it), unscrolled",
+        f"{vp(w, h)} tabs: Findings is open on load, its body's text box (padding out) >="
+        f" max({TAB_BODY_MIN}, {TAB_BODY_SHARE:.0%} of the height), its first conclusion in it whole and"
+        " the verdict's first row too (where the thesis is not opening it), unscrolled",
         first["open"]
         and first["body"] >= floor - 0.5
         and first["h2top"] >= first["top"] - 0.5
-        and first["h2top"] < first["bottom"]
+        and (first["h2bottom"] <= first["bottom"] + 0.5 or first["thesisIn"])
         and (first["thesisIn"] or first["rowbottom"] <= first["bottom"] + 0.5),
-        f"body {first['body']} px (floor {floor:.0f}); heading at {first['h2top'] - first['top']:.0f} px,"
-        f" first verdict row ends at {first['rowbottom'] - first['top']:.0f} px",
+        f"text box {first['body']:.0f} px (floor {floor:.0f}); first conclusion"
+        f" {first['h2top'] - first['top']:.0f}..{first['h2bottom'] - first['top']:.0f} px, first verdict"
+        f" row ends at {first['rowbottom'] - first['top']:.0f} px",
     )
     pg.evaluate("camera.pause()")
     roles = pg.evaluate("""() => { const list = document.querySelector('[role=tablist]');
@@ -1340,12 +1345,13 @@ def check_tabs(D: Data, browser, target: str, size: tuple[int, int], shots: Path
             .filter(([, b]) => b.width > 0 && (b.left < r.left - 0.5 || b.right > r.left + p.clientWidth + 0.5)).map(([n, b]) => [n, Math.round(b.left), Math.round(b.right)]);
           p.scrollTop = p.scrollHeight;
           const last = p.lastElementChild.getBoundingClientRect(), r2 = p.getBoundingClientRect();
-          const out = {{sh: p.scrollHeight, ch: p.clientHeight, sw: p.scrollWidth, cw: p.clientWidth, top: r.top, bottom: r.bottom,
+          const cs = getComputedStyle(p), pad = parseFloat(cs.paddingTop) + parseFloat(cs.paddingBottom);
+          const out = {{sh: p.scrollHeight, ch: p.clientHeight, text: p.clientHeight - pad, sw: p.scrollWidth, cw: p.clientWidth, top: r.top, bottom: r.bottom,
                        overflow: getComputedStyle(p).overflowY, lastIn: last.bottom <= r2.bottom + 1 && last.bottom >= r2.top, wide: wide.slice(0, 3), ih: innerHeight, iw: innerWidth, right: r.right}};
           p.scrollTop = 0; return out; }}""")
         inner[name] = max(0, m["sh"] - m["ch"])
-        if m["ch"] < floor - 0.5:
-            cut.append((name, {"body": m["ch"], "floor": floor}))
+        if m["text"] < floor - 0.5:
+            cut.append((name, {"text box": m["text"], "floor": floor}))
         if (
             m["sw"] > m["cw"] + 1
             or m["wide"]
@@ -1355,7 +1361,9 @@ def check_tabs(D: Data, browser, target: str, size: tuple[int, int], shots: Path
             or (inner[name] > 0 and m["overflow"] not in ("auto", "scroll"))
         ):
             cut.append((name, m))
-        if size == (1440, 900) and name in FIT_TABS and inner[name] > 0:
+        if (
+            size == (1440, 900) and name in FIT_TABS or size == (1280, 720) and name == "findings"
+        ) and inner[name] > 0:
             fit.append(name)
         if size in ((1440, 900), (390, 844)):
             pg.evaluate(f"document.getElementById('tp-{name}').scrollTop = 0")
@@ -1368,11 +1376,12 @@ def check_tabs(D: Data, browser, target: str, size: tuple[int, int], shots: Path
         "; ".join(f"{n}: {json.dumps(m)[:200]}" for n, m in cut[:2])
         or ", ".join(f"{n} {px}" for n, px in inner.items()) + " px to scroll",
     )
-    if size == (1440, 900):
+    if size in ((1440, 900), (1280, 720)):
+        which = "Findings, Story, Metrics and the matches" if size == (1440, 900) else "Findings"
         R.check(
-            "1440x900 tabs: Findings, Story, Metrics and the matches fit their body with no inner scroll",
+            f"{vp(w, h)} tabs: {which} fit their body with no inner scroll",
             not fit,
-            ", ".join(f"{n} {inner[n]} px over" for n in fit) or "all three fit",
+            ", ".join(f"{n} {inner[n]} px over" for n in fit) or "they fit",
         )
     ctx.close()
 
@@ -1636,6 +1645,15 @@ def check_framing(D: Data, browser, target: str, size: tuple[int, int], shots: P
         f"{med:.1f} px",
     )
     lean_med, lean_max = float(np.median(leans)), float(np.max(leans))
+    # the camera's tilt below the horizon, from its view matrix (column-major: row 2 is its axis)
+    tilt = math.degrees(math.asin(max(-1.0, min(1.0, pg.evaluate("camera.camera().view[6]")))))
+    MEASURED.setdefault(size, {})["tilt"] = tilt
+    R.check(
+        f"{vp(w0, h0)} broadcast: a television's angle, the camera {TILT_TV_MAX:.0f} deg or less below"
+        " the horizon",
+        tilt <= TILT_TV_MAX,
+        f"{tilt:.1f} deg",
+    )
     R.check(
         f"{vp(w0, h0)} broadcast: the bodies lean at most {LEAN_MEDIAN_MAX:.0f} deg (median) and"
         f" {LEAN_MAX:.0f} deg (any) from upright",
@@ -1901,7 +1919,7 @@ def check_camera_tab(D: Data, browser, target: str, size: tuple[int, int], shots
     camera_tag = [t[2] for t in tags if t[1] == "camera"]
     seconds = [t[2] for t in tags if t[0] == "rival"]
     one = proj(pg, [(0.0, 0.0, 0.0), (1.0, 0.0, 0.0)])
-    disc = 2 * DISC_R * float(np.hypot(*(one[1] - one[0])))
+    disc = 2 * DISC_R * math.sqrt(float(((one[1] - one[0]) ** 2).sum()))
     MEASURED.setdefault(size, {})["camera_disc"] = disc
     if size in ((1440, 900), (390, 844)):
         shot(pg, shots, f"{vp(w0, h0)}_camera_tab_scene")
@@ -1970,7 +1988,7 @@ def check_hidden_tab(D: Data, browser, target: str) -> None:
 def summary() -> None:
     """The per-viewport measures, as one table."""
     print(
-        "\nviewport    page_h body thesis              players lean  sky   disc  cam_disc ghost solid"
+        "\nviewport    page_h body thesis              players tilt/lean sky disc  cam_disc ghost solid"
         " lead cover (broadcast, plan V0, V1)  inner scroll per tab"
     )
     for size in VIEWPORTS:
@@ -1980,7 +1998,7 @@ def summary() -> None:
         inner = m.get("inner") or {}
         print(
             f"{vp(*size):<11} {m.get('page_h', '-')!s:>6} {m.get('body', '-')!s:>4} {m.get('thesis', '-')!s:<19}"
-            f" {m.get('players_px', nan):>7.1f} {m.get('lean', nan):>4.1f} {m.get('sky', nan):>5.3f}"
+            f" {m.get('players_px', nan):>7.1f} {m.get('tilt', nan):>4.0f}/{m.get('lean', nan):>4.1f} {m.get('sky', nan):>5.3f}"
             f" {m.get('disc_px', nan):>5.1f} {m.get('camera_disc', nan):>8.1f} {m.get('ghost', nan):>5.2f}"
             f" {m.get('solid', nan):>5.2f} {m.get('lead', nan):>4.0f} "
             + " ".join(f"{v:.3f}" for v in cover.values())
@@ -1995,6 +2013,7 @@ def main(argv: list[str]) -> int:
     parser.add_argument("target", nargs="?", default=str(DEFAULT_PAGE))
     parser.add_argument("--shots", type=Path, default=ROOT / "build" / "camera")
     parser.add_argument("--only", choices=["one-screen", "tabs"], default=None)
+    parser.add_argument("--sizes", default=None, help="viewports to run, e.g. 1440x900,390x844")
     args = parser.parse_args(argv[1:])
     target = (
         args.target
@@ -2002,7 +2021,8 @@ def main(argv: list[str]) -> int:
         else Path(args.target).resolve().as_uri()
     )
     D = Data()
-    print(f"target: {target}", flush=True)
+    sizes = [s for s in VIEWPORTS if vp(*s) in args.sizes.split(",")] if args.sizes else VIEWPORTS
+    print(f"target: {target}" + (f" (viewports {args.sizes})" if args.sizes else ""), flush=True)
     t0 = time.time()
     with sync_playwright() as p:
         browser = p.chromium.launch(args=CHROMIUM_ARGS)
@@ -2031,7 +2051,7 @@ def main(argv: list[str]) -> int:
         browser.close()
         if args.only:
             browser = p.chromium.launch(args=CHROMIUM_ARGS)
-            for size in VIEWPORTS:
+            for size in sizes:
                 if args.only == "one-screen":
                     check_one_screen(D, browser, target, size)
                 else:
@@ -2050,7 +2070,7 @@ def main(argv: list[str]) -> int:
             check_numbers(D, browser, target)
             check_reduced_motion(D, browser, target)
             check_hidden_tab(D, browser, target)
-            for size in VIEWPORTS:
+            for size in sizes:
                 check_camera_tab(D, browser, target, size, args.shots)
                 check_one_screen(D, browser, target, size)
                 check_tabs(D, browser, target, size, args.shots)

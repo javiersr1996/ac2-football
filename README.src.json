@@ -19,12 +19,12 @@
   {
    "number": "56",
    "src": "reports/layer2.json:summary.detection.player_detected.median",
-   "note": "...a per-match median of 56% in the calibration half"
+   "note": "...the camera saw 56% of the player-frames (per-match median, calibration half)"
   },
   {
    "number": "57",
    "src": "reports/heldout/layer2.json:summary.detection.player_detected.median",
-   "note": "...and 57% in the held-out half"
+   "note": "...and 57% (held-out)"
   },
   {
    "number": "20",
@@ -59,7 +59,7 @@
   {
    "number": "639",
    "src": "docs/kloppy_issue_draft.md:PySport/kloppy#639",
-   "note": "...[reported upstream](https://github.com/PySport/kloppy/issues/639"
+   "note": "...[known upstream issue](https://github.com/PySport/kloppy/issues/639; opened by another user, see the draft's first line"
   },
   {
    "number": "7",
@@ -119,7 +119,22 @@
   {
    "number": "-0.19",
    "src": "reports/calibration.json:criteria.D3.values.effect",
-   "note": "...the effect, -0.19"
+   "note": "...The effect, -0.19"
+  },
+  {
+   "number": "8",
+   "src": "reports/calibration.json:variants.V0.bar.agreeing",
+   "note": "...passed its own bar (same sign in 8; the calibration bar (protocol bars.calibration): T has the sign of E_m in at least 8 of the 10 matches and the permutation p is at most 0.00135; variants.V0.bar.passed is true"
+  },
+  {
+   "number": "10",
+   "src": "reports/calibration.json:variants.V0.bar.matches",
+   "note": "...same sign in 8 of 10 matches"
+  },
+  {
+   "number": "0.0005",
+   "src": "reports/calibration.json:variants.V0.bar.p",
+   "note": "...permutation p 0.0005; two-sided over 2000 draws (protocol null.p_value), at most 0.00135 to pass"
   },
   {
    "number": "0.18",
@@ -134,7 +149,7 @@
   {
    "number": "-0.20",
    "src": "reports/calibration.json:criteria.D4.values.t_v1",
-   "note": "...seen-only players give the same effect ( -0.20"
+   "note": "...Seen-only players give the same effect ( -0.20"
   },
   {
    "number": "3.13",

@@ -255,6 +255,17 @@ def _mutated(doc: dict[str, Any], path: str, change: Any) -> dict[str, Any]:
         ("context.player_detected", lambda v: v + 0.01, "context.player_detected is"),
         ("context.block.phases", lambda v: v + 1, "context.block.phases is"),
         ("context.ball_distance.40_plus", lambda v: v - 0.01, "context.ball_distance.40_plus"),
+        (
+            "findings.numbers.effect_sd.value",
+            lambda v: v + 0.01,
+            "findings.numbers.effect_sd.value is",
+        ),
+        ("findings.numbers.gap_s.value", lambda v: v + 1, "findings.numbers.gap_s.value is"),
+        (
+            "findings.signs.block_width_m.calibration",
+            lambda v: v + 1,
+            "findings.signs.block_width_m.calibration is",
+        ),
         ("sources.layer2\\.json", None, None),
     ],
 )
@@ -278,6 +289,47 @@ def test_a_clip_json_with_another_reception_is_named(committed: Any) -> None:
     clip["key"]["frame"] += 10
     problems = cp.cross_check(doc, {**reports, "clip/clip.json": json.dumps(clip).encode()})
     assert any("clip.json: key differs" in p and "another reception" in p for p in problems)
+
+
+def test_a_findings_number_moved_in_its_artifact_is_named(committed: Any) -> None:
+    # the Findings tab's effect, read by the README's key: the artifact moves, the sidecar does not
+    doc, reports = committed
+    calibration = json.loads(reports["calibration.json"])
+    calibration["criteria"]["D3"]["values"]["effect"] -= 0.01
+    moved = {**reports, "calibration.json": json.dumps(calibration).encode()}
+    problems = cp.cross_check(doc, moved)
+    assert any(p.startswith("camera.json: findings.numbers.effect_sd.value is") for p in problems)
+
+
+def test_findings_refuse_a_key_the_readme_does_not_cite(committed: Any) -> None:
+    _, reports = committed
+    strip = cp.strips(reports)
+    assert cp.findings(reports, strip, cp.readme_keys())["numbers"]["window_s"]["value"] == 1.3
+    with pytest.raises(SystemExit, match="is not a key of README.src.json"):
+        cp.findings(reports, strip, cp.readme_keys() - {cp.FINDINGS[0][1]})
+
+
+@pytest.mark.parametrize(
+    ("metric", "flip", "named"),
+    [
+        ("block_area_m2", 1, "does not keep its sign in every match"),
+        ("block_width_m", None, "'mixed' would be false"),
+    ],
+)
+def test_findings_refuse_a_verdict_the_strips_contradict(
+    committed: Any, metric: str, flip: int | None, named: str
+) -> None:
+    _, reports = committed
+    strip = copy.deepcopy(cp.strips(reports))
+    points = strip[metric]["calibration"]["points"]
+    if flip is not None:  # one match of the half against the metric's sign
+        points[0]["value"] = -points[0]["value"]
+    else:  # every match of both halves with one sign: no longer mixed
+        for group in cp.GROUPS:
+            for p in strip[metric][group]["points"]:
+                p["value"] = -abs(p["value"])
+    with pytest.raises(SystemExit, match=named):
+        cp.findings(reports, strip, cp.readme_keys())
 
 
 def test_a_strip_point_that_is_not_its_cells_difference_is_named(committed: Any) -> None:

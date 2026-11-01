@@ -1,5 +1,5 @@
 {
- "about": "Every number and position the page draws. Positions are metres in the clip's frame: the provider's x and y times sign, so the receiver's team attacks toward +x; the camera stands on the side of the pitch where y times sign is below 0, and the page draws the provider's frame (x times sign, y times sign) so that side is at the bottom of the plan. corners: the four corners of the camera's image on the pitch (bronze x_/y_ bottom/top left/right), bottom left, bottom right, top right, top left. apex: where the frame's two side edges meet; a camera that does not roll stands above the line from it along the camera's heading, at a height and a distance the data do not give. gap is gap_len in frames at 10 Hz (a hollow marker's label is gap / 10, one decimal, in seconds). units: the layer 2 units of this reception, read by ac2fb.reliability.metrics at their frame; seen is is_detected there. match: the match's cells of reports/reliability.csv; strips: figure 1, panel c.",
+ "about": "Every number and position the page draws. Positions are metres in the clip's frame: the provider's x and y times sign, so the receiver's team attacks toward +x; the camera stands on the side of the pitch where y times sign is below 0, and the page draws the provider's frame (x times sign, y times sign) so that side is at the bottom of the plan. corners: the four corners of the camera's image on the pitch (bronze x_/y_ bottom/top left/right), bottom left, bottom right, top right, top left. apex: where the frame's two side edges meet; a camera that does not roll stands above the line from it along the camera's heading, at a height and a distance the data do not give. gap is gap_len in frames at 10 Hz (a hollow marker's label is gap / 10, one decimal, in seconds). units: the layer 2 units of this reception, read by ac2fb.reliability.metrics at their frame; seen is is_detected there. match: the match's cells of reports/reliability.csv; strips: figure 1, panel c. findings: the README's numbers the Findings tab quotes, each with the README.src.json key it is read by, and per metric and half the matches whose V1 minus V0 has the sign of its median.",
  "camera": {
   "apex": [
    [
@@ -16312,6 +16312,131 @@
    ]
   }
  },
+ "findings": {
+  "numbers": {
+   "block_whole_cal": {
+    "src": "reports/layer2.json:summary.block.all_detected.median",
+    "value": 0.024031
+   },
+   "block_whole_held": {
+    "src": "reports/heldout/layer2.json:summary.block.all_detected.median",
+    "value": 0.032832
+   },
+   "effect_sd": {
+    "src": "reports/calibration.json:criteria.D3.values.effect",
+    "value": -0.19268
+   },
+   "gap_s": {
+    "src": "reports/layer2.json:summary.reacquisition.by_band.gt_20s.closed_jump_median.median",
+    "value": 20.0
+   },
+   "jump_cal": {
+    "src": "reports/layer2.json:summary.reacquisition.by_band.gt_20s.closed_jump_median.median",
+    "value": 0.203402
+   },
+   "jump_held": {
+    "src": "reports/heldout/layer2.json:summary.reacquisition.by_band.gt_20s.closed_jump_median.median",
+    "value": 0.190258
+   },
+   "line_whole_cal": {
+    "src": "reports/layer2.json:summary.line.all_detected.median",
+    "value": 0.326092
+   },
+   "line_whole_held": {
+    "src": "reports/heldout/layer2.json:summary.line.all_detected.median",
+    "value": 0.356476
+   },
+   "pretrend_sd": {
+    "src": "reports/calibration.json:criteria.D3.values.pretrend",
+    "value": 0.182152
+   },
+   "pretrend_share": {
+    "src": "reports/calibration.json:criteria.D3.values.pretrend / criteria.D3.values.effect",
+    "value": 0.94536
+   },
+   "step": {
+    "src": "reports/layer2.json:summary.steps.detected_to_detected.p50.median",
+    "value": 0.198489
+   },
+   "window_s": {
+    "src": "protocol/protocol.json:window.seconds",
+    "value": 1.3
+   }
+  },
+  "signs": {
+   "block_area_m2": {
+    "calibration": 10,
+    "held-out": 10,
+    "of": 10,
+    "sign": -1
+   },
+   "block_length_m": {
+    "calibration": 10,
+    "held-out": 10,
+    "of": 10,
+    "sign": -1
+   },
+   "block_width_m": {
+    "calibration": 7,
+    "held-out": 8,
+    "of": 10,
+    "sign": -1
+   },
+   "line_height_m": {
+    "calibration": 10,
+    "held-out": 10,
+    "of": 10,
+    "sign": 1
+   },
+   "line_reaction_m": {
+    "calibration": 10,
+    "held-out": 10,
+    "of": 10,
+    "sign": 1
+   },
+   "nearest_rival_m": {
+    "calibration": 9,
+    "held-out": 9,
+    "of": 10,
+    "sign": -1
+   },
+   "pressure_index": {
+    "calibration": 10,
+    "held-out": 10,
+    "of": 10,
+    "sign": -1
+   }
+  },
+  "verdict": [
+   {
+    "group": "chosen",
+    "metrics": [
+     "block_length_m",
+     "block_area_m2"
+    ]
+   },
+   {
+    "group": "follow",
+    "metrics": [
+     "line_height_m",
+     "line_reaction_m"
+    ]
+   },
+   {
+    "group": "survive",
+    "metrics": [
+     "pressure_index",
+     "nearest_rival_m"
+    ]
+   },
+   {
+    "group": "mixed",
+    "metrics": [
+     "block_width_m"
+    ]
+   }
+  ]
+ },
  "fps": 10,
  "frame_stats": {
   "apex": {
@@ -16691,8 +16816,11 @@
  "rule": "Receptions are the player_possession events with a team and a player whose receiver and the ball are detected at the first frame and with at least 4 rivals detected there. They rank by the number of rivals extrapolated at that frame (more first), then by the longest gap_len among the rivals (longer first), then by period and frame (earlier first). The first whose window is complete wins: 100 frames at 10 Hz from 30 frames before the reception, inside one period, with the receiver, the ball and each rival present and each rival with a gap_len in every frame. Defenders are the receiver's rivals, goalkeeper included.",
  "sign": -1,
  "sources": {
+  "../protocol/protocol.json": "c44153fdf68b40ec6c8510cb77b2b52e5a4a96b9018d3fcdcd42abfb04812c52",
+  "calibration.json": "7ec16e6b8a072ee665cc787527ec2fc2dc4625e3b69f1745ec4cc34a4de04814",
   "clip/clip.json": "0a7fe221512a3ce4166f4308f100a0656ec85d05686f67624e042f1f78c80ed6",
   "figures/fig1_layer2.json": "18f633864e83f09bf378427b5a4a534b78c61973dfb72ca718bd5f82ca6da5e6",
+  "heldout/layer2.json": "da94cdb2395ef151ddb149bcbe24245276ed5af9f00e22d642f9873081d498fe",
   "heldout/reliability.csv": "b7ea18430931df798b93e037f18e3e9769915679d750554cb89db02913f4f7de",
   "layer2.json": "27b9ff8269d49ec8abe9583567f2dc332e631c06594b56541c817742bafd1fa4",
   "reliability.csv": "35871bec6c4c35db31601aedece11fcd3f793ed7dde52a570b5439156c6c8a67"

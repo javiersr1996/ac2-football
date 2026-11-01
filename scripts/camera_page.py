@@ -78,7 +78,63 @@ SOURCES = (
     "heldout/reliability.csv",
     "figures/fig1_layer2.json",
     "layer2.json",
+    "heldout/layer2.json",
+    "calibration.json",
+    "../protocol/protocol.json",
 )
+#: Where the README pairs each of its numbers with the artifact key it is read by.
+README_SRC = ROOT / "README.src.json"
+#: The README's numbers the Findings tab quotes, each read by the very key README.src.json cites
+#: for it (the build refuses a key the README does not cite), and which candidate of the key it
+#: is: the value, the seconds in a band's name ("gt_20s"), or a ratio's size.
+FINDINGS = (
+    ("block_whole_cal", "reports/layer2.json:summary.block.all_detected.median", "value"),
+    ("block_whole_held", "reports/heldout/layer2.json:summary.block.all_detected.median", "value"),
+    ("line_whole_cal", "reports/layer2.json:summary.line.all_detected.median", "value"),
+    ("line_whole_held", "reports/heldout/layer2.json:summary.line.all_detected.median", "value"),
+    (
+        "gap_s",
+        "reports/layer2.json:summary.reacquisition.by_band.gt_20s.closed_jump_median.median",
+        "band",
+    ),
+    (
+        "jump_cal",
+        "reports/layer2.json:summary.reacquisition.by_band.gt_20s.closed_jump_median.median",
+        "value",
+    ),
+    (
+        "jump_held",
+        "reports/heldout/layer2.json:summary.reacquisition.by_band.gt_20s.closed_jump_median.median",
+        "value",
+    ),
+    ("step", "reports/layer2.json:summary.steps.detected_to_detected.p50.median", "value"),
+    ("window_s", "protocol/protocol.json:window.seconds", "value"),
+    ("effect_sd", "reports/calibration.json:criteria.D3.values.effect", "value"),
+    ("pretrend_sd", "reports/calibration.json:criteria.D3.values.pretrend", "value"),
+    (
+        "pretrend_share",
+        "reports/calibration.json:criteria.D3.values.pretrend / criteria.D3.values.effect",
+        "size",
+    ),
+)
+#: The README's verdict on the seven metrics, its groups in its order ("Block length and area are
+#: mostly what the camera chose to show, line depth and reaction follow it, pressure and nearest
+#: rival survive"; "width is mixed"), and what it says of their signs: line depth, block length,
+#: area, reaction and pressure keep theirs in every match of both halves, width does not.
+VERDICT = (
+    ("chosen", ("block_length_m", "block_area_m2")),
+    ("follow", ("line_height_m", "line_reaction_m")),
+    ("survive", ("pressure_index", "nearest_rival_m")),
+    ("mixed", ("block_width_m",)),
+)
+EVERYWHERE = (
+    "line_height_m",
+    "block_length_m",
+    "block_area_m2",
+    "line_reaction_m",
+    "pressure_index",
+)
+MIXED = ("block_width_m",)
 #: The bronze frame columns: the frame, the ball's height, the players listed, and the four
 #: corners of the image on the pitch in polygon order (bottom left, bottom right, top right,
 #: top left: the near edge first, as the camera sees it).
@@ -389,6 +445,85 @@ def strip_claim(points: Mapping[str, Any]) -> dict[str, Any]:
     return claim
 
 
+def _readme_check() -> Any:
+    """scripts/readme_check.py, whose resolver reads the README's keys."""
+    import importlib.util
+
+    spec = importlib.util.spec_from_file_location(
+        "readme_check", Path(__file__).with_name("readme_check.py")
+    )
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    sys.modules.setdefault("readme_check", module)
+    spec.loader.exec_module(module)
+    return module
+
+
+def readme_keys() -> set[str]:
+    """Every key README.src.json cites."""
+    return {n["src"] for n in json.loads(README_SRC.read_text(encoding="utf-8"))["numbers"]}
+
+
+def finding(src: str, which: str, reports: Mapping[str, bytes]) -> float:
+    """One README number, read from the reports by its README.src.json key with the README's own
+    resolver (``scripts/readme_check.py``)."""
+    rc = _readme_check()
+    path, _, expr = src.partition(":")
+    name = path.removeprefix("reports/") if path.startswith("reports/") else f"../{path}"
+    data = json.loads(reports[name])
+    cand = rc.Candidates()
+    if " / " in expr:
+        left, _, right = expr.partition(" / ")
+        a, b = rc.key_values(data, left.strip(), cand), rc.key_values(data, right.strip(), cand)
+        value = abs(a / b) if which == "size" else a / b
+    else:
+        value = rc.key_values(data, expr.strip(), cand)
+    if which == "band":
+        value = cand.numbers[0]
+    return round(float(value), 6)
+
+
+def findings(
+    reports: Mapping[str, bytes], strip: Mapping[str, Any], keys: set[str]
+) -> dict[str, Any]:
+    """The Findings tab: the README's numbers by their keys, and over the twenty matches each
+    metric's count of matches per half whose V1 minus V0 has the sign of its median; refused if a
+    key is not the README's or the README's verdict on the signs is false."""
+    numbers = {}
+    for name, src, which in FINDINGS:
+        if src not in keys:
+            raise Refused(f"findings {name}: {src!r} is not a key of README.src.json")
+        numbers[name] = {"src": src, "value": finding(src, which, reports)}
+    signs = {}
+    for metric, _, _ in METRICS:
+        values = [p["value"] for g in GROUPS for p in strip[metric][g]["points"]]
+        sign = 1 if statistics.median(values) > 0 else -1
+        signs[metric] = {
+            "sign": sign,
+            "of": len(strip[metric]["calibration"]["points"]),
+            **{
+                g: sum(1 for p in strip[metric][g]["points"] if p["value"] * sign > 0)
+                for g in GROUPS
+            },
+        }
+    whole = {m for m, c in signs.items() if all(c[g] == len(strip[m][g]["points"]) for g in GROUPS)}
+    for metric in EVERYWHERE:
+        if metric not in whole:
+            raise Refused(
+                f"{metric} does not keep its sign in every match: the verdict would be false"
+            )
+    for metric in MIXED:
+        if metric in whole:
+            raise Refused(f"{metric} keeps its sign in every match: 'mixed' would be false")
+    if sorted(m for _, ms in VERDICT for m in ms) != sorted(m for m, _, _ in METRICS):
+        raise Refused("the verdict does not group the seven metrics once each")
+    return {
+        "numbers": numbers,
+        "signs": signs,
+        "verdict": [{"group": g, "metrics": list(ms)} for g, ms in VERDICT],
+    }
+
+
 def context(reports: Mapping[str, bytes], match_id: int) -> dict[str, Any]:
     """The match's detection figures of ``layer2.json`` the page quotes."""
     m = json.loads(reports["layer2.json"])["matches"][str(match_id)]
@@ -627,7 +762,10 @@ def sidecar(
             "data do not give. gap is gap_len in frames at 10 Hz (a hollow marker's label is "
             "gap / 10, one decimal, in seconds). units: the layer 2 units of this reception, read "
             "by ac2fb.reliability.metrics at their frame; seen is is_detected there. match: the "
-            "match's cells of reports/reliability.csv; strips: figure 1, panel c."
+            "match's cells of reports/reliability.csv; strips: figure 1, panel c. findings: the "
+            "README's numbers the Findings tab quotes, each with the README.src.json key it is "
+            "read by, and per metric and half the matches whose V1 minus V0 has the sign of its "
+            "median."
         ),
         "camera": {
             "apex": _r(apexes(corners), 2),
@@ -678,6 +816,7 @@ def sidecar(
         "sign": sign,
         "sources": {name: hashlib.sha256(reports[name]).hexdigest() for name in SOURCES},
         "strips": {"claim": strip_claim(strip), "metrics": strip},
+        "findings": findings(reports, strip, readme_keys()),
         "three": dict(three),
         "units": units,
     }
@@ -723,7 +862,8 @@ def _leaves(value: Any, path: str = "") -> dict[str, Any]:
 def cross_check(doc: Mapping[str, Any], reports: Mapping[str, bytes]) -> list[str]:
     """Rules 4 to 6 and 9 on a sidecar as committed: its reception is clip.json's, its cells are
     reliability.csv's, its strips are figure 1's and the difference of their cells, its context
-    is layer2.json's figure by figure, and its frame statistics keep the page's sentence true.
+    is layer2.json's figure by figure, its findings are the README's numbers read by the README's
+    keys, and its frame statistics keep the page's sentence true.
     One problem per broken number, named."""
     problems: list[str] = []
     clip_json = json.loads(reports["clip/clip.json"])
@@ -803,6 +943,18 @@ def cross_check(doc: Mapping[str, Any], reports: Mapping[str, bytes]) -> list[st
             problems.append("camera.json: the strips' sentence is not read from its points")
     except Refused as exc:
         problems.append(f"camera.json: {exc}")
+    try:
+        want_f = _leaves(findings(reports, strip, readme_keys()))
+    except Refused as exc:
+        problems.append(f"findings: {exc}")
+    else:
+        got_f = _leaves(doc.get("findings", {}))
+        for path in sorted(want_f.keys() | got_f.keys()):
+            if got_f.get(path) != want_f.get(path):
+                problems.append(
+                    f"camera.json: findings.{path} is {got_f.get(path)}, "
+                    f"the artifact {want_f.get(path)}"
+                )
     stats = doc["frame_stats"]
     if stats["seen_inside"] < SEEN_INSIDE_MIN or stats["filled_inside"] > FILLED_INSIDE_MAX:
         problems.append(
@@ -1042,7 +1194,9 @@ def counts(doc: Mapping[str, Any]) -> dict[str, int]:
             return sum(leaves(x) for x in v)
         return 1 if isinstance(v, int | float) and not isinstance(v, bool) else 0
 
-    numbers = sum(leaves(doc[k]) for k in ("match", "strips", "units", "frame_stats", "context"))
+    numbers = sum(
+        leaves(doc[k]) for k in ("match", "strips", "units", "frame_stats", "context", "findings")
+    )
 
     def stats(v: Any) -> int:
         return sum(stats(x) for x in v.values()) if isinstance(v, dict) else 1

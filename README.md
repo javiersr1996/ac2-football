@@ -24,7 +24,7 @@ In the 20 A-League 2024/25 matches of the Analytics Cup 2.0 the camera saw 56% o
 
 *Figure 1, per match: (a) detection by distance to the ball, (b) filled frames by gap length, (c) V1 minus V0, (d) amputation error.*
 
-The page: [javiersr1996.github.io/ac2-football](https://javiersr1996.github.io/ac2-football/), the video's reception in 3D inside the camera's measured frame, then from above with the V0/V1 switch.
+The page: [javiersr1996.github.io/ac2-football](https://javiersr1996.github.io/ac2-football/), the video's reception in 3D inside the camera's measured frame and from above, with the V0/V1 switch.
 
 **The fill behaves as an interpolation.** A predictor's error grows with the gap, so a re-detection would jump; it does not: after a gap over 20 s a player reappears a median 0.19 to 0.20 m from its filled position (held-out, calibration), the size of a step between two detections (0.20 m). Amputation, the same kind of fill, errs 0.8 to 1.4 m per match on line depth (Figure 1d). kloppy drops `is_detected` on SkillCorner tracking ([known upstream issue](https://github.com/PySport/kloppy/issues/639)).
 

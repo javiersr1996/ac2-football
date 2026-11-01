@@ -577,7 +577,8 @@ def _fig2(rep: _Reports) -> _Drawn:
         if panel == "a":
             limit = rep.number("value", [floor]) or 0.0
             ax.axvspan(-limit, limit, color="#DDDDDD", alpha=0.7, lw=0, zorder=0)
-            ax.text(0, len(matches) + 0.4, t_floor, ha="center", va="top", color=GREY, fontsize=8)
+            # inside the band, right of the zero line: no line crosses the words
+            ax.text(0.02, len(matches) + 0.4, t_floor, ha="left", va="top", color=GREY, fontsize=8)
             ax.set_yticks([ypos[m] for m in order], order)
         else:
             ax.set_yticks([])
@@ -602,7 +603,8 @@ def _fig2(rep: _Reports) -> _Drawn:
         va="center",
     )
     for i, (text, _) in enumerate((verdict, bar, empty)):
-        _text(fig, 0.2, height - 6.85 - i * 0.33, text, va="center")
+        # 8 pt: the longest sentence of the three is 566 px at 8.5 pt, past the canvas
+        _text(fig, 0.2, height - 6.85 - i * 0.33, text, va="center", fontsize=8)
     document = {
         "figure": FIG2,
         "sources": _digests(rep, [cal]),

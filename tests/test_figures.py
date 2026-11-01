@@ -26,7 +26,9 @@ from typing import Any
 from xml.etree import ElementTree
 
 import matplotlib
+import matplotlib.text
 import pytest
+from matplotlib.backends.backend_agg import FigureCanvasAgg
 
 from ac2fb import figures
 from ac2fb.cli import main
@@ -564,3 +566,47 @@ def test_the_svg_walk_flags_a_typed_number_and_a_dropped_label(
     assert svg_problems(typed, document, ids) == ["D3 floor 0.400"]
     dropped = mutated(document, lambda d: d["labels"].pop(0))
     assert "D3 floor 0.364" in svg_problems(svg, dropped, ids)
+
+
+# --- figure 2: nothing cut, nothing crossed ---
+
+
+def draw_fig2() -> tuple[Any, Any]:
+    """Figure 2 and the renderer that measures its texts, as the SVG is drawn."""
+    rep = figures._Reports(read_inputs(REPORTS))
+    with matplotlib.style.context("default"), matplotlib.rc_context(figures.SVG_RC):
+        fig = figures._fig2(rep).fig
+        renderer = FigureCanvasAgg(fig).get_renderer()
+        fig.draw(renderer)  # the axis labels and ticks take their places when drawn
+        return fig, renderer
+
+
+def test_every_text_of_figure_2_fits_inside_the_canvas() -> None:
+    """The last note was 566 px wide from x = 14 on, so GitHub cut its end (viewBox 576)."""
+    fig, renderer = draw_fig2()
+    canvas = fig.bbox
+    texts = list(fig.texts)
+    for ax in fig.axes:
+        texts += [ax.title, ax._left_title, ax.xaxis.label, ax.yaxis.label, *ax.texts]
+        for axis in (ax.xaxis, ax.yaxis):
+            low, high = sorted(axis.get_view_interval())
+            texts += [t.label1 for t in axis.get_major_ticks() if low <= t.get_loc() <= high]
+    cut = []
+    for t in texts:
+        box = t.get_window_extent(renderer)
+        inside = canvas.x0 <= box.x0 and box.x1 <= canvas.x1
+        if t.get_text() and not (inside and canvas.y0 <= box.y0 and box.y1 <= canvas.y1):
+            cut.append(t.get_text())
+    assert cut == []
+
+
+def test_the_d3_floor_label_is_crossed_by_no_line_of_panel_a() -> None:
+    """The label sat on the vertical line of 0; it must clear it and the edges of the grey band."""
+    fig, renderer = draw_fig2()
+    ax = fig.axes[0]
+    label = next(t for t in ax.texts if t.get_text().startswith("D3 floor"))
+    box = label.get_window_extent(renderer)
+    floor = float(label.get_text().split()[-1])
+    for x in (0.0, -floor, floor):
+        px = ax.transData.transform((x, 0))[0]
+        assert not (box.x0 <= px <= box.x1), f"the line at {x} crosses the label"

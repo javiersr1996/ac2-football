@@ -458,7 +458,7 @@ z
     </g>
    </g>
    <g id="text_18">
-    <text style="font-size: 8px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #777777" x="187.2" y="73.61594" transform="rotate(-0 187.2 73.61594)">D3 floor 0.364</text>
+    <text style="font-size: 8px; font-family: 'DejaVu Sans'; text-anchor: start; fill: #777777" x="191.376" y="73.61594" transform="rotate(-0 191.376 73.61594)">D3 floor 0.364</text>
    </g>
    <g id="text_19">
     <text style="font-size: 9.5px; font-family: 'DejaVu Sans'; text-anchor: start" x="82.8" y="58.8" transform="rotate(-0 82.8 58.8)">a. Effect of pressure on the ball's advance</text>
@@ -772,13 +772,13 @@ z
    <text style="font-weight: 700; font-size: 8.5px; font-family: 'DejaVu Sans'; text-anchor: start; fill: #222222" x="14.4" y="466.60834" transform="rotate(-0 14.4 466.60834)">No held-out reading for layer 3: the protocol is dead, the held-out was read for layer 2.</text>
   </g>
   <g id="text_32">
-   <text style="font-size: 8.5px; font-family: 'DejaVu Sans'; text-anchor: start; fill: #222222" x="14.4" y="495.40834" transform="rotate(-0 14.4 495.40834)">D3 kills layer 3 at the calibration half: effect -0.193 sd, floor 0.364 sd, pre-trend 0.182 sd.</text>
+   <text style="font-size: 8px; font-family: 'DejaVu Sans'; text-anchor: start; fill: #222222" x="14.4" y="495.278437" transform="rotate(-0 14.4 495.278437)">D3 kills layer 3 at the calibration half: effect -0.193 sd, floor 0.364 sd, pre-trend 0.182 sd.</text>
   </g>
   <g id="text_33">
-   <text style="font-size: 8.5px; font-family: 'DejaVu Sans'; text-anchor: start; fill: #222222" x="14.4" y="519.16834" transform="rotate(-0 14.4 519.16834)">V0 passed its own bar (p = 0.0005, 8 of 10 matches agree): the kill is D3 alone.</text>
+   <text style="font-size: 8px; font-family: 'DejaVu Sans'; text-anchor: start; fill: #222222" x="14.4" y="519.038437" transform="rotate(-0 14.4 519.038437)">V0 passed its own bar (p = 0.0005, 8 of 10 matches agree): the kill is D3 alone.</text>
   </g>
   <g id="text_34">
-   <text style="font-size: 8.5px; font-family: 'DejaVu Sans'; text-anchor: start; fill: #222222" x="14.4" y="542.92834" transform="rotate(-0 14.4 542.92834)">Units with an extrapolated player at the reception, 280 with one and 38 with two or more, fill no cell: V2 is V1, no estimate for them.</text>
+   <text style="font-size: 8px; font-family: 'DejaVu Sans'; text-anchor: start; fill: #222222" x="14.4" y="542.798437" transform="rotate(-0 14.4 542.798437)">Units with an extrapolated player at the reception, 280 with one and 38 with two or more, fill no cell: V2 is V1, no estimate for them.</text>
   </g>
  </g>
  <defs>

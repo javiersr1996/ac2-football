@@ -18,7 +18,7 @@ uv run ftbase bronze && uv run ftbase silver && uv run ac2fb layer2 --match 1874
 
 ## What the camera does to seven metrics
 
-In the 20 A-League 2024/25 matches of the Analytics Cup 2.0 the camera saw 56% of the player-frames (per-match median, calibration half) and 57% (held-out). Seven metrics, per reception (pressure on the receiver, nearest rival, line height, the line's reaction to the incoming ball) or per defensive phase (block width, length and area).
+In the 20 A-League 2024/25 matches of the Analytics Cup 2.0 the camera saw 56% of the player-frames (per-match median, calibration half) and 57% (held-out). Seven metrics, per reception (pressure on the receiver, nearest rival, line depth, the line's reaction to the incoming ball) or per defensive phase (block width, length and area).
 
 ![Figure 1](reports/figures/fig1_layer2.svg)
 
@@ -26,9 +26,9 @@ In the 20 A-League 2024/25 matches of the Analytics Cup 2.0 the camera saw 56% o
 
 The page: [javiersr1996.github.io/ac2-football](https://javiersr1996.github.io/ac2-football/), the video's reception in 3D with the camera's measured frame on the grass, then from above with the V0/V1 switch.
 
-**The fill behaves as an interpolation.** A predictor's error grows with the gap, so a re-detection would jump; it does not: after a gap over 20 s a player reappears a median 0.19 to 0.20 m from its filled position (held-out, calibration), the size of a step between two detections (0.20 m). Amputation, the same kind of fill, errs 0.8 to 1.4 m per match on line height (Figure 1d). kloppy drops `is_detected` on SkillCorner tracking ([known upstream issue](https://github.com/PySport/kloppy/issues/639)).
+**The fill behaves as an interpolation.** A predictor's error grows with the gap, so a re-detection would jump; it does not: after a gap over 20 s a player reappears a median 0.19 to 0.20 m from its filled position (held-out, calibration), the size of a step between two detections (0.20 m). Amputation, the same kind of fill, errs 0.8 to 1.4 m per match on line depth (Figure 1d). kloppy drops `is_detected` on SkillCorner tracking ([known upstream issue](https://github.com/PySport/kloppy/issues/639)).
 
-**The selection is large.** The camera follows the ball (Figure 1a), so the units seen whole are near it: a different sample, not an error. On those, line height is 7 to 14 m higher and block length 17 to 37 m shorter in every match of both halves; area, reaction and pressure keep their sign everywhere, nearest rival in 9 of 10, width is mixed. The block was seen whole in 2% to 3% of phases (per-match medians), the four-man back line in a third of receptions (33% and 36%). Block length and area are mostly what the camera chose to show (report them beside the share of phases seen whole), line height and reaction follow it, pressure and nearest rival survive.
+**The selection is large.** The camera follows the ball (Figure 1a), so the units seen whole are near it: a different sample, not an error. On those, the back four sit 7 to 14 m deeper, nearer their own goal, and block length 17 to 37 m shorter in every match of both halves; area, reaction and pressure keep their sign everywhere, nearest rival in 9 of 10, width is mixed. The block was seen whole in 2% to 3% of phases (per-match medians), the four-man back line in a third of receptions (33% and 36%). Block length and area are mostly what the camera chose to show (report them beside the share of phases seen whole), line depth and reaction follow it, pressure and nearest rival survive.
 
 ## One question, killed by its own rule
 
@@ -49,7 +49,7 @@ from ac2fb.reliability.metrics import metric_units
 from ac2fb.reliability.sensitivity import sensitivity
 
 match = build_match(match_id, frames, events, team_periods)  # ftbase's silver tables
-metric, units = metric_units(match)["line_height_m"]  # or your own Metric
+metric, units = metric_units(match)["line_height_m"]  # line depth; or your own Metric
 tagged = sensitivity(metric, long_table(frames), units)[match_id]
 tagged.v0.mean, tagged.v1.mean, [(s.detected_players, s.n, s.mean) for s in tagged.v2]
 ```

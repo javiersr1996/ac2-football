@@ -54,7 +54,7 @@
   {
    "number": "1.4",
    "src": "reports/figures/fig1_layer2.json:series.65.points.0.of.*(max)",
-   "note": "...errs 0.8 to 1.4 m per match on line height; max over both halves: calibration holds it"
+   "note": "...errs 0.8 to 1.4 m per match on line depth; max over both halves: calibration holds it"
   },
   {
    "number": "639",
@@ -64,12 +64,12 @@
   {
    "number": "7",
    "src": "reports/figures/fig1_layer2.json:series.63.points.0.of.*(min)",
-   "note": "...line height is 7; min over both halves of V1 minus V0: the held-out holds it"
+   "note": "...the back four sit 7; min over both halves of V1 minus V0 (positive: the line deeper, nearer its own goal): the held-out holds it"
   },
   {
    "number": "14",
    "src": "reports/figures/fig1_layer2.json:series.61.points.0.of.*(max)",
-   "note": "...line height is 7 to 14 m higher; max over both halves: calibration holds it"
+   "note": "...sit 7 to 14 m deeper; max over both halves: calibration holds it"
   },
   {
    "number": "17",

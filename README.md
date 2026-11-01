@@ -1,6 +1,6 @@
 # What the camera saw: a reliability tag for defensive metrics
 
-**Broadcast tracking shows about half the player-frames; SkillCorner fills the rest. For seven defensive metrics, this entry measures how much of the value is the camera's choice of what to show, and tags every metric with how many of its players were seen.** A metric can go wrong two ways: a hidden player placed wrongly (the fill), or only moments near the ball seen whole (the selection). Amputation measures the fill error: hide seen players, refill them linearly. The selection is the metric on moments seen whole (V1) minus the metric on all moments (V0).
+**Broadcast tracking shows about half the player-frames; SkillCorner fills the rest. For seven metrics of Defensive Positioning, the football theme, this entry measures how much of the value is the camera's choice of what to show, and tags every metric with how many of its players were seen.** A metric can go wrong two ways: a hidden player placed wrongly (the fill), or only moments near the ball seen whole (the selection). Amputation measures the fill error: hide seen players, refill them linearly. The selection is the metric on moments seen whole (V1) minus the metric on all moments (V0).
 
 ## Try it on one match
 

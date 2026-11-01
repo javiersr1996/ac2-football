@@ -41,7 +41,7 @@ button{font:inherit}
    the desktop the controls beside it); the script reads the band (--band) so the camera fit and
    the plan keep the players below it. --side is the desktop's right column, --panel-h the
    phone's V0/V1 panel under the band. */
-#hero{position:relative;--band:0px;--side:384px;--panel-h:172px;--thumb:44px;
+#hero{position:relative;--band:0px;--side:384px;--panel-h:214px;--thumb:44px;
       --overlay:rgba(20,24,19,.84)}
 .hero{position:relative}
 .top{position:absolute;left:0;right:0;top:0;z-index:2;padding:10px 16px 10px;
@@ -122,7 +122,7 @@ h1{font-size:min(28px,7vw);line-height:1.15;margin:0;font-weight:800;letter-spac
 /* The V0/V1 panel, over the stage in plan only (it is inside #measure): under the title band on
    the phone, the desktop's right column under the controls. The plan frames the pitch clear of it. */
 .panel{position:absolute;z-index:2;left:0;right:0;top:var(--band);height:var(--panel-h);
-       padding:8px 16px 6px;background:rgba(251,251,248,.95);overflow:hidden;
+       padding:6px 16px 4px;background:rgba(251,251,248,.95);overflow:hidden;
        border-bottom:1px solid var(--line)}
 .flat .panel{position:static;height:auto;padding:0;background:none;border:0}
 .panel .seg{border-color:var(--ink);display:inline-flex}
@@ -136,6 +136,9 @@ h1{font-size:min(28px,7vw);line-height:1.15;margin:0;font-weight:800;letter-spac
 .ptab .on .num{font-size:21px;font-weight:800;color:var(--ink)}
 .ptab .on.v1 .num{color:var(--green)}
 .ptab .n{font-size:13px;color:var(--faint);display:block}
+.ptab tr.ref th{padding-top:4px;font-size:15px;white-space:nowrap}
+.ptab tr.ref th span{font-size:13px;font-weight:400;color:var(--faint)}
+.ptab .diff .num{color:var(--ink)}
 #measure h2{font-size:24px;line-height:1.2;margin:0 0 10px;letter-spacing:-.01em}
 #measure h2.second{margin-top:42px;padding-top:26px;border-top:1px solid var(--line)}
 #measure h3{font-size:17px;margin:26px 0 6px}
@@ -81247,12 +81250,17 @@ const NOUN = {pressure_index: "receptions", nearest_rival_m: "receptions", line_
               line_reaction_m: "receptions", block_width_m: "phases", block_length_m: "phases", block_area_m2: "phases"};
 const unitOf = r => (r.unit ? NB + r.unit : "");
 const dec = r => (r.metric === "pressure_index" ? 3 : 1);
+/* What each of the panel's two metrics measures, after its name (ac2fb.reliability.metrics). */
+const REF = {line_height_m: "m from halfway toward own goal", block_length_m: "m, deepest to furthest player, keeper in"};
 function panelRow(metric) {
   const k = rowOf(metric), r = ROWS[k];
   const cell = v => `<td class="${v.toLowerCase()}${v === st.variant ? " on" : ""}"><span class="num">${v}${NB}`
     + `${q(`match.rows.${k}.${v}.mean`, num(r[v].mean, dec(r)) + unitOf(r))}</span>`
     + `<span class="n">over ${q(`match.rows.${k}.${v}.n`, thou(r[v].n))} ${NOUN[metric]}</span></td>`;
-  return `<tr><th>${r.words}</th>${cell("V0")}${cell("V1")}</tr>`;
+  const diff = `<td class="diff"><span class="num">${q(`match.rows.${k}.diff`, signed(r.diff, dec(r)) + unitOf(r))}</span>`
+    + `<span class="n">V1 − V0</span></td>`;
+  return `<tr class="ref"><th colspan="3">${r.words} <span>${REF[metric]}</span></th></tr>`
+    + `<tr>${cell("V0")}${cell("V1")}${diff}</tr>`;
 }
 function updateMeasure() {
   at("panel-table").innerHTML = panelRow("line_height_m") + panelRow("block_length_m");

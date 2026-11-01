@@ -936,6 +936,30 @@ def check_variant_and_ui(D: Data, browser, target: str) -> None:
         and rows["V1"][4] == SUB_PLAN,
         f"{rows['V0'][0]} -> {rows['V1'][0]}",
     )
+    diffs = pg.evaluate(
+        "() => [...document.querySelectorAll('#panel-table td.diff .q')].map(e => [+e.dataset.value, e.textContent])"
+    )
+    refs = pg.evaluate(
+        "() => [...document.querySelectorAll('#panel-table tr.ref th')].map(e => e.textContent)"
+    )
+    want = [
+        D.cell(m, "V1", "mean") - D.cell(m, "V0", "mean")
+        for m in ("line_height_m", "block_length_m")
+    ]
+    R.check(
+        "V0/V1: the panel shows V1 - V0 of each metric (the CSV's cells, at its rounding) and what"
+        " it measures (line depth from halfway toward own goal; block length deepest to furthest)",
+        len(diffs) == 2
+        and all(
+            abs(v - w) < 1e-6 and shown_matches(s, w) for (v, s), w in zip(diffs, want, strict=True)
+        )
+        and len(refs) == 2
+        and refs[0].startswith("line depth")
+        and "halfway toward own goal" in refs[0]
+        and refs[1].startswith("block length")
+        and "deepest to furthest" in refs[1],
+        f"{diffs}; {refs}",
+    )
     ctx.close()
 
 
@@ -1089,6 +1113,15 @@ def check_layout(D: Data, browser, target: str, width: int, shots: Path) -> None
                 and k["right"] <= m["iw"] + 0.5
                 and one_line,
                 f"canvas {c['width']:.0f}x{c['height']:.0f}",
+            )
+        if view == "plan":
+            fit = pg.evaluate(
+                "(() => { const p = document.getElementById('panel'); return [p.scrollHeight, p.clientHeight]; })()"
+            )
+            R.check(
+                f"{tag}: the V0/V1 panel holds its rows uncut",
+                fit[0] <= fit[1] + 1,
+                f"content {fit[0]} px in {fit[1]} px",
             )
         k, s = m["key"], m["thesis"]
         R.check(

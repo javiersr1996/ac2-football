@@ -1115,6 +1115,22 @@ def check_layout(D: Data, browser, target: str, width: int, shots: Path) -> None
                 f"canvas {c['width']:.0f}x{c['height']:.0f}",
             )
         if view == "plan":
+            texts = pg.evaluate(
+                "() => [...document.querySelectorAll('#strips text')].map(e => { const b = e.getBoundingClientRect();"
+                " return [b.left, b.top, b.right, b.bottom, e.textContent]; })"
+            )
+            hits = [
+                (a[4], b[4])
+                for n, a in enumerate(texts)
+                for b in texts[n + 1 :]
+                if min(a[2], b[2]) - max(a[0], b[0]) > 0.5
+                and min(a[3], b[3]) - max(a[1], b[1]) > 0.5
+            ]
+            R.check(
+                f"{tag}: the strips' labels overlap nowhere (an axis's numbers clear the next name)",
+                len(texts) > 7 and not hits,
+                f"{len(texts)} labels; overlaps {hits[:3]}",
+            )
             fit = pg.evaluate(
                 "(() => { const p = document.getElementById('panel'); return [p.scrollHeight, p.clientHeight]; })()"
             )

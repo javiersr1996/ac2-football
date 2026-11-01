@@ -81318,7 +81318,9 @@ function renderMeasure() {
   renderLimits();
 }
 function renderStrips() {
-  const host = at("strips"), w = Math.max(280, Math.floor(host.clientWidth)), rowH = 64, labelW = w < 520 ? 0 : 150;
+  // under 520 px the name stands over its strip, so a row is taller: its axis clears the next name
+  const host = at("strips"), w = Math.max(280, Math.floor(host.clientWidth)), narrow = w < 520;
+  const rowH = narrow ? 92 : 64, labelW = narrow ? 0 : 150;
   const plotW = w - labelW - 24, H = rowH * ROWS.length + 8;
   const svg = el("svg", {width: w, height: H, viewBox: `0 0 ${w} ${H}`, role: "img",
                          "aria-label": "V1 minus V0 per match and metric, calibration above, held-out below"});
@@ -81334,8 +81336,8 @@ function renderStrips() {
     const g = el("g", {class: "strip", "data-metric": r.metric});
     const name = r.words + (r.unit ? ` (${r.unit})` : "");
     if (labelW) g.appendChild(el("text", {x: labelW, y: y0 + 22, "text-anchor": "end", "font-weight": ["line_height_m", "block_length_m"].includes(r.metric) ? 700 : 400}, name));
-    else g.appendChild(el("text", {x: 0, y: y0 + 10, "font-weight": ["line_height_m", "block_length_m"].includes(r.metric) ? 700 : 400}, name));
-    const yc = labelW ? y0 + 18 : y0 + 26;
+    else g.appendChild(el("text", {x: 0, y: y0 + 13, "font-weight": ["line_height_m", "block_length_m"].includes(r.metric) ? 700 : 400}, name));
+    const yc = labelW ? y0 + 18 : y0 + 44;
     g.appendChild(el("line", {x1: X(0), x2: X(0), y1: yc - 14, y2: yc + 14, stroke: C.grey, "stroke-width": 1}));
     g.appendChild(el("line", {x1: labelW + 12, x2: labelW + 12 + plotW, y1: yc + 16, y2: yc + 16, stroke: "#999", "stroke-width": 0.8}));
     for (const t of niceTicks(lo, hi, 4)) {

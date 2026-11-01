@@ -81,7 +81,7 @@ jobs:
         if: steps.raw.outputs.cache-hit == 'true'
         run: mkdir -p "$FULL_ROOT" && cp -r "$RAW_CACHE/raw" "$FULL_ROOT/raw"
 
-      # AC2_REPO: the repo is private, so the clone takes the checkout (committed state only).
+      # AC2_REPO: the clone takes the checkout, so the run tests this commit (committed state only).
       - name: README block quick
         shell: bash
         run: |

@@ -5,7 +5,7 @@
 #
 # Environment:
 #   AC2_REPO     what the README's `git clone` clones. Default: the GitHub URL in the README.
-#                While the repo is private, set it to a local path (committed state only).
+#                A local path tests unpushed commits (committed state only).
 #   README_FILE  README to read the block from. Default: README.md next to this script's repo.
 #   KEEP=1       do not delete the temporary directory.
 #   TMPDIR       where mktemp creates the directory.

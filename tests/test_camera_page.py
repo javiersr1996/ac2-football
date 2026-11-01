@@ -252,6 +252,9 @@ def _mutated(doc: dict[str, Any], path: str, change: Any) -> dict[str, Any]:
         ("frame_stats.clip.without_corners", lambda v: 1, "has no corners"),
         ("fps", lambda v: v + 1, "fps is not the clip's"),
         ("match.rows", lambda v: v[:-1], "6 metrics, reliability.csv 7"),
+        ("context.player_detected", lambda v: v + 0.01, "context.player_detected is"),
+        ("context.block.phases", lambda v: v + 1, "context.block.phases is"),
+        ("context.ball_distance.40_plus", lambda v: v - 0.01, "context.ball_distance.40_plus"),
         ("sources.layer2\\.json", None, None),
     ],
 )

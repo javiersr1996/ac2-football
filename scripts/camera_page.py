@@ -709,10 +709,21 @@ def check_finite(value: Any, where: str = "payload") -> None:
 # --- the cross-check of a committed sidecar -----------------------------------------------------
 
 
+def _leaves(value: Any, path: str = "") -> dict[str, Any]:
+    """Each scalar of a nested dict by its dotted path ("line.events")."""
+    if not isinstance(value, Mapping):
+        return {path: value}
+    out: dict[str, Any] = {}
+    for key, item in value.items():
+        out.update(_leaves(item, f"{path}.{key}" if path else str(key)))
+    return out
+
+
 def cross_check(doc: Mapping[str, Any], reports: Mapping[str, bytes]) -> list[str]:
     """Rules 4 to 6 and 9 on a sidecar as committed: its reception is clip.json's, its cells are
-    reliability.csv's, its strips are figure 1's and the difference of their cells, and its frame
-    statistics keep the page's sentence true. One problem per broken number, named."""
+    reliability.csv's, its strips are figure 1's and the difference of their cells, its context
+    is layer2.json's figure by figure, and its frame statistics keep the page's sentence true.
+    One problem per broken number, named."""
     problems: list[str] = []
     clip_json = json.loads(reports["clip/clip.json"])
     rivals = doc["entities"]["rivals"]
@@ -799,6 +810,13 @@ def cross_check(doc: Mapping[str, Any], reports: Mapping[str, bytes]) -> list[st
         )
     if stats["clip"]["without_corners"] != 0:
         problems.append("camera.json: a frame of the clip has no corners")
+    # the thesis (the share seen) and the story's counts: each figure of layer2.json, by its path
+    want, got = _leaves(context(reports, int(doc["match_id"]))), _leaves(doc.get("context", {}))
+    for path in sorted(want.keys() | got.keys()):
+        if got.get(path) != want.get(path):
+            problems.append(
+                f"camera.json: context.{path} is {got.get(path)}, layer2.json {want.get(path)}"
+            )
     for name in SOURCES:
         if doc["sources"].get(name) != hashlib.sha256(reports[name]).hexdigest():
             problems.append(f"camera.json: the hash of {name} is not the committed file's")

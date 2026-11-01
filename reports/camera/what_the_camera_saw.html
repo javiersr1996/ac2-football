@@ -81282,7 +81282,10 @@ function renderMeasure() {
     + ` ${q("context.ball_distance.00_05", pct(cx.ball_distance["00_05"]))} of those within five metres of the ball,`
     + ` ${q("context.ball_distance.40_plus", pct(cx.ball_distance["40_plus"]))} of those farther than forty. The back four were seen whole at`
     + ` ${q("context.line.all_detected", pct(cx.line.all_detected))} of its ${q("context.line.events", thou(cx.line.events))} receptions,`
-    + ` the block at ${q("context.block.all_detected", pct(cx.block.all_detected, 1))} of its ${q("context.block.phases", thou(cx.block.phases))} phases.`;
+    + ` the block at ${q("context.block.all_detected", pct(cx.block.all_detected, 1))} of its ${q("context.block.phases", thou(cx.block.phases))} phases.`
+    // layer2.json's block seen whole is every player of the defending team; V1 reads only the metric's own players
+    + ` For the block, seen whole is every player of the defending team at the phase's start; a V1 block length`
+    + ` needs only the two who fix it, so it keeps ${q(`match.rows.${rowOf("block_length_m")}.V1.n`, thou(ROWS[rowOf("block_length_m")].V1.n))} phases.`;
   at("table-title").textContent = `The match's seven metrics, V0 and V1 (reports/reliability.csv)`;
   const head = "<thead><tr><th>metric</th><th>V0 mean</th><th>units</th><th>V1 mean</th><th>units</th><th>V1 − V0</th></tr></thead>";
   const body = ROWS.map((r, k) => `<tr data-metric="${r.metric}" class="${["line_height_m", "block_length_m"].includes(r.metric) ? "unit" : ""}">`

@@ -88,6 +88,9 @@ jobs:
           mkdir -p "$RUNNER_TEMP/w-quick"
           TMPDIR="$RUNNER_TEMP/w-quick" FTBASE_DATA_ROOT="$QUICK_ROOT" AC2_REPO="$GITHUB_WORKSPACE" \
             bash scripts/clean_clone_check.sh quick 2>&1 | tee "$RUNNER_TEMP/quick.log"
+      # The camera page reads one match, the quick block's, from the data root that block built.
+      - name: Camera page --check (the quick block's match)
+        run: FTBASE_DATA_ROOT="$QUICK_ROOT" uv run python scripts/camera_page.py --check
       - name: README block full
         shell: bash
         run: |

@@ -241,7 +241,16 @@ def layer3(doc: Mapping[str, Any]) -> Drawn:
         ax.set_title(title, loc="left", pad=14)
         if panel == "a":
             ax.axvspan(-floor, floor, color=TEXT, alpha=0.12, lw=0, zorder=0)
-            ax.text(0, len(matches) + 0.4, floor_label["text"], ha="center", va="top", color=MUTED)
+            # 18 pt, inside the band and right of the zero line: no line crosses the words
+            ax.text(
+                0.02,
+                len(matches) + 0.4,
+                floor_label["text"],
+                ha="left",
+                va="top",
+                color=MUTED,
+                fontsize=18,
+            )
             ax.set_yticks([ypos[m] for m in order], order)
         else:
             ax.set_yticks([])

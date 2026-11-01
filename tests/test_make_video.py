@@ -18,6 +18,7 @@ from types import ModuleType
 
 import matplotlib
 import pytest
+from matplotlib.backends.backend_agg import FigureCanvasAgg
 
 ROOT = Path(__file__).resolve().parent.parent
 SCRIPT = ROOT / "scripts" / "make_video.py"
@@ -235,6 +236,21 @@ def test_the_storyboard_is_consistent() -> None:
     last = [t for _, t in mv.STORYBOARD[12].card]
     assert any("github.com/javiersr1996/ac2-football" in t for t in last)
     assert any(t.startswith("Data: SkillCorner open data") for t in last)
+
+
+def test_the_d3_floor_label_of_the_video_is_crossed_by_no_line() -> None:
+    """It sat centred on the zero line; it must stay between the zero line and the band edge."""
+    drawn = mv.panels.draw_all(ROOT / "reports" / "figures")["layer3"]
+    with matplotlib.rc_context(mv.panels.RC):
+        renderer = FigureCanvasAgg(drawn.fig).get_renderer()
+        drawn.fig.draw(renderer)
+    ax = drawn.axes["a"]
+    label = next(t for t in ax.texts if t.get_text().startswith("D3 floor"))
+    box = label.get_window_extent(renderer)
+    floor = float(label.get_text().split()[-1])
+    for x in (0.0, -floor, floor):
+        px = ax.transData.transform((x, 0))[0]
+        assert not (box.x0 <= px <= box.x1), f"the line at {x} crosses the label"
 
 
 def face(name: str, size: int) -> mv.ImageFont.FreeTypeFont:

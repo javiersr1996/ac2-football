@@ -2,8 +2,9 @@ name: macOS
 
 # Manual only: macOS minutes are billed at 10x on a private repository. The gate of ci.yml that
 # depends on the platform (install from the lockfile, the tests) plus the quick README block of
-# scripts/clean_clone_check.sh, on macos-latest. The README says "untested on macOS" until a run
-# of this workflow has passed.
+# scripts/clean_clone_check.sh, on macos-latest. Run 40189349695 passed on 803896d
+# (macos-26-arm64: 1696 passed, 68 deselected; quick block OK), so the README counts macOS among
+# the tested runners.
 
 on:
   workflow_dispatch:

@@ -61,7 +61,7 @@ SUB_BROADCAST = (
     "nearest frame the camera saw each."
 )
 SUB_PLAN = (
-    "From above: keep only what the camera saw whole (V1), and line height and block length "
+    "From above: keep only what the camera saw whole (V1), and line depth and block length "
     "change sample."
 )
 TIMED = {"on": True}

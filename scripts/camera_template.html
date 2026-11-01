@@ -1,0 +1,1453 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>What the camera saw</title>
+<meta name="description" content="One reception of SkillCorner's open A-League tracking, drawn from the camera's side with the camera's measured frame on the grass, then from above with the V0/V1 switch: keep a metric to what the camera saw whole and line height and block length become a different sample. Every number is read from a file of the repository.">
+<!--
+  Built by scripts/camera_page.py into reports/camera/what_the_camera_saw.html: the payload
+  (reports/camera/camera.json) and three.js (vendor/three) are inlined, nothing is fetched.
+  Copied, with a declaration, from the author's basketball entry
+  (github.com/javiersr1996/nobody-helps-the-helper, scripts/wind_template.html, MIT): the first
+  screen, the window.THREE shim, the renderer and compileAsync, the rise (flight), project and
+  unproject, the placement of the tags, the scrubber with ticks and the no-WebGL fallback.
+-->
+<style>
+:root{
+  --bg:#fbfbf8; --paper:#ffffff; --ink:#222222; --dim:#444444; --faint:#5f5f5f; --grey:#777777;
+  --line:#dfe2da; --line-2:#c8cdc2; --blue:#0072b2; --vermilion:#d55e00; --green:#009e73;
+  --grass:#f1f5ec; --pitchline:#8a9a83;
+  --sans:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  --mono:ui-monospace,"Cascadia Mono","SF Mono",Consolas,"Liberation Mono",monospace;
+}
+*{box-sizing:border-box}
+[hidden]{display:none !important}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:17px;
+     line-height:1.55;overflow-x:hidden}
+a{color:var(--ink);text-decoration-color:var(--line-2);text-underline-offset:3px}
+a:hover{text-decoration-color:var(--ink)}
+.wrap{max-width:1260px;margin:0 auto;padding:0 16px}
+.narrow{max-width:calc(66ch + 32px)}
+.eyebrow{font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:var(--faint);margin:0}
+.q{font-variant-numeric:tabular-nums;white-space:nowrap}
+button{font:inherit}
+:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+
+/* ------------------------------------------------------------ the first screen */
+/* The stage first and full-bleed: on the phone as tall as the screen allows with the controls
+   under it, on the desktop the whole viewport. The title sits over the canvas's top band (and on
+   the desktop the controls beside it); the script reads the band (--band) so the camera fit and
+   the plan keep the players below it. --side is the desktop's right column, --panel-h the
+   phone's V0/V1 panel under the band. */
+#hero{position:relative;--band:0px;--side:384px;--panel-h:172px;--thumb:44px;
+      --overlay:rgba(20,24,19,.84)}
+.hero{position:relative}
+.top{position:absolute;left:0;right:0;top:0;z-index:2;padding:10px 16px 10px;
+     background:var(--overlay);color:#fff}
+.top .eyebrow{color:#d3d9cf;display:none}
+h1{font-size:min(28px,7vw);line-height:1.15;margin:0;font-weight:800;letter-spacing:-.02em;
+   white-space:nowrap}
+.sub{font-size:16px;line-height:1.45;color:#e7ebe3;margin:3px 0 0;max-width:62ch;min-height:2.9em}
+.stage{position:relative;width:100%;height:max(360px,calc(100svh - 156px));background:#dfe3da;
+       overflow:hidden}
+.stage canvas{display:block;width:100%;height:100%;touch-action:pan-y}
+.tags{position:absolute;inset:0;pointer-events:none;overflow:hidden}
+.tag{position:absolute;left:0;top:0;will-change:transform;white-space:nowrap;font-size:13px;
+     font-weight:700;line-height:1.2;padding:1px 4px;border-radius:3px;
+     background:rgba(255,255,255,.9);color:var(--vermilion)}
+.tag.me{color:var(--ink)}
+.tag.measure{color:var(--ink);font-weight:600;font-size:14px;white-space:pre;text-align:center}
+.tag.measure.off{color:var(--grey)}
+.leaders{position:absolute;left:0;top:0;width:100%;height:100%;overflow:visible}
+.leaders line{stroke-linecap:round}
+.leaders .halo{stroke:rgba(255,255,255,.85);stroke-width:4}
+.leaders .lead{stroke:var(--vermilion);stroke-width:1.6}
+.leaders .lead.me,.leaders .lead.measure{stroke:var(--ink)}
+.count{position:absolute;left:12px;bottom:12px;z-index:2;background:rgba(255,255,255,.92);
+       border:1px solid var(--line-2);padding:6px 10px 6px;pointer-events:none;line-height:1.15}
+.count .n{font-size:26px;font-weight:800;color:var(--vermilion);font-variant-numeric:tabular-nums}
+.count .w{font-size:13px;color:var(--dim)}
+.count .clock{font-size:15px;font-weight:700;font-variant-numeric:tabular-nums;margin-top:2px}
+.count.big .n{font-size:34px}
+.no-gl{position:absolute;inset:0;margin:0;padding:calc(var(--band) + 16px) 24px 24px;display:flex;
+       align-items:center;font-size:17px;background:var(--paper)}
+.controls{background:var(--overlay);color:#fff;padding:10px 16px 12px}
+.controls .row{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.controls .row + .row{margin-top:6px}
+.controls :focus-visible,.top :focus-visible{outline-color:#fff}
+.btn{border:1px solid #fff;background:#fff;color:var(--ink);font-size:15px;font-weight:600;
+     padding:8px 16px;border-radius:3px;cursor:pointer;min-width:84px;min-height:44px}
+.btn[disabled],.seg button[disabled]{opacity:.4;cursor:default}
+.scrubwrap{flex:1;min-width:150px;position:relative;padding-bottom:40px}
+#scrub{-webkit-appearance:none;appearance:none;display:block;width:100%;height:var(--thumb);margin:0;
+       background:transparent;cursor:pointer;--f:0}
+#scrub:disabled{opacity:.4;cursor:default}
+#scrub::-webkit-slider-runnable-track{height:6px;border-radius:3px;
+  background:linear-gradient(to right,#fff calc(var(--f) * (100% - var(--thumb)) + var(--thumb) / 2),
+                             rgba(255,255,255,.3) 0)}
+#scrub::-moz-range-track{height:6px;border-radius:3px;background:rgba(255,255,255,.3)}
+#scrub::-moz-range-progress{height:6px;border-radius:3px;background:#fff}
+#scrub::-webkit-slider-thumb{-webkit-appearance:none;width:var(--thumb);height:var(--thumb);margin-top:-19px;
+  border:0;border-radius:50%;background:radial-gradient(circle,#fff 0 9px,rgba(255,255,255,.2) 10px 20px,transparent 21px)}
+#scrub::-moz-range-thumb{width:var(--thumb);height:var(--thumb);border:0;border-radius:50%;
+  background:radial-gradient(circle,#fff 0 9px,rgba(255,255,255,.2) 10px 20px,transparent 21px)}
+.ticks{position:absolute;left:0;right:0;top:calc(var(--thumb) / 2 + 12px);height:40px;font-size:13px;
+       color:#d3d9cf}
+.tick{position:absolute;top:0;width:1px;height:7px;background:#d3d9cf}
+.tick-label{position:absolute;white-space:nowrap}
+.tick,.tick-label{left:calc(var(--f) * (100% - var(--thumb)) + var(--thumb) / 2)}
+.seg{display:flex;border:1px solid rgba(255,255,255,.75);border-radius:3px;overflow:hidden}
+.seg button{background:transparent;border:0;color:#fff;font-size:15px;padding:8px 14px;
+            cursor:pointer;min-height:44px}
+.seg button + button{border-left:1px solid rgba(255,255,255,.75)}
+.seg button[aria-pressed=true]{background:#fff;color:var(--ink);font-weight:600}
+.caption{margin:0;font-size:16px;color:#e7ebe3;flex:1;min-width:200px}
+.top .caption{margin-top:4px;min-width:0}
+.after{padding-top:18px;padding-bottom:40px}
+.key{list-style:none;padding:0;margin:0;display:flex;flex-wrap:wrap;gap:6px 18px;font-size:16px;
+     color:var(--dim)}
+.key li{display:flex;align-items:center;gap:7px}
+.key svg{flex:none}
+.key .note{color:var(--faint)}
+.drawn{margin:10px 0 0;font-size:16px;color:var(--faint)}
+
+/* ------------------------------------------------------------------ measure */
+#measure{font-size:16px;margin-top:26px}
+/* The V0/V1 panel, over the stage in plan only (it is inside #measure): under the title band on
+   the phone, the desktop's right column under the controls. The plan frames the pitch clear of it. */
+.panel{position:absolute;z-index:2;left:0;right:0;top:var(--band);height:var(--panel-h);
+       padding:8px 16px 6px;background:rgba(251,251,248,.95);overflow:hidden;
+       border-bottom:1px solid var(--line)}
+.flat .panel{position:static;height:auto;padding:0;background:none;border:0}
+.panel .seg{border-color:var(--ink);display:inline-flex}
+.panel .seg button{color:var(--ink);font-size:15px}
+.panel .seg button + button{border-left-color:var(--ink)}
+.panel .seg button[aria-pressed=true]{background:var(--ink);color:#fff}
+.ptab{margin-top:6px;width:auto;font-size:15px}
+.ptab th,.ptab td{padding:3px 12px 3px 0;border:0;text-align:left;vertical-align:baseline;line-height:1.25}
+.ptab th{font-weight:600;color:var(--ink)}
+.ptab .num{font-size:16px;color:var(--dim);font-weight:600}
+.ptab .on .num{font-size:21px;font-weight:800;color:var(--ink)}
+.ptab .on.v1 .num{color:var(--green)}
+.ptab .n{font-size:13px;color:var(--faint);display:block}
+#measure h2{font-size:24px;line-height:1.2;margin:0 0 10px;letter-spacing:-.01em}
+#measure h2.second{margin-top:42px;padding-top:26px;border-top:1px solid var(--line)}
+#measure h3{font-size:17px;margin:26px 0 6px}
+#measure p{margin:10px 0 0}
+.limit{border-left:3px solid var(--line-2);padding:2px 0 2px 12px;color:var(--dim)}
+.scroll{overflow-x:auto;margin-top:10px}
+table{border-collapse:collapse;width:100%;font-size:16px}
+th,td{text-align:right;padding:6px 8px;border-bottom:1px solid var(--line);
+      font-variant-numeric:tabular-nums;white-space:nowrap}
+th:first-child,td:first-child{text-align:left;white-space:normal}
+thead th{font-weight:600;color:var(--dim)}
+tr.on td{background:#eef2ea}
+tr.unit td:first-child{font-weight:600}
+tbody tr{cursor:default}
+.chart{position:relative;margin-top:6px}
+.chart svg{display:block;overflow:visible}
+.chart text{font-family:var(--sans);font-size:13px;fill:var(--ink)}
+.chart .small{font-size:12px;fill:var(--faint)}
+.legend{display:flex;flex-wrap:wrap;gap:4px 16px;font-size:14px;color:var(--dim);margin:10px 0 4px}
+.legend span{display:flex;align-items:center;gap:6px}
+ol.limits{padding-left:24px;margin:12px 0 0}
+ol.limits li{margin:0 0 12px;color:var(--dim)}
+ol.limits .src{color:var(--faint)}
+code{font-family:var(--mono);font-size:15px;overflow-wrap:anywhere}
+footer{border-top:1px solid var(--line);padding:30px 16px 46px;color:var(--dim);font-size:16px}
+footer h3{font-size:14px;letter-spacing:.1em;text-transform:uppercase;color:var(--faint);margin:22px 0 6px}
+footer pre{background:var(--paper);border:1px solid var(--line);padding:12px 14px;font-family:var(--mono);
+           font-size:14px;overflow-x:auto;margin:0}
+footer a{display:inline-block;padding:11px 0}
+.minimap{max-width:420px;margin-top:12px}
+
+@media (min-width:900px){
+  .stage{height:max(560px,100svh)}
+  .top{right:auto;width:calc(100% - var(--side) - 48px);padding:16px 24px 14px}
+  .top .eyebrow{display:block}
+  h1{font-size:clamp(30px,3.2vw,46px);margin-top:4px}
+  .sub{font-size:19px;min-height:1.45em;max-width:none}
+  .controls{position:absolute;top:0;right:0;z-index:2;width:var(--side);padding:14px 20px 12px}
+  .panel{left:auto;right:0;top:calc(var(--band) + 12px);width:var(--side);height:auto;padding:12px 20px 10px;
+         border:1px solid var(--line)}
+  .count{left:20px;bottom:20px}
+}
+/* on the phone the counter is one line, so it costs the stage little height */
+@media (max-width:899px){
+  .count{left:8px;bottom:8px;padding:4px 8px}
+  .count div{display:inline}
+  .count .clock{margin-left:6px}
+  .count .n,.count.big .n{font-size:20px}
+}
+@media (min-width:900px) and (max-width:1279px){.sub,.top .caption{min-height:2.9em}}
+</style>
+</head>
+<body>
+
+<main>
+<section id="hero" aria-label="the reception">
+  <div class="hero">
+    <header class="top" id="top">
+      <p class="eyebrow">A reliability tag for defensive metrics</p>
+      <h1>What the camera saw</h1>
+      <p class="sub" id="stage-sub"></p>
+    </header>
+    <div class="stage" id="stage">
+      <canvas id="pitch" role="img" aria-label="one reception, twenty-two players and the camera's frame on the pitch"></canvas>
+      <div class="tags" id="tags" aria-hidden="true"></div>
+      <div class="count" id="count" aria-live="off">
+        <div><span class="n" id="count-n"></span> <span class="w" id="count-w"></span></div>
+        <div class="clock" id="clock"></div>
+      </div>
+      <p class="no-gl" id="no-gl" hidden>This browser has no WebGL, so the reception cannot be drawn
+        here. What it shows: the camera shows a window around the ball; SkillCorner fills in the
+        rest. Keep a metric to what the camera saw whole and line height and block length become
+        a different sample, not a different error. The README's figures draw the same; the
+        measures below need no GPU and still work.</p>
+    </div>
+    <div class="controls" id="controls">
+      <div class="row">
+        <button class="btn" id="play" type="button">Play</button>
+        <div class="scrubwrap">
+          <input type="range" id="scrub" min="0" step="1" value="0" aria-label="time in the clip">
+          <div class="ticks" id="ticks"></div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="seg" role="group" aria-label="camera">
+          <button id="view-broadcast" type="button" aria-pressed="true">Broadcast</button>
+          <button id="view-plan" type="button" aria-pressed="false">Top-down</button>
+        </div>
+        <p class="caption" id="stage-caption" aria-live="polite"></p>
+      </div>
+    </div>
+  </div>
+
+  <div class="after wrap narrow">
+    <ul class="key" id="key"></ul>
+    <p class="drawn" id="drawn"></p>
+    <div id="measure" hidden>
+      <div class="panel" id="panel">
+        <div class="seg" role="group" aria-label="variant">
+          <button id="variant-v0" type="button" aria-pressed="true">V0 every unit</button>
+          <button id="variant-v1" type="button" aria-pressed="false">V1 seen throughout</button>
+        </div>
+        <table class="ptab" id="panel-table"></table>
+      </div>
+      <h2>Keep only what the camera saw whole</h2>
+      <p id="lead"></p>
+      <p id="context"></p>
+      <h3 id="table-title"></h3>
+      <div class="scroll"><table id="metrics"></table></div>
+      <p id="near-note"></p>
+      <h3 id="strips-title"></h3>
+      <p id="strips-claim"></p>
+      <div class="legend" id="strips-legend"></div>
+      <div class="chart" id="strips"></div>
+      <p class="limit" id="limit-chosen"></p>
+
+      <h2 class="second">The camera's frame, measured</h2>
+      <p id="frame-text"></p>
+      <div class="chart minimap" id="minimap"></div>
+      <p class="limit" id="frame-limit"></p>
+
+      <h2 class="second">The limits</h2>
+      <ol class="limits" id="limits-list"></ol>
+    </div>
+  </div>
+</section>
+</main>
+
+<footer class="wrap narrow" id="footer"></footer>
+
+<script type="application/json" id="payload">/*PAYLOAD*/</script>
+<script id="three-js">
+window.THREE = (function () {
+  const module = {exports: {}};
+  return (function (module, exports) {
+/*THREE*/
+    return module.exports;
+  })(module, module.exports);
+})();
+</script>
+<script>
+"use strict";
+/* ==========================================================================
+   Data. Everything numeric on the page is read from D, which the build fills
+   from reports/camera/camera.json (scripts/camera_page.py); this script types
+   none of it but the pitch's geometry and the drawing below.
+   ========================================================================== */
+const D = JSON.parse(document.getElementById("payload").textContent);
+const S = D.sign, FPS = D.fps, N = D.n_frames, KEY = D.key.index;
+const T = N / FPS, T_KEY = KEY / FPS, TAU_END = (N - 1) / FPS;
+const E = D.entities, CAM = D.camera, U = D.units, FS = D.frame_stats;
+const STILL = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+/* Timing, typed: storyboard 2.6, not data. Clip seconds per wall second, the freeze before the
+   rise, the rise, the measures' fade-in, the longest wall step one frame may take. */
+const RATE = 1.0, HOLD_S = 0.6, FLIGHT_S = 1.5, FADE_S = STILL ? 0 : 0.4;
+const STEP_MAX = 250;
+
+/* The pitch, drawn: the geometry of ac2fb.clip's pitch (metres) and the apron past its lines. */
+const PITCH = {length: 105, width: 68, circle: 9.15, box: [16.5, 40.32], six: [5.5, 18.32],
+               spot: 11, arc: 9.15, arcDeg: 53, line: 0.12, spotR: 0.35};
+const APRON = 6;
+const HALF_L = PITCH.length / 2, HALF_W = PITCH.width / 2;
+/* The markers of the clip in plan, drawn (metres): a defender's disc and its white edge, a hollow
+   ring's width, the receiver's disc and black ring, a teammate's disc, the ball. In broadcast a
+   body is a capsule BODY_H tall and BODY_R wide over a ring on the grass; the ball is drawn
+   BALL_R wide at the provider's height. The frame's border, the share of light the grass keeps
+   outside it, and the tags' anchors. */
+const DISC_R = 1.1, EDGE_W = 0.18, HOLLOW_W = 0.35, ME_R = 0.95, ME_RING = [1.15, 1.45];
+const MATE_R = 0.55, MATE_W = 0.2, BALL_DISC = 0.45;
+const BODY_H = 1.8, BODY_R = 0.35, RING = [0.5, 0.75], BALL_R = 0.5;
+const FRAME_W = 0.3, OUTSIDE = 0.65, UNIT_RING = [1.55, 1.75];
+/* Opacities, drawn: a filled-in body in broadcast, a filled-in marker in V1, a unit read at
+   another time than now. */
+const GHOST = 0.25, V1_FADE = 0.35, OFF_TICK = 0.5;
+/* The broadcast camera (storyboard 2.4): over the point where the frame's side edges meet, at
+   the drawn height of the sidecar, heading straight across the pitch with no roll. One fit for
+   the whole clip: the tightest field of view that holds the clipped frame, the defenders (feet
+   and head), the receiver and the ball inside the canvas less FRAME_MARGIN of it on each side,
+   with the lowest of them BOTTOM above the bottom edge (a share of the canvas) and the spare
+   height on top (and the lowest clears the counter); the tilt is the one that needs the least
+   field of view, and where the width decides that, the one up to TILT_MAX whose content fills the
+   most height. The frame slides
+   sideways and up or down (a lens shift) and the rise takes the shift back to zero. FOV_PLAN:
+   the narrowest field of view the rise reaches before the swap to the orthographic camera.
+   Degrees. */
+const FRAME_MARGIN = 0.03, BOTTOM = 0.06, FOV_PLAN = 2, TILT_MAX = 45;
+const DEG = Math.PI / 180;
+
+/* Figure 1's palette (ac2fb.figures) and the clip's pitch (ac2fb.clip). */
+const C = {vermilion: "#D55E00", blue: "#0072B2", green: "#009E73", ink: "#222222", grey: "#777777",
+           white: "#FFFFFF", grass: "#F1F5EC", lines: "#8A9A83", sky: "#DFE3DA"};
+
+/* ------------------------------------------------------------------ helpers */
+const at = id => document.getElementById(id);
+const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
+const smooth = p => p * p * (3 - 2 * p);
+const MINUS = "−", NB = " ";
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;"}[c]));
+function signed(v, d = 1) {
+  const r = Number(v.toFixed(d));
+  return r === 0 ? (0).toFixed(d) : (r > 0 ? "+" : MINUS) + Math.abs(v).toFixed(d);
+}
+/** As Python's {:+.1f}: a sign always, "+0.0" at zero. */
+const plus = (v, d = 1) => (Number(v.toFixed(d)) < 0 ? MINUS : "+") + Math.abs(v).toFixed(d);
+const num = (v, d = 1) => (v < 0 && Number(Math.abs(v).toFixed(d)) !== 0 ? MINUS : "") + Math.abs(v).toFixed(d);
+const thou = v => Math.round(v).toLocaleString("en-US");
+const pct = (v, d = 0) => (100 * v).toFixed(d) + "%";
+const sec = frames => (frames / FPS).toFixed(1) + NB + "s";
+/** The value at a dotted path of the sidecar ("match.rows.2.V0.mean"). */
+const pick = path => path.split(".").reduce((o, k) => o[k], D);
+/* An injected number: its text and the path of the sidecar it comes from, for a console check. */
+function q(path, text) {
+  return `<span class="q" data-path="${esc(path)}" data-value="${pick(path)}">${text}</span>`;
+}
+const SVGNS = "http://www.w3.org/2000/svg";
+function el(name, attrs = {}, text) {
+  const node = document.createElementNS(SVGNS, name);
+  for (const k in attrs) node.setAttribute(k, attrs[k]);
+  if (text !== undefined) node.textContent = text;
+  return node;
+}
+function niceTicks(lo, hi, bins = 4) {
+  const raw = (hi - lo) / bins, mag = Math.pow(10, Math.floor(Math.log10(raw)));
+  const step = [1, 2, 2.5, 5, 10].map(m => m * mag).find(s => Math.floor(hi / s) - Math.ceil(lo / s) <= bins) || 10 * mag;
+  const out = [];
+  for (let t = Math.ceil(lo / step) * step; t <= hi + 1e-9; t += step) out.push(Number(t.toFixed(6)));
+  return out;
+}
+
+/* ------------------------------------------------------------- the scene */
+const RIV = E.rivals.ids, MATES = E.mates.ids;
+const idx = id => RIV.indexOf(id);
+const KEEPER = U.block.phase.keeper_id;
+/** Positions at clip time tau (seconds from the clip's first frame), linearly interpolated. */
+function posAt(tau) {
+  const f = clamp(tau * FPS, 0, N - 1), i = Math.min(Math.floor(f + 1e-9), N - 1);
+  const j = Math.min(i + 1, N - 1), a = Math.max(0, f - i);
+  const lerp2 = (p, q2) => (p === null || p[0] === null || q2 === null || q2[0] === null) ? (p && p[0] !== null ? p : null)
+    : [p[0] + (q2[0] - p[0]) * a, p[1] + (q2[1] - p[1]) * a];
+  const rivals = E.rivals.xy[i].map((p, k) => lerp2(p, E.rivals.xy[j][k]));
+  const mates = E.mates.xy[i].map((p, k) => lerp2(p, E.mates.xy[j][k]));
+  const me = lerp2(E.me.xy[i], E.me.xy[j]);
+  const b = lerp2(E.ball.xy[i], E.ball.xy[j]);
+  const z = E.ball.z[i] + (E.ball.z[j] - E.ball.z[i]) * a;
+  // the frame's corners move with the clip; a step longer than a cut is a cut, never a slide
+  const ci = CAM.corners[i], cj = CAM.corners[j];
+  const cut = ci.some((p, k) => Math.hypot(cj[k][0] - p[0], cj[k][1] - p[1]) > CAM.cut_step_m);
+  const corners = ci.map((p, k) => cut ? (a < 0.5 ? p : cj[k]) : [p[0] + (cj[k][0] - p[0]) * a, p[1] + (cj[k][1] - p[1]) * a]);
+  return {rivals, mates, me, ball: [b[0], b[1], z], corners, i: Math.round(f), fi: i, a};
+}
+
+/** A convex polygon clipped to the pitch and its apron (Sutherland-Hodgman), clip-frame metres;
+    each vertex carries the frame's edge its outgoing side lies on ("edge": k for corner k to k + 1),
+    -1 where that side runs along the apron's border. */
+function clipFrame(corners) {
+  const lim = [HALF_L + APRON, HALF_W + APRON];
+  let poly = corners.map((p, k) => ({x: p[0], y: p[1], edge: k}));
+  for (const [axis, side] of [[0, 1], [0, -1], [1, 1], [1, -1]]) {
+    const key = axis === 0 ? "x" : "y", L = side * lim[axis], ins = p => side * p[key] <= side * L + 1e-9;
+    const out = [];
+    for (let k = 0; k < poly.length; k++) {
+      const P = poly[k], Q = poly[(k + 1) % poly.length];
+      const cross = () => {
+        const u = (L - P[key]) / (Q[key] - P[key]);
+        return {x: P.x + (Q.x - P.x) * u, y: P.y + (Q.y - P.y) * u};
+      };
+      if (ins(P)) {
+        out.push(P);
+        if (!ins(Q)) out.push({...cross(), edge: -1});
+      } else if (ins(Q)) out.push({...cross(), edge: P.edge});
+    }
+    poly = out;
+  }
+  return poly;
+}
+
+/* ==========================================================================
+   The stage. The clip's frame is laid out so that the camera side of the pitch
+   is at the bottom of the plan, as the data put it (storyboard 2.1, as P2
+   corrects it): world X = sign x, world Y = z (up), world Z = -(sign y). That is
+   the provider's own frame: the broadcast camera sees +X on its right, as the
+   image did, and nothing is mirrored.
+   ========================================================================== */
+const canvas = at("pitch");
+let GL = false, renderer = null;
+try {
+  renderer = new THREE.WebGLRenderer({canvas, antialias: true, preserveDrawingBuffer: true});
+  renderer.debug.checkShaderErrors = false;
+  GL = true;
+} catch (e) {
+  GL = false;
+}
+const WORLD = [S, 0, 0, 0, 0, 0, -S, 0, 0, 1, 0, 0, 0, 0, 0, 1];   // clip frame -> world, column-major
+const V = (x, y, z = 0) => new THREE.Vector3(S * x, z, -S * y);
+const G = (x, y) => [S * x, -S * y];                              // clip (x, y) -> world floor (X, Z)
+
+const st = {tau: 0, phase: "idle", view: "broadcast", p: 0, variant: "V0", risen: false};
+const size = {w: 0, h: 0, square: false, band: 0, region: null, count: null};
+let scene3, persp, ortho, active, current = null, hover = null;
+let playRaf = 0, playLast = null, holdTimer = 0, flyRaf = 0, flyLast = null, fadeRaf = 0, booting = false;
+let bodies = [], marks = [], groundRings = [], ball3, ballShadow, ballMark, shade, frameTris, frameDash;
+let lineTris, bracketTris, unitRings, look = null, fadeK = 1;
+
+/** Triangles on the floor, rebuilt in place: lines, rings, dashes, the frame's border. */
+class Tris {
+  constructor(colour, capacity, order) {
+    this.pos = new Float32Array(capacity * 9);
+    this.n = 0;
+    this.geom = new THREE.BufferGeometry();
+    this.attr = new THREE.BufferAttribute(this.pos, 3);
+    this.attr.setUsage(THREE.DynamicDrawUsage);
+    this.geom.setAttribute("position", this.attr);
+    this.mat = new THREE.MeshBasicMaterial({color: colour, side: THREE.DoubleSide, transparent: true,
+                                            depthWrite: false, depthTest: false});
+    this.mesh = new THREE.Mesh(this.geom, this.mat);
+    this.mesh.renderOrder = order;
+    this.mesh.frustumCulled = false;
+  }
+  clear() { this.n = 0; }
+  tri(a, b, c) {
+    if ((this.n + 1) * 9 > this.pos.length) return;
+    let o = this.n * 9;
+    for (const p of [a, b, c]) { this.pos[o++] = p[0]; this.pos[o++] = 0; this.pos[o++] = p[1]; }
+    this.n++;
+  }
+  quad(a, b, c, d) { this.tri(a, b, c); this.tri(a, c, d); }
+  commit() { this.geom.setDrawRange(0, this.n * 3); this.attr.needsUpdate = true; }
+}
+/** A segment as a ribbon w wide (world floor points), its ends squared. */
+function segment(tris, a, b, w) {
+  const dx = b[0] - a[0], dz = b[1] - a[1], L = Math.hypot(dx, dz) || 1;
+  const nx = -dz / L * w / 2, nz = dx / L * w / 2, ex = dx / L * w / 2, ez = dz / L * w / 2;
+  tris.quad([a[0] - ex + nx, a[1] - ez + nz], [b[0] + ex + nx, b[1] + ez + nz],
+            [b[0] + ex - nx, b[1] + ez - nz], [a[0] - ex - nx, a[1] - ez - nz]);
+}
+function polyline(tris, pts, w) { for (let k = 0; k + 1 < pts.length; k++) segment(tris, pts[k], pts[k + 1], w); }
+function dashed(tris, a, b, w, dash, gap) {
+  const L = Math.hypot(b[0] - a[0], b[1] - a[1]);
+  for (let s = 0; s < L; s += dash + gap) {
+    const e = Math.min(L, s + dash), u = s / L, v = e / L;
+    segment(tris, [a[0] + (b[0] - a[0]) * u, a[1] + (b[1] - a[1]) * u], [a[0] + (b[0] - a[0]) * v, a[1] + (b[1] - a[1]) * v], w);
+  }
+}
+function arc(cx, cz, r, a0, a1, n = 64) {
+  const out = [];
+  for (let k = 0; k <= n; k++) { const a = a0 + (a1 - a0) * k / n; out.push([cx + r * Math.cos(a), cz + r * Math.sin(a)]); }
+  return out;
+}
+/** The pitch's lines in world floor coordinates (the pitch is the same turned half a turn). */
+function pitchLines() {
+  const L = HALF_L, W = HALF_W, out = [[[-L, -W], [L, -W], [L, W], [-L, W], [-L, -W]], [[0, -W], [0, W]],
+                                       arc(0, 0, PITCH.circle, 0, 2 * Math.PI, 96)];
+  for (const side of [-1, 1]) {
+    for (const [depth, width] of [PITCH.box, PITCH.six]) {
+      const x0 = side * L, x1 = side * (L - depth);
+      out.push([[x0, -width / 2], [x1, -width / 2], [x1, width / 2], [x0, width / 2]]);
+    }
+    const spot = side * (L - PITCH.spot), a = PITCH.arcDeg * DEG;
+    out.push(side < 0 ? arc(spot, 0, PITCH.arc, -a, a) : arc(spot, 0, PITCH.arc, Math.PI - a, Math.PI + a));
+  }
+  return out;
+}
+const basic = (colour, order, extra = {}) => {
+  const m = new THREE.MeshBasicMaterial({color: colour, transparent: true, depthWrite: false, depthTest: false, ...extra});
+  return {m, order};
+};
+function flatMesh(geom, colour, order) {
+  const {m} = basic(colour, order);
+  const mesh = new THREE.Mesh(geom, m);
+  mesh.rotation.x = -Math.PI / 2;
+  mesh.renderOrder = order;
+  return mesh;
+}
+
+function buildStage() {
+  scene3 = new THREE.Scene();
+  renderer.setClearColor(C.sky);
+  scene3.add(new THREE.AmbientLight(0xffffff, 0.55 * Math.PI));
+  const sun = new THREE.DirectionalLight(0xffffff, 0.45 * Math.PI);
+  sun.position.set(-20, 60, 40);
+  scene3.add(sun);
+  // the grass to the apron's edge, its lines, then the shade outside the camera's frame
+  const grass = flatMesh(new THREE.PlaneGeometry(2 * (HALF_L + APRON), 2 * (HALF_W + APRON)), C.grass, 0);
+  scene3.add(grass);
+  const lines = new Tris(C.lines, 4000, 1);
+  for (const pl of pitchLines()) polyline(lines, pl, PITCH.line);
+  for (const side of [-1, 1]) {
+    const spot = new THREE.Mesh(new THREE.CircleGeometry(PITCH.spotR, 24), basic(C.lines, 1).m);
+    spot.rotation.x = -Math.PI / 2;
+    spot.position.set(side * (HALF_L - PITCH.spot), 0, 0);
+    spot.renderOrder = 1;
+    scene3.add(spot);
+  }
+  lines.commit();
+  scene3.add(lines.mesh);
+  shade = new THREE.Mesh(new THREE.BufferGeometry(), basic("#000000", 2, {opacity: 1 - OUTSIDE}).m);
+  shade.rotation.x = -Math.PI / 2;
+  shade.renderOrder = 2;
+  shade.frustumCulled = false;
+  scene3.add(shade);
+  frameTris = new Tris(C.ink, 400, 3);
+  frameDash = new Tris(C.ink, 800, 3);
+  scene3.add(frameTris.mesh, frameDash.mesh);
+  // plan only: the line, the block's bracket, the rings around a unit's players
+  lineTris = new Tris(C.ink, 600, 4);
+  bracketTris = new Tris(C.grey, 600, 4);
+  unitRings = new Tris(C.ink, 3000, 4);
+  scene3.add(lineTris.mesh, bracketTris.mesh, unitRings.mesh);
+
+  // the twenty-three: a body and a ring on the grass (broadcast), a marker (plan)
+  const capsule = new THREE.CapsuleGeometry(BODY_R, BODY_H - 2 * BODY_R, 4, 12);
+  const disc = r => new THREE.CircleGeometry(r, 40), ring = (a, b) => new THREE.RingGeometry(a, b, 40);
+  const people = [...RIV.map((id, k) => ({kind: "rival", k, id})), {kind: "me", k: 0, id: E.me.id},
+                  ...MATES.map((id, k) => ({kind: "mate", k, id}))];
+  for (const who of people) {
+    const colour = who.kind === "rival" ? C.vermilion : C.blue;
+    const body = new THREE.Mesh(capsule, new THREE.MeshLambertMaterial({color: colour, transparent: true}));
+    body.renderOrder = 10;
+    scene3.add(body);
+    const gr = flatMesh(ring(RING[0], RING[1]), who.kind === "me" ? C.ink : colour, 5);
+    const gd = flatMesh(disc(RING[0]), colour, 5);
+    scene3.add(gr, gd);
+    // the plan's marker, as the clip draws it: a white edge, the face, a hollow's ring
+    const r = who.kind === "rival" ? DISC_R : who.kind === "me" ? ME_R : MATE_R;
+    const base = {mate: 6, rival: 7, me: 8}[who.kind];
+    const edge = flatMesh(disc(r + EDGE_W), C.white, base);
+    const face = flatMesh(disc(r), colour, base + 0.1);
+    const hole = flatMesh(disc(r - (who.kind === "mate" ? MATE_W : HOLLOW_W)), C.white, base + 0.2);
+    const extra = who.kind === "me" ? flatMesh(ring(ME_RING[0], ME_RING[1]), C.ink, base + 0.3) : null;
+    for (const m of [edge, face, hole, extra]) if (m) scene3.add(m);
+    bodies.push({...who, body, gr, gd});
+    marks.push({...who, edge, face, hole, extra});
+  }
+  ball3 = new THREE.Mesh(new THREE.SphereGeometry(BALL_R, 20, 14), new THREE.MeshLambertMaterial({color: C.ink}));
+  ball3.renderOrder = 10;
+  scene3.add(ball3);
+  ballShadow = flatMesh(disc(BALL_R * 1.4), "#000000", 5);
+  ballShadow.material.opacity = 0.25;
+  scene3.add(ballShadow);
+  ballMark = {edge: flatMesh(disc(BALL_DISC + EDGE_W), C.white, 9), face: flatMesh(disc(BALL_DISC), C.ink, 9)};
+  scene3.add(ballMark.edge, ballMark.face);
+
+  persp = new THREE.PerspectiveCamera(30, 4 / 3, 1, 2000);
+  ortho = new THREE.OrthographicCamera(-1, 1, 1, -1, 1, 2000);
+  active = persp;
+}
+
+/** Start the GPU on every program the stage draws with, on its threads (compileAsync). */
+function warmUp() {
+  renderer.compile(scene3, ortho);
+  return renderer.compileAsync(scene3, persp);
+}
+
+/* ------------------------------------------------------------------ cameras */
+/** The points the broadcast camera holds, in world coordinates, over every frame. */
+let HELD = null;
+function heldPoints() {
+  if (HELD) return HELD;
+  const pts = [];
+  for (let i = 0; i < N; i++) {
+    for (const p of clipFrame(CAM.corners[i])) pts.push(V(p.x, p.y, 0));
+    for (const xy of [...E.rivals.xy[i], E.me.xy[i]]) pts.push(V(xy[0], xy[1], 0), V(xy[0], xy[1], BODY_H));
+    pts.push(V(E.ball.xy[i][0], E.ball.xy[i][1], Math.max(E.ball.z[i], BALL_R)));
+  }
+  HELD = pts;
+  return pts;
+}
+/** The broadcast camera for this canvas (cached per size and band): its eye over the point where
+    the frame's side edges meet (the clip's median) at the drawn height, heading across the pitch,
+    the tilt and field of view of the tightest fit, and its lens shifts. */
+function shot() {
+  const key = `${size.w}x${size.h}:${size.band}`;
+  if (look && look.key === key) return look;
+  const eye = V(CAM.apex_median[0], CAM.apex_median[1], CAM.drawn_height_m);
+  const head = eye.z > 0 ? -1 : 1;                    // toward the pitch, along world Z
+  const A = size.w / size.h, inner = 1 - 2 * FRAME_MARGIN;
+  const roof = inner - 2 * size.band / size.h;
+  const floor = -1 + 2 * Math.max(BOTTOM, (size.h - size.count.y + 6) / size.h);
+  const pts = heldPoints();
+  const need = th => {
+    const s = Math.sin(th), c = Math.cos(th);
+    let u0 = Infinity, u1 = -Infinity, v0 = Infinity, v1 = -Infinity;
+    for (const P of pts) {
+      const dx = P.x - eye.x, dy = P.y - eye.y, dz = (P.z - eye.z) * head;   // dz > 0: ahead
+      const depth = dz * c - dy * s, yc = dy * c + dz * s;
+      if (depth <= 0.1) return {t: Infinity};
+      const u = -head * dx / depth, v = yc / depth;
+      u0 = Math.min(u0, u); u1 = Math.max(u1, u); v0 = Math.min(v0, v); v1 = Math.max(v1, v);
+    }
+    const tv = (v1 - v0) / (roof - floor);
+    return {t: Math.max((u1 - u0) / (2 * A * inner), tv), tv, u0, u1, v0, v1};
+  };
+  // the least field of view; where the width decides it, the tilt (up to TILT_MAX) whose content
+  // fills the most height
+  const all = [];
+  for (let d = 2; d <= TILT_MAX; d += 0.1) all.push(Object.assign(need(d * DEG), {th: d * DEG}));
+  const least = Math.min(...all.map(r => r.t));
+  const best = all.filter(r => r.t <= least * 1.002).sort((a, b) => b.tv - a.tv)[0];
+  const t = best.t, th = best.th;
+  const sx = -(best.u0 + best.u1) / 2 / (A * t);
+  const sy = floor - best.v0 / t;
+  const fwd = new THREE.Vector3(0, -Math.sin(th), head * Math.cos(th));
+  const target = eye.clone().addScaledVector(fwd, eye.y / Math.sin(th));
+  look = {key, eye, target, fov: 2 * Math.atan(t) / DEG, sx, sy, th, head};
+  return look;
+}
+/** The orthographic frame that contains the crop in the canvas's free region ("contain"). */
+function planFrame() {
+  const R = size.region;
+  const xs = D.crop.x.map(x => S * x), zs = D.crop.y.map(y => -S * y);
+  // the bracket of the block sits under the near touchline: the frame holds it too
+  zs.push(HALF_W + bracketGap() + 1.5);
+  const X0 = Math.min(...xs), X1 = Math.max(...xs), Z0 = Math.min(...zs), Z1 = Math.max(...zs);
+  const k = Math.min((R.x1 - R.x0) / (X1 - X0), (R.y1 - R.y0) / (Z1 - Z0));
+  const rx = (R.x0 + R.x1) / 2, ry = (R.y0 + R.y1) / 2;
+  return {halfW: size.w / 2 / k, halfH: size.h / 2 / k, k,
+          centre: new THREE.Vector3((X0 + X1) / 2 + (size.w / 2 - rx) / k, 0, (Z0 + Z1) / 2 + (size.h / 2 - ry) / k)};
+}
+const bracketGap = () => 3;
+/** The camera at progress p of the rise (0 broadcast, 1 plan). Tilt only: the broadcast camera
+    heads straight across the pitch and the plan's up is that heading, so nothing turns on screen.
+    The field of view narrows as the distance grows, holding the frame near its final size, and at
+    p = 1 the orthographic camera takes over from a perspective of FOV_PLAN degrees aimed straight
+    down at the same centre: on the grass the two project the same. */
+function placeCamera(p) {
+  const frame = planFrame(), sh = shot();
+  if (p >= 1) {
+    Object.assign(ortho, {left: -frame.halfW, right: frame.halfW, top: frame.halfH, bottom: -frame.halfH});
+    ortho.position.set(frame.centre.x, 600, frame.centre.z);
+    ortho.up.set(0, 0, -1);
+    ortho.lookAt(frame.centre);
+    ortho.updateProjectionMatrix();
+    ortho.updateMatrixWorld();
+    active = ortho;
+    return;
+  }
+  const e = smooth(clamp(p, 0, 1));
+  const d0 = sh.eye.clone().sub(sh.target), D0 = d0.length();
+  const th0 = Math.atan2(d0.y, Math.hypot(d0.x, d0.z)), th = th0 + (Math.PI / 2 - th0) * e;
+  const t0 = Math.tan(sh.fov * DEG / 2), t1 = Math.tan(FOV_PLAN * DEG / 2);
+  const tanE = Math.pow(t0, 1 - e) * Math.pow(t1, e);
+  const hE = Math.pow(2 * D0 * t0, 1 - e) * Math.pow(2 * frame.halfH, e);
+  const dist = hE / (2 * tanE);
+  const target = sh.target.clone().lerp(frame.centre, e);
+  persp.fov = 2 * Math.atan(tanE) / DEG;
+  persp.aspect = size.w / size.h;
+  persp.near = Math.max(0.5, dist - 400);
+  persp.far = dist + 400;
+  persp.position.set(target.x, target.y + Math.sin(th) * dist, target.z - sh.head * Math.cos(th) * dist);
+  persp.up.set(0, 1 - e, sh.head * e).normalize();
+  persp.lookAt(target);
+  persp.setViewOffset(size.w, size.h, -sh.sx * (1 - e) * size.w / 2, sh.sy * (1 - e) * size.h / 2, size.w, size.h);
+  persp.updateProjectionMatrix();
+  persp.updateMatrixWorld();
+  active = persp;
+}
+
+/* ------------------------------------------------------------------ labels */
+/* The tags: the seconds of each filled-in defender, "receiver" on the receiver and, in plan, the
+   two units. Each points at its anchor (the head in broadcast, the marker's edge in plan) with a
+   leader; every drawn frame places them in a fixed order, each at the cheapest of eight
+   directions by TAG_GAPS around its anchor whose box stays in the free region, keeps TAG_PAD
+   pixels from every tag placed before it, from the ball and from the counter, and covers no
+   player's anchor; failing all, the spot that breaks the fewest. Pixels and degrees. */
+const TAG_GAPS = [5, 12, 22, 34, 48, 64], TAG_TURN = 10, TAG_PAD = 3;
+const tagLayer = at("tags");
+let tags = [];
+function buildTags() {
+  const svg = el("svg", {class: "leaders"});
+  tagLayer.replaceChildren(svg);
+  const list = [...RIV.map((id, k) => ({kind: "rival", k, home: -90})), {kind: "me", k: 0, home: 90},
+                {kind: "measure", unit: "line", home: -90}, {kind: "measure", unit: "block", home: 90}];
+  tags = list.map(t => {
+    const node = document.createElement("div");
+    node.className = "tag " + t.kind;
+    node.dataset.kind = t.kind;
+    if (t.kind === "rival") node.dataset.k = String(t.k);
+    if (t.unit) node.dataset.unit = t.unit;
+    tagLayer.appendChild(node);
+    const halo = el("line", {class: "halo"}), lead = el("line", {class: "lead " + t.kind});
+    svg.append(halo, lead);
+    return {...t, node, lines: [halo, lead], text: null, w: 0, h: 0, spots: null};
+  });
+}
+function project(x, y, z = 0) {
+  const v = V(x, y, z).project(active);
+  return [(v.x + 1) / 2 * size.w, (1 - v.y) / 2 * size.h];
+}
+function spotsOf(t) {
+  const out = [];
+  for (let k = 0; k < 8; k++) {
+    const a = (t.home + 45 * k) * DEG, ux = Math.cos(a), uy = Math.sin(a), turn = Math.min(k, 8 - k);
+    for (const g of TAG_GAPS) {
+      const reach = g + Math.abs(ux) * t.w / 2 + Math.abs(uy) * t.h / 2;
+      out.push({dx: ux * reach - t.w / 2, dy: uy * reach - t.h / 2, cost: g + TAG_TURN * turn});
+    }
+  }
+  return out.sort((p, q2) => p.cost - q2.cost);
+}
+/** What each tag says and where it points, in this frame and view; null hides it. */
+function tagContent(t, P, inPlan, ix) {
+  const k = t.k;
+  if (t.kind === "rival") {
+    if (E.rivals.detected[ix][k]) return null;
+    const p = P.rivals[k];
+    return {text: sec(E.rivals.gap[ix][k]), xy: p};
+  }
+  if (t.kind === "me") return {text: "receiver", xy: P.me};
+  if (!inPlan) return null;
+  const u = U[t.unit], v1 = st.variant === "V1";
+  const off = v1 ? `
+not a V1 unit: ${u.seen.filter(Boolean).length} of ${u.seen.length} seen` : "";
+  if (t.unit === "line") return {text: `line height ${num(u.value)} m${off}`, xy: [u.value, S * (HALF_W - 1)], fixed: true, off: v1};
+  const mid = (u.x[0] + u.x[1]) / 2;
+  return {text: `block length ${num(u.value)} m at the phase's start${off}`, xy: [mid, -S * (HALF_W + bracketGap())], fixed: true, off: v1};
+}
+function placeTags() {
+  if (!current) return;
+  const inPlan = st.view === "plan", e = st.view === "rising" ? smooth(st.p) : inPlan ? 1 : 0;
+  const ix = current.i, P = current;
+  const z = BODY_H * (1 - e);
+  const ppm = inPlan ? planFrame().k : 0;
+  const people = [...P.rivals, P.me, ...P.mates].filter(p => p).map(p => project(p[0], p[1], z));
+  const ball = project(P.ball[0], P.ball[1], 0), ballR = 10;
+  const nearest = (b, p) => [clamp(p[0], b.x, b.x + b.w), clamp(p[1], b.y, b.y + b.h)];
+  const apart = (b, o) => b.x >= o.x + o.w + TAG_PAD || o.x >= b.x + b.w + TAG_PAD
+                       || b.y >= o.y + o.h + TAG_PAD || o.y >= b.y + b.h + TAG_PAD;
+  const covers = (b, p) => p[0] > b.x - TAG_PAD && p[0] < b.x + b.w + TAG_PAD && p[1] > b.y - TAG_PAD && p[1] < b.y + b.h + TAG_PAD;
+  const F = inPlan ? size.region : {x0: 0, x1: size.w, y0: size.band, y1: size.h};
+  const placed = size.count ? [size.count] : [];
+  for (const t of tags) {
+    const c = st.view === "rising" ? null : tagContent(t, P, inPlan, ix);
+    const show = c !== null && !(t.kind === "measure" && !inPlan);
+    t.node.hidden = !show;
+    for (const line of t.lines) line.style.display = show ? "" : "none";
+    if (!show) continue;
+    if (c.text !== t.text) { t.node.textContent = c.text; t.text = c.text; t.w = 0; }
+    t.node.classList.toggle("off", Boolean(c.off));
+    if (!t.w) { t.w = t.node.offsetWidth; t.h = t.node.offsetHeight; t.spots = spotsOf(t); }
+    const a = project(c.xy[0], c.xy[1], c.fixed ? 0 : z);
+    let best = null;
+    for (const s of t.spots) {
+      const b = {x: clamp(a[0] + s.dx, F.x0 + 2, F.x1 - t.w - 2), y: clamp(a[1] + s.dy, F.y0 + 2, F.y1 - t.h - 2), w: t.w, h: t.h};
+      const n = nearest(b, ball);
+      let bad = placed.some(o => !apart(b, o)) ? 100 : 0;
+      if (Math.hypot(n[0] - ball[0], n[1] - ball[1]) < ballR) bad += 100;
+      for (const p of people) if (covers(b, p)) bad += 10;
+      if (!best || bad < best.bad) best = {b, bad};
+      if (!bad) break;
+    }
+    const b = best.b, n = nearest(b, a);
+    // in plan the leader stops at the marker's edge, on the side of its tag
+    let end = a;
+    if (inPlan && !c.fixed) {
+      const r = (t.kind === "me" ? ME_RING[1] : DISC_R) * ppm, L = Math.hypot(n[0] - a[0], n[1] - a[1]);
+      end = L > r ? [a[0] + (n[0] - a[0]) / L * r, a[1] + (n[1] - a[1]) / L * r] : a;
+    }
+    placed.push(b);
+    t.node.style.transform = `translate(${b.x.toFixed(1)}px, ${b.y.toFixed(1)}px)`;
+    for (const line of t.lines) {
+      line.setAttribute("x1", n[0].toFixed(1));
+      line.setAttribute("y1", n[1].toFixed(1));
+      line.setAttribute("x2", end[0].toFixed(1));
+      line.setAttribute("y2", end[1].toFixed(1));
+    }
+  }
+}
+
+/* --------------------------------------------------------------- drawing */
+function render() {
+  if (!GL) return;
+  renderer.render(scene3, active);
+  placeTags();
+}
+function drawFrame(P) {
+  const poly = clipFrame(P.corners);
+  // the shade: the apron and beyond, less the frame (a shape with the frame as its hole)
+  const bx = HALF_L + APRON, bz = HALF_W + APRON;
+  const outer = new THREE.Shape([[-bx, -bz], [bx, -bz], [bx, bz], [-bx, bz]].map(p => new THREE.Vector2(...p)));
+  // the shape lies in the mesh's (x, y) plane, which rotation.x = -pi/2 lays on world (X, -Z)
+  outer.holes.push(new THREE.Path(poly.map(p => { const g = G(p.x, p.y); return new THREE.Vector2(g[0], -g[1]); })));
+  shade.geometry.dispose();
+  shade.geometry = new THREE.ShapeGeometry(outer);
+  // the border: solid where the image's edges are, dashed on the far edge (the provider's cut)
+  frameTris.clear();
+  frameDash.clear();
+  for (let k = 0; k < poly.length; k++) {
+    const a = poly[k], b = poly[(k + 1) % poly.length];
+    if (a.edge < 0) continue;                         // along the apron's border, not an edge
+    const ga = G(a.x, a.y), gb = G(b.x, b.y);
+    if (a.edge === 2) dashed(frameDash, ga, gb, FRAME_W, 1.6, 1.1);
+    else segment(frameTris, ga, gb, FRAME_W);
+  }
+  frameTris.commit();
+  frameDash.commit();
+}
+function drawUnits(P) {
+  for (const t of [lineTris, bracketTris, unitRings]) t.clear();
+  const v1 = st.variant === "V1", ix = P.i;
+  const lu = U.line, bu = U.block;
+  const lineOn = ix === lu.index ? 1 : OFF_TICK, blockOn = ix === bu.index ? 1 : OFF_TICK;
+  // the line: across the pitch at the metric's value (its x in the clip's frame)
+  const a = G(lu.value, -HALF_W), b = G(lu.value, HALF_W);
+  if (v1) dashed(lineTris, a, b, 0.25, 0.4, 0.9); else dashed(lineTris, a, b, 0.3, 1.6, 1.0);
+  lineTris.mat.color.set(v1 ? C.grey : C.ink);
+  lineTris.mat.opacity = lineOn * fadeK;
+  // the bracket: between the two players who fix the block's length at the phase's start
+  const y = -S * (HALF_W + bracketGap()), x0 = Math.min(...bu.x), x1 = Math.max(...bu.x);
+  const p0 = G(x0, y), p1 = G(x1, y);
+  if (v1) dashed(bracketTris, p0, p1, 0.25, 0.4, 0.9); else segment(bracketTris, p0, p1, 0.3);
+  for (const [tip, dir] of [[p0, 1], [p1, -1]]) {
+    const ux = (p1[0] - p0[0]) / Math.hypot(p1[0] - p0[0], p1[1] - p0[1]) * dir, uz = (p1[1] - p0[1]) / Math.hypot(p1[0] - p0[0], p1[1] - p0[1]) * dir;
+    bracketTris.tri(tip, [tip[0] + ux * 2.2 - uz * 1.1, tip[1] + uz * 2.2 + ux * 1.1], [tip[0] + ux * 2.2 + uz * 1.1, tip[1] + uz * 2.2 - ux * 1.1]);
+  }
+  // guides from where the two stood at the phase's start down to the bracket
+  bu.player_ids.forEach((id, k) => {
+    const xy = E.rivals.xy[bu.index][idx(id)];
+    dashed(bracketTris, G(xy[0], xy[1]), G(bu.x[k], y), 0.12, 0.6, 0.6);
+  });
+  bracketTris.mat.color.set(C.grey);
+  bracketTris.mat.opacity = blockOn * fadeK;
+  // a thin ink ring around each player the line reads (now), or the hovered row's players
+  const ids = hover ? hover : lu.player_ids;
+  for (const id of ids) {
+    const k = idx(id), p = k >= 0 ? P.rivals[k] : null;
+    if (!p) continue;
+    const g = G(p[0], p[1]), n = 40;
+    for (let s = 0; s < n; s++) {
+      const a0 = 2 * Math.PI * s / n, a1 = 2 * Math.PI * (s + 1) / n;
+      const r0 = UNIT_RING[0], r1 = UNIT_RING[1];
+      unitRings.quad([g[0] + r0 * Math.cos(a0), g[1] + r0 * Math.sin(a0)], [g[0] + r1 * Math.cos(a0), g[1] + r1 * Math.sin(a0)],
+                     [g[0] + r1 * Math.cos(a1), g[1] + r1 * Math.sin(a1)], [g[0] + r0 * Math.cos(a1), g[1] + r0 * Math.sin(a1)]);
+    }
+  }
+  unitRings.mat.opacity = (hover ? 1 : lineOn) * fadeK;
+  for (const t of [lineTris, bracketTris, unitRings]) t.commit();
+}
+function drawAt(tau, draw = true) {
+  current = posAt(tau);
+  const P = current, ix = P.i;
+  if (GL) {
+    const e = st.view === "plan" ? 1 : st.view === "rising" ? smooth(st.p) : 0;
+    const v1 = st.variant === "V1" && st.view === "plan";
+    if (st.view === "broadcast") placeCamera(0);
+    drawFrame(P);
+    for (const B of bodies) {
+      const xy = B.kind === "rival" ? P.rivals[B.k] : B.kind === "me" ? P.me : P.mates[B.k];
+      const seen = B.kind === "rival" ? E.rivals.detected[ix][B.k] : B.kind === "me" ? true : E.mates.detected[ix][B.k];
+      const there = xy !== null;
+      B.body.visible = there && e < 1;
+      B.gr.visible = B.gd.visible = there && e < 1;
+      if (!there) continue;
+      B.body.scale.y = Math.max(1 - e, 1e-3);
+      B.body.position.copy(V(xy[0], xy[1], BODY_H / 2 * B.body.scale.y));
+      B.body.material.opacity = (seen ? 1 : GHOST) * (1 - e);
+      B.body.material.depthWrite = seen;
+      B.gr.position.copy(V(xy[0], xy[1], 0));
+      B.gd.position.copy(V(xy[0], xy[1], 0));
+      B.gr.material.opacity = B.gd.material.opacity = 1 - e;
+      B.gd.visible = B.gd.visible && seen;
+    }
+    for (const M of marks) {
+      const xy = M.kind === "rival" ? P.rivals[M.k] : M.kind === "me" ? P.me : P.mates[M.k];
+      const seen = M.kind === "rival" ? E.rivals.detected[ix][M.k] : M.kind === "me" ? true : E.mates.detected[ix][M.k];
+      const parts = [M.edge, M.face, M.hole, M.extra].filter(Boolean);
+      for (const m of parts) {
+        m.visible = xy !== null && e > 0;
+        if (xy) m.position.copy(V(xy[0], xy[1], 0));
+        m.material.opacity = e * (v1 && !seen ? V1_FADE : 1);
+      }
+      M.hole.visible = M.hole.visible && !seen;
+      M.edge.visible = M.edge.visible && seen;
+    }
+    const z = Math.max(P.ball[2], BALL_R);
+    ball3.position.copy(V(P.ball[0], P.ball[1], z));
+    ball3.visible = e < 1;
+    ballShadow.position.copy(V(P.ball[0], P.ball[1], 0));
+    ballShadow.visible = e < 1;
+    for (const m of [ballMark.edge, ballMark.face]) {
+      m.visible = e > 0;
+      m.position.copy(V(P.ball[0], P.ball[1], 0));
+      m.material.opacity = e;
+    }
+    const inPlan = st.view === "plan";
+    for (const t of [lineTris, bracketTris, unitRings]) t.mesh.visible = inPlan;
+    if (inPlan) drawUnits(P);
+    if (draw) render();
+  }
+  drawCount(ix);
+  scrub.value = String(ix);
+  scrub.style.setProperty("--f", String(ix / (N - 1)));
+  scrub.setAttribute("aria-valuetext", `t = ${signed((ix - KEY) / FPS)} s`);
+}
+function drawCount(ix) {
+  const k = D.key.defenders_extrapolated_by_frame[ix];
+  at("count-n").innerHTML = `<span class="q" data-path="key.defenders_extrapolated_by_frame.${ix}" data-value="${k}">${k}</span> of `
+    + `<span class="q" data-path="n_defenders" data-value="${D.n_defenders}">${D.n_defenders}</span>`;
+  at("count-w").textContent = "defenders filled in";
+  const rel = (D.frames[ix] - D.key.frame) / FPS;
+  at("clock").innerHTML = `<span class="q" data-path="frames.${ix}" data-value="${D.frames[ix]}">${plus(rel)} s</span>`
+    + (ix === KEY ? " RECEPTION" : "");
+  at("count").classList.toggle("big", ix === KEY);
+}
+
+/* ==========================================================================
+   The state machine (storyboard 5.1 to 5.3), exposed as window.camera.
+   ========================================================================== */
+const measure = at("measure"), scrub = at("scrub"), playBtn = at("play");
+const viewB = at("view-broadcast"), viewP = at("view-plan"), varV0 = at("variant-v0"), varV1 = at("variant-v1");
+const cancelHold = () => { clearTimeout(holdTimer); holdTimer = 0; booting = false; };
+const stopPlay = () => { cancelAnimationFrame(playRaf); playRaf = 0; playLast = null; };
+const stopFlight = () => { cancelAnimationFrame(flyRaf); flyRaf = 0; flyLast = null; };
+const stopFade = () => { cancelAnimationFrame(fadeRaf); fadeRaf = 0; };
+
+function startPlay() {
+  st.phase = "playing";
+  playLast = null;
+  playRaf = requestAnimationFrame(tick);
+  syncUI();
+}
+function tick(now) {
+  playRaf = 0;
+  if (st.phase !== "playing") return;
+  if (playLast !== null) st.tau = Math.min(TAU_END, st.tau + Math.min(now - playLast, STEP_MAX) / 1000 * RATE);
+  playLast = now;
+  // the first pass through the reception in broadcast freezes there and rises, once per load
+  const rises = st.view === "broadcast" && !st.risen && st.tau >= T_KEY - 1e-9;
+  if (rises) st.tau = T_KEY;
+  drawAt(st.tau);
+  if (rises || st.tau >= TAU_END - 1e-9) {
+    playLast = null;
+    st.phase = "ended";
+    syncUI();
+    if (rises) {
+      st.risen = true;
+      holdTimer = setTimeout(() => { holdTimer = 0; rise(true); }, HOLD_S * 1000);
+    }
+    return;
+  }
+  playRaf = requestAnimationFrame(tick);
+}
+function rise(auto) {
+  cancelHold();
+  if (STILL || !GL) { land(false, auto); return; }
+  st.view = "rising";
+  st.p = 0;
+  hideMeasure();
+  syncUI();
+  flyLast = null;
+  flyRaf = requestAnimationFrame(now => fly(now, auto));
+}
+function fly(now, auto) {
+  flyRaf = 0;
+  if (flyLast !== null) st.p = Math.min(1, st.p + Math.min(now - flyLast, STEP_MAX) / 1000 / FLIGHT_S);
+  flyLast = now;
+  if (st.p >= 1) { land(true, auto); return; }
+  placeCamera(st.p);
+  drawAt(st.tau);
+  flyRaf = requestAnimationFrame(n => fly(n, auto));
+}
+function land(fade, auto) {
+  flyLast = null;
+  st.view = "plan";
+  st.p = 1;
+  // the natural run lands on the reception (t = 0), the frame both units are read around
+  if (auto) st.tau = T_KEY;
+  if (GL) placeCamera(1);
+  showMeasure(fade && FADE_S > 0);
+  drawAt(st.tau);
+  syncUI();
+}
+function showMeasure(fade) {
+  stopFade();
+  measure.hidden = false;
+  renderMeasure();
+  if (!fade) { setFade(1); return; }
+  setFade(0);
+  let start = null;
+  const step = now => {
+    if (start === null) start = now;
+    const k = Math.min(1, (now - start) / 1000 / FADE_S);
+    setFade(k);
+    drawAt(st.tau);
+    fadeRaf = k < 1 ? requestAnimationFrame(step) : 0;
+  };
+  fadeRaf = requestAnimationFrame(step);
+}
+function setFade(k) {
+  measure.style.opacity = String(k);
+  fadeK = k;
+}
+function hideMeasure() {
+  stopFade();
+  measure.hidden = true;
+  setFade(1);
+  hover = null;
+}
+
+function syncUI() {
+  const rising = st.view === "rising", atEnd = st.tau >= TAU_END - 1e-9;
+  // "Replay" at the clip's end only: from the reception, play() runs on to the end (5.1)
+  playBtn.textContent = st.phase === "playing" ? "Pause" : atEnd ? "Replay" : "Play";
+  playBtn.disabled = scrub.disabled = rising;
+  viewB.disabled = viewP.disabled = rising || !GL;
+  viewB.setAttribute("aria-pressed", String(st.view === "broadcast"));
+  viewP.setAttribute("aria-pressed", String(st.view === "plan"));
+  varV0.setAttribute("aria-pressed", String(st.variant === "V0"));
+  varV1.setAttribute("aria-pressed", String(st.variant === "V1"));
+  const head = `Match ${D.match_id} · reception at frame ${D.key.frame} · `;
+  at("stage-caption").textContent = rising ? "rising to the top-down view"
+    : st.view === "broadcast" ? head + "from the camera's side, real time · the window on the grass is the camera's frame, measured"
+      : head + "from above: " + (st.variant === "V0" ? "every unit" : "players seen throughout");
+  at("stage-sub").textContent = st.view === "plan"
+    ? "From above: keep only what the camera saw whole (V1), and line height and block length change sample."
+    : "Solid: the camera saw them. Hollow: SkillCorner filled them in, with the seconds to the nearest frame the camera saw each.";
+  if (!measure.hidden) updateMeasure();
+}
+
+const api = {
+  T, T_KEY, RATE, HOLD_S, FLIGHT_S, FADE_S,
+  play() {
+    if (st.view === "rising" || st.phase === "playing") return false;
+    cancelHold();
+    if (st.tau >= TAU_END - 1e-9) st.tau = 0;
+    drawAt(st.tau);
+    startPlay();
+    return true;
+  },
+  pause() {
+    if (st.view === "rising") return false;
+    cancelHold();
+    if (st.phase === "playing") { stopPlay(); st.phase = "idle"; }
+    syncUI();
+    return true;
+  },
+  seek(t) {
+    if (st.view === "rising") return false;
+    t = Number(t);
+    if (!Number.isFinite(t)) return false;
+    cancelHold();
+    stopPlay();
+    st.tau = clamp(t + T_KEY, 0, TAU_END);
+    st.phase = "idle";
+    drawAt(st.tau);
+    syncUI();
+    return true;
+  },
+  view(name) {
+    if (st.view === "rising") return false;
+    if (name === st.view) return true;
+    if (name === "plan") {
+      cancelHold();
+      if (st.phase === "playing") { stopPlay(); st.phase = "idle"; }
+      rise(false);
+      return true;
+    }
+    if (name === "broadcast" && GL) {
+      cancelHold();
+      hideMeasure();                     // before the frame is drawn
+      if (st.phase === "playing") { stopPlay(); st.phase = "idle"; }
+      st.view = "broadcast";
+      st.p = 0;
+      placeCamera(0);
+      drawAt(st.tau);
+      syncUI();
+      return true;
+    }
+    return false;
+  },
+  variant(name) {
+    if (st.view === "rising" || (name !== "V0" && name !== "V1")) return false;
+    st.variant = name;
+    if (st.view === "plan") { drawAt(st.tau); renderMeasure(); }
+    syncUI();
+    return true;
+  },
+  state() {
+    const P = posAt(st.tau);
+    return {t: Math.round((st.tau - T_KEY) * 1e9) / 1e9, i: P.i, phase: st.phase, view: st.view, variant: st.variant,
+            positions: {rivals: P.rivals, mates: P.mates, me: P.me, ball: P.ball},
+            frame: P.corners.map(p => p.slice())};
+  },
+  flight(p) {
+    p = Number(p);
+    if (!GL || !Number.isFinite(p)) return false;
+    p = clamp(p, 0, 1);
+    stopFlight();
+    cancelHold();
+    if (st.phase === "playing") { stopPlay(); st.phase = "idle"; }
+    st.p = p;
+    if (p >= 1) { st.view = "plan"; placeCamera(1); showMeasure(false); }
+    else { hideMeasure(); st.view = p > 0 ? "rising" : "broadcast"; placeCamera(p); }
+    drawAt(st.tau);
+    syncUI();
+    return true;
+  },
+  camera() {
+    if (!GL) return null;
+    active.updateMatrixWorld();
+    return {type: active.isOrthographicCamera ? "orthographic" : "perspective",
+            projection: Array.from(active.projectionMatrix.elements),
+            view: Array.from(active.matrixWorldInverse.elements),
+            world: WORLD.slice(), width: size.w, height: size.h};
+  },
+  /** Clip-frame metres to canvas CSS pixels through the current camera. */
+  project(x, y, z = 0) { return GL ? project(x, y, z) : null; },
+  unproject(px, py) {
+    if (!GL) return null;
+    const ndc = new THREE.Vector2(px / size.w * 2 - 1, 1 - py / size.h * 2);
+    const ray = new THREE.Raycaster();
+    ray.setFromCamera(ndc, active);
+    const hit = ray.ray.intersectPlane(new THREE.Plane(new THREE.Vector3(0, 1, 0), 0), new THREE.Vector3());
+    return hit ? [S * hit.x, -S * hit.z] : null;
+  },
+  colours: {defender: C.vermilion, team: C.blue, ring: C.ink, ball: C.ink, line: C.ink, bracket: C.grey},
+};
+window.camera = api;
+
+/* ------------------------------------------------------------------ inputs */
+playBtn.addEventListener("click", () => { if (st.phase === "playing") api.pause(); else api.play(); });
+viewB.addEventListener("click", () => api.view("broadcast"));
+viewP.addEventListener("click", () => api.view("plan"));
+varV0.addEventListener("click", () => api.variant("V0"));
+varV1.addEventListener("click", () => api.variant("V1"));
+scrub.addEventListener("input", () => api.seek((Number(scrub.value) - KEY) / FPS));
+document.addEventListener("visibilitychange", () => { playLast = null; flyLast = null; });
+
+/* ==========================================================================
+   The measures (#measure, plan only): the panel, the lead, the table, the
+   strips, the frame measured, the limits.
+   ========================================================================== */
+const ROWS = D.match.rows, rowOf = m => ROWS.findIndex(r => r.metric === m);
+const NOUN = {pressure_index: "receptions", nearest_rival_m: "receptions", line_height_m: "receptions",
+              line_reaction_m: "receptions", block_width_m: "phases", block_length_m: "phases", block_area_m2: "phases"};
+const unitOf = r => (r.unit ? NB + r.unit : "");
+const dec = r => (r.metric === "pressure_index" ? 3 : 1);
+function panelRow(metric) {
+  const k = rowOf(metric), r = ROWS[k];
+  const cell = v => `<td class="${v.toLowerCase()}${v === st.variant ? " on" : ""}"><span class="num">${v}${NB}`
+    + `${q(`match.rows.${k}.${v}.mean`, num(r[v].mean, dec(r)) + unitOf(r))}</span>`
+    + `<span class="n">over ${q(`match.rows.${k}.${v}.n`, thou(r[v].n))} ${NOUN[metric]}</span></td>`;
+  return `<tr><th>${r.words}</th>${cell("V0")}${cell("V1")}</tr>`;
+}
+function updateMeasure() {
+  at("panel-table").innerHTML = panelRow("line_height_m") + panelRow("block_length_m");
+  at("metrics").querySelectorAll("tbody tr").forEach(tr => tr.classList.toggle("on", tr.dataset.metric === "line_height_m" || tr.dataset.metric === "block_length_m"));
+}
+function renderMeasure() {
+  updateMeasure();
+  const lu = U.line, bu = U.block;
+  const gaps = lu.gap_len.map((g, k) => q(`units.line.gap_len.${k}`, (g / FPS).toFixed(1))).join(", ").replace(/, ([^,]*)$/, " and $1");
+  const kk = bu.player_ids.indexOf(KEEPER);
+  at("lead").innerHTML = "V0 reads every unit. V1 keeps a unit only when every player the metric read was detected"
+    + " in every frame of its window. At this reception the back four are all filled in (" + gaps + NB + "s from the nearest"
+    + " frame the camera saw each), so the line's height (" + q("units.line.value", num(lu.value) + NB + "m") + ") is a V0 reading"
+    + " and no V1 reading; the block of the phase that holds it (" + q("units.block.value", num(bu.value) + NB + "m")
+    + " at its start, " + q("units.block.frame", ((D.key.frame - bu.frame) / FPS).toFixed(1) + NB + "s") + " earlier) is fixed by the"
+    + " goalkeeper, filled in, " + q(`units.block.gap_len.${kk}`, (bu.gap_len[kk] / FPS).toFixed(1) + NB + "s") + " from his nearest detection.";
+  const cx = D.context;
+  at("context").innerHTML = `In this match the camera saw ${q("context.player_detected", pct(cx.player_detected))} of the player-frames:`
+    + ` ${q("context.ball_distance.00_05", pct(cx.ball_distance["00_05"]))} of those within five metres of the ball,`
+    + ` ${q("context.ball_distance.40_plus", pct(cx.ball_distance["40_plus"]))} of those farther than forty. The back four were seen whole at`
+    + ` ${q("context.line.all_detected", pct(cx.line.all_detected))} of its ${q("context.line.events", thou(cx.line.events))} receptions,`
+    + ` the block at ${q("context.block.all_detected", pct(cx.block.all_detected, 1))} of its ${q("context.block.phases", thou(cx.block.phases))} phases.`;
+  at("table-title").textContent = `The match's seven metrics, V0 and V1 (reports/reliability.csv)`;
+  const head = "<thead><tr><th>metric</th><th>V0 mean</th><th>units</th><th>V1 mean</th><th>units</th><th>V1 − V0</th></tr></thead>";
+  const body = ROWS.map((r, k) => `<tr data-metric="${r.metric}" class="${["line_height_m", "block_length_m"].includes(r.metric) ? "unit" : ""}">`
+    + `<td>${r.words}${r.unit ? ` (${r.unit})` : ""}</td>`
+    + `<td>${q(`match.rows.${k}.V0.mean`, num(r.V0.mean, dec(r) + 1))}</td><td>${q(`match.rows.${k}.V0.n`, thou(r.V0.n))}</td>`
+    + `<td>${q(`match.rows.${k}.V1.mean`, num(r.V1.mean, dec(r) + 1))}</td><td>${q(`match.rows.${k}.V1.n`, thou(r.V1.n))}</td>`
+    + `<td>${q(`match.rows.${k}.diff`, signed(r.diff, dec(r) + 1))}</td></tr>`).join("");
+  at("metrics").innerHTML = head + "<tbody>" + body + "</tbody>";
+  at("metrics").querySelectorAll("tbody tr").forEach(tr => {
+    const players = {line_height_m: U.line.player_ids, block_length_m: U.block.player_ids, block_width_m: null,
+                     pressure_index: U.pressure.player_ids, nearest_rival_m: U.nearest.player_ids}[tr.dataset.metric];
+    const on = () => { hover = players || null; if (st.view === "plan" && GL) { drawAt(st.tau); } };
+    const off = () => { hover = null; if (st.view === "plan" && GL) drawAt(st.tau); };
+    tr.addEventListener("mouseenter", on);
+    tr.addEventListener("mouseleave", off);
+  });
+  updateMeasure();
+  const pr = ROWS[rowOf("pressure_index")], nr = ROWS[rowOf("nearest_rival_m")];
+  at("near-note").innerHTML = `Pressure and nearest rival: V1 keeps ${q(`match.rows.${rowOf("pressure_index")}.V1.n`, thou(pr.V1.n))} of`
+    + ` ${q(`match.rows.${rowOf("pressure_index")}.V0.n`, thou(pr.V0.n))} and ${q(`match.rows.${rowOf("nearest_rival_m")}.V1.n`, thou(nr.V1.n))} of`
+    + ` ${q(`match.rows.${rowOf("nearest_rival_m")}.V0.n`, thou(nr.V0.n))}: they read near the ball, where the camera looks. At this`
+    + ` reception both read the same rival, who was seen, so both are V1 units.`;
+  renderStrips();
+  const cl = D.strips.claim;
+  at("strips-title").textContent = "Over the twenty matches, V1 minus V0, in the metric's own unit";
+  at("strips-claim").innerHTML = `Line height reads ${q("strips.claim.line_height_m.least", cl.line_height_m.least.toFixed(0))} to`
+    + ` ${q("strips.claim.line_height_m.most", cl.line_height_m.most.toFixed(0))}${NB}m higher and block length`
+    + ` ${q("strips.claim.block_length_m.least", cl.block_length_m.least.toFixed(0))} to ${q("strips.claim.block_length_m.most", cl.block_length_m.most.toFixed(0))}${NB}m`
+    + ` shorter in every match of both halves: a different sample, not an error.`;
+  at("limit-chosen").innerHTML = "One match, one reception chosen by rule (<code>clip.json:rule</code>), the one with most defenders filled"
+    + " in and the longest gap among them: clearer than most, not typical. The match's own numbers are the table; the twenty are the strips.";
+  renderFrameSection();
+  renderLimits();
+}
+function renderStrips() {
+  const host = at("strips"), w = Math.max(280, Math.floor(host.clientWidth)), rowH = 64, labelW = w < 520 ? 0 : 150;
+  const plotW = w - labelW - 24, H = rowH * ROWS.length + 8;
+  const svg = el("svg", {width: w, height: H, viewBox: `0 0 ${w} ${H}`, role: "img",
+                         "aria-label": "V1 minus V0 per match and metric, calibration above, held-out below"});
+  at("strips-legend").innerHTML = `<span><svg width="12" height="12"><circle cx="6" cy="6" r="4.5" fill="${C.blue}"/></svg>calibration (upper)</span>`
+    + `<span><svg width="12" height="12"><rect x="1.5" y="1.5" width="9" height="9" fill="${C.vermilion}"/></svg>held-out (lower)</span>`
+    + `<span><svg width="14" height="14"><circle cx="7" cy="7" r="6" fill="none" stroke="${C.ink}" stroke-width="2"/></svg>this match</span>`
+    + `<span><svg width="4" height="14"><rect width="3" height="14" fill="${C.grey}"/></svg>median of the half</span>`;
+  ROWS.forEach((r, k) => {
+    const s = D.strips.metrics[r.metric], y0 = k * rowH + 4;
+    const vals = ["calibration", "held-out"].flatMap(g => s[g].points.map(p => p.value));
+    const lo0 = Math.min(0, ...vals), hi0 = Math.max(0, ...vals), pad = (hi0 - lo0) * 0.06 || 1;
+    const lo = lo0 - pad, hi = hi0 + pad, X = v => labelW + 12 + (v - lo) / (hi - lo) * plotW;
+    const g = el("g", {class: "strip", "data-metric": r.metric});
+    const name = r.words + (r.unit ? ` (${r.unit})` : "");
+    if (labelW) g.appendChild(el("text", {x: labelW, y: y0 + 22, "text-anchor": "end", "font-weight": ["line_height_m", "block_length_m"].includes(r.metric) ? 700 : 400}, name));
+    else g.appendChild(el("text", {x: 0, y: y0 + 10, "font-weight": ["line_height_m", "block_length_m"].includes(r.metric) ? 700 : 400}, name));
+    const yc = labelW ? y0 + 18 : y0 + 26;
+    g.appendChild(el("line", {x1: X(0), x2: X(0), y1: yc - 14, y2: yc + 14, stroke: C.grey, "stroke-width": 1}));
+    g.appendChild(el("line", {x1: labelW + 12, x2: labelW + 12 + plotW, y1: yc + 16, y2: yc + 16, stroke: "#999", "stroke-width": 0.8}));
+    for (const t of niceTicks(lo, hi, 4)) {
+      g.appendChild(el("line", {x1: X(t), x2: X(t), y1: yc + 16, y2: yc + 20, stroke: "#999"}));
+      g.appendChild(el("text", {x: X(t), y: yc + 32, "text-anchor": "middle", class: "small"}, num(t, Math.abs(t) < 1 && t !== 0 ? 2 : 0)));
+    }
+    for (const [grp, dy, colour] of [["calibration", -6, C.blue], ["held-out", 6, C.vermilion]]) {
+      for (const p of s[grp].points) {
+        const cx = X(p.value), cy = yc + dy;
+        g.appendChild(grp === "calibration" ? el("circle", {cx, cy, r: 3.6, fill: colour, opacity: 0.85, "data-value": p.value, "data-match": p.match})
+          : el("rect", {x: cx - 3.2, y: cy - 3.2, width: 6.4, height: 6.4, fill: colour, opacity: 0.85, "data-value": p.value, "data-match": p.match}));
+        if (p.match === String(D.match_id)) {
+          g.appendChild(el("circle", {cx, cy, r: 7, fill: "none", stroke: C.ink, "stroke-width": 1.8}));
+          const lab = el("text", {x: cx, y: yc - 15, "text-anchor": cx > labelW + plotW * 0.7 ? "end" : "start", class: "small"},
+                         `this match ${signed(p.value, 1)}${r.unit ? NB + r.unit : ""}`);
+          lab.setAttribute("data-path", `match.rows.${k}.diff`);
+          g.appendChild(lab);
+        }
+      }
+      g.appendChild(el("line", {x1: X(s[grp].median), x2: X(s[grp].median), y1: yc + dy - 7, y2: yc + dy + 7, stroke: colour, "stroke-width": 2.4}));
+    }
+    svg.appendChild(g);
+  });
+  host.replaceChildren(svg);
+}
+function renderFrameSection() {
+  const f = FS, a = f.area_m2, ap = f.apex;
+  at("frame-text").innerHTML = `Of the match's ${q("frame_stats.frames", thou(f.frames))} frames, ${q("frame_stats.with_corners", thou(f.with_corners))}`
+    + ` carry the four corners of the camera's image on the pitch. The other ${q("frame_stats.without_corners", thou(f.without_corners))} carry none:`
+    + ` ${q("frame_stats.without_no_player", thou(f.without_no_player))} list no player at all, and ${q("frame_stats.without_with_players", thou(f.without_with_players))}`
+    + ` list ${q("frame_stats.without_players_listed.0", f.without_players_listed[0])} players of whom ${q("frame_stats.without_rows_detected", pct(f.without_rows_detected, 2))} are detected:`
+    + ` the camera was not on the game and everyone is filled in. In the frames with corners,`
+    + ` ${q("frame_stats.seen_inside", pct(f.seen_inside, 1))} of the ${q("frame_stats.seen_rows", thou(f.seen_rows))} detected player rows lie inside the frame and`
+    + ` ${q("frame_stats.filled_inside", pct(f.filled_inside, 1))} of the ${q("frame_stats.filled_rows", thou(f.filled_rows))} filled-in ones: the frame is the window the camera saw.`
+    + ` Its far edge is cut by the provider at y = ${q("frame_stats.far_cut_y_m", f.far_cut_y_m.toFixed(1) + NB + "m")},`
+    + ` ${q("frame_stats.far_cut_beyond_touchline_m", f.far_cut_beyond_touchline_m.toFixed(1) + NB + "m")} past the far touchline, in`
+    + ` ${q("frame_stats.far_cut_share", pct(f.far_cut_share))} of them (${q("frame_stats.clip.far_cut_share", pct(f.clip.far_cut_share))} of the clip's), so the`
+    + ` polygon is not the whole image. Its median area is ${q("frame_stats.area_m2.median", thou(a.median) + NB + "m²")}`
+    + ` (${q("frame_stats.area_m2.p5", thou(a.p5))} to ${q("frame_stats.area_m2.p95", thou(a.p95))} from the fifth to the ninety-fifth percentile),`
+    + ` ${q("frame_stats.area_m2.median_share", pct(a.median_share))} of the pitch's ${q("frame_stats.area_m2.pitch", thou(a.pitch) + NB + "m²")};`
+    + ` at the reception ${q("frame_stats.area_m2.reception", thou(a.reception) + NB + "m²")}, ${q("frame_stats.area_m2.reception_share", pct(a.reception_share))}.`
+    + ` Its corners move at most ${q("frame_stats.clip.max_corner_step_m", f.clip.max_corner_step_m.toFixed(1) + NB + "m")} from one frame to the next in the clip,`
+    + ` so the page slides them between frames as it slides the players. The side edges meet`
+    + ` ${q("frame_stats.apex.behind_near_touchline_m", f.apex.behind_near_touchline_m.toFixed(0) + NB + "m")} behind the near touchline, on the halfway line`
+    + ` (x from ${q("frame_stats.apex.x_p10_p90.0", num(ap.x_p10_p90[0]))} to ${q("frame_stats.apex.x_p10_p90.1", num(ap.x_p10_p90[1]))}${NB}m, tenth to ninetieth percentile over the match).`;
+  at("frame-limit").innerHTML = `The four corners are the provider's estimate; the far edge is cut at y = ${q("frame_stats.far_cut_y_m", f.far_cut_y_m.toFixed(0) + NB + "m")}`
+    + ` in most frames, so the camera's pose cannot be recovered from them, and its height is not in the data. The virtual camera stands over the point`
+    + ` where the side edges meet, at a drawn ${q("camera.drawn_height_m", CAM.drawn_height_m.toFixed(0) + NB + "m")}. A real camera that does not roll stands`
+    + ` in front of that point, toward the pitch, by an amount its tilt sets; the point moves as the camera tilts and pans (the grey dots: the clip's frames).`;
+  renderMinimap();
+}
+function renderMinimap() {
+  const host = at("minimap"), w = Math.min(420, Math.max(260, Math.floor(host.clientWidth)));
+  const ys = CAM.apex.map(p => -S * p[1]);
+  const top = HALF_W + APRON, bottom = Math.max(...ys.map(z => z)) + 4, left = -(HALF_L + APRON), right = HALF_L + APRON;
+  const k = w / (right - left), H = Math.ceil((bottom + top) * k);
+  const P = (x, y) => [((S * x) - left) * k, ((-S * y) + top) * k];       // clip frame -> svg px
+  const svg = el("svg", {width: w, height: H, viewBox: `0 0 ${w} ${H}`, role: "img",
+                         "aria-label": "the pitch from above with the camera's frame at the reception and where its side edges meet"});
+  svg.appendChild(el("rect", {x: 0, y: 0, width: w, height: (2 * top) * k, fill: C.grass}));
+  for (const pl of pitchLines()) svg.appendChild(el("polyline", {points: pl.map(p => [(p[0] - left) * k, (p[1] + top) * k].join(",")).join(" "), fill: "none", stroke: C.lines, "stroke-width": 1}));
+  const poly = clipFrame(CAM.corners[KEY]);
+  svg.appendChild(el("polygon", {points: poly.map(p => P(p.x, p.y).join(",")).join(" "), fill: C.white, "fill-opacity": 0.7, stroke: C.ink, "stroke-width": 1.5}));
+  const c = CAM.corners[KEY], apex = CAM.apex[KEY];
+  for (const corner of [c[0], c[1]]) {
+    const a = P(...corner), b = P(...apex);
+    svg.appendChild(el("line", {x1: a[0], y1: a[1], x2: b[0], y2: b[1], stroke: C.ink, "stroke-width": 1, "stroke-dasharray": "4 3"}));
+  }
+  for (const p of CAM.apex) { const xy = P(...p); svg.appendChild(el("circle", {cx: xy[0], cy: xy[1], r: 1.6, fill: C.grey})); }
+  const m = P(...CAM.apex_median);
+  svg.appendChild(el("text", {x: m[0] + 8, y: m[1] + 4, class: "small"}, "where the side edges meet"));
+  host.replaceChildren(svg);
+}
+function renderLimits() {
+  const f = FS;
+  const items = [
+    [`One reception of one match, chosen by rule (<code>clip.json:rule</code>): match ${D.match_id}, the match of the README's quick block, so a reader regenerates it in seconds.`, "reports/clip/clip.json"],
+    ["Tracked: each player's and the ball's (x, y), <code>is_detected</code> and <code>gap_len</code>, and the frame's four corners. Drawn: the bodies, their facing, the virtual camera's place and height; the ball's height is the provider's and nothing is measured from it.", "reports/camera/camera.json"],
+    [`The frame's far edge is cut by the provider at y = ${q("frame_stats.far_cut_y_m", f.far_cut_y_m.toFixed(0) + NB + "m")} in ${q("frame_stats.far_cut_share", pct(f.far_cut_share))} of the frames with corners: the polygon is not the whole image.`, "camera.json:frame_stats"],
+    [`No corners in ${q("frame_stats.without_corners", thou(f.without_corners))} frames: no player listed, or the camera off the game; of the clip's frames, ${q("frame_stats.clip.without_corners", f.clip.without_corners)} lack them.`, "camera.json:frame_stats"],
+    [`V1 is a declared selection: what was near the ball and in view. The match's numbers are means over ${q(`match.rows.${rowOf("line_height_m")}.V0.n`, thou(ROWS[rowOf("line_height_m")].V0.n))} receptions and ${q(`match.rows.${rowOf("block_length_m")}.V0.n`, thou(ROWS[rowOf("block_length_m")].V0.n))} phases; the reception drawn is one case, and the page does not say where it ranks.`, "reports/reliability.csv"],
+    [`The goalkeeper is the proxy of <code>ac2fb.reliability.visibility.goalkeepers</code> (the deepest mean position of a team in a period): player ${q("units.block.phase.keeper_id", KEEPER)} for the defending team. The receiver is that proxy for his own team; the page, like the clip, does not call him a goalkeeper.`, "ac2fb.reliability.visibility"],
+    [`The page measures nothing the repository does not print: <code>camera.json</code> lists every number and position drawn, and <code>scripts/camera_page.py --check</code> recomputes it from the data. The players of both units are read by the frozen code of layer 2 at their frames.`, "scripts/camera_page.py"],
+  ];
+  at("limits-list").innerHTML = items.map(([t, s]) => `<li>${t} <span class="src">(${s})</span></li>`).join("");
+}
+function renderStatic() {
+  const sw = (fill, stroke, r = 6, w = 2) => `<svg width="18" height="18" aria-hidden="true"><circle cx="9" cy="9" r="${r}" fill="${fill}" stroke="${stroke}" stroke-width="${w}"/></svg>`;
+  at("key").innerHTML = [
+    [sw(C.vermilion, C.white, 7, 1.5), "Seen by the camera"], [sw(C.white, C.vermilion, 6, 3), "Filled in by the model"],
+    [sw(C.blue, C.ink, 6, 2.5), "Receiver"], [sw(C.ink, C.white, 4, 1.5), "Ball"], [sw(C.blue, C.white, 4, 1), "Teammates"],
+    [`<svg width="26" height="12" aria-hidden="true"><rect x="1" y="1" width="24" height="10" fill="${C.grass}" stroke="${C.ink}" stroke-width="2"/></svg>`, "the camera's frame (dashed: the provider's cut)"],
+  ].map(([s, t]) => `<li>${s}${t}</li>`).join("") + `<li class="note">number = seconds to the nearest detection</li>`;
+  at("drawn").textContent = "Tracked: where each player stands and whether the camera saw him, the ball, and the four corners of the camera's"
+    + " image on the grass. Drawn: the bodies and the virtual camera, its place and its height; the ball's height is the provider's.";
+  const ticks = at("ticks");
+  ticks.replaceChildren();
+  for (const [u, text, title, row] of [[U.block, "phase start", "phase start: block length is read here", 1], [U.line, "reception", "the reception: line height is read here", 0]]) {
+    const f = u.index / (N - 1);
+    const tk = document.createElement("div");
+    tk.className = "tick";
+    tk.style.setProperty("--f", String(f));
+    const lab = document.createElement("div");
+    lab.className = "tick-label";
+    lab.textContent = text;
+    lab.title = title;
+    lab.style.setProperty("--f", String(f));
+    lab.style.top = (10 + row * 16) + "px";
+    lab.style.transform = f < 0.15 ? "translateX(-4px)" : "translateX(-50%)";
+    ticks.append(tk, lab);
+  }
+  scrub.max = String(N - 1);
+  const three = D.three, cmd = [
+    `uv run ftbase ingest --match ${D.match_id} && uv run ftbase bronze && uv run ftbase silver`,
+    "uv run python scripts/camera_page.py            # writes reports/camera/",
+    "uv run python scripts/camera_page.py --check    # recomputes and compares",
+    "uv run --with playwright python scripts/drive_camera_page.py [path-or-url]"];
+  at("footer").innerHTML = "<h3>What this is</h3><p>The page of the entry <i>What the camera saw: a reliability tag for defensive metrics</i>:"
+    + " <a href=\"https://github.com/javiersr1996/ac2-football\">github.com/javiersr1996/ac2-football</a>. It is built by"
+    + " <code>scripts/camera_page.py</code> from <code>scripts/camera_template.html</code>, with <code>reports/camera/camera.json</code>"
+    + " and <code>vendor/three/</code>, and driven from the console by <code>scripts/drive_camera_page.py</code>.</p>"
+    + "<h3>Run it</h3><pre>" + cmd.map(esc).join("\n") + "</pre>"
+    + "<h3>Licences and data</h3><p>Code: MIT. Data: SkillCorner open data, MIT, downloaded by the commands, not versioned here"
+    + " (<a href=\"https://github.com/SkillCorner/opendata\">github.com/SkillCorner/opendata</a>). three.js r" + esc(three.release.split(".")[1])
+    + ", MIT, inlined (<code>vendor/three/</code>). The page's build, template and console driver reuse the author's basketball entry (MIT),"
+    + " <a href=\"https://github.com/javiersr1996/nobody-helps-the-helper\">nobody-helps-the-helper</a>.</p>";
+}
+
+/* ------------------------------------------------------------------ sizing */
+/* The stage's size, the band over its top (the title, and on the desktop the controls beside it),
+   the counter's box, and the plan's free region: under the band and the phone's panel, or left of
+   the desktop's right column and clear of it, and above the counter. Pixels. */
+function sizeStage() {
+  const square = window.matchMedia("(max-width: 899px)").matches, cap = at("stage-caption");
+  const home = square ? at("view-plan").parentNode.parentNode : at("top");
+  if (cap.parentNode !== home) home.appendChild(cap);
+  const box = at("stage"), w = Math.floor(box.clientWidth), h = Math.floor(box.clientHeight);
+  const y0 = box.getBoundingClientRect().top, x0 = box.getBoundingClientRect().left, hero = at("hero");
+  const band = Math.ceil(Math.max(at("top").getBoundingClientRect().bottom,
+                                  square ? 0 : at("controls").getBoundingClientRect().bottom) - y0);
+  hero.style.setProperty("--band", band + "px");
+  hero.classList.toggle("flat", !GL);
+  if (!GL) return false;
+  const cb = at("count").getBoundingClientRect();
+  const count = {x: cb.left - x0, y: cb.top - y0, w: cb.width, h: cb.height};
+  if (w === size.w && h === size.h && square === size.square && band === size.band && size.count && count.y === size.count.y) return false;
+  const aside = parseFloat(getComputedStyle(hero).getPropertyValue(square ? "--panel-h" : "--side"));
+  const region = square ? {x0: 0, x1: w, y0: band + aside, y1: count.y - 6} : {x0: 0, x1: w - aside - 16, y0: band, y1: count.y - 6};
+  Object.assign(size, {w, h, square, band, region, count});
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+  renderer.setSize(w, h, false);
+  look = null;
+  return true;
+}
+function relayout() {
+  if (sizeStage() && GL) { placeCamera(st.view === "plan" ? 1 : st.view === "rising" ? st.p : 0); drawAt(st.tau); }
+  if (!measure.hidden) renderMeasure();
+}
+
+/* -------------------------------------------------------------------- start */
+renderStatic();
+const warm = GL ? (buildStage(), warmUp()) : null;
+if (GL) buildTags();
+sizeStage();
+if (!GL) {
+  at("no-gl").hidden = false;
+  canvas.hidden = true;
+  st.view = "plan";
+  st.tau = T_KEY;
+  st.p = 1;
+  showMeasure(false);
+  drawAt(T_KEY);
+} else if (STILL) {
+  st.view = "plan";
+  st.tau = T_KEY;
+  st.p = 1;
+  st.risen = true;
+  placeCamera(1);
+  showMeasure(false);
+  drawAt(T_KEY);
+} else {
+  st.view = "broadcast";
+  st.tau = 0;
+  placeCamera(0);
+  drawAt(0, false);
+  booting = true;
+  warm.then(() => {
+    if (!booting) return;
+    drawAt(0);
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      if (!booting) return;
+      booting = false;
+      startPlay();
+    }));
+  });
+}
+syncUI();
+new ResizeObserver(relayout).observe(document.body);
+</script>
+</body>
+</html>

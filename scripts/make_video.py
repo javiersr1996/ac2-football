@@ -478,11 +478,10 @@ def transcribe(voice: Path, model_name: str) -> list[Word]:
             "`uv run --with faster-whisper python scripts/make_video.py ...`"
         ) from None
     # Decoded by ffmpeg (any format a phone writes), not by the model's own reader.
-    decoded = subprocess.run(
+    decoded = run(
         ["ffmpeg", "-nostdin", "-loglevel", "error", "-i", str(voice)]
         + ["-f", "f32le", "-ac", "1", "-ar", "16000", "-"],
-        capture_output=True,
-        check=True,
+        text=False,
     ).stdout
     # A second of silence each side, so a last word at the very end is heard; beam search at
     # temperature zero only, so the same recording always gives the same words and times.
@@ -504,8 +503,19 @@ def transcribe(voice: Path, model_name: str) -> list[Word]:
     ]
 
 
-def run(args: Sequence[str]) -> subprocess.CompletedProcess[str]:
-    return subprocess.run(list(args), capture_output=True, text=True, encoding="utf-8", check=True)
+def run(args: Sequence[str], text: bool = True) -> subprocess.CompletedProcess[Any]:
+    """``args`` with its output captured; a non-zero exit raises with the tool's own stderr."""
+    proc = subprocess.run(
+        list(args),
+        capture_output=True,
+        text=text,
+        encoding="utf-8" if text else None,
+        errors="replace" if text else None,
+    )
+    if proc.returncode != 0:
+        stderr = proc.stderr if text else proc.stderr.decode("utf-8", errors="replace")
+        raise RuntimeError(f"{args[0]} failed with {proc.returncode}:\n{stderr.strip()}")
+    return proc
 
 
 def prepare_voice(voice: Path, timing: Timing, out: Path) -> None:
@@ -514,12 +524,8 @@ def prepare_voice(voice: Path, timing: Timing, out: Path) -> None:
     if timing.factor != 1.0:
         cut += f",atempo={timing.factor:.4f}"
     ffmpeg = ["ffmpeg", "-y", "-nostdin", "-hide_banner", "-i", str(voice)]
-    measured = subprocess.run(
-        [*ffmpeg, "-af", f"{cut},{LOUDNESS}:print_format=json", "-f", "null", "-"],
-        capture_output=True,
-        text=True,
-        encoding="utf-8",
-        check=True,
+    measured = run(
+        [*ffmpeg, "-af", f"{cut},{LOUDNESS}:print_format=json", "-f", "null", "-"]
     ).stderr
     stats = json.loads(measured[measured.rindex("{") : measured.rindex("}") + 1])
     linear = (
@@ -873,6 +879,11 @@ def main(argv: list[str] | None = None) -> int:
         if shutil.which(tool) is None:
             print(f"{tool} not found on PATH", file=sys.stderr)
             return 2
+    # Checked before a font is fetched or a panel drawn: with --words the file is first read by
+    # ffmpeg at the very end, and without it the missing model would be blamed instead.
+    if args.voice is not None and not args.voice.is_file():
+        print(f"the recording {args.voice} does not exist", file=sys.stderr)
+        return 2
     root: Path = args.root
     build = root / BUILD
     build.mkdir(parents=True, exist_ok=True)

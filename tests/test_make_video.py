@@ -4,7 +4,9 @@ The aligner on a fake list of words heard, built from the committed script with 
 then one change at a time: a misread word, a filler, a long pause, numerals read as words, a
 missing sentence (named). The minute: the trim, the hold, ``--speed-up`` at 5 % at most. The shot
 timeline from the script table, the storyboard against it, every caption in two lines, and the
-teleprompter saying the script's sentences.
+teleprompter saying the script's sentences. Last, the command: a recording that does not exist
+is refused before a font is fetched or a panel drawn, and a tool that fails is reported with its
+own stderr (the one test here that runs ffmpeg, on a file that is not audio).
 """
 
 from __future__ import annotations
@@ -264,3 +266,44 @@ def test_the_teleprompter_says_the_script() -> None:
     for line, sentence in zip(spoken, SENTENCES, strict=True):
         assert mv.tokens_of(line) == mv.tokens_of(sentence), line
         assert not any(c.isdigit() for c in line), line  # numerals written as they are read
+
+
+# --- the command and the tools it runs ------------------------------------------------------------
+
+
+def test_a_missing_recording_is_refused_before_anything_is_drawn(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    """With or without ``--words``, a ``--voice`` that does not exist stops the build at once,
+    naming the file, with exit 2: no font is fetched, no panel is drawn, and faster-whisper is
+    not blamed."""
+    monkeypatch.setattr(mv.shutil, "which", lambda tool: f"/usr/bin/{tool}")
+
+    def drawn(*args: object, **kwargs: object) -> None:
+        raise AssertionError("the pictures were built before the recording was checked")
+
+    monkeypatch.setattr(mv, "Pictures", drawn)
+    missing = tmp_path / "memo.m4a"
+    words = tmp_path / "words.json"
+    words.write_text('{"words": []}', encoding="utf-8")
+    for extra in ([], ["--words", str(words)]):
+        assert mv.main(["--root", str(ROOT), "--voice", str(missing), *extra]) == 2
+        out, err = capsys.readouterr()
+        assert str(missing) in err and "faster-whisper" not in out + err
+
+
+def test_a_tool_that_fails_is_reported_with_its_stderr(tmp_path: Path) -> None:
+    """``run`` raises one error that carries the exit code and the tool's stderr, text or bytes;
+    ``prepare_voice`` on a file that is not audio shows ffmpeg's own reason."""
+    boom = "import sys; sys.stderr.write('boom: not a file'); sys.exit(3)"
+    fake = [sys.executable, "-c", boom]
+    for text in (True, False):
+        with pytest.raises(RuntimeError, match="failed with 3") as caught:
+            mv.run(fake, text=text)
+        assert "boom: not a file" in str(caught.value)
+    assert mv.run(fake[:2] + ["pass"]).returncode == 0
+    garbage = tmp_path / "voice.m4a"
+    garbage.write_bytes(b"not audio at all\n")
+    with pytest.raises(RuntimeError, match="ffmpeg failed with") as caught:
+        mv.prepare_voice(garbage, mv.Timing(0.0, 1.0, 1.0), tmp_path / "voice.wav")
+    assert "Invalid data found when processing input" in str(caught.value)

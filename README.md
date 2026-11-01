@@ -18,7 +18,7 @@ uv run ftbase bronze && uv run ftbase silver && uv run ac2fb layer2 --match 1874
 
 ## What the camera does to seven metrics
 
-In the 20 A-League 2024/25 matches of the Analytics Cup 2.0 the camera saw 56% of the player-frames (per-match median, calibration half) and 57% (held-out). Seven metrics, per reception (pressure on the receiver, nearest rival, line depth, the line's reaction to the ball) or per defensive phase (block width, length and area).
+In the 20 A-League 2024/25 matches of the Analytics Cup 2.0 the camera saw 56% of the player-frames (per-match median, calibration split) and 57% (held-out). Seven metrics, per reception (pressure on the receiver, nearest rival, line depth, the line's reaction to the ball) or per defensive phase (block width, length and area).
 
 ![Figure 1](reports/figures/fig1_layer2.svg)
 
@@ -28,7 +28,7 @@ The page: [javiersr1996.github.io/ac2-football](https://javiersr1996.github.io/a
 
 **The fill behaves as an interpolation.** A predictor's error grows with the gap, so a re-detection would jump; it does not: after a gap over 20 s a player reappears a median 0.19 to 0.20 m from its filled position (held-out, calibration), the size of a step between two detections (0.20 m). Amputation, the same kind of fill, errs 0.8 to 1.4 m per match on line depth (Figure 1d). kloppy drops `is_detected` on SkillCorner tracking ([known upstream issue](https://github.com/PySport/kloppy/issues/639)).
 
-**The selection is large.** The camera follows the ball (Figure 1a), so the units seen whole are near it: a different sample, not an error. On those, the back four sit 7 to 14 m deeper, nearer their own goal, and block length 17 to 37 m shorter in every match of both halves; area, reaction and pressure keep their sign everywhere, nearest rival in 9 of 10, width is mixed. The block was seen whole in 2% to 3% of phases (per-match medians), the back four in a third of receptions (33% and 36%). Block length and area are mostly what the camera chose to show (report them beside their share seen whole), line depth and reaction follow it, pressure and nearest rival survive.
+**The selection is large.** The camera follows the ball (Figure 1a), so the units seen whole are near it: a different sample, not an error. On those, the back four sit 7 to 14 m deeper, nearer their own goal, and block length 17 to 37 m shorter in every match of both splits; area, reaction and pressure keep their sign everywhere, nearest rival in 9 of 10, width is mixed. The block was seen whole in 2% to 3% of phases (per-match medians), the back four in a third of receptions (33% and 36%). Block length and area are mostly what the camera chose to show (report them beside their share seen whole), line depth and reaction follow it, pressure and nearest rival survive.
 
 ## One question, killed by its own rule
 

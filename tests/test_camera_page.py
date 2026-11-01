@@ -304,9 +304,24 @@ def test_a_findings_number_moved_in_its_artifact_is_named(committed: Any) -> Non
 def test_findings_refuse_a_key_the_readme_does_not_cite(committed: Any) -> None:
     _, reports = committed
     strip = cp.strips(reports)
-    assert cp.findings(reports, strip, cp.readme_keys())["numbers"]["window_s"]["value"] == 1.3
+    found = cp.findings(reports, strip, cp.readme_keys(), cp.readme_text())
+    assert found["numbers"]["window_s"]["value"] == 1.3
+    assert found["numbers"]["nearest_below_held"]["value"] == 9
     with pytest.raises(SystemExit, match="is not a key of README.src.json"):
-        cp.findings(reports, strip, cp.readme_keys() - {cp.FINDINGS[0][1]})
+        cp.findings(reports, strip, cp.readme_keys() - {cp.FINDINGS[0][1]}, cp.readme_text())
+
+
+@pytest.mark.parametrize(
+    "words",
+    ["line depth and reaction follow it", "pressure and nearest rival survive", "width is mixed"],
+)
+def test_findings_refuse_a_verdict_the_readme_does_not_say(committed: Any, words: str) -> None:
+    # the grouping is the README's reading: a README that reads otherwise fails the build
+    _, reports = committed
+    readme = cp.readme_text()
+    assert words in readme
+    with pytest.raises(SystemExit, match="README.md does not say"):
+        cp.findings(reports, cp.strips(reports), cp.readme_keys(), readme.replace(words, "x"))
 
 
 @pytest.mark.parametrize(
@@ -329,7 +344,17 @@ def test_findings_refuse_a_verdict_the_strips_contradict(
             for p in strip[metric][group]["points"]:
                 p["value"] = -abs(p["value"])
     with pytest.raises(SystemExit, match=named):
-        cp.findings(reports, strip, cp.readme_keys())
+        cp.findings(reports, strip, cp.readme_keys(), cp.readme_text())
+
+
+def test_findings_refuse_a_nearest_rival_count_that_is_not_the_readmes(committed: Any) -> None:
+    # one held-out match of nearest rival turned to the other sign: 8 against the README's 9
+    _, reports = committed
+    strip = copy.deepcopy(cp.strips(reports))
+    point = next(p for p in strip["nearest_rival_m"]["held-out"]["points"] if p["value"] < 0)
+    point["value"] = -point["value"]
+    with pytest.raises(SystemExit, match="nearest rival's held-out count is not the README's"):
+        cp.findings(reports, strip, cp.readme_keys(), cp.readme_text())
 
 
 def test_a_strip_point_that_is_not_its_cells_difference_is_named(committed: Any) -> None:
@@ -374,6 +399,38 @@ def page() -> tuple[str, bytes, str]:
 def test_the_committed_page_passes_every_static_rule(page: Any) -> None:
     text, side, template = page
     assert cp.static_problems(text, side, template, cp.VENDOR) == []
+    assert cp.static_problems(text, side, template, cp.VENDOR, cp.read_reports(cp.REPORTS)) == []
+
+
+@pytest.mark.parametrize(
+    ("path", "change", "named"),
+    [
+        (
+            "findings.numbers.effect_sd.value",
+            lambda v: -0.25,
+            "findings.numbers.effect_sd.value is",
+        ),
+        (
+            "findings.verdict.0.metrics",
+            lambda v: ["line_height_m", "line_reaction_m"],
+            "findings.verdict",
+        ),
+        (
+            "strips.metrics.line_height_m.calibration.median",
+            lambda v: v + 1,
+            "median of line_height_m",
+        ),
+        ("context.player_detected", lambda v: v + 0.01, "context.player_detected is"),
+    ],
+)
+def test_the_static_check_holds_the_sidecar_to_the_versioned_reports(
+    page: Any, path: str, change: Any, named: str
+) -> None:
+    # what Pages deploys after --check-static alone: a moved number of the sidecar is named
+    text, side, template = page
+    bad = cp.canonical(_mutated(json.loads(side), path, change))
+    problems = cp.static_problems(text, bad, template, cp.VENDOR, cp.read_reports(cp.REPORTS))
+    assert any(named in p for p in problems), problems
 
 
 def test_a_page_whose_payload_is_not_the_sidecar_is_named(page: Any) -> None:

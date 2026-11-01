@@ -116,16 +116,38 @@ FINDINGS = (
         "reports/calibration.json:criteria.D3.values.pretrend / criteria.D3.values.effect",
         "size",
     ),
+    (
+        "nearest_below_cal",
+        "reports/figures/fig1_layer2.json:series.53.points.0.of.*(count below zero)",
+        "value",
+    ),
+    (
+        "nearest_below_held",
+        "reports/figures/fig1_layer2.json:series.55.points.0.of.*(count below zero)",
+        "value",
+    ),
 )
-#: The README's verdict on the seven metrics, its groups in its order ("Block length and area are
-#: mostly what the camera chose to show, line depth and reaction follow it, pressure and nearest
-#: rival survive"; "width is mixed"), and what it says of their signs: line depth, block length,
-#: area, reaction and pressure keep theirs in every match of both halves, width does not.
+#: Where the README says it: its verdict sentence (README.md, "The selection is large").
+README = ROOT / "README.md"
+#: The README's verdict on the seven metrics: a reading of the sign and the size of V1 minus V0,
+#: not a computation. Its groups in its order, each with the README's own words, which the build
+#: finds in README.md (a README that says otherwise fails the check), and what it says of their
+#: signs: line depth, block length, area, reaction and pressure keep theirs in every match of both
+#: splits, width does not, nearest rival in 9 of 10 (by the README's keys, ``nearest_below_*``).
 VERDICT = (
-    ("chosen", ("block_length_m", "block_area_m2")),
-    ("follow", ("line_height_m", "line_reaction_m")),
-    ("survive", ("pressure_index", "nearest_rival_m")),
-    ("mixed", ("block_width_m",)),
+    (
+        "chosen",
+        ("block_length_m", "block_area_m2"),
+        "Block length and area are mostly what the camera chose to show",
+    ),
+    ("follow", ("line_height_m", "line_reaction_m"), "line depth and reaction follow it"),
+    ("survive", ("pressure_index", "nearest_rival_m"), "pressure and nearest rival survive"),
+    ("mixed", ("block_width_m",), "width is mixed"),
+)
+README_SAYS = (
+    "in every match of both splits",
+    "area, reaction and pressure keep their sign everywhere",
+    "nearest rival in 9 of 10",
 )
 EVERYWHERE = (
     "line_height_m",
@@ -483,12 +505,18 @@ def finding(src: str, which: str, reports: Mapping[str, bytes]) -> float:
     return round(float(value), 6)
 
 
+def readme_text() -> str:
+    """README.md with its whitespace folded, for the verdict's words."""
+    return " ".join(README.read_text(encoding="utf-8").split())
+
+
 def findings(
-    reports: Mapping[str, bytes], strip: Mapping[str, Any], keys: set[str]
+    reports: Mapping[str, bytes], strip: Mapping[str, Any], keys: set[str], readme: str
 ) -> dict[str, Any]:
-    """The Findings tab: the README's numbers by their keys, and over the twenty matches each
-    metric's count of matches per half whose V1 minus V0 has the sign of its median; refused if a
-    key is not the README's or the README's verdict on the signs is false."""
+    """The Findings tab: the README's numbers by their keys, over the twenty matches each metric's
+    count of matches per split whose V1 minus V0 has the sign of its median, and the README's
+    verdict in its words; refused if a key is not the README's, the README does not say the
+    verdict, or what it says of the signs is false."""
     numbers = {}
     for name, src, which in FINDINGS:
         if src not in keys:
@@ -515,12 +543,18 @@ def findings(
     for metric in MIXED:
         if metric in whole:
             raise Refused(f"{metric} keeps its sign in every match: 'mixed' would be false")
-    if sorted(m for _, ms in VERDICT for m in ms) != sorted(m for m, _, _ in METRICS):
+    if sorted(m for _, ms, _ in VERDICT for m in ms) != sorted(m for m, _, _ in METRICS):
         raise Refused("the verdict does not group the seven metrics once each")
+    for words in [w for _, _, w in VERDICT] + list(README_SAYS):
+        if words not in readme:
+            raise Refused(f"README.md does not say {words!r}: the page's verdict would not be its")
+    for name, group in (("nearest_below_cal", "calibration"), ("nearest_below_held", "held-out")):
+        if numbers[name]["value"] != signs["nearest_rival_m"][group]:
+            raise Refused(f"nearest rival's {group} count is not the README's ({name})")
     return {
         "numbers": numbers,
         "signs": signs,
-        "verdict": [{"group": g, "metrics": list(ms)} for g, ms in VERDICT],
+        "verdict": [{"group": g, "metrics": list(ms), "words": w} for g, ms, w in VERDICT],
     }
 
 
@@ -816,7 +850,7 @@ def sidecar(
         "sign": sign,
         "sources": {name: hashlib.sha256(reports[name]).hexdigest() for name in SOURCES},
         "strips": {"claim": strip_claim(strip), "metrics": strip},
-        "findings": findings(reports, strip, readme_keys()),
+        "findings": findings(reports, strip, readme_keys(), readme_text()),
         "three": dict(three),
         "units": units,
     }
@@ -944,7 +978,7 @@ def cross_check(doc: Mapping[str, Any], reports: Mapping[str, bytes]) -> list[st
     except Refused as exc:
         problems.append(f"camera.json: {exc}")
     try:
-        want_f = _leaves(findings(reports, strip, readme_keys()))
+        want_f = _leaves(findings(reports, strip, readme_keys(), readme_text()))
     except Refused as exc:
         problems.append(f"findings: {exc}")
     else:
@@ -1117,9 +1151,22 @@ def network_rules(page: str) -> list[str]:
     return [f"the page would load something: {m.group(0)!r}" for m in NETWORK.finditer(own)]
 
 
-def static_problems(page: str, sidecar_bytes: bytes, template: str, vendor: Path) -> list[str]:
-    """Rules 3 and 10, the template's and the network's: everything that needs no data."""
+def static_problems(
+    page: str,
+    sidecar_bytes: bytes,
+    template: str,
+    vendor: Path,
+    reports: Mapping[str, bytes] | None = None,
+) -> list[str]:
+    """Rules 3 and 10, the template's and the network's: everything that needs no data; with the
+    versioned reports, the sidecar held to them too (its cells, strips, context, findings, frame
+    statistics and the reports' hashes: the cross-check, which reads no data)."""
     problems = []
+    if reports is not None:
+        try:
+            problems += cross_check(json.loads(sidecar_bytes), reports)
+        except (KeyError, TypeError, ValueError) as exc:
+            problems.append(f"{SIDECAR}: cannot be read against the reports ({exc!r})")
     try:
         if payload_of(page) != sidecar_bytes:
             problems.append(f"{PAGE}: its payload differs from {SIDECAR}")
@@ -1261,11 +1308,16 @@ def main(argv: Sequence[str] | None = None) -> int:
     side, page_path = args.out_dir / SIDECAR, args.out_dir / PAGE
     if args.check_static:
         problems = static_problems(
-            page_path.read_text(encoding="utf-8"), side.read_bytes(), template, VENDOR
+            page_path.read_text(encoding="utf-8"),
+            side.read_bytes(),
+            template,
+            VENDOR,
+            read_reports(args.reports),
         )
         print(
-            "verified: the payload against the sidecar, three.js by its hash, the template's "
-            "rules, a page that loads nothing"
+            "verified: the sidecar against the versioned reports (cells, strips, context, "
+            f"findings, frame statistics, {len(SOURCES)} hashes), the payload against the sidecar, "
+            "three.js by its hash, the template's rules, a page that loads nothing"
         )
         for problem in problems:
             print(f"  - {problem}")

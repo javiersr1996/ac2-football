@@ -16346,6 +16346,14 @@
     "src": "reports/heldout/layer2.json:summary.line.all_detected.median",
     "value": 0.356476
    },
+   "nearest_below_cal": {
+    "src": "reports/figures/fig1_layer2.json:series.53.points.0.of.*(count below zero)",
+    "value": 9.0
+   },
+   "nearest_below_held": {
+    "src": "reports/figures/fig1_layer2.json:series.55.points.0.of.*(count below zero)",
+    "value": 9.0
+   },
    "pretrend_sd": {
     "src": "reports/calibration.json:criteria.D3.values.pretrend",
     "value": 0.182152
@@ -16413,27 +16421,31 @@
     "metrics": [
      "block_length_m",
      "block_area_m2"
-    ]
+    ],
+    "words": "Block length and area are mostly what the camera chose to show"
    },
    {
     "group": "follow",
     "metrics": [
      "line_height_m",
      "line_reaction_m"
-    ]
+    ],
+    "words": "line depth and reaction follow it"
    },
    {
     "group": "survive",
     "metrics": [
      "pressure_index",
      "nearest_rival_m"
-    ]
+    ],
+    "words": "pressure and nearest rival survive"
    },
    {
     "group": "mixed",
     "metrics": [
      "block_width_m"
-    ]
+    ],
+    "words": "width is mixed"
    }
   ]
  },

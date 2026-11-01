@@ -51,7 +51,7 @@ h1{font-size:min(28px,7vw);line-height:1.15;margin:0;font-weight:800;letter-spac
    white-space:nowrap}
 .thesis{font-size:16px;line-height:1.4;color:#fff;margin:3px 0 0;max-width:62ch}
 .sub{font-size:16px;line-height:1.45;color:#e7ebe3;margin:3px 0 0;max-width:62ch;min-height:2.9em}
-.stage{position:relative;width:100%;height:max(360px,calc(100svh - 156px));background:#dfe3da;
+.stage{position:relative;width:100%;height:max(360px,calc(100svh - 136px));background:#dfe3da;
        overflow:hidden}
 .stage canvas{display:block;width:100%;height:100%;touch-action:pan-y}
 .tags{position:absolute;inset:0;pointer-events:none;overflow:hidden}
@@ -83,7 +83,7 @@ h1{font-size:min(28px,7vw);line-height:1.15;margin:0;font-weight:800;letter-spac
 .btn{border:1px solid #fff;background:#fff;color:var(--ink);font-size:15px;font-weight:600;
      padding:8px 16px;border-radius:3px;cursor:pointer;min-width:84px;min-height:44px}
 .btn[disabled],.seg button[disabled]{opacity:.4;cursor:default}
-.scrubwrap{flex:1;min-width:150px;position:relative;padding-bottom:40px}
+.scrubwrap{flex:1;min-width:150px;position:relative;padding-bottom:18px}
 #scrub{-webkit-appearance:none;appearance:none;display:block;width:100%;height:var(--thumb);margin:0;
        background:transparent;cursor:pointer;--f:0}
 #scrub:disabled{opacity:.4;cursor:default}
@@ -96,10 +96,10 @@ h1{font-size:min(28px,7vw);line-height:1.15;margin:0;font-weight:800;letter-spac
   border:0;border-radius:50%;background:radial-gradient(circle,#fff 0 9px,rgba(255,255,255,.2) 10px 20px,transparent 21px)}
 #scrub::-moz-range-thumb{width:var(--thumb);height:var(--thumb);border:0;border-radius:50%;
   background:radial-gradient(circle,#fff 0 9px,rgba(255,255,255,.2) 10px 20px,transparent 21px)}
-.ticks{position:absolute;left:0;right:0;top:calc(var(--thumb) / 2 + 12px);height:40px;font-size:13px;
+.ticks{position:absolute;left:0;right:0;top:calc(var(--thumb) / 2 + 12px);height:26px;font-size:13px;
        color:#d3d9cf}
 .tick{position:absolute;top:0;width:1px;height:7px;background:#d3d9cf}
-.tick-label{position:absolute;white-space:nowrap}
+.tick-label{position:absolute;top:10px;white-space:nowrap;transform:translateX(-4px)}
 .tick,.tick-label{left:calc(var(--f) * (100% - var(--thumb)) + var(--thumb) / 2)}
 .seg{display:flex;border:1px solid rgba(255,255,255,.75);border-radius:3px;overflow:hidden}
 .seg button{background:transparent;border:0;color:#fff;font-size:15px;padding:8px 14px;
@@ -153,6 +153,10 @@ thead th{font-weight:600;color:var(--dim)}
 tr.on td{background:#eef2ea}
 tr.unit td:first-child{font-weight:600}
 tbody tr{cursor:default}
+tbody tr.linked{cursor:pointer}
+tr.linked td:first-child::after,.hint .ring{content:"";display:inline-block;width:9px;height:9px;margin-left:6px;
+  border:1.5px solid var(--ink);border-radius:50%;vertical-align:baseline}
+.hint{color:var(--faint);font-size:16px}
 .chart{position:relative;margin-top:6px}
 .chart svg{display:block;overflow:visible}
 .chart text{font-family:var(--sans);font-size:13px;fill:var(--ink)}
@@ -191,6 +195,8 @@ footer a{display:inline-block;padding:11px 0}
   .count div{display:inline}
   .count .clock{margin-left:6px}
   .count .n,.count.big .n{font-size:20px}
+  .controls .caption{min-width:0;font-size:13px;line-height:1.3}
+  .cap-tail{display:none}
 }
 @media (min-width:900px) and (max-width:1279px){.sub,.top .caption{min-height:2.9em}}
 </style>
@@ -254,6 +260,7 @@ footer a{display:inline-block;padding:11px 0}
       <p id="lead"></p>
       <p id="context"></p>
       <h3 id="table-title"></h3>
+      <p class="hint" id="table-hint"></p>
       <div class="scroll"><table id="metrics"></table></div>
       <p id="near-note"></p>
       <h3 id="strips-title"></h3>
@@ -318,9 +325,9 @@ const DISC_R = 1.1, EDGE_W = 0.18, HOLLOW_W = 0.35, ME_R = 0.95, ME_RING = [1.15
 const MATE_R = 0.55, MATE_W = 0.2, BALL_DISC = 0.45;
 const BODY_H = 1.8, BODY_R = 0.35, RING = [0.5, 0.75], BALL_R = 0.5;
 const FRAME_W = 0.3, OUTSIDE = 0.65, UNIT_RING = [1.55, 1.75];
-/* Opacities, drawn: a filled-in body in broadcast, a filled-in marker in V1, a unit read at
-   another time than now. */
-const GHOST = 0.25, V1_FADE = 0.35, OFF_TICK = 0.5;
+/* Opacities, drawn: a filled-in body in broadcast, a filled-in marker in V1 and its tag, a unit
+   read at another time than now. */
+const GHOST = 0.25, V1_FADE = 0.35, TAG_FADE = 0.5, OFF_TICK = 0.5;
 /* The broadcast camera (storyboard 2.4): over the point where the frame's side edges meet, at
    the drawn height of the sidecar, heading straight across the pitch with no roll. One fit for
    the whole clip: the tightest field of view that holds the clipped frame (the window the camera
@@ -728,7 +735,8 @@ function placeCamera(p) {
    the key, and covers no player's anchor; failing all, the spot that breaks the fewest. A
    defender whose head falls outside the canvas in broadcast (one the fit leaves out) has his tag
    on that edge, with no leader and an arrow toward him, at the first height from his own that
-   clears the tags placed before it. Pixels and degrees. */
+   clears the tags placed before it. In V1 the tags of the faded markers fade too. Pixels and
+   degrees. */
 const TAG_GAPS = [5, 12, 22, 34, 48, 64], TAG_TURN = 10, TAG_PAD = 3;
 const tagLayer = at("tags");
 let tags = [];
@@ -770,7 +778,7 @@ function tagContent(t, P, inPlan, ix) {
   if (t.kind === "rival") {
     if (E.rivals.detected[ix][k]) return null;
     const p = P.rivals[k];
-    return {text: (RIV[k] === KEEPER ? "GK " : "") + sec(E.rivals.gap[ix][k]), xy: p};
+    return {text: (RIV[k] === KEEPER ? "GK " : "") + sec(E.rivals.gap[ix][k]), xy: p, faded: inPlan && st.variant === "V1"};
   }
   if (t.kind === "me") return {text: "receiver", xy: P.me};
   if (!inPlan) return null;
@@ -806,6 +814,8 @@ function placeTags() {
     const text = edge === "left" ? "← " + c.text : edge === "right" ? c.text + " →" : c.text;
     if (text !== t.text) { t.node.textContent = text; t.text = text; t.w = 0; }
     t.node.classList.toggle("off", Boolean(c.off));
+    t.node.style.opacity = c.faded ? String(TAG_FADE) : "";
+    for (const line of t.lines) line.style.opacity = c.faded ? String(TAG_FADE) : "";
     if (!t.w) { t.w = t.node.offsetWidth; t.h = t.node.offsetHeight; t.spots = spotsOf(t); }
     if (edge) t.node.dataset.edge = edge; else delete t.node.dataset.edge;
     if (edge) {
@@ -1094,10 +1104,12 @@ function syncUI() {
   viewP.setAttribute("aria-pressed", String(st.view === "plan"));
   varV0.setAttribute("aria-pressed", String(st.variant === "V0"));
   varV1.setAttribute("aria-pressed", String(st.variant === "V1"));
-  const head = `Match ${D.match_id} · reception at frame ${D.key.frame} · `;
-  at("stage-caption").textContent = rising ? "rising to the top-down view"
-    : st.view === "broadcast" ? head + "from the camera's side, real time · the window on the grass is the camera's frame, measured"
-      : head + "from above: " + (st.variant === "V0" ? "every unit" : "players seen throughout");
+  // the caption's head names the match and the frame; on the phone its tail (the view) is the buttons' to say
+  const cap = (head, tail) => `<span class="cap-head">${esc(head)}</span><span class="cap-tail">${esc(tail)}</span>`;
+  const head = `Match ${D.match_id} · reception at frame ${D.key.frame}`;
+  at("stage-caption").innerHTML = rising ? cap("rising to the top-down view", "")
+    : st.view === "broadcast" ? cap(head, " · from the camera's side, real time · the window on the grass is the camera's frame, measured")
+      : cap(head, " · from above: " + (st.variant === "V0" ? "every unit" : "players seen throughout"));
   at("stage-sub").textContent = st.view === "plan"
     ? "From above: keep only what the camera saw whole (V1), and line depth and block length change sample."
     : "Solid: the camera saw them. Hollow: SkillCorner filled them in, with the seconds to the nearest frame the camera saw each.";
@@ -1266,9 +1278,11 @@ function renderMeasure() {
     + `<td>${q(`match.rows.${k}.V1.mean`, num(r.V1.mean, dec(r) + 1))}</td><td>${q(`match.rows.${k}.V1.n`, thou(r.V1.n))}</td>`
     + `<td>${q(`match.rows.${k}.diff`, signed(r.diff, dec(r) + 1))}</td></tr>`).join("");
   at("metrics").innerHTML = head + "<tbody>" + body + "</tbody>";
+  at("table-hint").innerHTML = `Point at (or tap) a row marked <span class="ring"></span> to ring its players on the pitch above.`;
   at("metrics").querySelectorAll("tbody tr").forEach(tr => {
     const players = {line_height_m: U.line.player_ids, block_length_m: U.block.player_ids, block_width_m: null,
                      pressure_index: U.pressure.player_ids, nearest_rival_m: U.nearest.player_ids}[tr.dataset.metric];
+    tr.classList.toggle("linked", Boolean(players));
     const on = () => { hover = players || null; if (st.view === "plan" && GL) { drawAt(st.tau); } };
     const off = () => { hover = null; if (st.view === "plan" && GL) drawAt(st.tau); };
     tr.addEventListener("mouseenter", on);
@@ -1411,26 +1425,29 @@ function renderStatic() {
   // the thesis under the title: what the camera saw of this match, and what keeping it does
   const lr = rowOf("line_height_m"), L = ROWS[lr];
   at("thesis").innerHTML = `The camera saw ${q("context.player_detected", pct(D.context.player_detected))} of this match's`
-    + ` player-frames; SkillCorner filled in the rest. Keep only what it saw whole and line depth reads`
+    + ` player-frames; SkillCorner filled the rest. Keep only what it saw whole: line depth reads`
     + ` ${q(`match.rows.${lr}.V0.mean`, num(L.V0.mean))} → ${q(`match.rows.${lr}.V1.mean`, num(L.V1.mean) + NB + "m")}.`;
   at("drawn").textContent = "Tracked: where each player stands and whether the camera saw him, the ball, and the four corners of the camera's"
     + " image on the grass. Drawn: the bodies and the virtual camera, its place and its height; the ball's height is the provider's.";
   const ticks = at("ticks");
   ticks.replaceChildren();
-  for (const [u, text, title, row] of [[U.block, "phase start", "phase start: block length is read here", 1], [U.line, "reception", "the reception: line depth is read here", 0]]) {
-    const f = u.index / (N - 1);
+  // a tick at each unit's frame, and one line under them from the first: each tick's time from the reception
+  const fromKey = u => {
+    const v = (D.frames[u.index] - D.key.frame) / FPS;
+    return q(`frames.${u.index}`, num(v, Number.isInteger(v) ? 0 : 1) + NB + "s");
+  };
+  for (const u of [U.block, U.line]) {
     const tk = document.createElement("div");
     tk.className = "tick";
-    tk.style.setProperty("--f", String(f));
-    const lab = document.createElement("div");
-    lab.className = "tick-label";
-    lab.textContent = text;
-    lab.title = title;
-    lab.style.setProperty("--f", String(f));
-    lab.style.top = (10 + row * 16) + "px";
-    lab.style.transform = f < 0.15 ? "translateX(-4px)" : "translateX(-50%)";
-    ticks.append(tk, lab);
+    tk.style.setProperty("--f", String(u.index / (N - 1)));
+    ticks.append(tk);
   }
+  const lab = document.createElement("div");
+  lab.className = "tick-label";
+  lab.innerHTML = `phase start ${fromKey(U.block)} · reception ${fromKey(U.line)}`;
+  lab.title = "phase start: block length is read here; the reception: line depth is read here";
+  lab.style.setProperty("--f", String(Math.min(U.block.index, U.line.index) / (N - 1)));
+  ticks.append(lab);
   scrub.max = String(N - 1);
   const three = D.three, cmd = [
     `uv run ftbase ingest --match ${D.match_id} && uv run ftbase bronze && uv run ftbase silver`,

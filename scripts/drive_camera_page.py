@@ -960,6 +960,36 @@ def check_variant_and_ui(D: Data, browser, target: str) -> None:
         and "deepest to furthest" in refs[1],
         f"{diffs}; {refs}",
     )
+    # V1 fades the filled-in markers' tags too; V0 leaves them whole
+    fades = {}
+    for v in ("V0", "V1"):
+        pg.evaluate(f"camera.variant('{v}')")
+        settle(pg)
+        fades[v] = pg.evaluate(
+            "() => [...document.querySelectorAll('#tags .tag.rival')].filter(t => !t.hidden)"
+            ".map(t => +getComputedStyle(t).opacity)"
+        )
+    R.check(
+        "V0/V1: in V1 the tags of the filled-in defenders fade with their markers",
+        fades["V0"]
+        and all(o == 1 for o in fades["V0"])
+        and len(fades["V1"]) == len(fades["V0"])
+        and all(o < 1 for o in fades["V1"]),
+        json.dumps(fades),
+    )
+    rows = pg.evaluate(
+        "() => [...document.querySelectorAll('#metrics tbody tr')].map(r => [r.dataset.metric,"
+        " getComputedStyle(r).cursor])"
+    )
+    hint = pg.evaluate("__vis(document.getElementById('table-hint'))")
+    linked = sorted(m for m, c in rows if c == "pointer")
+    R.check(
+        "the table: the rows that ring players take the pointer cursor, a hint says so",
+        hint
+        and linked
+        == sorted(["line_height_m", "block_length_m", "pressure_index", "nearest_rival_m"]),
+        f"pointer on {linked}; hint shown {hint}",
+    )
     ctx.close()
 
 
@@ -985,7 +1015,7 @@ def check_numbers(D: Data, browser, target: str) -> None:
     bad, seen = [], 0
     for t in (-3.0, 0.0, 6.9):
         go(pg, "plan", t)
-        items = pg.evaluate("""() => [...document.querySelectorAll('#measure [data-path], #count [data-path], #top [data-path]')]
+        items = pg.evaluate("""() => [...document.querySelectorAll('#measure [data-path], #count [data-path], #top [data-path], #ticks [data-path]')]
             .filter(e => __vis(e) && e.classList.contains('q')).map(e => [e.dataset.path, e.dataset.value, e.textContent])""")
         for path, value, text in items:
             seen += 1
@@ -1008,7 +1038,7 @@ def check_numbers(D: Data, browser, target: str) -> None:
             if not ok:
                 bad.append((path, value, text))
     R.check(
-        "numbers: every number in #measure, #count and the title band is the sidecar's at its path, shown at its"
+        "numbers: every number in #measure, #count, the title band and the ticks is the sidecar's at its path, shown at its"
         " rounding; the match's cells are reliability.csv's (i = 0, 30, 99)",
         seen > 100 and not bad,
         f"{seen} checked; wrong {bad[:4]}",
@@ -1039,19 +1069,23 @@ def check_reduced_motion(D: Data, browser, target: str) -> None:
     ctx.close()
 
 
+# The text a reader sees (innerText): a span hidden at this width is not prose shown.
 LAYOUT_JS = """() => { const de = document.documentElement, b = document.body;
   const box = (e) => e ? e.getBoundingClientRect().toJSON() : null;
   const r = (id) => box(document.getElementById(id));
   const small = [...document.querySelectorAll('p, li, summary')]
     .filter(e => e.textContent.trim().length > 0 && !e.closest('svg') && __vis(e))
-    .map(e => [parseFloat(getComputedStyle(e).fontSize), e.id || e.tagName, e.textContent.trim().slice(0, 30), e.textContent.trim().length])
+    .map(e => [parseFloat(getComputedStyle(e).fontSize), e.id || e.tagName, e.innerText.trim().slice(0, 30), e.innerText.trim().length])
     .filter(x => x[0] < (x[3] >= 60 ? 16 : 12));
   const targets = [...document.querySelectorAll('a, button, input')].filter(__vis)
     .map(e => { const q = e.getBoundingClientRect(); return [e.id || e.textContent.trim().slice(0, 20), +q.width.toFixed(1), +q.height.toFixed(1)]; });
   const h1 = document.querySelector('h1');
   return {iw: innerWidth, ih: innerHeight, sw: Math.max(de.scrollWidth, b.scrollWidth), body: parseFloat(getComputedStyle(b).fontSize),
           canvas: r('pitch'), small, targets, top: r('top'), ctrl: r('controls'), play: r('play'), panel: r('panel'),
-          count: r('count'), key: r('key'), thesis: r('thesis'), h1: {h: h1.getBoundingClientRect().height, lh: parseFloat(getComputedStyle(h1).lineHeight),
+          count: r('count'), key: r('key'), thesis: r('thesis'), caption: r('stage-caption'),
+          ticks: (() => { const l = document.querySelector('#ticks .tick-label'); return {h: l.getBoundingClientRect().height,
+            lh: parseFloat(getComputedStyle(l).lineHeight) || 1.2 * parseFloat(getComputedStyle(l).fontSize), n: document.querySelectorAll('#ticks .tick-label').length}; })(),
+          h1: {h: h1.getBoundingClientRect().height, lh: parseFloat(getComputedStyle(h1).lineHeight),
           sw: h1.scrollWidth, cw: h1.clientWidth}}; }"""
 
 
@@ -1101,6 +1135,12 @@ def check_layout(D: Data, browser, target: str, width: int, shots: Path) -> None
                 and p["bottom"] <= m["ih"],
                 f"canvas {c['top']:.0f}..{c['bottom']:.0f} of {m['ih']}; Play to {p['bottom']:.0f}",
             )
+            cap = m["caption"]
+            R.check(
+                f"{tag}: phone first screen: the caption (match and frame) on screen",
+                cap["bottom"] <= m["ih"] and cap["height"] > 0,
+                f"caption {cap['top']:.0f}..{cap['bottom']:.0f} of {m['ih']}",
+            )
         else:
             t, k = m["top"], m["ctrl"]
             R.check(
@@ -1139,6 +1179,12 @@ def check_layout(D: Data, browser, target: str, width: int, shots: Path) -> None
                 fit[0] <= fit[1] + 1,
                 f"content {fit[0]} px in {fit[1]} px",
             )
+        tl = m["ticks"]
+        R.check(
+            f"{tag}: the scrubber's ticks read on one line (phase start and reception, from the sidecar)",
+            tl["n"] == 1 and tl["h"] <= 1.5 * tl["lh"],
+            json.dumps(tl),
+        )
         k, s = m["key"], m["thesis"]
         R.check(
             f"{tag}: the key (vermilion defenders, blue receiving team) and the thesis under the"

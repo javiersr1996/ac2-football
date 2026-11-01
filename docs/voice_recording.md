@@ -11,7 +11,7 @@
 
 ## In twenty matches it saw about half the player-frames, those near the ball; the fill is good.
 
-## On moments seen whole the line reads seven to fourteen metres higher,
+## On moments seen whole the back four sit seven to fourteen metres deeper, nearer their own goal,
 
 ## the block seventeen to thirty-seven metres shorter: a different sample, not an error.
 

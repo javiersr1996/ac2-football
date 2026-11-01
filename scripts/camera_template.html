@@ -1716,8 +1716,8 @@ function renderFindings() {
   }).join("")).join("");
   const first = F.verdict[0].metrics[0];
   at("verdict").innerHTML = `<colgroup><col class="g"><col class="n"><col class="c"><col></colgroup>`
-    + `<caption>The README's reading of V1 − V0 per split (calibration · held-out): the matches of`
-    + ` ${q(`findings.signs.${first}.of`, F.signs[first].of)} with its median's sign, and that median.</caption>`
+    + `<caption>The README's reading of V1 − V0 per split (calibration · held-out): matches of`
+    + ` ${q(`findings.signs.${first}.of`, F.signs[first].of)} with the median's sign.</caption>`
     + `<thead><tr><th>verdict</th><th>metric</th><th class="c">matches</th><th class="c">median</th></tr></thead>`
     + `<tbody>${body}</tbody>`;
   at("conclusion-1").innerHTML = `<li><b>The selection is large:</b> the block was seen whole in`

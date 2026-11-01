@@ -63,7 +63,8 @@ FIRST_FRAME_S, PLAYING_S, FRAME_MEDIAN_MS = 1.0, 1.5, 17.0
 # The hold is a setTimeout: the page stamps the moment it fires ("hold") and the first frame of the
 # rise after it ("rise"). A timer never fires early and may fire late when the main thread is busy:
 # HOLD_SLACK_S (a frame and the timer's queue under load); the rise starts on the next frame,
-# within RISE_FRAME_MS (a frame at 10 fps). The flight and the fade are timed to the frame by the
+# whose time is its vsync and may fall up to a frame before the timer: within RISE_FRAME_MS either
+# way (a frame at 10 fps). The flight and the fade are timed to the frame by the
 # page's clock (each with the longest step between two of its frames).
 HOLD_SLACK_S, RISE_FRAME_MS = 0.25, 100.0
 # The hidden-tab row hides and freezes the page this long while the clip plays.
@@ -659,7 +660,7 @@ def run_times(clock: list[dict], key_s: float) -> tuple[bool, str]:
     ok = (
         want_k - eps <= tk <= want_k + rec["step"] + eps
         and HOLD_S * 1000 - 2 * eps <= th <= (HOLD_S + HOLD_SLACK_S) * 1000
-        and 0 <= tr <= RISE_FRAME_MS
+        and -RISE_FRAME_MS <= tr <= RISE_FRAME_MS
         and want_f - eps <= tf <= want_f + land["step"] + eps
         and FADE_S * 1000 - eps <= tm <= FADE_S * 1000 + 2 * faded["step"] + eps
     )

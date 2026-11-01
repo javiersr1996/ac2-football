@@ -86,7 +86,7 @@ BANDS = _bands()
 METRICS = [
     ("pressure_index", "Pressure index"),
     ("nearest_rival_m", "Nearest rival (m)"),
-    ("line_height_m", "Line height (m)"),
+    ("line_height_m", "Line depth (m)"),
     ("line_reaction_m", "Line reaction (m)"),
     ("block_width_m", "Block width (m)"),
     ("block_length_m", "Block length (m)"),

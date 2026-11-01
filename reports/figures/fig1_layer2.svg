@@ -2168,7 +2168,7 @@ L 255.6 21.6
    <text style="font-size: 10px; font-family: 'DejaVu Sans'; text-anchor: end; fill: #222222" x="111.6" y="535.398047" transform="rotate(-0 111.6 535.398047)">Nearest rival (m)</text>
   </g>
   <g id="text_94">
-   <text style="font-size: 10px; font-family: 'DejaVu Sans'; text-anchor: end; fill: #222222" x="111.6" y="603.798047" transform="rotate(-0 111.6 603.798047)">Line height (m)</text>
+   <text style="font-size: 10px; font-family: 'DejaVu Sans'; text-anchor: end; fill: #222222" x="111.6" y="603.798047" transform="rotate(-0 111.6 603.798047)">Line depth (m)</text>
   </g>
   <g id="text_95">
    <text style="font-size: 10px; font-family: 'DejaVu Sans'; text-anchor: end; fill: #222222" x="111.6" y="672.198047" transform="rotate(-0 111.6 672.198047)">Line reaction (m)</text>

@@ -19,7 +19,7 @@
   --line:#dfe2da; --line-2:#c8cdc2; --blue:#0072b2; --vermilion:#d55e00; --green:#009e73;
   --vermilion-ink:#a94b00; --green-ink:#00775a; --wash:#eef2ea; --grass:#f1f5ec; --sky:#dfe3da;
   --head:#1b1f1a; --on-head:#ffffff; --on-head-dim:#d3d9cf; --on-head-rule:rgba(255,255,255,.75);
-  --side:clamp(320px,32vw,460px); --thumb:44px; --gutter:20px;
+  --side:clamp(320px,34vw,460px); --thumb:44px; --gutter:20px;
   --sans:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
   --mono:ui-monospace,"Cascadia Mono","SF Mono",Consolas,"Liberation Mono",monospace;
 }
@@ -91,13 +91,15 @@ h1{font-size:clamp(26px,2.6vw,38px);line-height:1.1;margin:0;font-weight:800;let
           padding:3px 8px;list-style:none;font-size:13px;line-height:1.3;color:var(--dim);background:var(--paper);
           border:1px solid var(--line-2);pointer-events:none;white-space:nowrap}
 .keystrip li{display:flex;align-items:center;gap:3px}
+.keystrip{flex-wrap:wrap;max-width:calc(100% - 16px)}
+.keystrip li.br{flex-basis:100%;height:0}
 .count .note{display:block;font-size:13px;font-weight:400;color:var(--dim);margin-top:2px}
 .no-gl{position:absolute;inset:0;margin:0;padding:24px;display:flex;align-items:center;font-size:17px;
        background:var(--paper)}
 
 /* ------------------------------------------------------------ the control bar */
 /* one row: Play, the scrubber, the view; the ticks' label runs under the row */
-.controls{grid-area:ctrl;min-width:0;background:var(--head);color:var(--on-head);padding:8px 16px 22px;
+.controls{grid-area:ctrl;min-width:0;background:var(--head);color:var(--on-head);padding:8px 16px 24px;
           display:flex;flex-wrap:nowrap;align-items:flex-start;gap:12px}
 .controls :focus-visible{outline-color:#fff}
 .btn{flex:none;border:1px solid #fff;background:#fff;color:var(--ink);font-size:15px;font-weight:600;
@@ -119,7 +121,7 @@ h1{font-size:clamp(26px,2.6vw,38px);line-height:1.1;margin:0;font-weight:800;let
 .ticks{position:absolute;left:0;right:0;top:calc(var(--thumb) / 2 + 8px);height:22px;font-size:12px;
        color:var(--on-head-dim)}
 .tick{position:absolute;top:0;width:1px;height:6px;background:var(--on-head-dim)}
-.tick-label{position:absolute;top:16px;white-space:nowrap;line-height:1.2;transform:translateX(-4px)}
+.tick-label{position:absolute;top:18px;white-space:nowrap;line-height:1.2;transform:translateX(-4px)}
 .tick,.tick-label{left:calc(var(--f) * (100% - var(--thumb)) + var(--thumb) / 2)}
 .seg{flex:none;display:flex;border:1px solid var(--on-head-rule);border-radius:3px;overflow:hidden}
 .seg button{background:transparent;border:0;color:#fff;font-size:15px;padding:0 12px;cursor:pointer;
@@ -201,18 +203,22 @@ h1{font-size:clamp(26px,2.6vw,38px);line-height:1.1;margin:0;font-weight:800;let
 .chart .small{font-size:12px;fill:var(--faint)}
 .legend{display:flex;flex-wrap:wrap;gap:2px 12px;font-size:13px;color:var(--dim);margin:0 0 6px}
 .legend span{display:flex;align-items:center;gap:6px}
-.vtab{border-collapse:collapse;width:100%;margin:0 0 4px;font-size:15px;table-layout:fixed}
-.vtab col.g{width:38%}
-.vtab col.c{width:5.2em}
-.vtab th,.vtab td{padding:2px 8px 2px 0;text-align:left;vertical-align:top;line-height:1.3;border:0}
+.vtab{border-collapse:collapse;width:100%;margin:0 0 4px;font-size:14px;table-layout:fixed}
+.vtab col.g{width:28%}
+.vtab col.n{width:24%}
+.vtab col.c{width:3.9em}
+.vtab th,.vtab td{padding:1px 6px 1px 0;text-align:left;vertical-align:top;line-height:1.3;border:0}
 .vtab thead th{font-size:13px;font-weight:600;color:var(--faint);white-space:nowrap}
-.vtab tbody th{font-size:14px}
+.vtab tbody th{font-size:13px}
 .vtab thead th.c,.vtab td.c{text-align:right;font-variant-numeric:tabular-nums;padding-right:0;padding-left:6px}
 .vtab tbody th{font-weight:700;color:var(--ink);padding-right:10px}
 .vtab tr.first > *{border-top:1px solid var(--line);padding-top:4px}
-.vtab caption{caption-side:bottom;text-align:left;font-size:13px;color:var(--faint);padding-top:4px}
-ol.conclusions{padding-left:20px;margin:12px 0 8px}
-ol.conclusions li{margin:0 0 8px}
+.vtab caption{caption-side:top;text-align:left;font-size:13px;line-height:1.35;color:var(--faint);padding:0 0 4px}
+.vtab thead th.c{white-space:normal;line-height:1.2}
+ol.conclusions{padding-left:20px;margin:0 0 10px}
+ol.conclusions li{margin:0 0 4px;line-height:1.4}
+ol.conclusions + .vtab{margin-top:2px}
+.vtab + ol.conclusions{margin-top:10px}
 .more{color:var(--dim)}
 .tabpanel .thesis{color:var(--ink);margin:0 0 12px;padding-bottom:10px;border-bottom:1px solid var(--line)}
 .more a{display:inline-block;padding:11px 0;margin:-11px 0}
@@ -232,7 +238,7 @@ code{font-family:var(--mono);font-size:15px;overflow-wrap:anywhere}
        grid-template-areas:"head" "stage" "ctrl" "panel"}
   .panel{border-left:0}
   .tablist{order:-1}
-  .tabpanel{flex:none;height:max(160px,25vh)}
+  .tabpanel{flex:none;height:calc(max(160px,25vh) + 36px)}
   .top{display:block;padding:8px 16px 10px}
   h1{font-size:min(24px,7vw)}
   .thesis{margin-top:2px}
@@ -253,10 +259,11 @@ code{font-family:var(--mono);font-size:15px;overflow-wrap:anywhere}
   .count > div:first-child{display:inline}
   .count .clock{display:inline;margin-left:6px}
   .count .n,.count.big .n{font-size:20px}
-  .controls{padding:6px 12px 22px;gap:8px}
+  .controls{padding:6px 12px 24px;gap:8px}
   .btn{min-width:56px;padding:0 8px}
   .seg button{padding:0 9px;font-size:14px}
 }
+@media (orientation:landscape) and (max-height:759px){.eyebrow{display:none}.tabpanel{padding:8px 16px 10px}}
 @media (orientation:landscape) and (max-height:560px){
   .top{padding:6px 16px 8px}
   h1{font-size:22px}
@@ -336,9 +343,9 @@ code{font-family:var(--mono);font-size:15px;overflow-wrap:anywhere}
       <button class="tab" role="tab" type="button" id="tab-limits" data-tab="limits" aria-controls="tp-limits" aria-selected="false" tabindex="-1">Limits</button>
     </div>
     <div class="tabpanel" role="tabpanel" id="tp-findings" aria-labelledby="tab-findings" tabindex="0">
-      <h2>What the camera does to seven metrics</h2>
+      <ol class="conclusions" id="conclusion-1"></ol>
       <table class="vtab" id="verdict"></table>
-      <ol class="conclusions" id="conclusions"></ol>
+      <ol class="conclusions" id="conclusions" start="2"></ol>
       <p class="more" id="more"></p>
     </div>
     <div class="tabpanel" role="tabpanel" id="tp-story" aria-labelledby="tab-story" tabindex="0" hidden>
@@ -424,17 +431,17 @@ const GHOST = 0.4, V1_FADE = 0.35, TAG_FADE = 0.5, OFF_TICK = 0.5;
    saw), the defenders near it (feet and head), the receiver and the ball inside the canvas less
    FRAME_MARGIN of it on each side, with the lowest of them BOTTOM above the bottom edge (a share
    of the canvas) and the spare height on top (and the lowest clears the counter and the key);
-   among the tilts up to TILT_MAX that need at most FIT_SLACK times the least field of view, the
+   among the tilts up to TILT_MAX (a television's angle: the bodies stand) that need at most
+   FIT_SLACK times the least field of view, the
    one whose content fills the most of the canvas's height: a canvas wider than the window gets
-   it at the least field of view, a squarer one looks further down and leaves no band of empty
-   sky (the bodies then lean, as a camera's do when it looks down); on a portrait screen, the one
-   that draws the bodies tallest. A defender is near when he comes
+   it at the least field of view, a squarer one looks further down, as far as TILT_MAX, and keeps
+   some sky above the far side. A defender is near when he comes
    within FIT_REACH metres of the window in some frame of the clip; one who never does is left
    out of the fit and his tag waits at the canvas's edge, an arrow toward him. The frame slides
    sideways and up or down (a lens shift) and the rise takes the shift back to zero. FOV_PLAN:
    the narrowest field of view the rise reaches before the swap to the orthographic camera.
    Degrees. */
-const FRAME_MARGIN = 0.03, BOTTOM = 0.06, FOV_PLAN = 2, TILT_MAX = 75, FIT_SLACK = 2, FIT_REACH = 20;
+const FRAME_MARGIN = 0.03, BOTTOM = 0.06, FOV_PLAN = 2, TILT_MAX = 40, FIT_SLACK = 2, FIT_REACH = 20;
 const DEG = Math.PI / 180, SCENE_R = 160, ENVELOPE_PAD = 2.5;
 
 /* Figure 1's palette (ac2fb.figures) and the clip's pitch (ac2fb.clip), its lines darkened so they
@@ -747,11 +754,7 @@ function heldPoints() {
   const pts = [];
   for (let i = 0; i < N; i++) {
     for (const p of clipFrame(CAM.corners[i])) pts.push(V(p.x, p.y, 0));
-    for (const xy of [...E.rivals.xy[i].filter((_, k) => NEAR[k]), E.me.xy[i]]) {
-      const feet = V(xy[0], xy[1], 0);
-      feet.body = true;                                // the next point is the head
-      pts.push(feet, V(xy[0], xy[1], BODY_H));
-    }
+    for (const xy of [...E.rivals.xy[i].filter((_, k) => NEAR[k]), E.me.xy[i]]) pts.push(V(xy[0], xy[1], 0), V(xy[0], xy[1], BODY_H));
     pts.push(V(E.ball.xy[i][0], E.ball.xy[i][1], Math.max(E.ball.z[i], BALL_R)));
   }
   HELD = pts;
@@ -771,27 +774,23 @@ function shot() {
   const pts = heldPoints();
   const need = th => {
     const s = Math.sin(th), c = Math.cos(th);
-    let u0 = Infinity, u1 = -Infinity, v0 = Infinity, v1 = -Infinity, bodies = 0, n = 0, feetV = null;
+    let u0 = Infinity, u1 = -Infinity, v0 = Infinity, v1 = -Infinity;
     for (const P of pts) {
       const dx = P.x - eye.x, dy = P.y - eye.y, dz = (P.z - eye.z) * head;   // dz > 0: ahead
       const depth = dz * c - dy * s, yc = dy * c + dz * s;
       if (depth <= 0.1) return {t: Infinity};
       const u = -head * dx / depth, v = yc / depth;
       u0 = Math.min(u0, u); u1 = Math.max(u1, u); v0 = Math.min(v0, v); v1 = Math.max(v1, v);
-      // a body's height on the image: its head's v less its feet's (the point after the feet)
-      if (feetV !== null) { bodies += v - feetV; n++; feetV = null; } else if (P.body) feetV = v;
     }
-    const tv = (v1 - v0) / (roof - floor), t = Math.max((u1 - u0) / (2 * A * inner), tv);
-    return {t, tv, u0, u1, v0, v1, body: bodies / Math.max(n, 1) / t};
+    const tv = (v1 - v0) / (roof - floor);
+    return {t: Math.max((u1 - u0) / (2 * A * inner), tv), tv, u0, u1, v0, v1};
   };
-  // among the tilts within FIT_SLACK of the least field of view: on a landscape stage the one whose
-  // content fills the most of the canvas's height; on a portrait screen, where the scene is small
-  // and the camera's side the second view, the one that draws the bodies tallest
+  // among the tilts within FIT_SLACK of the least field of view (up to TILT_MAX), the one whose
+  // content fills the most of the canvas's height
   const all = [];
   for (let d = 2; d <= TILT_MAX; d += 0.1) all.push(Object.assign(need(d * DEG), {th: d * DEG}));
   const least = Math.min(...all.map(r => r.t));
-  const score = PORTRAIT.matches ? r => r.body : r => r.tv / r.t;
-  const best = all.filter(r => r.t <= least * FIT_SLACK).sort((a, b) => score(b) - score(a))[0];
+  const best = all.filter(r => r.t <= least * FIT_SLACK).sort((a, b) => b.tv / b.t - a.tv / a.t)[0];
   const t = best.t, th = best.th;
   const sx = -(best.u0 + best.u1) / 2 / (A * t);
   const sy = floor - best.v0 / t;
@@ -1021,7 +1020,10 @@ function placeTags() {
     for (const line of t.lines) line.style.display = show ? "" : "none";
     if (!show) continue;
     const text = edge ? ARROW[edge][0] + c.text + ARROW[edge][1] : c.text;
-    if (text !== t.text) { t.node.textContent = text; t.text = text; t.w = 0; }
+    // a tag is measured again when its text or its weight (faded, off) changes
+    const weight = `${text}|${Boolean(c.off)}|${Boolean(c.faded)}`;
+    if (text !== t.text) { t.node.textContent = text; t.text = text; }
+    if (weight !== t.weight) { t.weight = weight; t.w = 0; }
     t.node.classList.toggle("off", Boolean(c.off));
     t.node.classList.toggle("faded", Boolean(c.faded));
     for (const line of t.lines) line.style.opacity = c.faded ? String(TAG_FADE) : "";
@@ -1607,18 +1609,18 @@ function renderMeasure() {
   at("strips-claim").innerHTML = `V1 minus V0, match by match: the back four sit ${q("strips.claim.line_height_m.least", cl.line_height_m.least.toFixed(0))} to`
     + ` ${q("strips.claim.line_height_m.most", cl.line_height_m.most.toFixed(0))}${NB}m deeper, nearer their own goal, and block length`
     + ` ${q("strips.claim.block_length_m.least", cl.block_length_m.least.toFixed(0))} to ${q("strips.claim.block_length_m.most", cl.block_length_m.most.toFixed(0))}${NB}m`
-    + ` shorter in every match of both halves.`;
+    + ` shorter in every match of both splits.`;
   at("strips-legend").innerHTML = `<span><svg width="12" height="12" aria-hidden="true"><circle cx="6" cy="6" r="4.5" fill="${C.blue}"/></svg>calibration (upper)</span>`
     + `<span><svg width="12" height="12" aria-hidden="true"><rect x="1.5" y="1.5" width="9" height="9" fill="${C.vermilion}"/></svg>held-out (lower)</span>`
     + `<span><svg width="14" height="14" aria-hidden="true"><circle cx="7" cy="7" r="6" fill="none" stroke="${C.ink}" stroke-width="2"/></svg>this match</span>`
-    + `<span><svg width="4" height="14" aria-hidden="true"><rect width="3" height="14" fill="${C.grey}"/></svg>median of the half</span>`;
+    + `<span><svg width="4" height="14" aria-hidden="true"><rect width="3" height="14" fill="${C.grey}"/></svg>median of the split</span>`;
   renderFindings();
   renderFrameSection();
   renderLimits();
   updateMeasure();
 }
 /* The strips: one row per metric, its name over it (and "this match" on the name's line when
-   both fit, under it when they do not), the two halves' points, their medians and a round axis.
+   both fit, under it when they do not), the two splits' points, their medians and a round axis.
    Beside the name when the panel is wide. Pixels. */
 let stripsW = 0;
 function renderStrips(force = false) {
@@ -1686,31 +1688,50 @@ function renderStrips(force = false) {
   svg.setAttribute("viewBox", `0 0 ${w} ${y0}`);
 }
 /* The Findings tab: the README's verdict on the seven metrics with the counts behind it (the
-   matches of each half whose V1 minus V0 has the metric's usual sign), its three conclusions, and
+   matches of each split whose V1 minus V0 has the sign of its median, and that median), its three
+   conclusions (the first, with what to do, over the verdict), and
    where the rest is. Every number is the sidecar's findings, read by the README's own keys. */
-const GROUP = {chosen: "Mostly what the camera chose to show", follow: "Follow it", survive: "Survive", mixed: "Mixed"};
+const GROUP = {chosen: "Mostly the camera's choice", follow: "Shift with the camera", survive: "Survive", mixed: "Mixed"};
+/* the verdict's metric names, short; each unit goes with its median */
+const METRIC_SHORT = {pressure_index: "pressure", nearest_rival_m: "nearest rival", line_height_m: "line depth", line_reaction_m: "line reaction",
+               block_width_m: "block width", block_length_m: "block length", block_area_m2: "block area"};
+/* the medians' decimals in the verdict: pressure is an index under one, area is in thousands of m² */
+const MDEC = {pressure_index: 3, nearest_rival_m: 2, block_area_m2: 0};
 function renderFindings() {
   const F = D.findings, v = name => F.numbers[name].value, fq = (name, text) => q(`findings.numbers.${name}.value`, text);
+  // the counts per split; nearest rival's are the README's own number, read by its keys
+  const count = (m, g) => m === "nearest_rival_m"
+    ? fq(g === "calibration" ? "nearest_below_cal" : "nearest_below_held", v(g === "calibration" ? "nearest_below_cal" : "nearest_below_held"))
+    : q(`findings.signs.${m}.${g}`, F.signs[m][g]);
+  const median = (m, g) => {
+    const x = D.strips.metrics[m][g].median, d = MDEC[m] === undefined ? 1 : MDEC[m];
+    return q(`strips.metrics.${m}.${g}.median`, num(x, d));
+  };
   const body = F.verdict.map(g => g.metrics.map((m, j) => {
-    const c = F.signs[m];
-    return `<tr${j === 0 ? ' class="first"' : ""}>${j === 0 ? `<th rowspan="${g.metrics.length}">${GROUP[g.group]}</th>` : ""}`
-      + `<td>${ROWS[rowOf(m)].words}</td><td class="c">${q(`findings.signs.${m}.calibration`, c.calibration)}`
-      + `${NB}·${NB}${q(`findings.signs.${m}.held-out`, c["held-out"])}</td></tr>`;
+    const r = ROWS[rowOf(m)];
+    // the group's label carries the README's own words
+    return `<tr${j === 0 ? ' class="first"' : ""}>${j === 0 ? `<th rowspan="${g.metrics.length}" title="README: ${esc(g.words)}">${GROUP[g.group]}</th>` : ""}`
+      + `<td>${METRIC_SHORT[m]}</td><td class="c">${count(m, "calibration")}${NB}·${NB}${count(m, "held-out")}</td>`
+      + `<td class="c">${median(m, "calibration")}${NB}·${NB}${median(m, "held-out")}${r.unit ? NB + r.unit : ""}</td></tr>`;
   }).join("")).join("");
   const first = F.verdict[0].metrics[0];
-  at("verdict").innerHTML = `<colgroup><col class="g"><col><col class="c"></colgroup>`
-    + `<thead><tr><th>verdict</th><th>metric</th><th class="c">same sign</th></tr></thead><tbody>${body}</tbody>`
-    + `<caption>Of the ${q(`findings.signs.${first}.of`, F.signs[first].of)} matches of each half: calibration · held-out.</caption>`;
+  at("verdict").innerHTML = `<colgroup><col class="g"><col class="n"><col class="c"><col></colgroup>`
+    + `<caption>The README's reading of V1 − V0 per split (calibration · held-out): the matches of`
+    + ` ${q(`findings.signs.${first}.of`, F.signs[first].of)} with its median's sign, and that median.</caption>`
+    + `<thead><tr><th>verdict</th><th>metric</th><th class="c">matches</th><th class="c">median</th></tr></thead>`
+    + `<tbody>${body}</tbody>`;
+  at("conclusion-1").innerHTML = `<li><b>The selection is large:</b> the block was seen whole in`
+    + ` ${fq("block_whole_cal", pct(v("block_whole_cal")))} to ${fq("block_whole_held", pct(v("block_whole_held")))} of phases,`
+    + ` the back four in ${fq("line_whole_cal", pct(v("line_whole_cal")))} and ${fq("line_whole_held", pct(v("line_whole_held")))}`
+    + ` of receptions: report V0 and V1 beside that share.</li>`;
   at("conclusions").innerHTML = [
-    `<b>The selection is large:</b> the block was seen whole in ${fq("block_whole_cal", pct(v("block_whole_cal")))} to`
-      + ` ${fq("block_whole_held", pct(v("block_whole_held")))} of phases, the back four in ${fq("line_whole_cal", pct(v("line_whole_cal")))}`
-      + ` and ${fq("line_whole_held", pct(v("line_whole_held")))} of receptions. Report V0 and V1 beside that share.`,
-    `<b>The fill behaves as an interpolation:</b> after a gap over ${fq("gap_s", v("gap_s").toFixed(0) + NB + "s")} a player reappears`
-      + ` ${fq("jump_held", v("jump_held").toFixed(2))} to ${fq("jump_cal", v("jump_cal").toFixed(2) + NB + "m")} (median) from its filled position,`
-      + ` a step between detections (${fq("step", v("step").toFixed(2) + NB + "m")}).`,
-    `<b>One question, killed by its own rule:</b> pressure on the receiver against the ball's advance over`
-      + ` ${fq("window_s", v("window_s").toFixed(1) + NB + "s")} gave ${fq("effect_sd", num(v("effect_sd"), 2) + NB + "sd")}, with a`
-      + ` ${fq("pretrend_sd", num(v("pretrend_sd"), 2) + NB + "sd")} imbalance before (${fq("pretrend_share", pct(v("pretrend_share")))} of it).`,
+    `<b>The fill interpolates:</b> after a gap over ${fq("gap_s", v("gap_s").toFixed(0) + NB + "s")} a player reappears`
+      + ` ${fq("jump_held", v("jump_held").toFixed(2))} to ${fq("jump_cal", v("jump_cal").toFixed(2) + NB + "m")} (median) from where it was filled in,`
+      + ` one step between detections (${fq("step", v("step").toFixed(2) + NB + "m")}).`,
+    `<b>One question, killed by its own rule:</b> pressure against the ball's advance over`
+      + ` ${fq("window_s", v("window_s").toFixed(1) + NB + "s")} gave ${fq("effect_sd", num(v("effect_sd"), 2) + NB + "sd")}, but the receptions`
+      + ` already differed by ${fq("pretrend_sd", num(v("pretrend_sd"), 2) + NB + "sd")} before (${fq("pretrend_share", pct(v("pretrend_share")))} of it),`
+      + ` and the pre-registered rule refuses an effect under twice that.`,
   ].map(x => `<li>${x}</li>`).join("");
   at("more").innerHTML = `More: <a href="https://github.com/javiersr1996/ac2-football#readme">the README</a>`
     + ` and <a href="https://github.com/javiersr1996/ac2-football">the repository</a>.`;
@@ -1766,7 +1787,10 @@ function renderStatic() {
     `<svg width="22" height="12" aria-hidden="true"><rect x="1" y="1" width="20" height="10" fill="${C.grass}" stroke="${C.ink}" stroke-width="2"/></svg>camera's frame`,
   ].map(s => `<li>${s}</li>`).join("") + `<li class="note">s: to the nearest detection</li>`;
   at("keystrip").innerHTML = [`${sw(C.vermilion, C.white, 6, 1.5)}seen`, `${sw(C.white, C.vermilion, 5, 2.5)}filled in`,
-    `<span class="note">s: to the nearest detection</span>`].map(s => `<li>${s}</li>`).join("");
+    `<span class="note">s: to the nearest detection</span>`].map(s => `<li>${s}</li>`).join("") + `<li class="br"></li>`
+    + [`${sw(C.blue, C.ink, 5, 2.5)}receiver`, `${sw(C.blue, C.white, 4, 1)}teammates`,
+       `<svg width="18" height="11" aria-hidden="true"><rect x="1" y="1" width="16" height="9" fill="${C.grass}" stroke="${C.ink}" stroke-width="2"/></svg>camera's frame`]
+      .map(s => `<li>${s}</li>`).join("");
   // the thesis under the title: what the camera saw of this match, what keeping it does, and what
   // that change is
   // the thesis: the twenty matches' result (the README's), one sentence; this match is the readout's
@@ -1776,7 +1800,7 @@ function renderStatic() {
     + ` ${q("strips.claim.line_height_m.most", cl.line_height_m.most.toFixed(0))}${NB}m deeper and the block`
     + ` ${q("strips.claim.block_length_m.least", cl.block_length_m.least.toFixed(0))} to`
     + ` ${q("strips.claim.block_length_m.most", cl.block_length_m.most.toFixed(0))}${NB}m shorter: a different sample, not an error.`;
-  at("readout-cap").innerHTML = `This match (the camera saw ${q("context.player_detected", pct(D.context.player_detected))}): means`;
+  at("readout-cap").innerHTML = `This match, ${q("context.player_detected", pct(D.context.player_detected))} seen: means`;
   at("tab-matches-n").innerHTML = q("strips.claim.line_height_m.matches", D.strips.claim.line_height_m.matches);
   const ticks = at("ticks");
   ticks.replaceChildren();

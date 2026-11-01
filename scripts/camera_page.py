@@ -1,4 +1,4 @@
-"""The page: the video's reception in 3D with the camera's measured frame, then from above.
+"""The page: the video's reception in 3D with the camera's measured frame and from above.
 
     uv run ftbase ingest --match 1874553 && uv run ftbase bronze && uv run ftbase silver
     uv run python scripts/camera_page.py                 # writes reports/camera/
@@ -8,8 +8,9 @@
 
 The page draws the reception of the video (``reports/clip/clip.json``: the one ``ac2fb.clip.choose``
 picks by its frozen rule) from the camera's side of the pitch, freezes on the reception and rises to
-the top-down view, where the layer 2 measures are: V0 against V1 for the line and the block of
-this reception, the match's seven metrics, and the twenty matches of figure 1, panel c.
+the top-down view (a portrait screen opens there), on one screen with the layer 2 measures in tabs
+beside it: V0 against V1 for the line and the block of this reception, the match's seven metrics,
+the twenty matches of figure 1, panel c, the camera's frame measured, and the limits.
 
 Everything the page draws or prints is in the sidecar ``reports/camera/camera.json``, and the
 template (``scripts/camera_template.html``) types none of it. The sidecar is built from the data of

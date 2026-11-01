@@ -4,86 +4,99 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>What the camera saw</title>
-<meta name="description" content="One reception of SkillCorner's open A-League tracking, drawn from the camera's side with the camera's measured frame on the grass, then from above with the V0/V1 switch: keep a metric to what the camera saw whole and line depth and block length become a different sample. Every number is read from a file of the repository.">
+<meta name="description" content="One reception of SkillCorner's open A-League tracking on one screen: drawn from the camera's side with the camera's measured frame on the grass and from above with the V0/V1 switch, its measures in tabs beside it. Keep a metric to what the camera saw whole and line depth and block length become a different sample. Every number is read from a file of the repository.">
 <!--
   Built by scripts/camera_page.py into reports/camera/what_the_camera_saw.html: the payload
   (reports/camera/camera.json) and three.js (vendor/three) are inlined, nothing is fetched.
   Copied, with a declaration, from the author's basketball entry
-  (github.com/javiersr1996/nobody-helps-the-helper, scripts/wind_template.html, MIT): the first
-  screen, the window.THREE shim, the renderer and compileAsync, the rise (flight), project and
-  unproject, the placement of the tags, the scrubber with ticks and the no-WebGL fallback.
+  (github.com/javiersr1996/nobody-helps-the-helper, scripts/wind_template.html, MIT): the
+  window.THREE shim, the renderer and compileAsync, the rise (flight), project and unproject,
+  the placement of the tags, the scrubber with ticks and the no-WebGL fallback.
 -->
 <style>
 :root{
   --bg:#fbfbf8; --paper:#ffffff; --ink:#222222; --dim:#444444; --faint:#5f5f5f; --grey:#777777;
   --line:#dfe2da; --line-2:#c8cdc2; --blue:#0072b2; --vermilion:#d55e00; --green:#009e73;
-  --grass:#f1f5ec; --pitchline:#8a9a83;
+  --vermilion-ink:#a94b00; --green-ink:#00775a; --wash:#eef2ea; --grass:#f1f5ec; --sky:#dfe3da;
+  --head:#1b1f1a; --on-head:#ffffff; --on-head-dim:#d3d9cf; --on-head-rule:rgba(255,255,255,.75);
+  --side:clamp(320px,32vw,460px); --thumb:44px; --gutter:20px;
   --sans:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
   --mono:ui-monospace,"Cascadia Mono","SF Mono",Consolas,"Liberation Mono",monospace;
 }
 *{box-sizing:border-box}
 [hidden]{display:none !important}
-html{-webkit-text-size-adjust:100%}
-body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:17px;
-     line-height:1.55;overflow-x:hidden}
+html{-webkit-text-size-adjust:100%;height:100%}
+body{margin:0;height:100%;background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:16px;
+     line-height:1.5}
 a{color:var(--ink);text-decoration-color:var(--line-2);text-underline-offset:3px}
 a:hover{text-decoration-color:var(--ink)}
-.wrap{max-width:1260px;margin:0 auto;padding:0 16px}
-.narrow{max-width:calc(66ch + 32px)}
-.eyebrow{font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:var(--faint);margin:0}
-.q{font-variant-numeric:tabular-nums;white-space:nowrap}
 button{font:inherit}
 :focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+.q{font-variant-numeric:tabular-nums;white-space:nowrap}
+.sr{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);
+    white-space:nowrap;border:0}
 
-/* ------------------------------------------------------------ the first screen */
-/* The stage first and full-bleed: on the phone as tall as the screen allows with the controls
-   under it, on the desktop the whole viewport. The title sits over the canvas's top band (and on
-   the desktop the controls beside it); the script reads the band (--band) so the camera fit and
-   the plan keep the players below it. --side is the desktop's right column, --panel-h the
-   phone's V0/V1 panel under the band. */
-#hero{position:relative;--band:0px;--side:384px;--panel-h:214px;--thumb:44px;
-      --overlay:rgba(20,24,19,.84)}
-.hero{position:relative}
-.top{position:absolute;left:0;right:0;top:0;z-index:2;padding:10px 16px 10px;
-     background:var(--overlay);color:#fff}
-.top .eyebrow{color:#d3d9cf;display:none}
-h1{font-size:min(28px,7vw);line-height:1.15;margin:0;font-weight:800;letter-spacing:-.02em;
+/* ------------------------------------------------------------ one screen */
+/* The page is one screen and never scrolls: a grid of the header (the title and the thesis), the
+   stage (the scene), the control bar under it and the panel of tabs, whose body alone scrolls.
+   Landscape: the panel on the right, the header across the top, or at the head of the panel's
+   column when the window is short (a phone held sideways). Portrait: header, stage, controls,
+   tabs, one under the other. */
+.app{height:100vh;height:100dvh;display:grid;grid-template-columns:minmax(0,1fr) var(--side);
+     grid-template-rows:auto minmax(0,1fr) auto;grid-template-areas:"head head" "stage panel" "ctrl panel"}
+.top{grid-area:head;min-width:0;background:var(--head);color:var(--on-head);padding:10px 24px 12px;
+     display:grid;grid-template-columns:auto minmax(0,1fr);grid-template-areas:"eyebrow thesis" "title thesis";
+     column-gap:28px;align-items:end}
+.top h1{grid-area:title}
+.thesis{grid-area:thesis}
+.eyebrow{grid-area:eyebrow;font-size:13px;letter-spacing:.14em;text-transform:uppercase;
+         color:var(--on-head-dim);margin:0 0 2px}
+h1{font-size:clamp(26px,2.6vw,38px);line-height:1.1;margin:0;font-weight:800;letter-spacing:-.02em;
    white-space:nowrap}
-.thesis{font-size:16px;line-height:1.4;color:#fff;margin:3px 0 0;max-width:62ch}
-.sub{font-size:16px;line-height:1.45;color:#e7ebe3;margin:3px 0 0;max-width:62ch;min-height:2.9em}
-.stage{position:relative;width:100%;height:max(360px,calc(100svh - 136px));background:#dfe3da;
-       overflow:hidden}
-.stage canvas{display:block;width:100%;height:100%;touch-action:pan-y}
+.thesis{margin:0;font-size:clamp(16px,1.25vw,18px);line-height:1.4;max-width:84ch}
+.thesis .q{font-weight:700}
+
+/* ------------------------------------------------------------ the stage */
+.stage{grid-area:stage;position:relative;min-width:0;min-height:0;overflow:hidden;background:var(--sky)}
+.stage canvas{position:absolute;left:0;top:0;display:block;width:100%;height:100%;touch-action:manipulation}
 .tags{position:absolute;inset:0;pointer-events:none;overflow:hidden}
-.tag{position:absolute;left:0;top:0;will-change:transform;white-space:nowrap;font-size:13px;
-     font-weight:700;line-height:1.2;padding:1px 4px;border-radius:3px;
-     background:rgba(255,255,255,.9);color:var(--vermilion)}
-.tag.me{color:var(--ink)}
-.tag.measure{color:var(--ink);font-weight:600;font-size:14px;white-space:pre;text-align:center}
-.tag.measure.off{color:var(--grey)}
+/* a tag is ink on an opaque card: vermilion (a defender) or blue (the receiver) only as its mark */
+.tag{position:absolute;left:0;top:0;will-change:transform;white-space:nowrap;font-size:13px;font-weight:700;
+     line-height:1.2;padding:1px 5px 1px 4px;border-radius:2px;background:var(--paper);color:var(--ink);
+     border:1px solid var(--line-2);border-left:3px solid var(--vermilion)}
+.tag.me{border-left-color:var(--blue)}
+.tag.measure{border-left-width:1px;font-weight:600;font-size:14px;white-space:pre;text-align:center}
+.tag.measure.off,.tag.faded{color:var(--faint);font-weight:600}
+.tag.faded{border-left-color:#efc6a6}
 .leaders{position:absolute;left:0;top:0;width:100%;height:100%;overflow:visible}
 .leaders line{stroke-linecap:round}
 .leaders .halo{stroke:rgba(255,255,255,.85);stroke-width:4}
 .leaders .lead{stroke:var(--vermilion);stroke-width:1.6}
 .leaders .lead.me,.leaders .lead.measure{stroke:var(--ink)}
-.foot{position:absolute;left:12px;bottom:12px;z-index:2;display:flex;align-items:flex-end;gap:12px;
+.foot{position:absolute;left:12px;right:12px;bottom:12px;z-index:2;display:flex;align-items:flex-end;gap:10px;
       pointer-events:none}
-.count{background:rgba(255,255,255,.92);border:1px solid var(--line-2);padding:6px 10px 6px;
-       line-height:1.15;flex:none}
-.count .n{font-size:26px;font-weight:800;color:var(--vermilion);font-variant-numeric:tabular-nums}
+.count{background:var(--paper);border:1px solid var(--line-2);padding:5px 10px;line-height:1.15;flex:none}
+.count .n{font-size:24px;font-weight:800;color:var(--vermilion-ink);font-variant-numeric:tabular-nums}
 .count .w{font-size:13px;color:var(--dim)}
 .count .clock{font-size:15px;font-weight:700;font-variant-numeric:tabular-nums;margin-top:2px}
-.count.big .n{font-size:34px}
-.no-gl{position:absolute;inset:0;margin:0;padding:calc(var(--band) + 16px) 24px 24px;display:flex;
-       align-items:center;font-size:17px;background:var(--paper)}
-.controls{background:var(--overlay);color:#fff;padding:10px 16px 12px}
-.controls .row{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
-.controls .row + .row{margin-top:6px}
-.controls :focus-visible,.top :focus-visible{outline-color:#fff}
-.btn{border:1px solid #fff;background:#fff;color:var(--ink);font-size:15px;font-weight:600;
-     padding:8px 16px;border-radius:3px;cursor:pointer;min-width:84px;min-height:44px}
+.count.big .n{font-size:30px}
+.key{list-style:none;margin:0;padding:5px 10px;display:flex;flex-wrap:wrap;gap:2px 14px;font-size:14px;
+     line-height:1.3;color:var(--dim);background:var(--paper);border:1px solid var(--line-2);min-width:0}
+.key li{display:flex;align-items:center;gap:4px}
+.key b{color:var(--ink);font-weight:600;margin-right:2px}
+.key svg{flex:none}
+.key .note{color:var(--faint)}
+.no-gl{position:absolute;inset:0;margin:0;padding:24px;display:flex;align-items:center;font-size:17px;
+       background:var(--paper)}
+
+/* ------------------------------------------------------------ the control bar */
+.controls{grid-area:ctrl;min-width:0;background:var(--head);color:var(--on-head);padding:8px 16px 6px;
+          display:flex;flex-wrap:wrap;align-items:flex-start;gap:4px 12px}
+.controls :focus-visible{outline-color:#fff}
+.btn{flex:none;border:1px solid #fff;background:#fff;color:var(--ink);font-size:15px;font-weight:600;
+     padding:0 14px;border-radius:3px;cursor:pointer;min-width:76px;height:44px}
 .btn[disabled],.seg button[disabled]{opacity:.4;cursor:default}
-.scrubwrap{flex:1;min-width:150px;position:relative;padding-bottom:18px}
+.scrubwrap{flex:1 1 150px;min-width:150px;position:relative;padding-bottom:16px}
 #scrub{-webkit-appearance:none;appearance:none;display:block;width:100%;height:var(--thumb);margin:0;
        background:transparent;cursor:pointer;--f:0}
 #scrub:disabled{opacity:.4;cursor:default}
@@ -96,192 +109,204 @@ h1{font-size:min(28px,7vw);line-height:1.15;margin:0;font-weight:800;letter-spac
   border:0;border-radius:50%;background:radial-gradient(circle,#fff 0 9px,rgba(255,255,255,.2) 10px 20px,transparent 21px)}
 #scrub::-moz-range-thumb{width:var(--thumb);height:var(--thumb);border:0;border-radius:50%;
   background:radial-gradient(circle,#fff 0 9px,rgba(255,255,255,.2) 10px 20px,transparent 21px)}
-.ticks{position:absolute;left:0;right:0;top:calc(var(--thumb) / 2 + 12px);height:26px;font-size:13px;
-       color:#d3d9cf}
-.tick{position:absolute;top:0;width:1px;height:7px;background:#d3d9cf}
-.tick-label{position:absolute;top:10px;white-space:nowrap;transform:translateX(-4px)}
+.ticks{position:absolute;left:0;right:0;top:calc(var(--thumb) / 2 + 8px);height:22px;font-size:12px;
+       color:var(--on-head-dim)}
+.tick{position:absolute;top:0;width:1px;height:6px;background:var(--on-head-dim)}
+.tick-label{position:absolute;top:6px;white-space:nowrap;line-height:1.2;transform:translateX(-4px)}
 .tick,.tick-label{left:calc(var(--f) * (100% - var(--thumb)) + var(--thumb) / 2)}
-.seg{display:flex;border:1px solid rgba(255,255,255,.75);border-radius:3px;overflow:hidden}
-.seg button{background:transparent;border:0;color:#fff;font-size:15px;padding:8px 14px;
-            cursor:pointer;min-height:44px}
-.seg button + button{border-left:1px solid rgba(255,255,255,.75)}
+.toggles{flex:none;display:flex;flex-wrap:wrap;gap:4px 12px}
+.seg{flex:none;display:flex;border:1px solid var(--on-head-rule);border-radius:3px;overflow:hidden}
+.seg button{background:transparent;border:0;color:#fff;font-size:15px;padding:0 12px;cursor:pointer;
+            height:44px;min-width:44px;white-space:nowrap}
+.seg button + button{border-left:1px solid var(--on-head-rule)}
 .seg button[aria-pressed=true]{background:#fff;color:var(--ink);font-weight:600}
-.caption{margin:0;font-size:16px;color:#e7ebe3;flex:1;min-width:200px}
-.top .caption{margin-top:4px;min-width:0}
-.after{padding-top:18px;padding-bottom:40px}
-.key{list-style:none;margin:0;padding:5px 10px;display:flex;flex-wrap:wrap;gap:2px 14px;font-size:14px;
-     line-height:1.3;color:var(--dim);background:rgba(255,255,255,.92);border:1px solid var(--line-2)}
-.key li{display:flex;align-items:center;gap:4px}
-.key b{color:var(--ink);font-weight:600;margin-right:2px}
-.key svg{flex:none}
-.key .note{color:var(--faint)}
-.drawn{margin:0;font-size:16px;color:var(--faint)}
+.seg .long{display:none}
 
-/* ------------------------------------------------------------------ measure */
-#measure{font-size:16px;margin-top:26px}
-/* The V0/V1 panel, over the stage in plan only (it is inside #measure): under the title band on
-   the phone, the desktop's right column under the controls. The plan frames the pitch clear of it. */
-.panel{position:absolute;z-index:2;left:0;right:0;top:var(--band);height:var(--panel-h);
-       padding:6px 16px 4px;background:rgba(251,251,248,.95);overflow:hidden;
-       border-bottom:1px solid var(--line)}
-.flat .panel{position:static;height:auto;padding:0;background:none;border:0}
-.panel .seg{border-color:var(--ink);display:inline-flex}
-.panel .seg button{color:var(--ink);font-size:15px}
-.panel .seg button + button{border-left-color:var(--ink)}
-.panel .seg button[aria-pressed=true]{background:var(--ink);color:#fff}
-.ptab{margin-top:6px;width:auto;font-size:15px}
-.ptab th,.ptab td{padding:3px 12px 3px 0;border:0;text-align:left;vertical-align:baseline;line-height:1.25}
-.ptab th{font-weight:600;color:var(--ink)}
-.ptab .num{font-size:16px;color:var(--dim);font-weight:600}
-.ptab .on .num{font-size:21px;font-weight:800;color:var(--ink)}
-.ptab .on.v1 .num{color:var(--green)}
-.ptab .n{font-size:13px;color:var(--faint);display:block}
-.ptab tr.ref th{padding-top:4px;font-size:15px;white-space:nowrap}
+/* ------------------------------------------------------------ the panel */
+.panel{grid-area:panel;min-width:0;min-height:0;display:flex;flex-direction:column;background:var(--paper);
+       border-left:1px solid var(--line-2)}
+.readout{flex:none;padding:8px var(--gutter) 8px;border-bottom:1px solid var(--line)}
+.ptab{border-collapse:collapse;width:100%}
+.ptab th,.ptab td{padding:1px 10px 1px 0;border:0;text-align:left;vertical-align:baseline;line-height:1.25;
+                  font-variant-numeric:tabular-nums}
+.ptab tr.ref th{padding-top:6px;font-size:15px;font-weight:600}
+.ptab tr.ref:first-child th{padding-top:0}
 .ptab tr.ref th span{font-size:13px;font-weight:400;color:var(--faint)}
+.ptab .num{display:block;font-size:16px;color:var(--dim);font-weight:600;white-space:nowrap}
+.ptab .on .num{font-size:20px;font-weight:800;color:var(--ink)}
+.ptab .on.v1 .num{color:var(--green-ink)}
+.ptab .n{display:block;font-size:13px;color:var(--faint)}
 .ptab .diff .num{color:var(--ink)}
-#measure h2{font-size:24px;line-height:1.2;margin:0 0 10px;letter-spacing:-.01em}
-#measure h2.second{margin-top:42px;padding-top:26px;border-top:1px solid var(--line)}
-#measure h3{font-size:17px;margin:26px 0 6px}
-#measure p{margin:10px 0 0}
-.limit{border-left:3px solid var(--line-2);padding:2px 0 2px 12px;color:var(--dim)}
-.scroll{overflow-x:auto;margin-top:10px}
-table{border-collapse:collapse;width:100%;font-size:16px}
-th,td{text-align:right;padding:6px 8px;border-bottom:1px solid var(--line);
-      font-variant-numeric:tabular-nums;white-space:nowrap}
-th:first-child,td:first-child{text-align:left;white-space:normal}
-thead th{font-weight:600;color:var(--dim)}
-tr.on td{background:#eef2ea}
-tr.unit td:first-child{font-weight:600}
-tbody tr{cursor:default}
-tbody tr.linked{cursor:pointer}
-tr.linked td:first-child::after,.hint .ring{content:"";display:inline-block;width:9px;height:9px;margin-left:6px;
-  border:1.5px solid var(--ink);border-radius:50%;vertical-align:baseline}
-.hint{color:var(--faint);font-size:16px}
-.chart{position:relative;margin-top:6px}
+.tablist{flex:none;display:flex;padding:0 8px;border-bottom:1px solid var(--line-2)}
+.tab{flex:1 1 auto;min-width:44px;height:46px;padding:0 8px;border:0;border-bottom:3px solid transparent;
+     margin-bottom:-1px;background:none;color:var(--dim);font-size:15px;font-weight:600;cursor:pointer;
+     white-space:nowrap}
+.tab:hover{color:var(--ink)}
+.tab[aria-selected=true]{color:var(--ink);border-bottom-color:var(--ink)}
+.tab:focus-visible{outline-offset:-3px}
+/* only the tab's body scrolls; a soft shade at its top and bottom says there is more */
+.tabpanel{flex:1 1 0;min-height:0;overflow:auto;overscroll-behavior:contain;padding:14px var(--gutter) 18px;
+  background:linear-gradient(var(--paper) 30%,rgba(255,255,255,0)) top / 100% 24px no-repeat local,
+             linear-gradient(rgba(255,255,255,0),var(--paper) 70%) bottom / 100% 24px no-repeat local,
+             radial-gradient(farthest-side at 50% 0,rgba(0,0,0,.1),transparent) top / 100% 8px no-repeat scroll,
+             radial-gradient(farthest-side at 50% 100%,rgba(0,0,0,.1),transparent) bottom / 100% 8px no-repeat scroll;
+  background-color:var(--paper)}
+.tabpanel:focus-visible{outline-offset:-3px}
+.tabpanel h2{font-size:19px;line-height:1.25;margin:0 0 8px;letter-spacing:-.01em}
+.tabpanel h3{font-size:13px;letter-spacing:.1em;text-transform:uppercase;color:var(--faint);margin:18px 0 4px}
+.tabpanel p{margin:0 0 10px}
+.tabpanel > :last-child{margin-bottom:0}
+.src{color:var(--faint);font-size:13px}
+.hint{color:var(--faint)}
+.mtab{border-collapse:collapse;width:100%;margin:2px 0 10px}
+.mtab th,.mtab td{text-align:right;padding:3px 0 3px 10px;border-bottom:1px solid var(--line);
+                  font-variant-numeric:tabular-nums;white-space:nowrap;vertical-align:top;line-height:1.3}
+.mtab th:first-child,.mtab td:first-child{text-align:left;white-space:normal;padding-left:0}
+.mtab thead th{font-weight:600;color:var(--dim);font-size:14px}
+.mtab .n{display:block;font-size:13px;color:var(--faint)}
+.mtab .on{background:var(--wash)}
+.mtab tr.unit td:first-child{font-weight:700}
+.mtab tbody tr{cursor:default}
+.mtab tbody tr.linked{cursor:pointer}
+.mtab tr.linked td:first-child::after,.hint .ring{content:"";display:inline-block;width:9px;height:9px;
+  margin-left:6px;border:1.5px solid var(--ink);border-radius:50%;vertical-align:baseline}
+.chart{position:relative;margin-top:4px}
 .chart svg{display:block;overflow:visible}
 .chart text{font-family:var(--sans);font-size:13px;fill:var(--ink)}
 .chart .small{font-size:12px;fill:var(--faint)}
-.legend{display:flex;flex-wrap:wrap;gap:4px 16px;font-size:14px;color:var(--dim);margin:10px 0 4px}
+.legend{display:flex;flex-wrap:wrap;gap:2px 12px;font-size:13px;color:var(--dim);margin:0 0 6px}
 .legend span{display:flex;align-items:center;gap:6px}
-ol.limits{padding-left:24px;margin:12px 0 0}
-ol.limits li{margin:0 0 12px;color:var(--dim)}
-ol.limits .src{color:var(--faint)}
+ol.limits{padding-left:22px;margin:0}
+ol.limits li{margin:0 0 10px;color:var(--dim)}
 code{font-family:var(--mono);font-size:15px;overflow-wrap:anywhere}
-footer{border-top:1px solid var(--line);padding:30px 16px 46px;color:var(--dim);font-size:16px}
-footer h3{font-size:14px;letter-spacing:.1em;text-transform:uppercase;color:var(--faint);margin:22px 0 6px}
-footer pre{background:var(--paper);border:1px solid var(--line);padding:12px 14px;font-family:var(--mono);
-           font-size:14px;overflow-x:auto;margin:0}
-footer a{display:inline-block;padding:11px 0}
-.minimap{max-width:420px;margin-top:12px}
+.about{margin-top:18px;padding-top:2px;border-top:1px solid var(--line);color:var(--dim)}
+.about pre{background:var(--bg);border:1px solid var(--line);padding:10px 12px;font-family:var(--mono);
+           font-size:13px;line-height:1.45;white-space:pre-wrap;overflow-wrap:anywhere;margin:0}
+.about a{display:inline-block;padding:11px 0}
 
-@media (min-width:900px){
-  .stage{height:max(560px,100svh)}
-  .top{right:auto;width:calc(100% - var(--side) - 48px);padding:16px 24px 14px}
-  .top .eyebrow{display:block}
-  h1{font-size:clamp(30px,3.2vw,46px);margin-top:4px}
-  .thesis{font-size:19px;max-width:none}
-  .sub{font-size:17px;min-height:1.45em;max-width:none}
-  .controls{position:absolute;top:0;right:0;z-index:2;width:var(--side);padding:14px 20px 12px}
-  .panel{left:auto;right:0;top:calc(var(--band) + 12px);width:var(--side);height:auto;padding:12px 20px 10px;
-         border:1px solid var(--line)}
-  .foot{left:20px;bottom:20px;right:calc(var(--side) + 20px)}
+@media (orientation:landscape) and (min-width:1200px) and (min-height:561px){.seg .long{display:inline}}
+/* portrait: header, stage, controls, tabs */
+@media (orientation:portrait){
+  .app{grid-template-columns:minmax(0,1fr);grid-template-rows:auto minmax(0,1.15fr) auto minmax(0,1fr);
+       grid-template-areas:"head" "stage" "ctrl" "panel"}
+  .panel{border-left:0}
 }
-/* on the phone the counter is one line under the key, and the key stands for the subtitle */
-@media (max-width:899px){
-  .sub{display:none}
-  .foot{left:8px;right:8px;bottom:8px;flex-direction:column-reverse;align-items:flex-start;gap:4px}
-  .key{font-size:13px;padding:4px 8px;gap:1px 12px}
-  .count{padding:4px 8px}
+/* a short landscape window (a phone held sideways): the header heads the panel's column */
+@media (orientation:landscape) and (max-height:560px){
+  .app{grid-template-areas:"stage head" "stage panel" "ctrl panel"}
+}
+/* compact (either of the two): the title over the thesis; the key and the V0/V1 readout open the
+   Story tab; the counter on one line */
+@media (orientation:portrait),(max-height:560px){
+  .top{display:block;padding:8px 16px 10px}
+  .eyebrow{display:none}
+  h1{font-size:min(24px,7vw)}
+  .thesis{font-size:16px;margin-top:2px}
+  .tablist{padding:0}
+  .tab{padding:0 4px;font-size:14px}
+  .tabpanel{padding:12px 16px 16px}
+  .tabpanel .key{padding:0;border:0;background:none;font-size:14px;margin:0 0 10px}
+  .readout{padding:0 0 8px;margin:0 0 12px;border-bottom:1px solid var(--line)}
+  .foot{left:8px;right:8px;bottom:8px}
+  .count{padding:3px 8px;flex:0 1 auto}
   .count div{display:inline}
   .count .clock{margin-left:6px}
   .count .n,.count.big .n{font-size:20px}
-  .controls .caption{min-width:0;font-size:13px;line-height:1.3}
-  .cap-tail{display:none}
+  .controls{padding:6px 12px 4px}
 }
-@media (min-width:900px) and (max-width:1279px){.sub,.top .caption{min-height:2.9em}}
+/* a short portrait screen: the stage takes more of what the header and the controls leave */
+@media (orientation:portrait) and (max-height:640px){
+  .app{grid-template-rows:auto minmax(0,1.45fr) auto minmax(0,1fr)}
+}
+@media (max-width:360px){.count .wd{display:none}}
 </style>
 </head>
 <body>
 
-<main>
-<section id="hero" aria-label="the reception">
-  <div class="hero">
-    <header class="top" id="top">
-      <p class="eyebrow">A reliability tag for defensive metrics</p>
-      <h1>What the camera saw</h1>
-      <p class="thesis" id="thesis"></p>
-      <p class="sub" id="stage-sub"></p>
-    </header>
-    <div class="stage" id="stage">
-      <canvas id="pitch" role="img" aria-label="one reception, twenty-two players and the camera's frame on the pitch"></canvas>
-      <div class="tags" id="tags" aria-hidden="true"></div>
-      <div class="foot" id="foot">
-        <div class="count" id="count" aria-live="off">
-          <div><span class="n" id="count-n"></span> <span class="w" id="count-w"></span></div>
-          <div class="clock" id="clock"></div>
-        </div>
-        <ul class="key" id="key" aria-label="key"></ul>
+<main class="app" id="app">
+  <header class="top" id="top">
+    <p class="eyebrow">A reliability tag for defensive metrics</p>
+    <h1>What the camera saw</h1>
+    <p class="thesis" id="thesis"></p>
+  </header>
+
+  <section class="stage" id="stage" aria-label="the reception">
+    <canvas id="pitch" role="img" aria-label="one reception, twenty-two players and the camera's frame on the pitch"></canvas>
+    <div class="tags" id="tags" aria-hidden="true"></div>
+    <div class="foot" id="foot">
+      <div class="count" id="count" aria-live="off">
+        <div><span class="n" id="count-n"></span> <span class="w" id="count-w"></span></div>
+        <div class="clock" id="clock"></div>
       </div>
-      <p class="no-gl" id="no-gl" hidden>This browser has no WebGL, so the reception cannot be drawn
-        here. What it shows: the camera shows a window around the ball; SkillCorner fills in the
-        rest. Keep a metric to what the camera saw whole and line depth and block length become
-        a different sample, not a different error. The README's figures draw the same; the
-        measures below need no GPU and still work.</p>
+      <ul class="key" id="key" aria-label="key"></ul>
     </div>
-    <div class="controls" id="controls">
-      <div class="row">
-        <button class="btn" id="play" type="button">Play</button>
-        <div class="scrubwrap">
-          <input type="range" id="scrub" min="0" step="1" value="0" aria-label="time in the clip">
-          <div class="ticks" id="ticks"></div>
-        </div>
+    <p class="no-gl" id="no-gl" hidden>This browser has no WebGL, so the reception cannot be drawn
+      here. What it shows: the camera shows a window around the ball; SkillCorner fills in the
+      rest. Keep a metric to what the camera saw whole and line depth and block length become
+      a different sample, not a different error. The README's figures draw the same; the tabs
+      need no GPU and still work.</p>
+  </section>
+
+  <div class="controls" id="controls">
+    <button class="btn" id="play" type="button">Play</button>
+    <div class="scrubwrap">
+      <input type="range" id="scrub" min="0" step="1" value="0" aria-label="time in the clip">
+      <div class="ticks" id="ticks"></div>
+    </div>
+    <div class="toggles">
+      <div class="seg" role="group" aria-label="camera">
+        <button id="view-broadcast" type="button" aria-pressed="true">Broadcast</button>
+        <button id="view-plan" type="button" aria-pressed="false">Top-down</button>
       </div>
-      <div class="row">
-        <div class="seg" role="group" aria-label="camera">
-          <button id="view-broadcast" type="button" aria-pressed="true">Broadcast</button>
-          <button id="view-plan" type="button" aria-pressed="false">Top-down</button>
-        </div>
-        <p class="caption" id="stage-caption" aria-live="polite"></p>
+      <div class="seg" role="group" aria-label="variant">
+        <button id="variant-v0" type="button" aria-pressed="true">V0<span class="long"> every unit</span></button>
+        <button id="variant-v1" type="button" aria-pressed="false">V1<span class="long"> seen throughout</span></button>
       </div>
     </div>
+    <p class="sr" id="stage-caption" aria-live="polite"></p>
   </div>
 
-  <div class="after wrap narrow">
-    <p class="drawn" id="drawn"></p>
-    <div id="measure" hidden>
-      <div class="panel" id="panel">
-        <div class="seg" role="group" aria-label="variant">
-          <button id="variant-v0" type="button" aria-pressed="true">V0 every unit</button>
-          <button id="variant-v1" type="button" aria-pressed="false">V1 seen throughout</button>
-        </div>
-        <table class="ptab" id="panel-table"></table>
-      </div>
+  <aside class="panel" id="panel" aria-label="the measures">
+    <div class="readout" id="readout">
+      <table class="ptab" id="panel-table" aria-label="line depth and block length of this match, V0 and V1"></table>
+    </div>
+    <div class="tablist" id="tablist" role="tablist" aria-label="the measures">
+      <button class="tab" role="tab" type="button" id="tab-story" data-tab="story" aria-controls="tp-story" aria-selected="true">Story</button>
+      <button class="tab" role="tab" type="button" id="tab-metrics" data-tab="metrics" aria-controls="tp-metrics" aria-selected="false" tabindex="-1">Metrics</button>
+      <button class="tab" role="tab" type="button" id="tab-matches" data-tab="matches" aria-controls="tp-matches" aria-selected="false" tabindex="-1"><span id="tab-matches-n"></span> matches</button>
+      <button class="tab" role="tab" type="button" id="tab-camera" data-tab="camera" aria-controls="tp-camera" aria-selected="false" tabindex="-1">Camera</button>
+      <button class="tab" role="tab" type="button" id="tab-limits" data-tab="limits" aria-controls="tp-limits" aria-selected="false" tabindex="-1">Limits</button>
+    </div>
+    <div class="tabpanel" role="tabpanel" id="tp-story" aria-labelledby="tab-story" tabindex="0">
       <h2>Keep only what the camera saw whole</h2>
       <p id="lead"></p>
       <p id="context"></p>
-      <h3 id="table-title"></h3>
+    </div>
+    <div class="tabpanel" role="tabpanel" id="tp-metrics" aria-labelledby="tab-metrics" tabindex="0" hidden>
+      <h2 id="table-title"></h2>
       <p class="hint" id="table-hint"></p>
-      <div class="scroll"><table id="metrics"></table></div>
+      <table class="mtab" id="metrics"></table>
       <p id="near-note"></p>
-      <h3 id="strips-title"></h3>
+    </div>
+    <div class="tabpanel" role="tabpanel" id="tp-matches" aria-labelledby="tab-matches" tabindex="0" hidden>
       <p id="strips-claim"></p>
       <div class="legend" id="strips-legend"></div>
       <div class="chart" id="strips"></div>
-      <p class="limit" id="limit-chosen"></p>
-
-      <h2 class="second">The camera's frame, measured</h2>
-      <p id="frame-text"></p>
-      <div class="chart minimap" id="minimap"></div>
-      <p class="limit" id="frame-limit"></p>
-
-      <h2 class="second">The limits</h2>
-      <ol class="limits" id="limits-list"></ol>
     </div>
-  </div>
-</section>
+    <div class="tabpanel" role="tabpanel" id="tp-camera" aria-labelledby="tab-camera" tabindex="0" hidden>
+      <h2>The camera's frame, measured</h2>
+      <p id="camera-note"></p>
+      <p id="frame-text"></p>
+      <p id="frame-cut"></p>
+      <p id="frame-apex"></p>
+    </div>
+    <div class="tabpanel" role="tabpanel" id="tp-limits" aria-labelledby="tab-limits" tabindex="0" hidden>
+      <h2>The limits</h2>
+      <ol class="limits" id="limits-list"></ol>
+      <div class="about" id="about"></div>
+    </div>
+  </aside>
 </main>
-
-<footer class="wrap narrow" id="footer"></footer>
 
 <script type="application/json" id="payload">/*PAYLOAD*/</script>
 <script id="three-js">
@@ -377,12 +402,15 @@ function el(name, attrs = {}, text) {
   if (text !== undefined) node.textContent = text;
   return node;
 }
+/** Round ticks between lo and hi, and the decimals their step needs (every label alike). */
 function niceTicks(lo, hi, bins = 4) {
   const raw = (hi - lo) / bins, mag = Math.pow(10, Math.floor(Math.log10(raw)));
   const step = [1, 2, 2.5, 5, 10].map(m => m * mag).find(s => Math.floor(hi / s) - Math.ceil(lo / s) <= bins) || 10 * mag;
-  const out = [];
-  for (let t = Math.ceil(lo / step) * step; t <= hi + 1e-9; t += step) out.push(Number(t.toFixed(6)));
-  return out;
+  const ticks = [];
+  for (let t = Math.ceil(lo / step) * step; t <= hi + 1e-9; t += step) ticks.push(Number(t.toFixed(6)));
+  let d = 0;
+  while (d < 6 && Math.abs(step * Math.pow(10, d) - Math.round(step * Math.pow(10, d))) > 1e-6) d++;
+  return {ticks, d};
 }
 
 /* ------------------------------------------------------------- the scene */
@@ -463,12 +491,28 @@ const WORLD = [S, 0, 0, 0, 0, 0, -S, 0, 0, 1, 0, 0, 0, 0, 0, 1];   // clip frame
 const V = (x, y, z = 0) => new THREE.Vector3(S * x, z, -S * y);
 const G = (x, y) => [S * x, -S * y];                              // clip (x, y) -> world floor (X, Z)
 
-const st = {tau: 0, phase: "idle", view: "broadcast", p: 0, variant: "V0", risen: false};
-const size = {w: 0, h: 0, square: false, band: 0, region: null, count: null, key: null, foot: null};
+const st = {tau: 0, phase: "idle", view: "broadcast", p: 0, variant: "V0", risen: false, tab: "story", camTab: false};
+const size = {w: 0, h: 0, compact: false, region: null, foot: null};
 let scene3, persp, ortho, active, current = null, hover = null;
 let playRaf = 0, playLast = null, holdTimer = 0, flyRaf = 0, flyLast = null, fadeRaf = 0, booting = false;
 let bodies = [], marks = [], groundRings = [], ball3, ballShadow, ballMark, shade, frameTris, frameDash;
-let lineTris, bracketTris, unitRings, look = null, fadeK = 1;
+let lineTris, bracketTris, unitRings, camTris, apexTris, look = null, fadeK = 1;
+/* The page's own clock: the animation frame's time of each moment of the natural run (the first
+   frame of a play, the freeze on the reception, the first and the last frame of the rise, the end
+   of the fade), with the longest step between two frames before it and the time lost to steps
+   longer than STEP_MAX, for a driver that times the run by the frames the page drew. */
+const clock = [];
+let stepMax = 0, stepLost = 0;
+function mark(e, now = performance.now()) {
+  clock.push({e, t: now, step: stepMax, lost: stepLost});
+  stepMax = 0;
+  stepLost = 0;
+}
+function stepped(dt) {
+  stepMax = Math.max(stepMax, dt);
+  stepLost += Math.max(0, dt - STEP_MAX);
+  return Math.min(dt, STEP_MAX);
+}
 
 /** Triangles on the floor, rebuilt in place: lines, rings, dashes, the frame's border. */
 class Tris {
@@ -575,6 +619,10 @@ function buildStage() {
   bracketTris = new Tris(C.grey, 600, 4);
   unitRings = new Tris(C.ink, 3000, 4);
   scene3.add(lineTris.mesh, bracketTris.mesh, unitRings.mesh);
+  // plan with the Camera tab: the side edges run on to where they meet, in each frame of the clip
+  camTris = new Tris(C.ink, 600, 4);
+  apexTris = new Tris(C.grey, 2400, 4);
+  scene3.add(camTris.mesh, apexTris.mesh);
 
   // the twenty-three: a body and a ring on the grass (broadcast), a marker (plan)
   const capsule = new THREE.CapsuleGeometry(BODY_R, BODY_H - 2 * BODY_R, 4, 12);
@@ -640,12 +688,12 @@ function heldPoints() {
     the frame's side edges meet (the clip's median) at the drawn height, heading across the pitch,
     the tilt and field of view of the tightest fit, and its lens shifts. */
 function shot() {
-  const key = `${size.w}x${size.h}:${size.band}`;
+  const key = `${size.w}x${size.h}:${size.foot.y}`;
   if (look && look.key === key) return look;
   const eye = V(CAM.apex_median[0], CAM.apex_median[1], CAM.drawn_height_m);
   const head = eye.z > 0 ? -1 : 1;                    // toward the pitch, along world Z
   const A = size.w / size.h, inner = 1 - 2 * FRAME_MARGIN;
-  const roof = inner - 2 * size.band / size.h;
+  const roof = inner;
   const floor = -1 + 2 * Math.max(BOTTOM, (size.h - size.foot.y + 6) / size.h);
   const pts = heldPoints();
   const need = th => {
@@ -675,12 +723,34 @@ function shot() {
   look = {key, eye, target, fov: 2 * Math.atan(t) / DEG, sx, sy, th, head};
   return look;
 }
-/** The orthographic frame that contains the crop in the canvas's free region ("contain"). */
+/** World floor depths (Z) of the frame's far edge (the provider's cut) in the clip's frames, a
+    metre clear of it: the plan holds them, so the window closes on screen. */
+let FAR_Z = null;
+function farZ() {
+  if (FAR_Z) return FAR_Z;
+  FAR_Z = [];
+  for (const c of CAM.corners) {
+    const poly = clipFrame(c);
+    poly.forEach((p, k) => {
+      if (p.edge !== 2) return;
+      for (const end of [p, poly[(k + 1) % poly.length]]) { const z = -S * end.y; FAR_Z.push(z + Math.sign(z)); }
+    });
+  }
+  return FAR_Z;
+}
+/** The orthographic frame that contains the crop in the canvas's free region ("contain"); with
+    the Camera tab open, also where the frame's side edges meet and its near corners. */
 function planFrame() {
   const R = size.region;
   const xs = D.crop.x.map(x => S * x), zs = D.crop.y.map(y => -S * y);
-  // the bracket of the block sits under the near touchline: the frame holds it too
-  zs.push(HALF_W + bracketGap() + 1.5);
+  // the bracket of the block sits under the near touchline, the far edge over the far one
+  zs.push(HALF_W + bracketGap() + 1.5, ...farZ());
+  if (st.camTab) {
+    for (const p of [...CAM.apex, ...CAM.corners.flatMap(c => [c[0], c[1]])]) {
+      xs.push(S * p[0]);
+      zs.push(-S * p[1] + 2 * Math.sign(-S * p[1]));
+    }
+  }
   const X0 = Math.min(...xs), X1 = Math.max(...xs), Z0 = Math.min(...zs), Z1 = Math.max(...zs);
   const k = Math.min((R.x1 - R.x0) / (X1 - X0), (R.y1 - R.y0) / (Z1 - Z0));
   const rx = (R.x0 + R.x1) / 2, ry = (R.y0 + R.y1) / 2;
@@ -728,23 +798,28 @@ function placeCamera(p) {
 
 /* ------------------------------------------------------------------ labels */
 /* The tags: the seconds of each filled-in defender ("GK" before the goalkeeper's), "receiver" on
-   the receiver and, in plan, the two units. Each points at its anchor (the head in broadcast, the
-   marker's edge in plan) with a leader; every drawn frame places them in a fixed order, each at
-   the cheapest of eight directions by TAG_GAPS around its anchor whose box stays in the free
-   region, keeps TAG_PAD pixels from every tag placed before it, from the ball, the counter and
-   the key, and covers no player's anchor; failing all, the spot that breaks the fewest. A
-   defender whose head falls outside the canvas in broadcast (one the fit leaves out) has his tag
-   on that edge, with no leader and an arrow toward him, at the first height from his own that
-   clears the tags placed before it. In V1 the tags of the faded markers fade too. Pixels and
-   degrees. */
-const TAG_GAPS = [5, 12, 22, 34, 48, 64], TAG_TURN = 10, TAG_PAD = 3;
+   the receiver and, in plan, the two units (and with the Camera tab, where the side edges meet).
+   Each points at its anchor (the head in broadcast, the marker's edge in plan) with a leader;
+   every drawn frame places them in a fixed order, each at the cheapest of eight directions by
+   TAG_GAPS around its anchor whose box stays in the free region, keeps TAG_PAD pixels from every
+   tag placed before it, from the ball, the counter and the key, and covers no player's anchor;
+   failing all, the spot that covers the fewest, but never another tag: a tag with no free place
+   left (a small stage) is hidden. The measures go first. A defender whose anchor falls outside the canvas
+   (one the fit leaves out, seen or filled in) has his tag on that edge, with no leader and an
+   arrow toward him, at the first place along the edge from his own that clears the tags placed
+   before it; a seen defender inside the canvas has no tag. In V1 the tags of the faded markers
+   fade too. Pixels and degrees. */
+const TAG_GAPS = [5, 12, 22, 34, 48, 64, 84, 108, 136], TAG_TURN = 10, TAG_PAD = 3;
+const ARROW = {left: ["← ", ""], right: ["", " →"], top: ["↑ ", ""], bottom: ["", " ↓"]};
 const tagLayer = at("tags");
 let tags = [];
 function buildTags() {
   const svg = el("svg", {class: "leaders"});
   tagLayer.replaceChildren(svg);
-  const list = [...RIV.map((id, k) => ({kind: "rival", k, home: -90})), {kind: "me", k: 0, home: 90},
-                {kind: "measure", unit: "line", home: -90}, {kind: "measure", unit: "block", home: 90}];
+  // the measures first: they sit at the plan's edges, where the players leave room
+  const list = [{kind: "measure", unit: "line", home: -90}, {kind: "measure", unit: "block", home: 90},
+                {kind: "measure", unit: "camera", home: 0},
+                ...RIV.map((id, k) => ({kind: "rival", k, home: -90})), {kind: "me", k: 0, home: 90}];
   tags = list.map(t => {
     const node = document.createElement("div");
     node.className = "tag " + t.kind;
@@ -776,18 +851,33 @@ function spotsOf(t) {
 function tagContent(t, P, inPlan, ix) {
   const k = t.k;
   if (t.kind === "rival") {
-    if (E.rivals.detected[ix][k]) return null;
-    const p = P.rivals[k];
-    return {text: (RIV[k] === KEEPER ? "GK " : "") + sec(E.rivals.gap[ix][k]), xy: p, faded: inPlan && st.variant === "V1"};
+    const seen = E.rivals.detected[ix][k];
+    return {text: (RIV[k] === KEEPER ? "GK " : "") + (seen ? "seen" : sec(E.rivals.gap[ix][k])), xy: P.rivals[k],
+            seen, faded: inPlan && st.variant === "V1" && !seen};
   }
   if (t.kind === "me") return {text: "receiver", xy: P.me};
   if (!inPlan) return null;
+  if (t.unit === "camera") {
+    if (!st.camTab) return null;
+    return {text: `where the side edges meet:\nthe virtual camera, ${CAM.drawn_height_m.toFixed(0)} m up`, xy: CAM.apex[ix], fixed: true};
+  }
   const u = U[t.unit], v1 = st.variant === "V1";
   const off = v1 ? `
 not a V1 unit: ${u.seen.filter(Boolean).length} of ${u.seen.length} seen` : "";
   if (t.unit === "line") return {text: `line depth ${num(u.value)} m${off}`, xy: [u.value, S * (HALF_W - 1)], fixed: true, off: v1};
   const mid = (u.x[0] + u.x[1]) / 2;
-  return {text: `block length ${num(u.value)} m at the phase's start${off}`, xy: [mid, -S * (HALF_W + bracketGap())], fixed: true, off: v1};
+  const at0 = (size.w < 480 ? "\n" : " ") + "at the phase's start";
+  return {text: `block length ${num(u.value)} m${at0}${off}`, xy: [mid, -S * (HALF_W + bracketGap())], fixed: true, off: v1};
+}
+/** The canvas's edge an anchor lies beyond, or "". */
+function edgeOf(a) {
+  return a[0] < 0 ? "left" : a[0] > size.w ? "right" : a[1] < 0 ? "top" : a[1] > size.h ? "bottom" : "";
+}
+/** A tag with no free place left on a small stage is hidden rather than drawn over another. */
+function crowd(t) {
+  t.node.hidden = true;
+  t.node.dataset.crowded = "";
+  for (const line of t.lines) line.style.display = "none";
 }
 function placeTags() {
   if (!current) return;
@@ -801,36 +891,41 @@ function placeTags() {
   const apart = (b, o) => b.x >= o.x + o.w + TAG_PAD || o.x >= b.x + b.w + TAG_PAD
                        || b.y >= o.y + o.h + TAG_PAD || o.y >= b.y + b.h + TAG_PAD;
   const covers = (b, p) => p[0] > b.x - TAG_PAD && p[0] < b.x + b.w + TAG_PAD && p[1] > b.y - TAG_PAD && p[1] < b.y + b.h + TAG_PAD;
-  const F = inPlan ? size.region : {x0: 0, x1: size.w, y0: size.band, y1: size.h};
-  const placed = size.count ? [size.count, size.key] : [];
+  const F = inPlan ? size.region : {x0: 0, x1: size.w, y0: 0, y1: size.h};
+  // the counter's and the key's boxes as they are now (the counter's text changes with the frame)
+  const placed = ["count", "key"].map(onStage).filter(Boolean);
   for (const t of tags) {
     const c = st.view === "rising" ? null : tagContent(t, P, inPlan, ix);
-    const show = c !== null && !(t.kind === "measure" && !inPlan);
+    const a = c ? project(c.xy[0], c.xy[1], c.fixed ? 0 : z) : null;
+    const edge = c && t.kind === "rival" ? edgeOf(a) : "";
+    const show = c !== null && !(c.seen && !edge);
     t.node.hidden = !show;
+    delete t.node.dataset.crowded;
     for (const line of t.lines) line.style.display = show ? "" : "none";
     if (!show) continue;
-    const a = project(c.xy[0], c.xy[1], c.fixed ? 0 : z);
-    const edge = e === 0 && t.kind === "rival" ? (a[0] < 0 ? "left" : a[0] > size.w ? "right" : "") : "";
-    const text = edge === "left" ? "← " + c.text : edge === "right" ? c.text + " →" : c.text;
+    const text = edge ? ARROW[edge][0] + c.text + ARROW[edge][1] : c.text;
     if (text !== t.text) { t.node.textContent = text; t.text = text; t.w = 0; }
     t.node.classList.toggle("off", Boolean(c.off));
-    t.node.style.opacity = c.faded ? String(TAG_FADE) : "";
+    t.node.classList.toggle("faded", Boolean(c.faded));
     for (const line of t.lines) line.style.opacity = c.faded ? String(TAG_FADE) : "";
     if (!t.w) { t.w = t.node.offsetWidth; t.h = t.node.offsetHeight; t.spots = spotsOf(t); }
     if (edge) t.node.dataset.edge = edge; else delete t.node.dataset.edge;
     if (edge) {
-      const x = edge === "left" ? F.x0 + 2 : F.x1 - t.w - 2, y0 = clamp(a[1] - t.h / 2, F.y0 + 2, F.y1 - t.h - 2);
-      // the first height out from his own that clears the tags (and, if it can, every player)
+      // on that edge (the bottom one just over the counter and the key, which hold it), at the
+      // first place along it from his own that clears the tags (and, if it can, every player)
+      const across = edge === "left" || edge === "right", low = Math.min(F.y1, size.foot.y - 4);
+      const x = edge === "left" ? F.x0 + 2 : edge === "right" ? F.x1 - t.w - 2 : clamp(a[0] - t.w / 2, F.x0 + 2, F.x1 - t.w - 2);
+      const y = edge === "top" ? F.y0 + 2 : edge === "bottom" ? low - t.h - 2 : clamp(a[1] - t.h / 2, F.y0 + 2, F.y1 - t.h - 2);
       let b = null;
       for (const strict of [true, false]) {
-        for (let s = 0; s < 120 && !b; s++) {
-          const y = y0 + (s % 2 ? 1 : -1) * Math.ceil(s / 2) * TAG_PAD;
-          const box = {x, y, w: t.w, h: t.h};
-          if (y >= F.y0 + 2 && y <= F.y1 - t.h - 2 && placed.every(o => apart(box, o))
-              && !(strict && [...people, ball].some(p => covers(box, p)))) b = box;
+        for (let s = 0; s < 240 && !b; s++) {
+          const d = (s % 2 ? 1 : -1) * Math.ceil(s / 2) * TAG_PAD;
+          const box = {x: across ? x : x + d, y: across ? y + d : y, w: t.w, h: t.h};
+          if (box.x >= F.x0 + 2 && box.x <= F.x1 - t.w - 2 && box.y >= F.y0 + 2 && box.y <= F.y1 - t.h - 2
+              && placed.every(o => apart(box, o)) && !(strict && [...people, ball].some(p => covers(box, p)))) b = box;
         }
       }
-      b = b || {x, y: y0, w: t.w, h: t.h};
+      if (!b) { crowd(t); continue; }
       placed.push(b);
       t.node.style.transform = `translate(${b.x.toFixed(1)}px, ${b.y.toFixed(1)}px)`;
       for (const line of t.lines) line.style.display = "none";
@@ -840,12 +935,13 @@ function placeTags() {
     for (const s of t.spots) {
       const b = {x: clamp(a[0] + s.dx, F.x0 + 2, F.x1 - t.w - 2), y: clamp(a[1] + s.dy, F.y0 + 2, F.y1 - t.h - 2), w: t.w, h: t.h};
       const n = nearest(b, ball);
-      let bad = placed.some(o => !apart(b, o)) ? 100 : 0;
+      let bad = placed.some(o => !apart(b, o)) ? 1000 : 0;
       if (Math.hypot(n[0] - ball[0], n[1] - ball[1]) < ballR) bad += 100;
       for (const p of people) if (covers(b, p)) bad += 10;
       if (!best || bad < best.bad) best = {b, bad};
       if (!bad) break;
     }
+    if (best.bad >= 1000) { crowd(t); continue; }
     const b = best.b, n = nearest(b, a);
     // in plan the leader stops at the marker's edge, on the side of its tag
     let end = a;
@@ -933,9 +1029,30 @@ function drawUnits(P) {
   unitRings.mat.opacity = (hover ? 1 : lineOn) * fadeK;
   for (const t of [lineTris, bracketTris, unitRings]) t.commit();
 }
+/** A disc of radius r (metres) on the floor at world point g. */
+function dot(tris, g, r, n = 16) {
+  for (let s = 0; s < n; s++) {
+    const a0 = 2 * Math.PI * s / n, a1 = 2 * Math.PI * (s + 1) / n;
+    tris.tri(g, [g[0] + r * Math.cos(a0), g[1] + r * Math.sin(a0)], [g[0] + r * Math.cos(a1), g[1] + r * Math.sin(a1)]);
+  }
+}
+/** With the Camera tab: the frame's side edges run on from its near corners to where they meet
+    (now), and that point in every frame of the clip (grey): the virtual camera stands over it. */
+function drawCamera(P) {
+  camTris.clear();
+  apexTris.clear();
+  const c = CAM.corners[P.i], ap = G(...CAM.apex[P.i]);
+  for (const corner of [c[0], c[1]]) dashed(camTris, G(...corner), ap, 0.25, 1.6, 1.1);
+  for (const p of CAM.apex) dot(apexTris, G(...p), 0.45);
+  dot(camTris, ap, 0.9, 24);
+  camTris.mat.opacity = apexTris.mat.opacity = fadeK;
+  camTris.commit();
+  apexTris.commit();
+}
 function drawAt(tau, draw = true) {
   current = posAt(tau);
   const P = current, ix = P.i;
+  drawCount(ix);
   if (GL) {
     const e = st.view === "plan" ? 1 : st.view === "rising" ? smooth(st.p) : 0;
     const v1 = st.variant === "V1" && st.view === "plan";
@@ -982,9 +1099,10 @@ function drawAt(tau, draw = true) {
     const inPlan = st.view === "plan";
     for (const t of [lineTris, bracketTris, unitRings]) t.mesh.visible = inPlan;
     if (inPlan) drawUnits(P);
+    for (const t of [camTris, apexTris]) t.mesh.visible = inPlan && st.camTab;
+    if (inPlan && st.camTab) drawCamera(P);
     if (draw) render();
   }
-  drawCount(ix);
   scrub.value = String(ix);
   scrub.style.setProperty("--f", String(ix / (N - 1)));
   scrub.setAttribute("aria-valuetext", `t = ${signed((ix - KEY) / FPS)} s`);
@@ -993,7 +1111,7 @@ function drawCount(ix) {
   const k = D.key.defenders_extrapolated_by_frame[ix];
   at("count-n").innerHTML = `<span class="q" data-path="key.defenders_extrapolated_by_frame.${ix}" data-value="${k}">${k}</span> of `
     + `<span class="q" data-path="n_defenders" data-value="${D.n_defenders}">${D.n_defenders}</span>`;
-  at("count-w").textContent = "defenders filled in";
+  at("count-w").innerHTML = `<span class="wd">defenders </span>filled in`;
   const rel = (D.frames[ix] - D.key.frame) / FPS;
   at("clock").innerHTML = `<span class="q" data-path="frames.${ix}" data-value="${D.frames[ix]}">${plus(rel)} s</span>`
     + (ix === KEY ? " RECEPTION" : "");
@@ -1003,7 +1121,7 @@ function drawCount(ix) {
 /* ==========================================================================
    The state machine (storyboard 5.1 to 5.3), exposed as window.camera.
    ========================================================================== */
-const measure = at("measure"), scrub = at("scrub"), playBtn = at("play");
+const scrub = at("scrub"), playBtn = at("play");
 const viewB = at("view-broadcast"), viewP = at("view-plan"), varV0 = at("variant-v0"), varV1 = at("variant-v1");
 const cancelHold = () => { clearTimeout(holdTimer); holdTimer = 0; booting = false; };
 const stopPlay = () => { cancelAnimationFrame(playRaf); playRaf = 0; playLast = null; };
@@ -1019,7 +1137,8 @@ function startPlay() {
 function tick(now) {
   playRaf = 0;
   if (st.phase !== "playing") return;
-  if (playLast !== null) st.tau = Math.min(TAU_END, st.tau + Math.min(now - playLast, STEP_MAX) / 1000 * RATE);
+  if (playLast !== null) st.tau = Math.min(TAU_END, st.tau + stepped(now - playLast) / 1000 * RATE);
+  else mark("play", now);
   playLast = now;
   // the first pass through the reception freezes there, once per load; in broadcast it then rises
   const stops = !st.risen && st.tau >= T_KEY - 1e-9;
@@ -1028,6 +1147,7 @@ function tick(now) {
   if (stops || st.tau >= TAU_END - 1e-9) {
     playLast = null;
     st.phase = "ended";
+    mark(stops ? "reception" : "end", now);
     syncUI();
     if (stops) {
       st.risen = true;
@@ -1049,9 +1169,10 @@ function rise(auto) {
 }
 function fly(now, auto) {
   flyRaf = 0;
-  if (flyLast !== null) st.p = Math.min(1, st.p + Math.min(now - flyLast, STEP_MAX) / 1000 / FLIGHT_S);
+  if (flyLast !== null) st.p = Math.min(1, st.p + stepped(now - flyLast) / 1000 / FLIGHT_S);
+  else mark("rise", now);
   flyLast = now;
-  if (st.p >= 1) { land(true, auto); return; }
+  if (st.p >= 1) { mark("land", now); land(true, auto); return; }
   placeCamera(st.p);
   drawAt(st.tau);
   flyRaf = requestAnimationFrame(n => fly(n, auto));
@@ -1067,30 +1188,27 @@ function land(fade, auto) {
   drawAt(st.tau);
   syncUI();
 }
+/* The measures drawn on the scene (the line, the bracket, the rings, the Camera tab's point) are
+   the plan's: they fade in after the rise lands. */
 function showMeasure(fade) {
   stopFade();
-  measure.hidden = false;
-  renderMeasure();
-  if (!fade) { setFade(1); return; }
-  setFade(0);
-  let start = null;
+  if (!fade) { fadeK = 1; return; }
+  fadeK = 0;
+  let start = null, prev = clock.length ? clock[clock.length - 1].t : null;
   const step = now => {
     if (start === null) start = now;
-    const k = Math.min(1, (now - start) / 1000 / FADE_S);
-    setFade(k);
+    if (prev !== null) stepped(now - prev);
+    prev = now;
+    fadeK = Math.min(1, (now - start) / 1000 / FADE_S);
     drawAt(st.tau);
-    fadeRaf = k < 1 ? requestAnimationFrame(step) : 0;
+    if (fadeK < 1) fadeRaf = requestAnimationFrame(step);
+    else { fadeRaf = 0; mark("faded", now); }
   };
   fadeRaf = requestAnimationFrame(step);
 }
-function setFade(k) {
-  measure.style.opacity = String(k);
-  fadeK = k;
-}
 function hideMeasure() {
   stopFade();
-  measure.hidden = true;
-  setFade(1);
+  fadeK = 1;
   hover = null;
 }
 
@@ -1104,20 +1222,41 @@ function syncUI() {
   viewP.setAttribute("aria-pressed", String(st.view === "plan"));
   varV0.setAttribute("aria-pressed", String(st.variant === "V0"));
   varV1.setAttribute("aria-pressed", String(st.variant === "V1"));
-  // the caption's head names the match and the frame; on the phone its tail (the view) is the buttons' to say
-  const cap = (head, tail) => `<span class="cap-head">${esc(head)}</span><span class="cap-tail">${esc(tail)}</span>`;
+  // the caption is for a screen reader: the buttons show the view, the Story tab the match
   const head = `Match ${D.match_id} · reception at frame ${D.key.frame}`;
-  at("stage-caption").innerHTML = rising ? cap("rising to the top-down view", "")
-    : st.view === "broadcast" ? cap(head, " · from the camera's side, real time · the window on the grass is the camera's frame, measured")
-      : cap(head, " · from above: " + (st.variant === "V0" ? "every unit" : "players seen throughout"));
-  at("stage-sub").textContent = st.view === "plan"
-    ? "From above: keep only what the camera saw whole (V1), and line depth and block length change sample."
-    : "Solid: the camera saw them. Hollow: SkillCorner filled them in, with the seconds to the nearest frame the camera saw each.";
-  if (!measure.hidden) updateMeasure();
+  at("stage-caption").textContent = rising ? "rising to the top-down view"
+    : st.view === "broadcast" ? head + " · from the camera's side, real time · the window on the grass is the camera's frame, measured"
+      : head + " · from above: " + (st.variant === "V0" ? "every unit" : "players seen throughout");
+  updateMeasure();
+}
+
+/* The tabs (ARIA tabs, activated on focus): a click or tap, or the arrow keys, Home and End on the
+   tab list. Opening Camera takes the scene to the top-down view, framed to hold where the frame's
+   side edges meet; leaving it frames the reception again. */
+const TABS = ["story", "metrics", "matches", "camera", "limits"];
+function selectTab(name, focus = false) {
+  if (!TABS.includes(name)) return false;
+  for (const n of TABS) {
+    const on = n === name, b = at("tab-" + n);
+    b.setAttribute("aria-selected", String(on));
+    b.tabIndex = on ? 0 : -1;
+    at("tp-" + n).hidden = !on;
+  }
+  if (focus) at("tab-" + name).focus();
+  st.tab = name;
+  if (name === "matches") renderStrips();
+  const cam = name === "camera";
+  if (cam !== st.camTab) {
+    st.camTab = cam;
+    look = null;
+    if (GL && cam && st.view === "broadcast") api.view("plan");
+    else if (GL && st.view === "plan") { placeCamera(1); drawAt(st.tau); }
+  }
+  return true;
 }
 
 const api = {
-  T, T_KEY, RATE, HOLD_S, FLIGHT_S, FADE_S,
+  T, T_KEY, RATE, HOLD_S, FLIGHT_S, FADE_S, STEP_MAX,
   play() {
     if (st.view === "rising" || st.phase === "playing") return false;
     cancelHold();
@@ -1170,16 +1309,19 @@ const api = {
   variant(name) {
     if (st.view === "rising" || (name !== "V0" && name !== "V1")) return false;
     st.variant = name;
-    if (st.view === "plan") { drawAt(st.tau); renderMeasure(); }
+    if (st.view === "plan") drawAt(st.tau);
     syncUI();
     return true;
   },
+  tab(name) { return selectTab(name); },
   state() {
     const P = posAt(st.tau);
     return {t: Math.round((st.tau - T_KEY) * 1e9) / 1e9, i: P.i, phase: st.phase, view: st.view, variant: st.variant,
-            positions: {rivals: P.rivals, mates: P.mates, me: P.me, ball: P.ball},
+            tab: st.tab, positions: {rivals: P.rivals, mates: P.mates, me: P.me, ball: P.ball},
             frame: P.corners.map(p => p.slice())};
   },
+  /** The page's clock (see mark): each moment of the run with its frame time and longest step. */
+  clock() { return clock.map(c => ({...c})); },
   flight(p) {
     p = Number(p);
     if (!GL || !Number.isFinite(p)) return false;
@@ -1224,186 +1366,202 @@ varV0.addEventListener("click", () => api.variant("V0"));
 varV1.addEventListener("click", () => api.variant("V1"));
 scrub.addEventListener("input", () => api.seek((Number(scrub.value) - KEY) / FPS));
 document.addEventListener("visibilitychange", () => { playLast = null; flyLast = null; });
+at("tablist").addEventListener("click", ev => {
+  const b = ev.target.closest("[role=tab]");
+  if (b) selectTab(b.dataset.tab, true);
+});
+at("tablist").addEventListener("keydown", ev => {
+  const k = TABS.indexOf(st.tab), n = TABS.length;
+  const to = {ArrowRight: k + 1, ArrowDown: k + 1, ArrowLeft: k - 1, ArrowUp: k - 1, Home: 0, End: n - 1}[ev.key];
+  if (to === undefined) return;
+  ev.preventDefault();
+  selectTab(TABS[(to + n) % n], true);
+});
 
 /* ==========================================================================
-   The measures (#measure, plan only): the panel, the lead, the table, the
-   strips, the frame measured, the limits.
+   The measures, in the panel: the V0/V1 readout of this reception's two
+   metrics, and the tabs (Story, Metrics, the matches, Camera, Limits).
    ========================================================================== */
 const ROWS = D.match.rows, rowOf = m => ROWS.findIndex(r => r.metric === m);
 const NOUN = {pressure_index: "receptions", nearest_rival_m: "receptions", line_height_m: "receptions",
               line_reaction_m: "receptions", block_width_m: "phases", block_length_m: "phases", block_area_m2: "phases"};
 const unitOf = r => (r.unit ? NB + r.unit : "");
 const dec = r => (r.metric === "pressure_index" ? 3 : 1);
-/* What each of the panel's two metrics measures, after its name (ac2fb.reliability.metrics). */
+const UNITS = ["line_height_m", "block_length_m"];
+/* What each of the readout's two metrics measures, after its name (ac2fb.reliability.metrics). */
 const REF = {line_height_m: "m from halfway toward own goal", block_length_m: "m, deepest to furthest player, keeper in"};
 function panelRow(metric) {
   const k = rowOf(metric), r = ROWS[k];
   const cell = v => `<td class="${v.toLowerCase()}${v === st.variant ? " on" : ""}"><span class="num">${v}${NB}`
     + `${q(`match.rows.${k}.${v}.mean`, num(r[v].mean, dec(r)) + unitOf(r))}</span>`
-    + `<span class="n">over ${q(`match.rows.${k}.${v}.n`, thou(r[v].n))} ${NOUN[metric]}</span></td>`;
+    + `<span class="n">${q(`match.rows.${k}.${v}.n`, thou(r[v].n))} ${NOUN[metric]}</span></td>`;
   const diff = `<td class="diff"><span class="num">${q(`match.rows.${k}.diff`, signed(r.diff, dec(r)) + unitOf(r))}</span>`
     + `<span class="n">V1 − V0</span></td>`;
   return `<tr class="ref"><th colspan="3">${r.words} <span>${REF[metric]}</span></th></tr>`
     + `<tr>${cell("V0")}${cell("V1")}${diff}</tr>`;
 }
+/** What follows the variant: the readout, and the variant's column of the metrics table. */
 function updateMeasure() {
   at("panel-table").innerHTML = panelRow("line_height_m") + panelRow("block_length_m");
-  at("metrics").querySelectorAll("tbody tr").forEach(tr => tr.classList.toggle("on", tr.dataset.metric === "line_height_m" || tr.dataset.metric === "block_length_m"));
+  at("metrics").querySelectorAll("td.v0, td.v1").forEach(td => td.classList.toggle("on", td.classList.contains(st.variant.toLowerCase())));
 }
 function renderMeasure() {
-  updateMeasure();
   const lu = U.line, bu = U.block;
   const gaps = lu.gap_len.map((g, k) => q(`units.line.gap_len.${k}`, (g / FPS).toFixed(1))).join(", ").replace(/, ([^,]*)$/, " and $1");
   const kk = bu.player_ids.indexOf(KEEPER);
-  at("lead").innerHTML = "V0 reads every unit. V1 keeps a unit only when every player the metric read was detected"
-    + " in every frame of its window. At this reception the back four are all filled in (" + gaps + NB + "s from the nearest"
-    + " frame the camera saw each), so the line's height (" + q("units.line.value", num(lu.value) + NB + "m") + ") is a V0 reading"
-    + " and no V1 reading; the block of the phase that holds it (" + q("units.block.value", num(bu.value) + NB + "m")
-    + " at its start, " + q("units.block.frame", ((D.key.frame - bu.frame) / FPS).toFixed(1) + NB + "s") + " earlier) is fixed by the"
-    + " goalkeeper, filled in, " + q(`units.block.gap_len.${kk}`, (bu.gap_len[kk] / FPS).toFixed(1) + NB + "s") + " from his nearest detection.";
-  const cx = D.context;
+  at("lead").innerHTML = "V0 reads every unit; V1 keeps a unit only when every player the metric read was detected"
+    + ` in every frame of its window. At this reception (match ${q("match_id", D.match_id)}, frame ${q("key.frame", D.key.frame)})`
+    + " the back four are all filled in (" + gaps + NB + "s from the nearest frame the camera saw each), so its line depth"
+    + " (" + q("units.line.value", num(lu.value) + NB + "m") + ") is a V0 reading and no V1 reading. The block of the phase that"
+    + " holds it (" + q("units.block.value", num(bu.value) + NB + "m") + " at its start, "
+    + q("units.block.frame", ((D.key.frame - bu.frame) / FPS).toFixed(1) + NB + "s") + " earlier) is fixed by the goalkeeper,"
+    + " filled in, " + q(`units.block.gap_len.${kk}`, (bu.gap_len[kk] / FPS).toFixed(1) + NB + "s") + " from his nearest detection.";
+  const cx = D.context, bl = rowOf("block_length_m");
   at("context").innerHTML = `In this match the camera saw ${q("context.player_detected", pct(cx.player_detected))} of the player-frames:`
     + ` ${q("context.ball_distance.00_05", pct(cx.ball_distance["00_05"]))} of those within five metres of the ball,`
-    + ` ${q("context.ball_distance.40_plus", pct(cx.ball_distance["40_plus"]))} of those farther than forty. The back four were seen whole at`
-    + ` ${q("context.line.all_detected", pct(cx.line.all_detected))} of its ${q("context.line.events", thou(cx.line.events))} receptions,`
-    + ` the block at ${q("context.block.all_detected", pct(cx.block.all_detected, 1))} of its ${q("context.block.phases", thou(cx.block.phases))} phases.`
+    + ` ${q("context.ball_distance.40_plus", pct(cx.ball_distance["40_plus"]))} of those farther than forty. It saw the back four whole at`
+    + ` ${q("context.line.all_detected", pct(cx.line.all_detected))} of its ${q("context.line.events", thou(cx.line.events))} receptions`
+    + ` and the block at ${q("context.block.all_detected", pct(cx.block.all_detected, 1))} of its ${q("context.block.phases", thou(cx.block.phases))} phases,`
     // layer2.json's block seen whole is every player of the defending team; V1 reads only the metric's own players
-    + ` For the block, seen whole is every player of the defending team at the phase's start; a V1 block length`
-    + ` needs only the two who fix it, so it keeps ${q(`match.rows.${rowOf("block_length_m")}.V1.n`, thou(ROWS[rowOf("block_length_m")].V1.n))} phases.`;
-  at("table-title").textContent = `The match's seven metrics, V0 and V1 (reports/reliability.csv)`;
-  const head = "<thead><tr><th>metric</th><th>V0 mean</th><th>units</th><th>V1 mean</th><th>units</th><th>V1 − V0</th></tr></thead>";
-  const body = ROWS.map((r, k) => `<tr data-metric="${r.metric}" class="${["line_height_m", "block_length_m"].includes(r.metric) ? "unit" : ""}">`
-    + `<td>${r.words}${r.unit ? ` (${r.unit})` : ""}</td>`
-    + `<td>${q(`match.rows.${k}.V0.mean`, num(r.V0.mean, dec(r) + 1))}</td><td>${q(`match.rows.${k}.V0.n`, thou(r.V0.n))}</td>`
-    + `<td>${q(`match.rows.${k}.V1.mean`, num(r.V1.mean, dec(r) + 1))}</td><td>${q(`match.rows.${k}.V1.n`, thou(r.V1.n))}</td>`
+    + ` counting every defender at the phase's start; a V1 block length needs only the two who fix it, so it keeps`
+    + ` ${q(`match.rows.${bl}.V1.n`, thou(ROWS[bl].V1.n))} phases.`;
+  at("table-title").innerHTML = `The match's seven metrics <span class="src">(reports/reliability.csv)</span>`;
+  at("table-hint").innerHTML = `Each mean over its units, their number under it. Point at or tap a row marked`
+    + ` <span class="ring"></span> to ring its players from above.`;
+  const head = "<thead><tr><th>metric</th><th>V0</th><th>V1</th><th>V1 − V0</th></tr></thead>";
+  const cell = (k, r, v) => `<td class="${v.toLowerCase()}">${q(`match.rows.${k}.${v}.mean`, num(r[v].mean, dec(r) + 1))}`
+    + `<span class="n">${q(`match.rows.${k}.${v}.n`, thou(r[v].n))}</span></td>`;
+  const body = ROWS.map((r, k) => `<tr data-metric="${r.metric}" class="${UNITS.includes(r.metric) ? "unit" : ""}">`
+    + `<td>${r.words}${r.unit ? ` (${r.unit})` : ""}</td>${cell(k, r, "V0")}${cell(k, r, "V1")}`
     + `<td>${q(`match.rows.${k}.diff`, signed(r.diff, dec(r) + 1))}</td></tr>`).join("");
   at("metrics").innerHTML = head + "<tbody>" + body + "</tbody>";
-  at("table-hint").innerHTML = `Point at (or tap) a row marked <span class="ring"></span> to ring its players on the pitch above.`;
   at("metrics").querySelectorAll("tbody tr").forEach(tr => {
     const players = {line_height_m: U.line.player_ids, block_length_m: U.block.player_ids, block_width_m: null,
                      pressure_index: U.pressure.player_ids, nearest_rival_m: U.nearest.player_ids}[tr.dataset.metric];
     tr.classList.toggle("linked", Boolean(players));
-    const on = () => { hover = players || null; if (st.view === "plan" && GL) { drawAt(st.tau); } };
+    const on = () => { hover = players || null; if (st.view === "plan" && GL) drawAt(st.tau); };
     const off = () => { hover = null; if (st.view === "plan" && GL) drawAt(st.tau); };
     tr.addEventListener("mouseenter", on);
     tr.addEventListener("mouseleave", off);
   });
-  updateMeasure();
-  const pr = ROWS[rowOf("pressure_index")], nr = ROWS[rowOf("nearest_rival_m")];
-  at("near-note").innerHTML = `Pressure and nearest rival: V1 keeps ${q(`match.rows.${rowOf("pressure_index")}.V1.n`, thou(pr.V1.n))} of`
-    + ` ${q(`match.rows.${rowOf("pressure_index")}.V0.n`, thou(pr.V0.n))} and ${q(`match.rows.${rowOf("nearest_rival_m")}.V1.n`, thou(nr.V1.n))} of`
-    + ` ${q(`match.rows.${rowOf("nearest_rival_m")}.V0.n`, thou(nr.V0.n))}: they read near the ball, where the camera looks. At this`
+  const pr = rowOf("pressure_index"), nr = rowOf("nearest_rival_m");
+  at("near-note").innerHTML = `Pressure and nearest rival: V1 keeps ${q(`match.rows.${pr}.V1.n`, thou(ROWS[pr].V1.n))} of`
+    + ` ${q(`match.rows.${pr}.V0.n`, thou(ROWS[pr].V0.n))} and ${q(`match.rows.${nr}.V1.n`, thou(ROWS[nr].V1.n))} of`
+    + ` ${q(`match.rows.${nr}.V0.n`, thou(ROWS[nr].V0.n))}: they read near the ball, where the camera looks. At this`
     + ` reception both read the same rival, who was seen, so both are V1 units.`;
-  renderStrips();
   const cl = D.strips.claim;
-  at("strips-title").textContent = "Over the twenty matches, V1 minus V0, in the metric's own unit";
-  at("strips-claim").innerHTML = `The back four sit ${q("strips.claim.line_height_m.least", cl.line_height_m.least.toFixed(0))} to`
+  at("strips-claim").innerHTML = `V1 minus V0, match by match: the back four sit ${q("strips.claim.line_height_m.least", cl.line_height_m.least.toFixed(0))} to`
     + ` ${q("strips.claim.line_height_m.most", cl.line_height_m.most.toFixed(0))}${NB}m deeper, nearer their own goal, and block length`
     + ` ${q("strips.claim.block_length_m.least", cl.block_length_m.least.toFixed(0))} to ${q("strips.claim.block_length_m.most", cl.block_length_m.most.toFixed(0))}${NB}m`
     + ` shorter in every match of both halves: a different sample, not an error.`;
-  at("limit-chosen").innerHTML = "One match, one reception chosen by rule (<code>clip.json:rule</code>), the one with most defenders filled"
-    + " in and the longest gap among them: clearer than most, not typical. The match's own numbers are the table; the twenty are the strips.";
+  at("strips-legend").innerHTML = `<span><svg width="12" height="12" aria-hidden="true"><circle cx="6" cy="6" r="4.5" fill="${C.blue}"/></svg>calibration (upper)</span>`
+    + `<span><svg width="12" height="12" aria-hidden="true"><rect x="1.5" y="1.5" width="9" height="9" fill="${C.vermilion}"/></svg>held-out (lower)</span>`
+    + `<span><svg width="14" height="14" aria-hidden="true"><circle cx="7" cy="7" r="6" fill="none" stroke="${C.ink}" stroke-width="2"/></svg>this match</span>`
+    + `<span><svg width="4" height="14" aria-hidden="true"><rect width="3" height="14" fill="${C.grey}"/></svg>median of the half</span>`;
   renderFrameSection();
   renderLimits();
+  updateMeasure();
 }
-function renderStrips() {
-  // under 520 px the name stands over its strip, so a row is taller: its axis clears the next name
-  const host = at("strips"), w = Math.max(280, Math.floor(host.clientWidth)), narrow = w < 520;
-  const rowH = narrow ? 92 : 64, labelW = narrow ? 0 : 150;
-  const plotW = w - labelW - 24, H = rowH * ROWS.length + 8;
-  const svg = el("svg", {width: w, height: H, viewBox: `0 0 ${w} ${H}`, role: "img",
+/* The strips: one row per metric, its name over it (and "this match" on the name's line when
+   both fit, under it when they do not), the two halves' points, their medians and a round axis.
+   Beside the name when the panel is wide. Pixels. */
+let stripsW = 0;
+function renderStrips(force = false) {
+  const host = at("strips"), w = Math.floor(host.clientWidth);
+  if (!w || (w === stripsW && !force)) return;   // hidden: drawn when its tab opens
+  stripsW = w;
+  const narrow = w < 520, labelW = narrow ? 0 : 150, plotW = w - labelW - 24;
+  const svg = el("svg", {width: w, height: 10, viewBox: `0 0 ${w} 10`, role: "img",
                          "aria-label": "V1 minus V0 per match and metric, calibration above, held-out below"});
-  at("strips-legend").innerHTML = `<span><svg width="12" height="12"><circle cx="6" cy="6" r="4.5" fill="${C.blue}"/></svg>calibration (upper)</span>`
-    + `<span><svg width="12" height="12"><rect x="1.5" y="1.5" width="9" height="9" fill="${C.vermilion}"/></svg>held-out (lower)</span>`
-    + `<span><svg width="14" height="14"><circle cx="7" cy="7" r="6" fill="none" stroke="${C.ink}" stroke-width="2"/></svg>this match</span>`
-    + `<span><svg width="4" height="14"><rect width="3" height="14" fill="${C.grey}"/></svg>median of the half</span>`;
+  host.replaceChildren(svg);
+  let y0 = 2;
   ROWS.forEach((r, k) => {
-    const s = D.strips.metrics[r.metric], y0 = k * rowH + 4;
+    const s = D.strips.metrics[r.metric];
     const vals = ["calibration", "held-out"].flatMap(g => s[g].points.map(p => p.value));
     const lo0 = Math.min(0, ...vals), hi0 = Math.max(0, ...vals), pad = (hi0 - lo0) * 0.06 || 1;
     const lo = lo0 - pad, hi = hi0 + pad, X = v => labelW + 12 + (v - lo) / (hi - lo) * plotW;
     const g = el("g", {class: "strip", "data-metric": r.metric});
-    const name = r.words + (r.unit ? ` (${r.unit})` : "");
-    if (labelW) g.appendChild(el("text", {x: labelW, y: y0 + 22, "text-anchor": "end", "font-weight": ["line_height_m", "block_length_m"].includes(r.metric) ? 700 : 400}, name));
-    else g.appendChild(el("text", {x: 0, y: y0 + 13, "font-weight": ["line_height_m", "block_length_m"].includes(r.metric) ? 700 : 400}, name));
-    const yc = labelW ? y0 + 18 : y0 + 44;
-    g.appendChild(el("line", {x1: X(0), x2: X(0), y1: yc - 14, y2: yc + 14, stroke: C.grey, "stroke-width": 1}));
-    g.appendChild(el("line", {x1: labelW + 12, x2: labelW + 12 + plotW, y1: yc + 16, y2: yc + 16, stroke: "#999", "stroke-width": 0.8}));
-    for (const t of niceTicks(lo, hi, 4)) {
-      g.appendChild(el("line", {x1: X(t), x2: X(t), y1: yc + 16, y2: yc + 20, stroke: "#999"}));
-      g.appendChild(el("text", {x: X(t), y: yc + 32, "text-anchor": "middle", class: "small"}, num(t, Math.abs(t) < 1 && t !== 0 ? 2 : 0)));
+    svg.appendChild(g);
+    const bold = UNITS.includes(r.metric) ? 700 : 400;
+    const name = el("text", labelW ? {x: labelW, y: y0 + 26, "text-anchor": "end", "font-weight": bold} : {x: 0, y: y0 + 13, "font-weight": bold},
+                    r.words + (r.unit ? ` (${r.unit})` : ""));
+    g.appendChild(name);
+    const mine = s.calibration.points.find(p => p.match === String(D.match_id));
+    const label = el("text", {class: "small", "data-path": `match.rows.${k}.diff`},
+                     `this match ${signed(mine.value, dec(r) + 1)}${r.unit ? NB + r.unit : ""}`);
+    g.appendChild(label);
+    // narrow: on the name's line, right-aligned, if it clears the name; else a line of its own
+    let top = y0 + 31;
+    if (narrow) {
+      label.setAttribute("x", w);
+      label.setAttribute("text-anchor", "end");
+      label.setAttribute("y", y0 + 13);
+      if (name.getComputedTextLength() + label.getComputedTextLength() + 12 > w) {
+        label.setAttribute("y", y0 + 29);
+        top += 14;
+      }
+    }
+    const yc = labelW ? y0 + 22 : top;
+    g.appendChild(el("line", {x1: X(0), x2: X(0), y1: yc - 12, y2: yc + 12, stroke: C.grey, "stroke-width": 1}));
+    g.appendChild(el("line", {x1: labelW + 12, x2: labelW + 12 + plotW, y1: yc + 12, y2: yc + 12, stroke: "#999", "stroke-width": 0.8}));
+    const ax = niceTicks(lo, hi, 4);
+    for (const t of ax.ticks) {
+      g.appendChild(el("line", {x1: X(t), x2: X(t), y1: yc + 12, y2: yc + 16, stroke: "#999"}));
+      g.appendChild(el("text", {x: X(t), y: yc + 26, "text-anchor": "middle", class: "small"}, num(t, ax.d)));
     }
     for (const [grp, dy, colour] of [["calibration", -6, C.blue], ["held-out", 6, C.vermilion]]) {
       for (const p of s[grp].points) {
         const cx = X(p.value), cy = yc + dy;
         g.appendChild(grp === "calibration" ? el("circle", {cx, cy, r: 3.6, fill: colour, opacity: 0.85, "data-value": p.value, "data-match": p.match})
           : el("rect", {x: cx - 3.2, y: cy - 3.2, width: 6.4, height: 6.4, fill: colour, opacity: 0.85, "data-value": p.value, "data-match": p.match}));
-        if (p.match === String(D.match_id)) {
-          g.appendChild(el("circle", {cx, cy, r: 7, fill: "none", stroke: C.ink, "stroke-width": 1.8}));
-          const lab = el("text", {x: cx, y: yc - 15, "text-anchor": cx > labelW + plotW * 0.7 ? "end" : "start", class: "small"},
-                         `this match ${signed(p.value, 1)}${r.unit ? NB + r.unit : ""}`);
-          lab.setAttribute("data-path", `match.rows.${k}.diff`);
-          g.appendChild(lab);
-        }
+        if (p === mine) g.appendChild(el("circle", {cx, cy, r: 7, fill: "none", stroke: C.ink, "stroke-width": 1.8}));
       }
-      g.appendChild(el("line", {x1: X(s[grp].median), x2: X(s[grp].median), y1: yc + dy - 7, y2: yc + dy + 7, stroke: colour, "stroke-width": 2.4}));
+      g.appendChild(el("line", {x1: X(s[grp].median), x2: X(s[grp].median), y1: yc + dy - 6, y2: yc + dy + 6, stroke: colour, "stroke-width": 2.4}));
     }
-    svg.appendChild(g);
+    // wide: "this match" over its point, toward the middle
+    if (!narrow) {
+      const cx = X(mine.value);
+      label.setAttribute("x", cx);
+      label.setAttribute("y", yc - 15);
+      label.setAttribute("text-anchor", cx > labelW + plotW * 0.7 ? "end" : "start");
+    }
+    y0 = yc + 30;
   });
-  host.replaceChildren(svg);
+  svg.setAttribute("height", y0);
+  svg.setAttribute("viewBox", `0 0 ${w} ${y0}`);
 }
 function renderFrameSection() {
   const f = FS, a = f.area_m2, ap = f.apex;
+  at("camera-note").innerHTML = "With this tab open the top-down view runs the frame's two side edges on to where they"
+    + " meet (the ink dot; the grey dots, the clip's frames): the virtual camera stands over that point, and the view"
+    + " from the camera's side is the view from there.";
   at("frame-text").innerHTML = `Of the match's ${q("frame_stats.frames", thou(f.frames))} frames, ${q("frame_stats.with_corners", thou(f.with_corners))}`
     + ` carry the four corners of the camera's image on the pitch. The other ${q("frame_stats.without_corners", thou(f.without_corners))} carry none:`
-    + ` ${q("frame_stats.without_no_player", thou(f.without_no_player))} list no player at all, and ${q("frame_stats.without_with_players", thou(f.without_with_players))}`
+    + ` ${q("frame_stats.without_no_player", thou(f.without_no_player))} list no player, and ${q("frame_stats.without_with_players", thou(f.without_with_players))}`
     + ` list ${q("frame_stats.without_players_listed.0", f.without_players_listed[0])} players of whom ${q("frame_stats.without_rows_detected", pct(f.without_rows_detected, 2))} are detected:`
     + ` the camera was not on the game and everyone is filled in. In the frames with corners,`
     + ` ${q("frame_stats.seen_inside", pct(f.seen_inside, 1))} of the ${q("frame_stats.seen_rows", thou(f.seen_rows))} detected player rows lie inside the frame and`
-    + ` ${q("frame_stats.filled_inside", pct(f.filled_inside, 1))} of the ${q("frame_stats.filled_rows", thou(f.filled_rows))} filled-in ones: the frame is the window the camera saw.`
-    + ` Its far edge is cut by the provider at y = ${q("frame_stats.far_cut_y_m", f.far_cut_y_m.toFixed(1) + NB + "m")},`
+    + ` ${q("frame_stats.filled_inside", pct(f.filled_inside, 1))} of the ${q("frame_stats.filled_rows", thou(f.filled_rows))} filled-in ones: the frame is the window the camera saw.`;
+  at("frame-cut").innerHTML = `The provider cuts its far edge at y = ${q("frame_stats.far_cut_y_m", f.far_cut_y_m.toFixed(1) + NB + "m")},`
     + ` ${q("frame_stats.far_cut_beyond_touchline_m", f.far_cut_beyond_touchline_m.toFixed(1) + NB + "m")} past the far touchline, in`
-    + ` ${q("frame_stats.far_cut_share", pct(f.far_cut_share))} of them (${q("frame_stats.clip.far_cut_share", pct(f.clip.far_cut_share))} of the clip's), so the`
-    + ` polygon is not the whole image. Its median area is ${q("frame_stats.area_m2.median", thou(a.median) + NB + "m²")}`
+    + ` ${q("frame_stats.far_cut_share", pct(f.far_cut_share))} of those frames (${q("frame_stats.clip.far_cut_share", pct(f.clip.far_cut_share))} of the clip's),`
+    + ` so the polygon is not the whole image. Its median area is ${q("frame_stats.area_m2.median", thou(a.median) + NB + "m²")}`
     + ` (${q("frame_stats.area_m2.p5", thou(a.p5))} to ${q("frame_stats.area_m2.p95", thou(a.p95))} from the fifth to the ninety-fifth percentile),`
     + ` ${q("frame_stats.area_m2.median_share", pct(a.median_share))} of the pitch's ${q("frame_stats.area_m2.pitch", thou(a.pitch) + NB + "m²")};`
     + ` at the reception ${q("frame_stats.area_m2.reception", thou(a.reception) + NB + "m²")}, ${q("frame_stats.area_m2.reception_share", pct(a.reception_share))}.`
     + ` Its corners move at most ${q("frame_stats.clip.max_corner_step_m", f.clip.max_corner_step_m.toFixed(1) + NB + "m")} from one frame to the next in the clip,`
-    + ` so the page slides them between frames as it slides the players. The side edges meet`
-    + ` ${q("frame_stats.apex.behind_near_touchline_m", f.apex.behind_near_touchline_m.toFixed(0) + NB + "m")} behind the near touchline, on the halfway line`
-    + ` (x from ${q("frame_stats.apex.x_p10_p90.0", num(ap.x_p10_p90[0]))} to ${q("frame_stats.apex.x_p10_p90.1", num(ap.x_p10_p90[1]))}${NB}m, tenth to ninetieth percentile over the match).`;
-  at("frame-limit").innerHTML = `The four corners are the provider's estimate; the far edge is cut at y = ${q("frame_stats.far_cut_y_m", f.far_cut_y_m.toFixed(0) + NB + "m")}`
-    + ` in most frames, so the camera's pose cannot be recovered from them, and its height is not in the data. The virtual camera stands over the point`
-    + ` where the side edges meet, at a drawn ${q("camera.drawn_height_m", CAM.drawn_height_m.toFixed(0) + NB + "m")}. A real camera that does not roll stands`
-    + ` in front of that point, toward the pitch, by an amount its tilt sets; the point moves as the camera tilts and pans (the grey dots: the clip's frames).`;
-  renderMinimap();
-}
-function renderMinimap() {
-  const host = at("minimap"), w = Math.min(420, Math.max(260, Math.floor(host.clientWidth)));
-  const ys = CAM.apex.map(p => -S * p[1]);
-  const top = HALF_W + APRON, bottom = Math.max(...ys.map(z => z)) + 4, left = -(HALF_L + APRON), right = HALF_L + APRON;
-  const k = w / (right - left), H = Math.ceil((bottom + top) * k);
-  const P = (x, y) => [((S * x) - left) * k, ((-S * y) + top) * k];       // clip frame -> svg px
-  const svg = el("svg", {width: w, height: H, viewBox: `0 0 ${w} ${H}`, role: "img",
-                         "aria-label": "the pitch from above with the camera's frame at the reception and where its side edges meet"});
-  svg.appendChild(el("rect", {x: 0, y: 0, width: w, height: (2 * top) * k, fill: C.grass}));
-  for (const pl of pitchLines()) svg.appendChild(el("polyline", {points: pl.map(p => [(p[0] - left) * k, (p[1] + top) * k].join(",")).join(" "), fill: "none", stroke: C.lines, "stroke-width": 1}));
-  const poly = clipFrame(CAM.corners[KEY]);
-  svg.appendChild(el("polygon", {points: poly.map(p => P(p.x, p.y).join(",")).join(" "), fill: C.white, "fill-opacity": 0.7, stroke: C.ink, "stroke-width": 1.5}));
-  const c = CAM.corners[KEY], apex = CAM.apex[KEY];
-  for (const corner of [c[0], c[1]]) {
-    const a = P(...corner), b = P(...apex);
-    svg.appendChild(el("line", {x1: a[0], y1: a[1], x2: b[0], y2: b[1], stroke: C.ink, "stroke-width": 1, "stroke-dasharray": "4 3"}));
-  }
-  for (const p of CAM.apex) { const xy = P(...p); svg.appendChild(el("circle", {cx: xy[0], cy: xy[1], r: 1.6, fill: C.grey})); }
-  const m = P(...CAM.apex_median);
-  svg.appendChild(el("text", {x: m[0] + 8, y: m[1] + 4, class: "small"}, "where the side edges meet"));
-  host.replaceChildren(svg);
+    + ` so the page slides them between frames as it slides the players.`;
+  at("frame-apex").innerHTML = `The side edges meet ${q("frame_stats.apex.behind_near_touchline_m", f.apex.behind_near_touchline_m.toFixed(0) + NB + "m")}`
+    + ` behind the near touchline, on the halfway line (x from ${q("frame_stats.apex.x_p10_p90.0", num(ap.x_p10_p90[0]))} to`
+    + ` ${q("frame_stats.apex.x_p10_p90.1", num(ap.x_p10_p90[1]))}${NB}m, tenth to ninetieth percentile over the match). The corners are the`
+    + ` provider's estimate and the far edge is cut, so the camera's pose cannot be recovered from them, and its height is not in the data:`
+    + ` the virtual camera stands over that point at a drawn ${q("camera.drawn_height_m", CAM.drawn_height_m.toFixed(0) + NB + "m")}. A real camera`
+    + ` that does not roll stands in front of it, toward the pitch, by an amount its tilt sets; the point moves as the camera tilts and pans.`;
 }
 function renderLimits() {
   const f = FS;
   const items = [
-    [`One reception of one match, chosen by rule (<code>clip.json:rule</code>): match ${D.match_id}, the match of the README's quick block, so a reader regenerates it in seconds.`, "reports/clip/clip.json"],
+    [`One reception of one match, chosen by rule (<code>clip.json:rule</code>): match ${q("match_id", D.match_id)}, the match of the README's quick block, so a reader regenerates it in seconds; the one with most defenders filled in and the longest gap among them, clearer than most, not typical. The match's own numbers are the Metrics tab, the twenty matches theirs.`, "reports/clip/clip.json"],
     ["Tracked: each player's and the ball's (x, y), <code>is_detected</code> and <code>gap_len</code>, and the frame's four corners. Drawn: the bodies, their facing, the virtual camera's place and height; the ball's height is the provider's and nothing is measured from it.", "reports/camera/camera.json"],
     [`The frame's far edge is cut by the provider at y = ${q("frame_stats.far_cut_y_m", f.far_cut_y_m.toFixed(0) + NB + "m")} in ${q("frame_stats.far_cut_share", pct(f.far_cut_share))} of the frames with corners: the polygon is not the whole image.`, "camera.json:frame_stats"],
     [`No corners in ${q("frame_stats.without_corners", thou(f.without_corners))} frames: no player listed, or the camera off the game; of the clip's frames, ${q("frame_stats.clip.without_corners", f.clip.without_corners)} lack them.`, "camera.json:frame_stats"],
@@ -1415,20 +1573,21 @@ function renderLimits() {
 }
 function renderStatic() {
   const sw = (fill, stroke, r = 6, w = 2) => `<svg width="18" height="18" aria-hidden="true"><circle cx="9" cy="9" r="${r}" fill="${fill}" stroke="${stroke}" stroke-width="${w}"/></svg>`;
-  // the key, on the stage beside the counter: vermilion the defenders, blue the receiving team
+  // the key: vermilion the defenders, blue the receiving team
   at("key").innerHTML = [
     `<b>defenders</b>${sw(C.vermilion, C.white, 7, 1.5)}seen${sw(C.white, C.vermilion, 6, 3)}filled in`,
     `${sw(C.ink, C.white, 4, 1.5)}ball`,
     `<b>receiving team</b>${sw(C.blue, C.ink, 6, 2.5)}receiver${sw(C.blue, C.white, 4, 1)}teammates`,
     `<svg width="22" height="12" aria-hidden="true"><rect x="1" y="1" width="20" height="10" fill="${C.grass}" stroke="${C.ink}" stroke-width="2"/></svg>camera's frame`,
   ].map(s => `<li>${s}</li>`).join("") + `<li class="note">s: to the nearest detection</li>`;
-  // the thesis under the title: what the camera saw of this match, and what keeping it does
+  // the thesis under the title: what the camera saw of this match, what keeping it does, and what
+  // that change is
   const lr = rowOf("line_height_m"), L = ROWS[lr];
   at("thesis").innerHTML = `The camera saw ${q("context.player_detected", pct(D.context.player_detected))} of this match's`
-    + ` player-frames; SkillCorner filled the rest. Keep only what it saw whole: line depth reads`
-    + ` ${q(`match.rows.${lr}.V0.mean`, num(L.V0.mean))} → ${q(`match.rows.${lr}.V1.mean`, num(L.V1.mean) + NB + "m")}.`;
-  at("drawn").textContent = "Tracked: where each player stands and whether the camera saw him, the ball, and the four corners of the camera's"
-    + " image on the grass. Drawn: the bodies and the virtual camera, its place and its height; the ball's height is the provider's.";
+    + ` player-frames; SkillCorner filled in the rest. Keep only what it saw whole and line depth reads`
+    + ` ${q(`match.rows.${lr}.V0.mean`, num(L.V0.mean))} → ${q(`match.rows.${lr}.V1.mean`, num(L.V1.mean) + NB + "m")}:`
+    + ` a different sample, not an error.`;
+  at("tab-matches-n").innerHTML = q("strips.claim.line_height_m.matches", D.strips.claim.line_height_m.matches);
   const ticks = at("ticks");
   ticks.replaceChildren();
   // a tick at each unit's frame, and one line under them from the first: each tick's time from the reception
@@ -1454,7 +1613,7 @@ function renderStatic() {
     "uv run python scripts/camera_page.py            # writes reports/camera/",
     "uv run python scripts/camera_page.py --check    # recomputes and compares",
     "uv run --with playwright python scripts/drive_camera_page.py [path-or-url]"];
-  at("footer").innerHTML = "<h3>What this is</h3><p>The page of the entry <i>What the camera saw: a reliability tag for defensive metrics</i>:"
+  at("about").innerHTML = "<h3>What this is</h3><p>The page of the entry <i>What the camera saw: a reliability tag for defensive metrics</i>:"
     + " <a href=\"https://github.com/javiersr1996/ac2-football\">github.com/javiersr1996/ac2-football</a>. It is built by"
     + " <code>scripts/camera_page.py</code> from <code>scripts/camera_template.html</code>, with <code>reports/camera/camera.json</code>"
     + " and <code>vendor/three/</code>, and driven from the console by <code>scripts/drive_camera_page.py</code>.</p>"
@@ -1466,27 +1625,40 @@ function renderStatic() {
 }
 
 /* ------------------------------------------------------------------ sizing */
-/* The stage's size, the band over its top (the title, and on the desktop the controls beside it),
-   the boxes of the counter, the key and the foot that holds both, and the plan's free region:
-   under the band and the phone's panel, or left of the desktop's right column and clear of it,
-   and above the foot. Pixels. */
+/* Compact (a portrait screen, or a short one): the key and the V0/V1 readout open the Story tab;
+   otherwise the key sits on the stage beside the counter and the readout heads the panel. Then
+   the stage's size, the boxes of the counter, the key and the foot that holds them, and the
+   plan's free region: the stage above the foot. Pixels. */
+const COMPACT = window.matchMedia("(orientation: portrait), (max-height: 560px)");
+const PORTRAIT = window.matchMedia("(orientation: portrait)");
+function placeHomes() {
+  const key = at("key"), readout = at("readout"), story = at("tp-story");
+  if (COMPACT.matches) {
+    if (story.firstElementChild !== key) story.prepend(key);
+    if (key.nextElementSibling !== readout) key.after(readout);
+  } else {
+    if (key.parentNode !== at("foot")) at("foot").append(key);
+    if (readout.parentNode !== at("panel")) at("panel").prepend(readout);
+  }
+}
+/** An element's box in the stage's pixels, or null when it is not on the stage. */
+function onStage(id) {
+  const box = at("stage"), node = at(id);
+  if (!box.contains(node)) return null;
+  const b = node.getBoundingClientRect(), r0 = box.getBoundingClientRect();
+  return {x: b.left - r0.left, y: b.top - r0.top, w: b.width, h: b.height};
+}
 function sizeStage() {
-  const square = window.matchMedia("(max-width: 899px)").matches, cap = at("stage-caption");
-  const home = square ? at("view-plan").parentNode.parentNode : at("top");
-  if (cap.parentNode !== home) home.appendChild(cap);
+  placeHomes();
   const box = at("stage"), w = Math.floor(box.clientWidth), h = Math.floor(box.clientHeight);
-  const y0 = box.getBoundingClientRect().top, x0 = box.getBoundingClientRect().left, hero = at("hero");
-  const band = Math.ceil(Math.max(at("top").getBoundingClientRect().bottom,
-                                  square ? 0 : at("controls").getBoundingClientRect().bottom) - y0);
-  hero.style.setProperty("--band", band + "px");
-  hero.classList.toggle("flat", !GL);
+  at("app").classList.toggle("flat", !GL);
   if (!GL) return false;
-  const boxOf = id => { const b = at(id).getBoundingClientRect(); return {x: b.left - x0, y: b.top - y0, w: b.width, h: b.height}; };
-  const count = boxOf("count"), key = boxOf("key"), foot = boxOf("foot");
-  if (w === size.w && h === size.h && square === size.square && band === size.band && size.foot && foot.y === size.foot.y) return false;
-  const aside = parseFloat(getComputedStyle(hero).getPropertyValue(square ? "--panel-h" : "--side"));
-  const region = square ? {x0: 0, x1: w, y0: band + aside, y1: foot.y - 6} : {x0: 0, x1: w - aside - 16, y0: band, y1: foot.y - 6};
-  Object.assign(size, {w, h, square, band, region, count, key, foot});
+  // the foot measured at its tallest, the counter as it reads on the reception
+  drawCount(KEY);
+  const foot = onStage("foot"), compact = COMPACT.matches;
+  drawCount(current ? current.i : 0);
+  if (w === size.w && h === size.h && compact === size.compact && size.foot && foot.y === size.foot.y) return false;
+  Object.assign(size, {w, h, compact, region: {x0: 0, x1: w, y0: 0, y1: foot.y - 6}, foot});
   renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
   renderer.setSize(w, h, false);
   look = null;
@@ -1494,7 +1666,7 @@ function sizeStage() {
 }
 function relayout() {
   if (sizeStage() && GL) { placeCamera(st.view === "plan" ? 1 : st.view === "rising" ? st.p : 0); drawAt(st.tau); }
-  if (!measure.hidden) renderMeasure();
+  if (st.tab === "matches") renderStrips();
 }
 
 /* -------------------------------------------------------------------- start */
@@ -1502,13 +1674,13 @@ renderStatic();
 const warm = GL ? (buildStage(), warmUp()) : null;
 if (GL) buildTags();
 sizeStage();
+renderMeasure();
 if (!GL) {
   at("no-gl").hidden = false;
   canvas.hidden = true;
   st.view = "plan";
   st.tau = T_KEY;
   st.p = 1;
-  showMeasure(false);
   drawAt(T_KEY);
 } else if (STILL) {
   st.view = "plan";
@@ -1519,9 +1691,9 @@ if (!GL) {
   showMeasure(false);
   drawAt(T_KEY);
 } else {
-  // an upright stage (the phone) cannot hold the camera's side at a legible size: there the clip
-  // plays from above with the measures, and the camera's side is one press away
-  const upright = size.h > size.w;
+  // a portrait screen opens on the top-down view: there the clip plays from above with its
+  // measures, and the camera's side is one press away
+  const upright = PORTRAIT.matches;
   st.view = upright ? "plan" : "broadcast";
   st.p = upright ? 1 : 0;
   st.tau = 0;
@@ -1540,7 +1712,10 @@ if (!GL) {
   });
 }
 syncUI();
-new ResizeObserver(relayout).observe(document.body);
+const watch = new ResizeObserver(relayout);
+watch.observe(at("stage"));
+watch.observe(at("panel"));
+COMPACT.addEventListener("change", relayout);
 </script>
 </body>
 </html>

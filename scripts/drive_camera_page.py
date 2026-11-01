@@ -50,9 +50,15 @@ BODY_H, DISC_R, ME_RING = 1.8, 1.1, 1.45
 RATE, HOLD_S, FLIGHT_S, FADE_S = 1.0, 0.6, 1.5, 0.4
 FIRST_FRAME_S, PLAYING_S, FRAME_MEDIAN_MS = 1.0, 1.5, 17.0
 # The storyboard asked 28 and 12 px; with the camera over the point where the frame's side edges
-# meet and every defender in the frame, the width sets the scale and P2 measured 23.9 and 6.5 px
-# (tasks/camera_page.md, P2's notes): these floors guard that fit, the tags carry the legibility.
-LEGIBLE_PX = {1440: 22.0, 390: 6.0}
+# meet and every defender in the frame, the width set the scale and P2 measured 23.9 and 6.5 px
+# (tasks/camera_page.md, P2's notes). The fit now holds the window and the defenders near it, the
+# goalkeeper far from it waits at the canvas's edge: these floors guard that fit (the jury's 6/10
+# found 5.6 to 8.1 px at 390), and EMPTY_MAX the share of the stage under the title band that is
+# bare sky in broadcast (the jury found 73% at 390). An upright stage lands in the top-down, so
+# at 390 the camera's side is the second view and its floor is lower.
+LEGIBLE_PX = {1440: 30.0, 390: 9.0}
+EMPTY_MAX = {1440: 0.20, 390: 0.70}
+SKY = "#DFE3DA"
 BODY_MIN_PX, TARGET_PX = 16, 44
 HALF_L, HALF_W, APRON = 52.5, 34.0, 6.0
 VERMILION, INK, GREY = "#D55E00", "#222222", "#777777"
@@ -259,6 +265,7 @@ class Data:
             dtype=float,
         )
         self.seen = np.array(ent["rivals"]["detected"], dtype=bool)
+        self.gap = np.array(ent["rivals"]["gap"], dtype=int)
         self.corners = np.array(d["camera"]["corners"], dtype=float)
         with (REPORTS / "reliability.csv").open(encoding="utf-8", newline="") as f:
             self.csv = list(csv.DictReader(f))
@@ -501,6 +508,32 @@ def check_hook(D: Data, browser, target: str, shots: Path) -> None:
 
 
 @guarded
+def check_hook_upright(D: Data, browser, target: str, shots: Path) -> None:
+    """The natural run on an upright stage (390 x 844): the clip plays from above, opening in
+    plan at i = 0 with #measure shown, freezes on the reception (i = 30) and never rises."""
+    ctx, pg = open_page(browser, target, width=390, height=844)
+    pg.wait_for_function("camera.state().phase === 'ended'", timeout=15000)
+    pg.wait_for_timeout(int((HOLD_S + FLIGHT_S) * 1000) + 300)
+    shot(pg, shots, "hook_390_plan_reception")
+    log = pg.evaluate("window.__log")
+    first = log[0] if log else {}
+    s = pg.evaluate("camera.state()")
+    R.check(
+        "390px natural run: opens in plan at i = 0 with #measure shown, plays, freezes on the"
+        " reception (i = 30) and never rises",
+        first.get("view") == "plan"
+        and first.get("i") == 0
+        and not first.get("mh")
+        and any(e["phase"] == "playing" for e in log)
+        and not any(e["view"] != "plan" for e in log)
+        and (s["view"], s["i"], s["phase"]) == ("plan", D.key, "ended")
+        and pg.evaluate("__vis(document.getElementById('measure'))"),
+        f"first {json.dumps(first)}; now {s['view']} {s['i']} {s['phase']}",
+    )
+    ctx.close()
+
+
+@guarded
 def check_transport(D: Data, browser, target: str) -> None:
     """seek pins the positions to the sidecar interpolated, clamps; play/pause return what the
     API says; rising ignores every call (5.1)."""
@@ -661,36 +694,81 @@ def check_frame(D: Data, browser, target: str) -> None:
     ctx.close()
 
 
+def sky_share(pg) -> float:
+    """The share of the canvas under the title band (--band) that is the bare sky's colour."""
+    return pg.evaluate(
+        """(hex) => { const c = document.getElementById('pitch'), t = document.createElement('canvas');
+      t.width = c.width; t.height = c.height; const x = t.getContext('2d'); x.drawImage(c, 0, 0);
+      const d = x.getImageData(0, 0, c.width, c.height).data, s = c.width / c.clientWidth;
+      const band = parseFloat(getComputedStyle(document.getElementById('hero')).getPropertyValue('--band'));
+      const r = parseInt(hex.slice(1, 3), 16), g = parseInt(hex.slice(3, 5), 16), b = parseInt(hex.slice(5, 7), 16);
+      let n = 0, k = 0;
+      for (let y = Math.ceil(band * s); y < c.height; y++) for (let i = 0; i < c.width; i++) {
+        const o = 4 * (y * c.width + i); n++;
+        if (Math.abs(d[o] - r) <= 2 && Math.abs(d[o + 1] - g) <= 2 && Math.abs(d[o + 2] - b) <= 2) k++; }
+      return k / n; }""",
+        SKY,
+    )
+
+
 @guarded
 def check_framing(D: Data, browser, target: str, width: int, shots: Path) -> None:
-    """The broadcast fit (2.4): the defenders (feet and head), the receiver, the ball and the
-    clipped frame inside the canvas in the 100 frames; at most 10 % of the height under the
-    lowest; the defenders' median drawn height at least the legibility floor."""
+    """The broadcast fit (2.4): the receiver, the ball, the clipped frame and every defender the
+    camera sees inside the canvas in the 100 frames; a defender outside it is filled in and his
+    tag waits on that edge with his seconds and an arrow; at most 10 % of the height under the
+    lowest; the median drawn height of the defenders in the canvas at least the legibility
+    floor; at most EMPTY_MAX of the stage under the band bare sky."""
     ctx, pg = open_page(browser, target, width=width, height=844 if width < 600 else 900)
     go(pg, "broadcast")
     w, h = pg.evaluate("[camera.camera().width, camera.camera().height]")
-    bad, low, heights = [], 0.0, []
+    bad, edge_bad, low, heights, left_out = [], [], 0.0, [], set()
     for i in range(D.n):
         pg.evaluate(f"camera.seek({(i - D.key) / D.fps})")
-        feet = [(x, y, 0) for x, y in D.rivals[i]] + [(*D.me[i], 0), (*D.ball[i], 0)]
-        heads = [(x, y, BODY_H) for x, y in D.rivals[i]] + [(*D.me[i], BODY_H)]
-        frame = [(x, y, 0) for x, y, _ in clip_frame(D.corners[i])]
-        px = proj(pg, feet + heads + frame)
-        if (
-            (px[:, 0] < -0.5).any()
-            or (px[:, 0] > w + 0.5).any()
-            or (px[:, 1] < -0.5).any()
-            or (px[:, 1] > h + 0.5).any()
+        k = len(D.rivals[i])
+        feet = [(x, y, 0) for x, y in D.rivals[i]]
+        heads = [(x, y, BODY_H) for x, y in D.rivals[i]]
+        rest = [(*D.me[i], 0), (*D.me[i], BODY_H), (*D.ball[i], 0)]
+        rest += [(x, y, 0) for x, y, _ in clip_frame(D.corners[i])]
+        px = proj(pg, feet + heads + rest)
+
+        def inside(p) -> bool:
+            return -0.5 <= p[0] <= w + 0.5 and -0.5 <= p[1] <= h + 0.5
+
+        shown = [inside(px[j]) and inside(px[k + j]) for j in range(k)]
+        if not all(inside(p) for p in px[2 * k :]) or not all(
+            shown[j] for j in range(k) if D.seen[i, j]
         ):
             bad.append(i)
-        low = max(low, float(px[:, 1].max()))
-        k = len(D.rivals[i])
-        heights += list(px[:k, 1] - px[len(feet) : len(feet) + k, 1])
+        tags = {t["k"]: t for t in pg.evaluate(TAGS_JS) if t["kind"] == "rival"}
+        for j in (j for j in range(k) if not shown[j]):
+            left_out.add(j)
+            side = "left" if px[k + j][0] < 0 else "right"
+            t = tags.get(j)
+            arrow = "←" if side == "left" else "→"
+            if (
+                D.seen[i, j]
+                or t is None
+                or t["edge"] != side
+                or f"{D.gap[i, j] / D.fps:.1f} s" not in t["text"]
+                or arrow not in t["text"]
+                or not (t["x"] <= 4 if side == "left" else t["x"] + t["w"] >= w - 4)
+            ):
+                edge_bad.append(i)
+        pts = [px[j] for j in range(k) if shown[j]] + [px[k + j] for j in range(k) if shown[j]]
+        low = max(low, max(float(p[1]) for p in [*pts, *px[2 * k :]]))
+        heights += [float(px[j][1] - px[k + j][1]) for j in range(k) if shown[j]]
     med = float(np.median(heights))
     R.check(
-        f"{width}px broadcast: defenders, receiver, ball and frame inside the canvas in the 100 frames",
+        f"{width}px broadcast: the receiver, the ball, the frame and every seen defender inside the"
+        " canvas in the 100 frames",
         not bad,
         f"outside at {bad[:5]}",
+    )
+    R.check(
+        f"{width}px broadcast: a defender outside the canvas is filled in, his tag on that edge with"
+        " his seconds and an arrow (100 frames)",
+        not edge_bad,
+        f"left out: {sorted(D.doc['entities']['rivals']['ids'][j] for j in left_out)}; wrong at {sorted(set(edge_bad))[:5]}",
     )
     R.check(
         f"{width}px broadcast: at most 10% of the height under the lowest point",
@@ -698,9 +776,17 @@ def check_framing(D: Data, browser, target: str, width: int, shots: Path) -> Non
         f"{(h - low) / h:.3f}",
     )
     R.check(
-        f"{width}px broadcast: the defenders' median drawn height >= {LEGIBLE_PX[width]} px",
+        f"{width}px broadcast: the median drawn height of the defenders in the canvas >= {LEGIBLE_PX[width]} px",
         med >= LEGIBLE_PX[width],
         f"{med:.1f} px",
+    )
+    pg.evaluate("camera.seek(0)")
+    settle(pg)
+    sky = sky_share(pg)
+    R.check(
+        f"{width}px broadcast: at most {EMPTY_MAX[width]:.0%} of the stage under the title band is bare sky",
+        sky <= EMPTY_MAX[width],
+        f"{sky:.3f}",
     )
     pg.evaluate("camera.seek(-3)")
     settle(pg)
@@ -711,35 +797,45 @@ def check_framing(D: Data, browser, target: str, width: int, shots: Path) -> Non
     ctx.close()
 
 
-TAGS_JS = """() => [...document.querySelectorAll('#tags .tag')].filter(t => !t.hidden).map(t => {
-  const b = t.getBoundingClientRect(), s = document.getElementById('stage').getBoundingClientRect();
-  const lines = [...document.querySelectorAll('#tags .lead')];
-  return {kind: t.dataset.kind, k: t.dataset.k === undefined ? null : +t.dataset.k, text: t.textContent,
-          x: b.left - s.left, y: b.top - s.top, w: b.width, h: b.height};
-})"""
-ANCHORS_JS = """() => [...document.querySelectorAll('#tags .lead')].filter(l => l.style.display !== 'none')
-  .map(l => [+l.getAttribute('x2'), +l.getAttribute('y2')])"""
+# Each visible tag with its box in the stage, its edge (a defender outside the canvas) and the
+# end of its leader (null when the leader is hidden): tags and leaders are built in one order.
+TAGS_JS = """() => { const s = document.getElementById('stage').getBoundingClientRect();
+  const leads = [...document.querySelectorAll('#tags .lead')];
+  return [...document.querySelectorAll('#tags .tag')].map((t, n) => [t, leads[n]]).filter(([t]) => !t.hidden)
+    .map(([t, l]) => { const b = t.getBoundingClientRect();
+      return {kind: t.dataset.kind, k: t.dataset.k === undefined ? null : +t.dataset.k, text: t.textContent,
+              edge: t.dataset.edge || null, x: b.left - s.left, y: b.top - s.top, w: b.width, h: b.height,
+              anchor: l.style.display === 'none' ? null : [+l.getAttribute('x2'), +l.getAttribute('y2')]}; }); }"""
 
 
 @guarded
 def check_tags(D: Data, browser, target: str, width: int) -> None:
     """The tags (2.3) in the 100 frames, both views: each anchor nearer its player than any
-    other, no two boxes overlap, none covers the ball."""
+    other (a tag on the canvas's edge: its player outside on that side), no two boxes overlap,
+    none covers the ball."""
     ctx, pg = open_page(browser, target, width=width, height=844 if width < 600 else 900)
     for view in ("broadcast", "plan"):
         go(pg, view)
+        w = pg.evaluate("camera.camera().width")
         z = BODY_H if view == "broadcast" else 0.0
         wrong, overlap, ball = [], [], []
         for i in range(D.n):
             pg.evaluate(f"camera.seek({(i - D.key) / D.fps})")
             tags = pg.evaluate(TAGS_JS)
-            anchors = pg.evaluate(ANCHORS_JS)
             people = proj(pg, [(x, y, z) for x, y in D.rivals[i]] + [(*D.me[i], z)])
             bpx = proj(pg, [(*D.ball[i], 0)])[0]
-            for t, a in zip(tags, anchors, strict=False):
+            for t in tags:
                 if t["kind"] in ("rival", "me"):
                     own = t["k"] if t["kind"] == "rival" else len(people) - 1
-                    d = np.hypot(*(people - np.array(a)).T)
+                    if t["edge"]:
+                        x = people[own][0]
+                        if not (view == "broadcast" and (x < 0 if t["edge"] == "left" else x > w)):
+                            wrong.append(i)
+                        continue
+                    if t["anchor"] is None:
+                        wrong.append(i)
+                        continue
+                    d = np.hypot(*(people - np.array(t["anchor"])).T)
                     if int(np.argmin(d)) != own:
                         wrong.append(i)
                 if (
@@ -1094,6 +1190,7 @@ def main(argv: list[str]) -> int:
         check_startup(D, p, target)
         browser = p.chromium.launch(args=CHROMIUM_ARGS)
         check_hook(D, browser, target, args.shots)
+        check_hook_upright(D, browser, target, args.shots)
         check_transport(D, browser, target)
         check_plan_truth(D, browser, target)
         check_frame(D, browser, target)

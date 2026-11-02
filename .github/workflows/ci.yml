@@ -42,7 +42,7 @@ jobs:
         run: uv run python scripts/readme_check.py
       - name: Video script gate (spoken words, every number against the artefact it cites)
         run: uv run python scripts/video_script_check.py
-      - name: Camera page, what needs no data (payload = sidecar, three.js by hash, no typed number, no network)
+      - name: Camera page, what needs no data (payload = sidecar, sidecar = the reports and the README, no typed number, no network)
         run: uv run python scripts/camera_page.py --check-static
       - name: Tests (a skipped test fails the run, see tests/conftest.py)
         run: uv run pytest -q

@@ -1,4 +1,4 @@
-"""The page: the video's reception in 3D with the camera's measured frame and from above.
+"""The page: the video's reception from above, inside the camera's measured frame.
 
     uv run ftbase ingest --match 1874553 && uv run ftbase bronze && uv run ftbase silver
     uv run python scripts/camera_page.py                 # writes reports/camera/
@@ -6,34 +6,36 @@
     uv run python scripts/camera_page.py --check-static  # what needs no data (CI)
     uv run --with playwright python scripts/drive_camera_page.py [path-or-url]
 
-The page draws the reception of the video (``reports/clip/clip.json``: the one ``ac2fb.clip.choose``
-picks by its frozen rule) from the camera's side of the pitch, freezes on the reception and rises to
-the top-down view (a portrait screen opens there), on one screen with the layer 2 measures in tabs
-beside it: V0 against V1 for the line and the block of this reception, the match's seven metrics,
-the twenty matches of figure 1, panel c, the camera's frame measured, and the limits.
+The page is read top to bottom: the reception of the video (``reports/clip/clip.json``: the one
+``ac2fb.clip.choose`` picks by its frozen rule) drawn from above over the clip's frames, the
+camera's measured frame the only lit area of the pitch and the defenders filled in as rings; the
+V0/V1 switch that moves this match's mean line and block; the verdict on the twenty matches of
+figure 1, panel c, in the README's groups; and the details folded (the fill, layer 3's question,
+the frame measured, the limits, the code, the twenty matches as a table).
 
 Everything the page draws or prints is in the sidecar ``reports/camera/camera.json``, and the
-template (``scripts/camera_template.html``) types none of it. The sidecar is built from the data of
+template (``scripts/camera_template.html``) types none of it; the page's two faces (Barlow and
+Barlow Condensed, ``vendor/fonts/``, OFL) are inlined as data: URIs, each checked by the sha256
+its README names, so the page still loads nothing. The sidecar is built from the data of
 the match, read through the guarded door (``ac2fb.protocol.data``: the players and the ball of
 silver, and the bronze frame columns by ``read_bronze_frames``, the four corners of the camera's
 image on the pitch among them) and from the committed reports, and the build refuses when they
 disagree: the scene must be the clip's, the match's cells those of ``reliability.csv``, each strip
 point that of ``fig1_layer2.json`` and the difference of the CSV cells it cites, the sentence over
-the strips true of every point, and the frame of the camera a window around what it saw (players
-detected inside it, players filled in outside it).
+the strips true of every point, the README's words and paragraphs the README's, and the frame of
+the camera a window around what it saw (players detected inside it, players filled in outside it).
 
 ``--check`` recomputes the sidecar and the page and compares both byte for byte with the committed
 ones, holds the committed sidecar to the reports again, holds the payload inlined in the committed
-page to the sidecar, and checks three.js and the template; exit 0 when it all holds, 1 when it does
-not, 2 when the data are missing or the match is held out. ``--check-static`` runs what needs no
-data: the payload against the sidecar, the still shown without WebGL against
-``reports/clip/clip_still.png``, three.js by its hash, the template's rules (no number with a
-unit typed in it) and a page that loads nothing from the network.
+page to the sidecar, and checks the template; exit 0 when it all holds, 1 when it does not, 2 when
+the data are missing or the match is held out. ``--check-static`` runs what needs no data: the
+payload against the sidecar, the inlined fonts against the vendored files by their hashes, the
+template's rules (no number with a unit typed in it) and a page that loads nothing from the
+network.
 
 Copied, with a declaration, from the author's basketball entry
 (github.com/javiersr1996/nobody-helps-the-helper, ``scripts/wind_html.py``, MIT): ``Refused``,
-``check_finite``, ``FORBIDDEN_IN_SCRIPT``, ``vendored``, ``assemble``, ``NODE_PROBE``,
-``inlined_block`` and ``prove_loads``, adapted to one payload and no mannequin.
+``check_finite`` and ``assemble``, adapted to one payload and no mannequin.
 """
 
 from __future__ import annotations
@@ -46,11 +48,8 @@ import io
 import json
 import math
 import re
-import shutil
 import statistics
-import subprocess
 import sys
-import tempfile
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from pathlib import Path
@@ -65,17 +64,17 @@ OUT_DIR = REPORTS / "camera"
 SIDECAR = "camera.json"
 PAGE = "what_the_camera_saw.html"
 TEMPLATE = Path(__file__).with_name("camera_template.html")
-VENDOR = ROOT / "vendor" / "three"
 PAYLOAD = "/*PAYLOAD*/"
-THREE = "/*THREE*/"
-THREE_FILE = "three.cjs"
-#: The clip's frame at the reception (``ac2fb clip``), by its path under ``reports/``: inlined in
-#: the page as a data URI at this marker and shown in place of the scene when there is no WebGL.
-STILL_PNG = "clip/clip_still.png"
-CLIP_STILL = "/*CLIP_STILL*/"
-#: What the inlined three.js must never contain: an HTML parser would end or re-enter the
-#: script element on the first two, and the markers would be substituted twice.
-FORBIDDEN_IN_SCRIPT = ("</script", "<script", "<!--", PAYLOAD, THREE, CLIP_STILL)
+#: The page's faces, vendored (``vendor/fonts/README`` names each file's sha256) and inlined as
+#: data: URIs in @font-face at this marker of the template's <style>: family, weight, file.
+FONTS_DIR = ROOT / "vendor" / "fonts"
+FONTS = "/*FONTS*/"
+FACES = (
+    ("Barlow", 400, "barlow-latin-400.woff2"),
+    ("Barlow", 600, "barlow-latin-600.woff2"),
+    ("Barlow Condensed", 600, "barlowcondensed-latin-600.woff2"),
+    ("Barlow Condensed", 700, "barlowcondensed-latin-700.woff2"),
+)
 
 #: The reports the page reads, by their path under ``reports/``.
 SOURCES = (
@@ -90,10 +89,12 @@ SOURCES = (
 )
 #: Where the README pairs each of its numbers with the artifact key it is read by.
 README_SRC = ROOT / "README.src.json"
-#: The README's numbers the Findings tab quotes, each read by the very key README.src.json cites
-#: for it (the build refuses a key the README does not cite), and which candidate of the key it
-#: is: the value, the seconds in a band's name ("gt_20s"), or a ratio's size.
+#: The README's numbers the page quotes, each read by the very key README.src.json cites for it
+#: (the build refuses a key the README does not cite), and which candidate of the key it is: the
+#: value, the seconds in a band's name ("gt_20s"), or a ratio's size.
 FINDINGS = (
+    ("seen_cal", "reports/layer2.json:summary.detection.player_detected.median", "value"),
+    ("seen_held", "reports/heldout/layer2.json:summary.detection.player_detected.median", "value"),
     ("block_whole_cal", "reports/layer2.json:summary.block.all_detected.median", "value"),
     ("block_whole_held", "reports/heldout/layer2.json:summary.block.all_detected.median", "value"),
     ("line_whole_cal", "reports/layer2.json:summary.line.all_detected.median", "value"),
@@ -144,16 +145,36 @@ VERDICT = (
     (
         "chosen",
         ("block_length_m", "block_area_m2"),
-        "Block length and area are mostly what the camera chose to show",
+        "Block length and area are mostly what the camera chose to show (report their share "
+        "seen whole)",
     ),
     ("follow", ("line_height_m", "line_reaction_m"), "line depth and reaction follow it"),
-    ("survive", ("pressure_index", "nearest_rival_m"), "pressure and nearest rival survive"),
+    (
+        "survive",
+        ("pressure_index", "nearest_rival_m"),
+        "pressure and nearest rival survive, below the fill's mean absolute error everywhere",
+    ),
     ("mixed", ("block_width_m",), "width is mixed"),
 )
 README_SAYS = (
     "in every match of both splits",
     "area, reaction and pressure keep their sign everywhere",
     "nearest rival in 9 of 10",
+)
+#: The README's closing sentence, printed under the verdict in its words.
+KEEP = "Keep the fill; never report only what was seen."
+#: The README's paragraphs the folded details quote verbatim (Markdown, rendered by the page),
+#: each the one paragraph that starts with these words, and its fenced code between two markers
+#: (the quick block, the call to ``sensitivity``): a README without them fails the build.
+README_PARAGRAPHS = (
+    ("fill", "**The fill behaves as an interpolation.**"),
+    ("layer3", "Layer 3's question and kill rule"),
+    ("quick_lead", "One match,"),
+    ("use_lead", "A metric is a function of a window of frames"),
+)
+README_CODE = (
+    ("quick", "<!-- clean-clone:quick:start -->", "<!-- clean-clone:quick:end -->"),
+    ("use", "## Use it on your data", "`examples/sensitivity.py`"),
 )
 EVERYWHERE = (
     "line_height_m",
@@ -186,10 +207,10 @@ METRICS = (
 GROUPS = ("calibration", "held-out")
 GROUP_CSV = {"calibration": "reliability.csv", "held-out": "heldout/reliability.csv"}
 
-#: Drawn, not measured: the virtual camera's height over the point where the frame's side edges
-#: meet (decision 3 of the storyboard), and the margin around the plan's crop. Metres.
-CAMERA_HEIGHT_M = 28.0
+#: Drawn, not measured: the margin around the plan's crop (metres), and the gap over which a
+#: filled-in defender's label stays pinned on the plan (seconds; the rest show on tap or hover).
 CROP_PAD_M = 3.0
+LABEL_GAP_S = 5.0
 #: The sentence of the page holds only while the frame is a window around what the camera saw:
 #: at least this share of the detected player rows inside it and at most this share of the filled
 #: ones (rule 9).
@@ -512,17 +533,38 @@ def finding(src: str, which: str, reports: Mapping[str, bytes]) -> float:
 
 
 def readme_text() -> str:
-    """README.md with its whitespace folded, for the verdict's words."""
-    return " ".join(README.read_text(encoding="utf-8").split())
+    """README.md as committed (LF), for the verdict's words and the paragraphs the page quotes."""
+    return README.read_text(encoding="utf-8").replace("\r\n", "\n")
+
+
+def readme_quotes(readme: str) -> dict[str, str]:
+    """The README's paragraphs and fenced code the details quote (``README_PARAGRAPHS``,
+    ``README_CODE``), verbatim; refused if one is missing or a lead opens two paragraphs."""
+    out = {}
+    paragraphs = [p.strip() for p in readme.split("\n\n")]
+    for name, lead in README_PARAGRAPHS:
+        found = [p for p in paragraphs if p.startswith(lead)]
+        if len(found) != 1:
+            raise Refused(f"README.md: {len(found)} paragraphs start with {lead!r}, not one")
+        out[name] = found[0]
+    for name, start, end in README_CODE:
+        head = readme.find(start)
+        tail = readme.find(end, head) if head >= 0 else -1
+        fence = re.search(r"```[a-z]*\n(.*?)```", readme[head:tail], flags=re.DOTALL)
+        if head < 0 or tail < 0 or fence is None:
+            raise Refused(f"README.md: no fenced code between {start!r} and {end!r}")
+        out[name] = fence.group(1).rstrip()
+    return out
 
 
 def findings(
     reports: Mapping[str, bytes], strip: Mapping[str, Any], keys: set[str], readme: str
 ) -> dict[str, Any]:
-    """The Findings tab: the README's numbers by their keys, over the twenty matches each metric's
-    count of matches per split whose V1 minus V0 has the sign of its median, and the README's
-    verdict in its words; refused if a key is not the README's, the README does not say the
-    verdict, or what it says of the signs is false."""
+    """What the page quotes of the README: its numbers by their keys, over the twenty matches
+    each metric's count of matches per split whose V1 minus V0 has the sign of its median, its
+    verdict in its words, its closing sentence and the paragraphs the details fold; refused if a
+    key is not the README's, the README does not say the verdict, or what it says of the signs is
+    false."""
     numbers = {}
     for name, src, which in FINDINGS:
         if src not in keys:
@@ -551,14 +593,17 @@ def findings(
             raise Refused(f"{metric} keeps its sign in every match: 'mixed' would be false")
     if sorted(m for _, ms, _ in VERDICT for m in ms) != sorted(m for m, _, _ in METRICS):
         raise Refused("the verdict does not group the seven metrics once each")
-    for words in [w for _, _, w in VERDICT] + list(README_SAYS):
-        if words not in readme:
+    folded = " ".join(readme.split())
+    for words in [w for _, _, w in VERDICT] + [*README_SAYS, KEEP]:
+        if words not in folded:
             raise Refused(f"README.md does not say {words!r}: the page's verdict would not be its")
     for name, group in (("nearest_below_cal", "calibration"), ("nearest_below_held", "held-out")):
         if numbers[name]["value"] != signs["nearest_rival_m"][group]:
             raise Refused(f"nearest rival's {group} count is not the README's ({name})")
     return {
+        "keep": KEEP,
         "numbers": numbers,
+        "readme": readme_quotes(readme),
         "signs": signs,
         "verdict": [{"group": g, "metrics": list(ms), "words": w} for g, ms, w in VERDICT],
     }
@@ -719,9 +764,7 @@ def against_clip(view: Mapping[str, Any], clip_json: Mapping[str, Any]) -> list[
     return problems
 
 
-def sidecar(
-    inputs: Inputs, reports: Mapping[str, bytes], three: Mapping[str, str]
-) -> dict[str, Any]:
+def sidecar(inputs: Inputs, reports: Mapping[str, bytes]) -> dict[str, Any]:
     """Every number and position the page draws, from the inputs and the reports."""
     from ac2fb import clip
 
@@ -800,12 +843,14 @@ def sidecar(
             "left. apex: where the frame's two side edges meet; a camera that does not roll stands "
             "above the line from it along the camera's heading, at a height and a distance the "
             "data do not give. gap is gap_len in frames at 10 Hz (a hollow marker's label is "
-            "gap / 10, one decimal, in seconds). units: the layer 2 units of this reception, read "
+            "gap / 10, one decimal, in seconds; it stays pinned over label_gap_s seconds, a "
+            "drawing choice). units: the layer 2 units of this reception, read "
             "by ac2fb.reliability.metrics at their frame; seen is is_detected there. match: the "
-            "match's cells of reports/reliability.csv; strips: figure 1, panel c. findings: the "
-            "README's numbers the Findings tab quotes, each with the README.src.json key it is "
-            "read by, and per metric and half the matches whose V1 minus V0 has the sign of its "
-            "median."
+            "match's cells of reports/reliability.csv; strips: figure 1, panel c. findings: what "
+            "the page quotes of the README: its numbers, each with the README.src.json key it is "
+            "read by, per metric and half the matches whose V1 minus V0 has the sign of its "
+            "median, its verdict, its closing sentence and the paragraphs the details fold, "
+            "verbatim."
         ),
         "camera": {
             "apex": _r(apexes(corners), 2),
@@ -814,7 +859,6 @@ def sidecar(
             "corners": _r(corners, 2),
             "cut_step_m": CUT_STEP_M,
             "cuts": int((steps > CUT_STEP_M).sum()),
-            "drawn_height_m": CAMERA_HEIGHT_M,
         },
         "context": context(reports, scene.match_id),
         "crop": {"x": _r([lo[0], hi[0]], 2), "y": _r([lo[1], hi[1]], 2), "pad_m": CROP_PAD_M},
@@ -847,6 +891,7 @@ def sidecar(
         "frame_stats": stats,
         "frames": view["frames"],
         "key": {**view["key"], "defenders_extrapolated_by_frame": view["defenders_extrapolated"]},
+        "label_gap_s": LABEL_GAP_S,
         "match": {"rows": table},
         "match_id": scene.match_id,
         "n_defenders": view["n_defenders"],
@@ -857,7 +902,6 @@ def sidecar(
         "sources": {name: hashlib.sha256(reports[name]).hexdigest() for name in SOURCES},
         "strips": {"claim": strip_claim(strip), "metrics": strip},
         "findings": findings(reports, strip, readme_keys(), readme_text()),
-        "three": dict(three),
         "units": units,
     }
 
@@ -1016,46 +1060,16 @@ def cross_check(doc: Mapping[str, Any], reports: Mapping[str, bytes]) -> list[st
     return problems
 
 
-# --- three.js, the template, the page ------------------------------------------------------------
-
-
-def vendored(vendor: Path, template: str) -> tuple[str, str, str]:
-    """The vendored three.js as inlined text, its release and its hash, after the checks.
-
-    The hash in ``vendor/three/README`` is of the file with LF line endings, so a checkout that
-    rewrote them still passes, and the page always inlines the LF text.
-    """
-    readme = (vendor / "README").read_text(encoding="utf-8")
-    pinned = re.search(r"three@([0-9.]+)", readme)
-    digest = re.search(r"sha256 ([0-9a-f]{64})", readme)
-    if pinned is None or digest is None:
-        raise Refused(f"{vendor / 'README'} must name the release (three@X) and its sha256")
-    code = (vendor / THREE_FILE).read_bytes().replace(b"\r\n", b"\n")
-    if hashlib.sha256(code).hexdigest() != digest.group(1):
-        raise Refused(f"{vendor / THREE_FILE} does not hash to the sha256 in its README")
-    text = code.decode("utf-8")
-    for bad in FORBIDDEN_IN_SCRIPT:
-        if bad.lower() in text.lower():
-            raise Refused(f"the vendored three.js contains {bad!r}; it cannot be inlined")
-    if re.search(r"^\s*(import|export)\s", text, flags=re.MULTILINE):
-        raise Refused("the vendored three.js has ES module syntax; the shim needs the CJS build")
-    exported = set(re.findall(r"^exports\.([A-Za-z0-9_$]+) = ", text, flags=re.MULTILINE))
-    used = set(re.findall(r"THREE\.([A-Za-z0-9_$]+)", template))
-    if used - exported:
-        raise Refused(
-            f"the template uses THREE.{sorted(used - exported)}, which "
-            f"three {pinned.group(1)} does not export"
-        )
-    return text, pinned.group(1), digest.group(1)
+# --- the template, the page ----------------------------------------------------------------------
 
 
 #: A number with a unit of the page (decimal: the storyboard's rule; or whole, outside the CSS),
-#: a count "k of n", or a digit in the page's visible HTML other than V0, V1 and 3D: the template
+#: a count "k of n", or a digit in the page's visible HTML other than V0 and V1: the template
 #: types none of them, every one arrives in the payload.
 UNIT_DECIMAL = re.compile(r"[0-9]+\.[0-9]+ ?(m|s|%|m²)")
 UNIT_WHOLE = re.compile(r"(?<![\w.#-])[0-9]+(?:\.[0-9]+)? ?(?:m²|m|s|%)(?![\w²])")
 COUNT = re.compile(r"\b[0-9]+ of [0-9]+\b")
-ALLOWED_DIGITS = re.compile(r"\bV[01]\b|\b3D\b|\bh[1-6]\b|\bdata-[a-z0-9-]+")
+ALLOWED_DIGITS = re.compile(r"\bV[01]\b|\bh[1-6]\b|\bdata-[a-z0-9-]+")
 
 
 def template_rules(template: str) -> list[str]:
@@ -1075,20 +1089,47 @@ def template_rules(template: str) -> list[str]:
     return problems
 
 
-def assemble(template: str, data: Mapping[str, Any], three: str, still: bytes | None = None) -> str:
-    """The template with three.js, the payload and, when given, the clip's still (base64) in place
-    of their markers, once each."""
-    for marker in (PAYLOAD, THREE) + ((CLIP_STILL,) if still is not None else ()):
+def vendored_fonts(folder: Path) -> list[tuple[str, int, bytes]]:
+    """The vendored faces (``FACES``), each read after its bytes hash to the sha256 the folder's
+    README names for it."""
+    readme = (folder / "README").read_text(encoding="utf-8")
+    out = []
+    for family, weight, name in FACES:
+        digest = re.search(rf"{re.escape(name)}\s+sha256 ([0-9a-f]{{64}})", readme)
+        if digest is None:
+            raise Refused(f"{folder / 'README'} must name the sha256 of {name}")
+        data = (folder / name).read_bytes()
+        if hashlib.sha256(data).hexdigest() != digest.group(1):
+            raise Refused(f"{folder / name} does not hash to the sha256 in its README")
+        out.append((family, weight, data))
+    return out
+
+
+def font_faces(fonts: Sequence[tuple[str, int, bytes]]) -> str:
+    """The @font-face rules that inline the faces as data: URIs (base64 holds no `<`)."""
+    return "".join(
+        f'@font-face{{font-family:"{family}";font-weight:{weight};font-style:normal;'
+        f"font-display:swap;src:url(data:font/woff2;base64,{base64.b64encode(data).decode()})"
+        ' format("woff2")}\n'
+        for family, weight, data in fonts
+    )
+
+
+def inlined_fonts(page: str) -> str:
+    """The @font-face rules of a page, as ``font_faces`` writes them."""
+    return "".join(re.findall(r"@font-face\{[^}]*\}\n", page))
+
+
+def assemble(template: str, data: Mapping[str, Any], faces: str = "") -> str:
+    """The template with the payload and the faces in place of their markers, once each."""
+    for marker in (PAYLOAD, FONTS):
         if template.count(marker) != 1:
             raise Refused(f"the template must hold {marker} exactly once")
-    if still is not None:  # base64 holds no marker and no `<`
-        template = template.replace(CLIP_STILL, base64.b64encode(still).decode("ascii"))
     # `</` inside a <script> would close it early, whatever the JSON says it means.
     blob = json.dumps(
         data, allow_nan=False, sort_keys=True, ensure_ascii=False, separators=(",", ":")
     ).replace("</", "<\\/")
-    head, tail = template.split(PAYLOAD)
-    return head.replace(THREE, three) + blob + tail.replace(THREE, three)
+    return template.replace(PAYLOAD, blob).replace(FONTS, faces)
 
 
 def payload_of(page: str) -> bytes:
@@ -1101,117 +1142,51 @@ def payload_of(page: str) -> bytes:
     return canonical(json.loads(found.group(1).replace("<\\/", "</")))
 
 
-#: Runs one classic script in a bare context (no require, no module, no DOM) and prints what
-#: it left on `window.THREE`: the same conditions as a browser's <script>.
-NODE_PROBE = (
-    "const vm = require('vm'), fs = require('fs');"
-    "const box = {}; box.window = box; vm.createContext(box);"
-    "vm.runInContext(fs.readFileSync(process.argv[1], 'utf8'), box);"
-    "const T = box.THREE || {};"
-    "console.log(JSON.stringify({revision: T.REVISION, renderer: typeof T.WebGLRenderer,"
-    " names: Object.keys(T).length}));"
-)
-
-
-def inlined_block(page: str) -> str:
-    """The <script id="three-js"> element's text, as the browser will run it."""
-    found = re.search(r'<script id="three-js">(.*?)</script>', page, flags=re.DOTALL)
-    if found is None:
-        raise Refused('the page has no <script id="three-js"> element')
-    return found.group(1)
-
-
-def prove_loads(page: str, release: str) -> str:
-    """Run the inlined three.js block once under node; refuse if it does not load.
-
-    Returns what was checked, or why it could not be (no node on the PATH: the hash and the
-    exports still hold, and the console driver loads it in a real browser).
-    """
-    node = shutil.which("node")
-    if node is None:
-        return "node not found: the inlined three.js was checked by hash and exports only"
-    with tempfile.TemporaryDirectory() as scratch:
-        script = Path(scratch) / "three_block.js"
-        script.write_text(inlined_block(page), encoding="utf-8")
-        run = subprocess.run(
-            [node, "-e", NODE_PROBE, str(script)], capture_output=True, text=True, timeout=120
-        )
-    if run.returncode != 0:
-        raise Refused(f"the inlined three.js does not load: {run.stderr.strip()[-400:]}")
-    seen = json.loads(run.stdout.strip().splitlines()[-1])
-    if seen["renderer"] != "function" or f"0.{seen['revision']}." not in f"{release}.":
-        raise Refused(f"the inlined three.js loaded as {seen}, expected r{release}")
-    return f"loaded under node: three r{seen['revision']}, {seen['names']} exports"
-
-
 #: What would make the page load something: an element with a source, a stylesheet link, a CSS
-#: url or import, a script call that fetches, imports or opens a connection. Read on the page
-#: without the inlined three.js (checked by its hash); links (<a href>) do not load, nor does a
-#: source that is a data: URI (the clip's still, bytes of the page itself, checked by its bytes).
+#: url or import, a script call that fetches, imports or opens a connection. Links (<a href>) do
+#: not load, nor does a CSS url that is a woff2 data: URI (the faces, bytes of the page itself,
+#: held to the vendored files by their hashes); any other data: source is still refused.
 NETWORK = re.compile(
-    r"""\bsrc\s*=(?!\s*"data:image/png;base64,)|\bsrcset\b|<link\b|url\(|@import|\bfetch\("""
-    r"""|\bimport\(|XMLHttpRequest|WebSocket|EventSource|sendBeacon|new Worker|<iframe"""
-    r"""|<img\b(?![^>]*\bsrc\s*=\s*"data:image/png;base64,)|<object|<embed""",
+    r"""\bsrc\s*=|\bsrcset\b|<link\b|url\((?!data:font/woff2;base64,)|@import|\bfetch\("""
+    r"""|\bimport\(|XMLHttpRequest|WebSocket|EventSource|sendBeacon|new Worker|<iframe|<img\b"""
+    r"""|<object|<embed""",
     re.IGNORECASE,
-)
-#: The fallback when there is no WebGL and the PNG it inlines.
-NO_GL_STILL = re.compile(
-    r'<figure class="no-gl" id="no-gl" hidden>\s*<img [^>]*\bsrc="data:image/png;base64,'
-    r'([A-Za-z0-9+/=]*)"[^>]*>.*?</figure>',
-    re.DOTALL,
 )
 
 
 def network_rules(page: str) -> list[str]:
     """The page loads nothing from the network (its links are <a> and load nothing)."""
-    own = page.replace(inlined_block(page), "")
-    return [f"the page would load something: {m.group(0)!r}" for m in NETWORK.finditer(own)]
-
-
-def still_problems(page: str, png: bytes) -> list[str]:
-    """The page's no-WebGL fallback inlines ``png`` (reports/clip/clip_still.png), byte for byte."""
-    found = NO_GL_STILL.search(page)
-    if found is None:
-        return ["no no-WebGL fallback with an inlined PNG"]
-    if base64.b64decode(found.group(1)) != png:
-        return [f"the no-WebGL still is not reports/{STILL_PNG}"]
-    return []
+    return [f"the page would load something: {m.group(0)!r}" for m in NETWORK.finditer(page)]
 
 
 def static_problems(
     page: str,
     sidecar_bytes: bytes,
     template: str,
-    vendor: Path,
     reports: Mapping[str, bytes] | None = None,
+    fonts: Path = FONTS_DIR,
 ) -> list[str]:
-    """Rules 3 and 10, the template's and the network's: everything that needs no data; with the
-    versioned reports, the sidecar held to them too (its cells, strips, context, findings, frame
-    statistics and the reports' hashes: the cross-check, which reads no data) and the page's
-    no-WebGL still to the clip's PNG."""
+    """Rules 3 and 10, the template's, the fonts' and the network's: everything that needs no
+    data; with the versioned reports, the sidecar held to them too (its cells, strips, context,
+    findings, frame statistics and the reports' hashes: the cross-check, which reads no data)."""
     problems = []
     if reports is not None:
         try:
             problems += cross_check(json.loads(sidecar_bytes), reports)
         except (KeyError, TypeError, ValueError) as exc:
             problems.append(f"{SIDECAR}: cannot be read against the reports ({exc!r})")
-        problems += [f"{PAGE}: {p}" for p in still_problems(page, reports[STILL_PNG])]
     try:
         if payload_of(page) != sidecar_bytes:
             problems.append(f"{PAGE}: its payload differs from {SIDECAR}")
     except (Refused, ValueError) as exc:
         problems.append(f"{PAGE}: {exc}")
     try:
-        three, _, _ = vendored(vendor, template)
-        if inlined_block(page) != inlined_block(assemble(template, {}, three)):
-            problems.append(f"{PAGE}: the inlined three.js is not vendor/three/{THREE_FILE}")
+        if inlined_fonts(page) != font_faces(vendored_fonts(fonts)):
+            problems.append(f"{PAGE}: the inlined fonts are not vendor/fonts' (by their hashes)")
     except Refused as exc:
-        problems.append(f"three.js: {exc}")
+        problems.append(f"fonts: {exc}")
     problems += [f"camera_template.html: {p}" for p in template_rules(template)]
-    try:
-        problems += [f"{PAGE}: {p}" for p in network_rules(page)]
-    except Refused as exc:
-        problems.append(f"{PAGE}: {exc}")
+    problems += [f"{PAGE}: {p}" for p in network_rules(page)]
     return problems
 
 
@@ -1238,25 +1213,20 @@ def compare(name: str, committed: bytes | None, recomputed: bytes) -> list[str]:
 
 
 def read_reports(reports: Path) -> dict[str, bytes]:
-    """The reports the sidecar hashes (``SOURCES``) and the still the page inlines."""
-    names = (*SOURCES, STILL_PNG)
-    missing = [name for name in names if not (reports / name).is_file()]
+    """The reports the sidecar hashes (``SOURCES``)."""
+    missing = [name for name in SOURCES if not (reports / name).is_file()]
     if missing:
         raise FileNotFoundError(f"missing in {reports}: {', '.join(missing)}")
-    return {name: (reports / name).read_bytes() for name in names}
+    return {name: (reports / name).read_bytes() for name in SOURCES}
 
 
-def build(
-    inputs: Inputs, reports: Mapping[str, bytes], template: str, vendor: Path
-) -> tuple[bytes, str, str]:
-    """The sidecar's bytes, the page and what proved three.js loads."""
-    three, release, digest = vendored(vendor, template)
-    doc = sidecar(inputs, reports, {"release": release, "sha256": digest})
+def build(inputs: Inputs, reports: Mapping[str, bytes], template: str) -> tuple[bytes, str]:
+    """The sidecar's bytes and the page, the vendored faces inlined."""
+    faces = font_faces(vendored_fonts(FONTS_DIR))
+    doc = sidecar(inputs, reports)
     check_finite(doc)
     body = canonical(doc)
-    page = assemble(template, json.loads(body), three, reports[STILL_PNG])
-    proof = prove_loads(page, release)
-    return body, page, proof
+    return body, assemble(template, json.loads(body), faces)
 
 
 def counts(doc: Mapping[str, Any]) -> dict[str, int]:
@@ -1293,14 +1263,13 @@ def check(
     inputs: Inputs,
     reports: Mapping[str, bytes],
     template: str,
-    vendor: Path,
     committed_sidecar: bytes | None,
     committed_page: bytes | None,
 ) -> tuple[list[str], str]:
     """Every rule of the storyboard's section 8.1; the problems and what was verified."""
     problems: list[str] = []
     try:
-        body, page, proof = build(inputs, reports, template, vendor)
+        body, page = build(inputs, reports, template)
     except Refused as exc:
         return [str(exc.code)], "nothing: the recomputation was refused"
     problems += compare(SIDECAR, committed_sidecar, body)
@@ -1308,16 +1277,13 @@ def check(
     if committed_sidecar is not None:
         problems += cross_check(json.loads(committed_sidecar), reports)
     if committed_page is not None and committed_sidecar is not None:
-        problems += static_problems(
-            committed_page.decode("utf-8"), committed_sidecar, template, vendor
-        )
+        problems += static_problems(committed_page.decode("utf-8"), committed_sidecar, template)
     n = counts(json.loads(body))
     equal = "differ" if compare(PAGE, committed_page, page.encode()) else "equal"
     said = (
         f"verified: {n['frames']} frames, {n['entities']} entities, {n['positions']} "
         f"positions, {n['numbers']} numbers, {n['units']} units, {n['stats']} frame "
         f"statistics; page bytes {equal}"
-        f"; three.js {proof}"
     )
     return problems, said
 
@@ -1342,14 +1308,13 @@ def main(argv: Sequence[str] | None = None) -> int:
             page_path.read_text(encoding="utf-8"),
             side.read_bytes(),
             template,
-            VENDOR,
             read_reports(args.reports),
         )
         print(
             "verified: the sidecar against the versioned reports (cells, strips, context, "
             f"findings, frame statistics, {len(SOURCES)} hashes), the payload against the sidecar, "
-            f"the no-WebGL still against reports/{STILL_PNG}, three.js by its hash, the "
-            "template's rules, a page that loads nothing"
+            f"the {len(FACES)} inlined fonts against vendor/fonts by their hashes, the template's "
+            "rules, a page that loads nothing"
         )
         for problem in problems:
             print(f"  - {problem}")
@@ -1369,18 +1334,18 @@ def main(argv: Sequence[str] | None = None) -> int:
             side.read_bytes() if side.is_file() else None,
             page_path.read_bytes() if page_path.is_file() else None,
         )
-        problems, said = check(inputs, reports, template, VENDOR, *committed)
+        problems, said = check(inputs, reports, template, *committed)
         print(said)
         for problem in problems:
             print(f"  - {problem}")
         print("camera page: OK" if not problems else "camera page: FAILED")
         return 0 if not problems else 1
-    body, page, proof = build(inputs, reports, template, VENDOR)
+    body, page = build(inputs, reports, template)
     args.out_dir.mkdir(parents=True, exist_ok=True)
     side.write_bytes(body)
     page_path.write_bytes(page.encode("utf-8"))
     print(f"wrote {side} ({len(body) / 1024:.0f} KB)")
-    print(f"wrote {page_path} ({len(page.encode()) / 1024:.0f} KB); three.js {proof}")
+    print(f"wrote {page_path} ({len(page.encode()) / 1024:.0f} KB)")
     return 0
 
 

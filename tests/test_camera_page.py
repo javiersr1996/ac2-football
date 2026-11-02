@@ -2,19 +2,17 @@
 
 The geometry (which player lies in the camera's frame, where the frame's side edges meet), the
 frame statistics on a planted bronze, the sidecar's bytes and the page's assembly, the cross-check
-of the committed sidecar against the committed reports, and the rules that need no data (the
-payload against the sidecar, three.js by its hash, the template's typed numbers, the network).
+of the committed sidecar against the committed reports and the README, and the rules that need no
+data (the payload against the sidecar, the template's typed numbers, the network).
 Each rule has its planted case; the mutations that kill them are logged in scripts/mutations/.
 """
 
 from __future__ import annotations
 
-import base64
 import copy
 import importlib.util
 import json
 import math
-import re
 import shutil
 import sys
 from pathlib import Path
@@ -181,20 +179,53 @@ def test_canonical_bytes_are_sorted_with_one_space_of_indent_and_a_final_lf() ->
 
 
 def test_assemble_fills_each_marker_once_and_escapes_the_end_of_a_script() -> None:
-    template = '<script type="application/json" id="payload">/*PAYLOAD*/</script>' + (
-        '<script id="three-js">/*THREE*/</script>'
+    template = (
+        "<style>/*FONTS*/</style>"
+        '<script type="application/json" id="payload">/*PAYLOAD*/</script><script></script>'
     )
-    page = cp.assemble(template, {"x": "</script>", "y": [1, 2]}, "var three = 1;")
-    assert "/*PAYLOAD*/" not in page and "/*THREE*/" not in page
+    faces = cp.font_faces([("F", 400, b"\0\1")])
+    page = cp.assemble(template, {"x": "</script>", "y": [1, 2]}, faces)
+    assert "/*PAYLOAD*/" not in page and "/*FONTS*/" not in page
     assert page.count("</script>") == 2 and "<\\/script>" in page
     assert cp.payload_of(page) == cp.canonical({"x": "</script>", "y": [1, 2]})
-    assert cp.inlined_block(page) == "var three = 1;"
-    assert cp.assemble(template, {"y": [1, 2]}, "t") == cp.assemble(template, {"y": [1, 2]}, "t")
+    assert (
+        cp.inlined_fonts(page)
+        == faces
+        == (
+            '@font-face{font-family:"F";font-weight:400;font-style:normal;font-display:swap;'
+            'src:url(data:font/woff2;base64,AAE=) format("woff2")}\n'
+        )
+    )
+    assert cp.assemble(template, {"y": [1, 2]}) == cp.assemble(template, {"y": [1, 2]})
 
 
-def test_assemble_refuses_a_marker_twice() -> None:
+@pytest.mark.parametrize(
+    "template",
+    [
+        "/*PAYLOAD*/ /*PAYLOAD*/ /*FONTS*/",
+        "<script></script>/*FONTS*/",
+        "/*PAYLOAD*/ /*FONTS*/ /*FONTS*/",
+    ],
+)
+def test_assemble_refuses_a_marker_twice_or_none(template: str) -> None:
     with pytest.raises(SystemExit, match="exactly once"):
-        cp.assemble("/*PAYLOAD*/ /*PAYLOAD*/ /*THREE*/", {}, "")
+        cp.assemble(template, {})
+
+
+def test_vendored_fonts_are_read_by_their_hashes(tmp_path: Path) -> None:
+    fonts = cp.vendored_fonts(cp.FONTS_DIR)
+    assert [(f, w) for f, w, _ in fonts] == [(f, w) for f, w, _ in cp.FACES]
+    assert all(data[:4] == b"wOF2" for _, _, data in fonts)
+    folder = tmp_path / "fonts"
+    shutil.copytree(cp.FONTS_DIR, folder)
+    name = cp.FACES[0][2]
+    (folder / name).write_bytes((folder / name).read_bytes() + b"\0")
+    with pytest.raises(SystemExit, match="does not hash"):
+        cp.vendored_fonts(folder)
+    readme = (folder / "README").read_text(encoding="utf-8")
+    (folder / "README").write_text(readme.replace(name, "other.woff2"), encoding="utf-8")
+    with pytest.raises(SystemExit, match="must name the sha256"):
+        cp.vendored_fonts(folder)
 
 
 def test_check_finite_refuses_nan_and_a_missing_value_but_not_an_absent_teammate() -> None:
@@ -268,6 +299,15 @@ def _mutated(doc: dict[str, Any], path: str, change: Any) -> dict[str, Any]:
             lambda v: v + 1,
             "findings.signs.block_width_m.calibration is",
         ),
+        (
+            "findings.numbers.seen_cal.value",
+            lambda v: v + 0.01,
+            "findings.numbers.seen_cal.value is",
+        ),
+        ("findings.readme.fill", lambda v: v + " And more.", "findings.readme.fill is"),
+        ("findings.readme.quick", lambda v: v.replace("uv sync", "uv pip"), "readme.quick is"),
+        ("findings.keep", lambda v: "Keep the fill.", "findings.keep is"),
+        ("findings.verdict.0.words", lambda v: v.split(" (")[0], "findings.verdict is"),
         ("sources.layer2\\.json", None, None),
     ],
 )
@@ -309,13 +349,60 @@ def test_findings_refuse_a_key_the_readme_does_not_cite(committed: Any) -> None:
     found = cp.findings(reports, strip, cp.readme_keys(), cp.readme_text())
     assert found["numbers"]["window_s"]["value"] == 1.3
     assert found["numbers"]["nearest_below_held"]["value"] == 9
+    assert 0.5 < found["numbers"]["seen_cal"]["value"] < 0.6  # the README's "56%"
     with pytest.raises(SystemExit, match="is not a key of README.src.json"):
         cp.findings(reports, strip, cp.readme_keys() - {cp.FINDINGS[0][1]}, cp.readme_text())
 
 
+def test_findings_quote_the_readme_verbatim(committed: Any) -> None:
+    # the details fold the README's own paragraphs and code, and the verdict closes in its words
+    _, reports = committed
+    found = cp.findings(reports, cp.strips(reports), cp.readme_keys(), cp.readme_text())
+    quotes = found["readme"]
+    assert set(quotes) == {"fill", "layer3", "quick_lead", "use_lead", "quick", "use"}
+    assert quotes["fill"].startswith("**The fill behaves as an interpolation.**")
+    assert quotes["layer3"].startswith("Layer 3's question and kill rule")
+    assert quotes["quick"].startswith("git clone") and "uv run ftbase ingest" in quotes["quick"]
+    assert quotes["use"].startswith("from ac2fb") and "sensitivity(" in quotes["use"]
+    assert "\n\n" not in quotes["fill"] and not quotes["quick"].endswith("\n")
+    assert found["keep"] == cp.KEEP == "Keep the fill; never report only what was seen."
+
+
+@pytest.mark.parametrize(
+    ("broken", "named"),
+    [
+        ("**The fill behaves as an interpolation.**", "paragraphs start with"),
+        ("Layer 3's question and kill rule", "paragraphs start with"),
+        ("<!-- clean-clone:quick:end -->", "no fenced code"),
+        ("## Use it on your data", "no fenced code"),
+        ("Keep the fill; never report only what was seen.", "README.md does not say"),
+    ],
+)
+def test_findings_refuse_a_readme_without_what_the_page_quotes(
+    committed: Any, broken: str, named: str
+) -> None:
+    _, reports = committed
+    readme = cp.readme_text()
+    assert readme.count(broken) == 1
+    with pytest.raises(SystemExit, match=named):
+        cp.findings(reports, cp.strips(reports), cp.readme_keys(), readme.replace(broken, "x"))
+
+
+def test_findings_refuse_a_readme_whose_lead_opens_two_paragraphs(committed: Any) -> None:
+    _, reports = committed
+    readme = cp.readme_text() + "\n\nLayer 3's question and kill rule, again.\n"
+    with pytest.raises(SystemExit, match="2 paragraphs start with"):
+        cp.findings(reports, cp.strips(reports), cp.readme_keys(), readme)
+
+
 @pytest.mark.parametrize(
     "words",
-    ["line depth and reaction follow it", "pressure and nearest rival survive", "width is mixed"],
+    [
+        "line depth and reaction follow it",
+        "pressure and nearest rival survive, below the fill's mean absolute error everywhere",
+        "width is mixed",
+        "(report their share seen whole)",
+    ],
 )
 def test_findings_refuse_a_verdict_the_readme_does_not_say(committed: Any, words: str) -> None:
     # the grouping is the README's reading: a README that reads otherwise fails the build
@@ -400,8 +487,8 @@ def page() -> tuple[str, bytes, str]:
 
 def test_the_committed_page_passes_every_static_rule(page: Any) -> None:
     text, side, template = page
-    assert cp.static_problems(text, side, template, cp.VENDOR) == []
-    assert cp.static_problems(text, side, template, cp.VENDOR, cp.read_reports(cp.REPORTS)) == []
+    assert cp.static_problems(text, side, template) == []
+    assert cp.static_problems(text, side, template, cp.read_reports(cp.REPORTS)) == []
 
 
 @pytest.mark.parametrize(
@@ -423,15 +510,17 @@ def test_the_committed_page_passes_every_static_rule(page: Any) -> None:
             "median of line_height_m",
         ),
         ("context.player_detected", lambda v: v + 0.01, "context.player_detected is"),
+        ("findings.readme.layer3", lambda v: v.replace("0.0005", "0.005"), "readme.layer3 is"),
+        ("findings.keep", lambda v: v.replace("never", "do not"), "findings.keep is"),
     ],
 )
 def test_the_static_check_holds_the_sidecar_to_the_versioned_reports(
     page: Any, path: str, change: Any, named: str
 ) -> None:
-    # what Pages deploys after --check-static alone: a moved number of the sidecar is named
+    # what Pages deploys after --check-static alone: a moved number or word of the sidecar is named
     text, side, template = page
     bad = cp.canonical(_mutated(json.loads(side), path, change))
-    problems = cp.static_problems(text, bad, template, cp.VENDOR, cp.read_reports(cp.REPORTS))
+    problems = cp.static_problems(text, bad, template, cp.read_reports(cp.REPORTS))
     assert any(named in p for p in problems), problems
 
 
@@ -439,25 +528,29 @@ def test_a_page_whose_payload_is_not_the_sidecar_is_named(page: Any) -> None:
     text, side, template = page
     bad = text.replace('"fps":10,', '"fps":11,', 1)
     assert bad != text
-    assert cp.static_problems(bad, side, template, cp.VENDOR) == [
+    assert cp.static_problems(bad, side, template) == [
         f"{cp.PAGE}: its payload differs from {cp.SIDECAR}"
     ]
 
 
-def test_the_no_gl_fallback_carries_the_clips_still(page: Any) -> None:
-    # without WebGL the page shows reports/clip/clip_still.png, inlined in the fallback's block
-    text = page[0]
-    png = (cp.REPORTS / cp.STILL_PNG).read_bytes()
-    block = re.search(r'<figure class="no-gl" id="no-gl" hidden>(.*?)</figure>', text, re.DOTALL)
-    assert block is not None
-    uri = re.search(r'<img [^>]*src="data:image/png;base64,([^"]*)"', block.group(1))
-    assert uri is not None and base64.b64decode(uri.group(1), validate=True) == png
-    assert cp.still_problems(text, png) == []
-    assert cp.still_problems(text, png + b"\0") == [
-        f"the no-WebGL still is not reports/{cp.STILL_PNG}"
+def test_a_page_whose_fonts_are_not_the_vendored_ones_is_named(page: Any, tmp_path: Path) -> None:
+    text, side, template = page
+    faces = cp.inlined_fonts(text)
+    assert faces.count("@font-face") == len(cp.FACES) and faces in text
+    bad = text.replace(faces, faces.replace("base64,", "base64,AAAA", 1), 1)
+    assert cp.static_problems(bad, side, template) == [
+        f"{cp.PAGE}: the inlined fonts are not vendor/fonts' (by their hashes)"
     ]
-    assert cp.still_problems(text.replace('class="no-gl"', 'class="gone"'), png) == [
-        "no no-WebGL fallback with an inlined PNG"
+    gone = text.replace(faces, "", 1)
+    assert cp.static_problems(gone, side, template) == [
+        f"{cp.PAGE}: the inlined fonts are not vendor/fonts' (by their hashes)"
+    ]
+    folder = tmp_path / "fonts"
+    shutil.copytree(cp.FONTS_DIR, folder)
+    readme = (folder / "README").read_text(encoding="utf-8")
+    (folder / "README").write_text(readme.replace("sha256 27d2", "sha256 37d2"), encoding="utf-8")
+    assert cp.static_problems(text, side, template, fonts=folder) == [
+        f"fonts: refused: {folder / cp.FACES[0][2]} does not hash to the sha256 in its README"
     ]
 
 
@@ -474,6 +567,8 @@ def test_a_byte_of_the_page_is_named(page: Any) -> None:
         ('<p id="x"></p><script>const a = "1.8 m";</script>', "'1.8 m'"),
         ("<script>const lead = `unseen for 121 s`;</script>", "'121 s'"),
         ("<p>the camera saw 58 percent</p>", "HTML types '58'"),
+        ("<p>the Cup's A-League 2024/25 matches</p>", "HTML types '2024/25'"),
+        ("<p>drawn in 3D</p>", "HTML types '3D'"),
     ],
 )
 def test_the_template_may_not_type_a_number(page: Any, typed: str, found: str) -> None:
@@ -488,6 +583,7 @@ def test_the_template_may_not_type_a_number(page: Any, typed: str, found: str) -
     "load",
     [
         '<img src="https://example.org/x.png">',
+        '<img src="data:image/png;base64,AAAA">',
         '<img src="data:image/png;base64,AAAA" srcset="https://example.org/x.png">',
         '<script src="data:text/javascript,fetch(1)"></script>',
         '<frame src="data:text/html;base64,AAAA">',
@@ -495,6 +591,9 @@ def test_the_template_may_not_type_a_number(page: Any, typed: str, found: str) -
         '<link rel="stylesheet" href="a.css">',
         "<script>fetch('data.json')</script>",
         "<style>a{background:url(x.png)}</style>",
+        "<style>a{background:url(data:image/png;base64,AAAA)}</style>",
+        "<style>@font-face{font-family:x;src:url(https://example.org/x.woff2)}</style>",
+        "<style>@font-face{font-family:x;src:url(data:font/ttf;base64,AAAA)}</style>",
     ],
 )
 def test_a_page_that_loads_something_is_refused(page: Any, load: str) -> None:
@@ -503,39 +602,29 @@ def test_a_page_that_loads_something_is_refused(page: Any, load: str) -> None:
     assert cp.network_rules(text.replace("</main>", load + "</main>"))
 
 
+def test_the_inlined_woff2_faces_load_nothing(page: Any) -> None:
+    text = page[0]
+    assert text.count("url(data:font/woff2;base64,") == len(cp.FACES)
+    assert cp.network_rules(text) == []
+
+
 def test_links_load_nothing(page: Any) -> None:
     text = page[0].replace("</main>", '<a href="https://example.org/">a link</a></main>')
     assert cp.network_rules(text) == []
 
 
-# --- three.js ----------------------------------------------------------------------------------
+def test_the_page_inlines_no_script_and_its_fonts_only(page: Any) -> None:
+    # the 3D page inlined three.js; the page from above runs its own script alone, its two faces
+    # inlined from vendor/fonts and none fetched
+    text = page[0]
+    assert text.count("<script") == 2 and "THREE" not in text
+    assert text.count("@font-face") == len(cp.FACES) and "fonts.googleapis" not in text
 
 
-def test_vendored_refuses_a_file_that_is_not_the_hashed_one(tmp_path: Path, page: Any) -> None:
-    vendor = tmp_path / "three"
-    shutil.copytree(cp.VENDOR, vendor)
-    readme = (vendor / "README").read_text(encoding="utf-8")
-    (vendor / "README").write_text(readme.replace("sha256 a681", "sha256 b681"), encoding="utf-8")
-    with pytest.raises(SystemExit, match="does not hash"):
-        cp.vendored(vendor, page[2])
-
-
-def test_vendored_refuses_a_name_three_does_not_export(page: Any) -> None:
-    text, release, digest = cp.vendored(cp.VENDOR, page[2])
-    assert release == "0.185.1" and digest.startswith("a681da9a")
-    with pytest.raises(SystemExit, match="NotAThing"):
-        cp.vendored(cp.VENDOR, page[2] + "THREE.NotAThing")
-
-
-def test_prove_loads_refuses_a_broken_block() -> None:
-    broken = (
-        '<script id="three-js">window.THREE = (function () { throw new Error("x"); })();</script>'
-    )
-    if shutil.which("node") is None:
-        assert cp.prove_loads(broken, "0.185.1").startswith("node not found")
-        return
-    with pytest.raises(SystemExit, match="does not load"):
-        cp.prove_loads(broken, "0.185.1")
+def test_the_sidecar_carries_the_drawing_constants(committed: Any) -> None:
+    doc, _ = committed
+    assert doc["label_gap_s"] == cp.LABEL_GAP_S == 5.0
+    assert doc["crop"]["pad_m"] == cp.CROP_PAD_M and doc["camera"]["cut_step_m"] == cp.CUT_STEP_M
 
 
 def test_counts_say_what_was_verified(committed: Any) -> None:

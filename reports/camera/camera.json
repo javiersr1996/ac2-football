@@ -1,5 +1,5 @@
 {
- "about": "Every number and position the page draws. Positions are metres in the clip's frame: the provider's x and y times sign, so the receiver's team attacks toward +x; the camera stands on the side of the pitch where y times sign is below 0, and the page draws the provider's frame (x times sign, y times sign) so that side is at the bottom of the plan. corners: the four corners of the camera's image on the pitch (bronze x_/y_ bottom/top left/right), bottom left, bottom right, top right, top left. apex: where the frame's two side edges meet; a camera that does not roll stands above the line from it along the camera's heading, at a height and a distance the data do not give. gap is gap_len in frames at 10 Hz (a hollow marker's label is gap / 10, one decimal, in seconds). units: the layer 2 units of this reception, read by ac2fb.reliability.metrics at their frame; seen is is_detected there. match: the match's cells of reports/reliability.csv; strips: figure 1, panel c. findings: the README's numbers the Findings tab quotes, each with the README.src.json key it is read by, and per metric and half the matches whose V1 minus V0 has the sign of its median.",
+ "about": "Every number and position the page draws. Positions are metres in the clip's frame: the provider's x and y times sign, so the receiver's team attacks toward +x; the camera stands on the side of the pitch where y times sign is below 0, and the page draws the provider's frame (x times sign, y times sign) so that side is at the bottom of the plan. corners: the four corners of the camera's image on the pitch (bronze x_/y_ bottom/top left/right), bottom left, bottom right, top right, top left. apex: where the frame's two side edges meet; a camera that does not roll stands above the line from it along the camera's heading, at a height and a distance the data do not give. gap is gap_len in frames at 10 Hz (a hollow marker's label is gap / 10, one decimal, in seconds; it stays pinned over label_gap_s seconds, a drawing choice). units: the layer 2 units of this reception, read by ac2fb.reliability.metrics at their frame; seen is is_detected there. match: the match's cells of reports/reliability.csv; strips: figure 1, panel c. findings: what the page quotes of the README: its numbers, each with the README.src.json key it is read by, per metric and half the matches whose V1 minus V0 has the sign of its median, its verdict, its closing sentence and the paragraphs the details fold, verbatim.",
  "camera": {
   "apex": [
    [
@@ -2312,8 +2312,7 @@
    ]
   ],
   "cut_step_m": 10.0,
-  "cuts": 0,
-  "drawn_height_m": 28.0
+  "cuts": 0
  },
  "context": {
   "ball_distance": {
@@ -16313,6 +16312,7 @@
   }
  },
  "findings": {
+  "keep": "Keep the fill; never report only what was seen.",
   "numbers": {
    "block_whole_cal": {
     "src": "reports/layer2.json:summary.block.all_detected.median",
@@ -16362,6 +16362,14 @@
     "src": "reports/calibration.json:criteria.D3.values.pretrend / criteria.D3.values.effect",
     "value": 0.94536
    },
+   "seen_cal": {
+    "src": "reports/layer2.json:summary.detection.player_detected.median",
+    "value": 0.562201
+   },
+   "seen_held": {
+    "src": "reports/heldout/layer2.json:summary.detection.player_detected.median",
+    "value": 0.570118
+   },
    "step": {
     "src": "reports/layer2.json:summary.steps.detected_to_detected.p50.median",
     "value": 0.198489
@@ -16370,6 +16378,14 @@
     "src": "protocol/protocol.json:window.seconds",
     "value": 1.3
    }
+  },
+  "readme": {
+   "fill": "**The fill behaves as an interpolation.** A predictor's error grows with the gap, so a re-detection would jump; it does not: after a gap over 20 s a player reappears a median 0.19 to 0.20 m from its filled position, a step between two detections (0.20 m). So the fill reads the future: a model forecasting from filled positions sees part of its answer. In layer 3 the leak changes nothing (-0.20 sd seen-only against -0.19); a forecasting model should check it. Amputation, the same kind of fill, errs 0.8 to 1.4 m per match on line depth, at most 6 m on block length (Figure 1d, units seen whole). On gaps over 20 s (36% to 39% of filled frames; hollow marks) it errs 1.3 to 1.9 m on line depth, at most 9 m on block length. kloppy drops `is_detected` on SkillCorner tracking ([known upstream issue](https://github.com/PySport/kloppy/issues/639)).",
+   "layer3": "Layer 3's question and kill rule (`protocol/protocol.json`): does pressure on the receiver reduce the ball's advance over the next 1.3 s? The effect, -0.19 sd, passed its own bar (same sign in 8 of 10 matches, permutation p 0.0005) but the pre-registered rule killed it: pressed and free receptions differed by 0.18 sd (0.6 m) beforehand, 95% of it, and an effect needs twice that. The ball had advanced more before pressed receptions: the rule cannot tell pressure from the forward pass that preceded it (the data show the advance, not the pass). The held-out never opened for it.",
+   "quick": "git clone https://github.com/javiersr1996/what-the-camera-saw\ncd what-the-camera-saw\nuv sync --locked\nuv run ftbase ingest --match 1874553\nuv run ftbase bronze && uv run ftbase silver && uv run ac2fb layer2 --match 1874553 --reports-dir ../reports-quick",
+   "quick_lead": "One match, 96 MB of SkillCorner data, 9 s on a GitHub runner with packages cached. It writes `../reports-quick/layer2.json`: how much of the match the camera saw.",
+   "use": "from ac2fb.reliability.long import long_table\nfrom ac2fb.reliability.match import build_match\nfrom ac2fb.reliability.metrics import metric_units\nfrom ac2fb.reliability.sensitivity import sensitivity\n\nmatch = build_match(match_id, frames, events, team_periods)  # ftbase's silver tables\nmetric, units = metric_units(match)[\"line_height_m\"]  # line depth\ntagged = sensitivity(metric, long_table(frames), units)[match_id]\ntagged.v0.mean, tagged.v1.mean, [(s.detected_players, s.n, s.mean) for s in tagged.v2]",
+   "use_lead": "A metric is a function of a window of frames returning its value and the players it used (`ac2fb.reliability.sensitivity.Metric`); `sensitivity` tags it:"
   },
   "signs": {
    "block_area_m2": {
@@ -16422,7 +16438,7 @@
      "block_length_m",
      "block_area_m2"
     ],
-    "words": "Block length and area are mostly what the camera chose to show"
+    "words": "Block length and area are mostly what the camera chose to show (report their share seen whole)"
    },
    {
     "group": "follow",
@@ -16438,7 +16454,7 @@
      "pressure_index",
      "nearest_rival_m"
     ],
-    "words": "pressure and nearest rival survive"
+    "words": "pressure and nearest rival survive, below the fill's mean absolute error everywhere"
    },
    {
     "group": "mixed",
@@ -16713,6 +16729,7 @@
   "longest_gap_len": 1214,
   "longest_gap_player_id": 50999
  },
+ "label_gap_s": 5.0,
  "match": {
   "rows": [
    {
@@ -18056,10 +18073,6 @@
     }
    }
   }
- },
- "three": {
-  "release": "0.185.1",
-  "sha256": "a681da9aba775c1de422367863efda9e5638847e6e1fccc51ba57e8a8124fc07"
  },
  "units": {
   "block": {

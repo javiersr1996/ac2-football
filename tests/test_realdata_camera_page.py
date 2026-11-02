@@ -39,9 +39,9 @@ def test_a_broken_committed_sidecar_is_named_by_the_check(inputs: object) -> Non
     template = cp.TEMPLATE.read_text(encoding="utf-8")
     body = (cp.OUT_DIR / cp.SIDECAR).read_bytes()
     page = (cp.OUT_DIR / cp.PAGE).read_bytes()
-    assert cp.check(inputs, reports, template, cp.VENDOR, body, page)[0] == []
+    assert cp.check(inputs, reports, template, body, page)[0] == []
     bad = body.replace(b'"value": -1.1175', b'"value": -1.1275', 1)
-    problems, _ = cp.check(inputs, reports, template, cp.VENDOR, bad, page)
+    problems, _ = cp.check(inputs, reports, template, bad, page)
     assert any(p.startswith("camera.json: differs from the recomputation") for p in problems)
     assert f"{cp.PAGE}: its payload differs from {cp.SIDECAR}" in problems
 

@@ -2,33 +2,30 @@
 
     uv run --with playwright playwright install chromium        # once
     uv run --with playwright python scripts/drive_camera_page.py [path-or-url] [--shots DIR]
-        [--only one-screen]                                     # just the no-scroll rows
+        [--sizes 1440x900,390x844]                              # some of the viewports
 
 The default target is ``reports/camera/what_the_camera_saw.html``; after publishing, the same
 driver runs against the Pages URL. The expected values are read from ``reports/camera/camera.json``
 and ``reports/reliability.csv``, never typed and never read from the page's source. One line per
-check; exit 0 if every check passes and 1 otherwise. Screenshots go to ``build/camera/`` (ignored)
-or ``--shots``.
+check; exit 0 if every check passes and 1 otherwise. Screenshots of the whole page go to
+``build/camera/`` (ignored) or ``--shots``.
 
-The page is one screen at every size: a header with the twenty matches' result, the stage, the
-control bar and a panel of tabs (Findings first) whose body alone scrolls. The layout rows run at
-seven viewports (``VIEWPORTS``): the page never scrolls, each tab opens by mouse, tap and keyboard
-and shows inside the panel uncut with a body of at least the floor, the text is large enough and
-dark enough, the graphics that carry meaning hold 3:1, nothing written overlaps, and the players
-stay at least the floors below.
-
-The browser runs on the machine's GPU (ANGLE on D3D11 on Windows). If WebGL is not live the driver
-fails loudly before anything else; if the renderer is a software one (SwiftShader), every row that
-times something fails as "software renderer: timing not measurable" rather than passing on a clock
-that measures the CPU. The natural run is timed by the page's own clock (``camera.clock()``: the
-animation frames it drew), not by a sampler in the driver, so a loaded machine slows it without
-failing it. Headless Chromium cannot hide a tab: the hidden-tab row holds the page's animation
-frames and sets ``document.hidden``, as a browser does for a hidden tab.
+The page scrolls by design: one column read top to bottom, blocks 1 and 2 side by side from
+``SIDE_BY_SIDE_FROM`` px. The rows: the page loads nothing and throws nothing; the reception drawn
+is the sidecar's at three frames (the frame's corners, every player, the rings and their labels);
+Play advances the frame and the count follows it; the labels pinned are those of gaps over
+``LABEL_GAP_S``, the rest show on tap; the V0/V1 switch moves the live block and line to the
+match's means and the bars and the table follow; every number shown is the sidecar's at its path,
+at the text's rounding, and the match's cells are the CSV's; the strips hold every point of
+figure 1 in the README's groups, one colour per group, green only for the metrics that survive;
+and at seven viewports (``VIEWPORTS``): no horizontal scroll, prose at 16 px and every other text
+at 12 px, text at 4.5:1, the marks that carry meaning at 3:1, no two pieces of writing
+overlapping, every control 44 px, the two blocks side by side or stacked as the width says, and
+every <details> opening.
 
 Copied, with a declaration, from the author's basketball entry
-(github.com/javiersr1996/nobody-helps-the-helper, ``scripts/drive_wind_page.py``, MIT): ``INIT_JS``
-(adapted), ``SCAN_JS``, ``PROJ_JS``, ``Report`` and ``R.check``, ``guarded``, the WebGL and
-software-renderer guard, the reduced-motion route and the layout rows.
+(github.com/javiersr1996/nobody-helps-the-helper, ``scripts/drive_wind_page.py``, MIT): ``Report``
+and ``R.check``, ``guarded``, ``TEXT_JS`` (adapted) and the layout rows.
 """
 
 # The in-page JavaScript and the check sentences are long lines, as in the basketball driver.
@@ -46,360 +43,190 @@ import time
 from decimal import ROUND_HALF_UP, Decimal
 from pathlib import Path
 
-import numpy as np
 from playwright.sync_api import sync_playwright
 
 ROOT = Path(__file__).resolve().parents[1]
 REPORTS = ROOT / "reports"
 DEFAULT_PAGE = REPORTS / "camera" / "what_the_camera_saw.html"
-CHROMIUM_ARGS = ["--use-angle=d3d11", "--enable-gpu", "--ignore-gpu-blocklist"]
-SOFTWARE = "software renderer: timing not measurable"
-# The storyboard's numbers the checks are written from (tasks/camera_page.md): the body and the
-# markers drawn (2.3), the timing (2.6), the start-up and frame-time targets, the legibility and
-# layout floors (2.4, 6), the pitch and its apron (2.1).
-BODY_H, DISC_R, ME_RING = 1.8, 1.1, 1.45
-RATE, HOLD_S, FLIGHT_S, FADE_S = 1.0, 2.0, 1.5, 0.4
-FIRST_FRAME_S, PLAYING_S, FRAME_MEDIAN_MS = 1.0, 1.5, 17.0
-# The hold is a setTimeout: the page stamps the moment it fires ("hold") and the first frame of the
-# rise after it ("rise"). A timer never fires early and may fire late when the main thread is busy:
-# HOLD_SLACK_S (a frame and the timer's queue under load); the rise starts on the next frame,
-# whose time is its vsync and may fall up to a frame before the timer: within RISE_FRAME_MS either
-# way (a frame at 10 fps). The flight and the fade are timed to the frame by the
-# page's clock (each with the longest step between two of its frames).
-HOLD_SLACK_S, RISE_FRAME_MS = 0.25, 100.0
-# The hidden-tab row hides and freezes the page this long while the clip plays.
-HIDDEN_S = 0.8
-# The seven viewports of the one-screen layout (width, height; the last four are touch screens).
+# The seven viewports (width, height; the last four are touch screens).
 VIEWPORTS = [(1440, 900), (1280, 720), (1024, 768), (844, 390), (390, 844), (360, 780), (320, 568)]
 TOUCH = {(844, 390), (390, 844), (360, 780), (320, 568)}
-# Legibility floors, measured on this layout and set a little under what it gave, so a regression
-# of the fit fails: the median drawn height of the defenders in broadcast (px), the share of the
-# stage a reader sees as bare sky in broadcast, and a defender's disc in plan (px across). The
-# broadcast is a television's view (TILT_TV_MAX, bodies upright within LEAN_MAX): the jury of
-# f4e52c8 put that before the sky, so the sky floors are what that view gives (1440: 37 %), and
-# the bodies are back to their size before the steep tilt (1440: 24.6 px). A portrait screen
-# opens in plan, where its floor is the disc. Lowering FIT_REACH from 20 to 8 changes none of it
-# (only the keeper is ever left out of the fit).
-LEGIBLE_PX = {
-    (1440, 900): 22.0,
-    (1280, 720): 19.0,
-    (1024, 768): 15.0,
-    (844, 390): 11.0,
-    (390, 844): 8.7,
-    (360, 780): 5.0,
-    (320, 568): 4.2,
-}
-EMPTY_MAX = {
-    (1440, 900): 0.41,
-    (1280, 720): 0.31,
-    (1024, 768): 0.50,
-    (844, 390): 0.15,
-    (390, 844): 0.21,
-    (360, 780): 0.35,
-    (320, 568): 0.33,
-}
-DISC_MIN_PX = {
-    (1440, 900): 16.5,
-    (1280, 720): 12.0,
-    (1024, 768): 13.0,
-    (844, 390): 5.4,
-    (390, 844): 6.2,
-    (360, 780): 3.6,
-    (320, 568): 3.0,
-}
-# Broadcast: at most this share of the stage's height between the lowest point and the counter
-# (320 x 568: its stage is width-bound and keeps a band under the play).
-BOTTOM_GAP_MAX = {size: 0.10 for size in VIEWPORTS} | {(360, 780): 0.15, (320, 568): 0.25}
-# The tab body: at least TAB_BODY_MIN px and TAB_BODY_SHARE of the window's height at every
-# viewport, so the text a tab opens on is read, not glimpsed (4478e40 gave Story 73 px at 320x568).
-TAB_BODY_MIN, TAB_BODY_SHARE = 160, 0.25
-# The tags: a leader no longer than LEADER_MAX_PX (4478e40 drew some 200 px long at 360), and the
-# share of the stage the tags cover at the reception in plan (V0 and V1) and broadcast at most
-# LABEL_COVER_MAX (4478e40: 12 % and 18 % at 390, 15 % and 22 % at 360).
-LEADER_MAX_PX = 110.0
-LABEL_COVER_MAX = {
-    (1440, 900): 0.03,
-    (1280, 720): 0.04,
-    (1024, 768): 0.04,
-    (844, 390): 0.09,
-    (390, 844): 0.10,
-    (360, 780): 0.14,
-    (320, 568): 0.24,
-}
-# With the Camera tab the plan widens to hold where the frame's side edges meet: a defender's disc
-# there at least CAMERA_DISC_MIN_PX (a portrait screen frames only the median point).
-CAMERA_DISC_MIN_PX = {
-    (1440, 900): 9.5,
-    (1280, 720): 7.0,
-    (1024, 768): 7.5,
-    (844, 390): 3.2,
-    (390, 844): 4.5,
-    (360, 780): 2.6,
-    (320, 568): 2.2,
-}
-# The bodies stand: their lean from upright in broadcast, the median and the largest, in degrees
-# (f4e52c8 looked down 74 deg and leaned them up to 35).
-LEAN_MEDIAN_MAX, LEAN_MAX = 3.0, 10.0
-# The broadcast view is a television's: the camera at most TILT_TV_MAX below the horizon (4478e40's
-# successor looked down 74 deg at 1440 and drew the bodies as pins lying down).
-TILT_TV_MAX = 45.0
-# Graphics (WCAG 1.4.11): the pitch's lines at 3:1 on the grass and in the shade outside the frame;
-# a filled-in body (a ghost over a whole ring) at GHOST_MIN against what is behind it, and a seen
-# one at SOLID_MIN, so hollow and solid stay apart.
-LINES_MIN, GHOST_MIN, SOLID_MIN = 3.0, 1.3, 2.5
-# The tabs whose body must fit at 1440 x 900 without scrolling inside the panel.
-FIT_TABS = ("findings", "story", "metrics", "matches")
-TABS = ("findings", "story", "metrics", "matches", "camera", "limits")
-SKY = "#DFE3DA"
-BODY_MIN_PX, LABEL_MIN_PX, TARGET_PX, CONTRAST_MIN = 16, 12, 44, 4.5
-HALF_L, HALF_W, APRON = 52.5, 34.0, 6.0
-VERMILION, INK, GREY = "#D55E00", "#222222", "#777777"
-THESIS_SAYS = "a different sample, not an error"
-TIMED = {"on": True}
+# The storyboard's numbers the checks are written from: blocks 1 and 2 sit side by side from
+# SIDE_BY_SIDE_FROM px; the legibility floors (prose, every other text, a control, text contrast,
+# the contrast of a mark that carries meaning); the viewports whose first screen must hold the
+# twenty matches' finding and the recommendation. The gap over which a ring's label stays pinned
+# is the sidecar's (label_gap_s), as every other expected value.
+SIDE_BY_SIDE_FROM = 1024
+FIRST_SCREEN = {(390, 844), (1440, 900)}
+BODY_MIN_PX, LABEL_MIN_PX, TARGET_PX, CONTRAST_MIN, MARK_MIN = 16, 12, 44, 4.5, 3.0
+# Play: the frames the clip must advance within PLAY_WAIT_S of pressing Play (10 fps: a loaded
+# machine may drop some).
+PLAY_FRAMES, PLAY_WAIT_S = 6, 3.0
+HALF_LENGTH = 52.5  # the goal line of the plan in block 2 (ac2fb.clip's pitch)
 
-# In-page helpers, installed before the page's own script runs: `__vis(el)` (really visible),
-# `__ui()` (buttons and the caption), a 10 ms sampler that logs every change of (view, phase, i,
-# tab) with its time, the time of the first draw on the stage's canvas, the time of the first
-# `playing`, and the animation frames' timestamps while playing.
+# In-page helpers, installed before the page's own script runs: `__vis(el)` (really visible:
+# rendered, not hidden, not transparent).
 INIT_JS = """
 (() => {
-  const txt = (e) => (e ? e.textContent.replace(/\\s+/g, ' ').trim() : null);
   window.__vis = (e) => {
     if (!e) return false;
     for (let n = e; n && n.nodeType === 1; n = n.parentElement) {
       if (n.hidden) return false;
       const cs = getComputedStyle(n);
-      if (cs.display === 'none' || cs.visibility === 'hidden') return false;
+      if (cs.display === 'none' || cs.visibility === 'hidden' || parseFloat(cs.opacity) === 0) return false;
     }
     return e.getClientRects().length > 0;
   };
-  window.__ui = () => {
-    const g = (i) => document.getElementById(i);
-    const b = (i) => ({text: txt(g(i)), disabled: g(i).disabled, pressed: g(i).getAttribute('aria-pressed')});
-    return {play: b('play'), bcast: b('view-broadcast'), plan: b('view-plan'), v0: b('variant-v0'),
-            v1: b('variant-v1'), caption: txt(g('stage-caption')),
-            scrub: {value: g('scrub').value, valuetext: g('scrub').getAttribute('aria-valuetext')}};
-  };
-  window.__log = [];
-  let last = '';
-  setInterval(() => {
-    const c = window.camera;
-    if (!c || !c.state) return;
-    const s = c.state();
-    const sig = [s.view, s.phase, s.i, s.tab].join('|');
-    if (sig !== last) {
-      last = sig;
-      window.__log.push({ts: performance.now(), view: s.view, phase: s.phase, i: s.i, t: s.t, tab: s.tab});
-    }
-  }, 10);
-  // every animation frame goes through one door, so the hidden-tab row can hold them all, the one
-  // already asked for included, as a browser does for a hidden tab (window.__held is null: no effect)
-  window.__held = null;
-  const raf = window.requestAnimationFrame.bind(window);
-  window.__raf = raf;
-  window.requestAnimationFrame = cb => raf(t => { if (window.__held) window.__held.push(cb); else cb(t); });
-  window.__frames = [];
-  const sample = (now) => {
-    const c = window.camera;
-    if (c && c.state) {
-      const s = c.state();
-      if (s.phase === 'playing') {
-        window.__frames.push(now);
-        if (window.__playing === undefined) window.__playing = performance.now();
-      }
-    }
-    requestAnimationFrame(sample);
-  };
-  requestAnimationFrame(sample);
-  for (const C of [window.WebGL2RenderingContext, window.WebGLRenderingContext]) {
-    if (!C) continue;
-    for (const n of ['drawElements', 'drawArrays']) {
-      const f = C.prototype[n];
-      C.prototype[n] = function (...a) {
-        if (window.__firstDraw === undefined && this.canvas && this.canvas.id === 'pitch') {
-          window.__firstDraw = performance.now();
-          requestAnimationFrame(() => { window.__firstPaint = performance.now(); });
-        }
-        return f.apply(this, a);
-      };
-    }
-  }
 })();
 """
 
-# Connected components of pixels near a colour, read from the WebGL canvas (labels are DOM, so
-# none of them can leak into this read).
-SCAN_JS = """
-([hexes, tol]) => {
-  const c = document.getElementById('pitch');
-  const t = document.createElement('canvas');
-  t.width = c.width; t.height = c.height;
-  const cx = t.getContext('2d');
-  cx.drawImage(c, 0, 0);
-  const W = c.width, H = c.height, d = cx.getImageData(0, 0, W, H).data;
-  const sx = c.width / c.clientWidth, sy = c.height / c.clientHeight;
-  const out = {};
-  for (const hex of hexes) {
-    const r = parseInt(hex.slice(1, 3), 16), g = parseInt(hex.slice(3, 5), 16), b = parseInt(hex.slice(5, 7), 16);
-    const mask = new Uint8Array(W * H);
-    let count = 0;
-    for (let i = 0; i < W * H; i++) {
-      if (Math.abs(d[4*i] - r) <= tol && Math.abs(d[4*i+1] - g) <= tol && Math.abs(d[4*i+2] - b) <= tol) {
-        mask[i] = 1; count++;
-      }
-    }
-    const comps = [];
-    for (let i = 0; i < W * H; i++) {
-      if (mask[i] !== 1) continue;
-      const stack = [i]; mask[i] = 2;
-      let n = 0, mx = 0, my = 0;
-      while (stack.length) {
-        const k = stack.pop(), x = k % W, y = (k - x) / W;
-        n++; mx += x + 0.5; my += y + 0.5;
-        for (const [dx, dy] of [[1,0],[-1,0],[0,1],[0,-1]]) {
-          const xx = x + dx, yy = y + dy;
-          if (xx < 0 || yy < 0 || xx >= W || yy >= H) continue;
-          const kk = yy * W + xx;
-          if (mask[kk] === 1) { mask[kk] = 2; stack.push(kk); }
-        }
-      }
-      comps.push({n: n, x: mx / n / sx, y: my / n / sy});
-    }
-    out[hex] = {count: count, comps: comps};
-  }
-  return out;
-}
-"""
-
-# The ink across each sampled edge point: the centre of the ink band along the edge's normal, in
-# CSS pixels from the point (null where no ink is found within 6 px).
-BAND_JS = """
-(samples) => {
-  const c = document.getElementById('pitch');
-  const t = document.createElement('canvas');
-  t.width = c.width; t.height = c.height;
-  const cx = t.getContext('2d');
-  cx.drawImage(c, 0, 0);
-  const W = c.width, d = cx.getImageData(0, 0, W, c.height).data, s = c.width / c.clientWidth;
-  const ink = (x, y) => { const k = 4 * (Math.round(y * s - 0.5) * W + Math.round(x * s - 0.5));
-                          const v = (d[k] + d[k+1] + d[k+2]) / 3; return Math.max(0, 150 - v); };
-  return samples.map(([x, y, nx, ny]) => {
-    let w = 0, m = 0;
-    for (let o = -6; o <= 6; o += 0.25) { const v = ink(x + nx * o, y + ny * o); w += v; m += v * o; }
-    return w > 0 ? m / w : null;
-  });
-}
-"""
-
-# Pixel of a clip-frame point through camera(): independent of the page's own `project`.
-PROJ_JS = """
-(pts) => {
-  const cam = camera.camera(), W = cam.world, P = cam.projection, V = cam.view;
-  const mul = (m, v) => [0,1,2,3].map(r => m[r]*v[0] + m[4+r]*v[1] + m[8+r]*v[2] + m[12+r]*v[3]);
-  return pts.map(([x, y, z]) => {
-    const q = mul(P, mul(V, mul(W, [x, y, z, 1])));
-    return [(q[0]/q[3]*0.5 + 0.5) * cam.width, (1 - (q[1]/q[3]*0.5 + 0.5)) * cam.height];
-  });
-}
-"""
-
-# A hidden tab, as the browser makes it: requestAnimationFrame holds its callbacks (none runs) and
-# document.hidden is true; showing it runs them on the next frame.
-HIDE_JS = """() => { window.__held = [];
-  Object.defineProperty(document, 'hidden', {configurable: true, get: () => true});
-  document.dispatchEvent(new Event('visibilitychange')); }"""
-SHOW_JS = """() => { Object.defineProperty(document, 'hidden', {configurable: true, get: () => false});
-  document.dispatchEvent(new Event('visibilitychange'));
-  const held = window.__held || []; window.__held = null; for (const cb of held) window.__raf(cb); }"""
 # The page's scroll: the document against the window, both ways.
 SCROLL_JS = """() => { const de = document.documentElement, b = document.body;
   return {sh: Math.max(de.scrollHeight, b.scrollHeight), ih: innerHeight, sw: Math.max(de.scrollWidth, b.scrollWidth), iw: innerWidth}; }"""
 
-# Every visible piece of text: its element, the text, its box, font size, whether it is prose
-# (a p or li of 60 characters or more), its colour and the colour under it (the backgrounds of
-# its ancestors composited; text over the canvas with no opaque card under it is named), and
-# whether a disabled control holds it (exempt from contrast, as WCAG has it). Text inside a
-# tab's body counts where it can be scrolled to; elsewhere, where it is on screen.
+# Every visible piece of text: its element, the text, its box, its font size as rendered (an SVG
+# text's user units through its screen matrix), whether it is prose (a p or li of 60 characters or
+# more), its colour and the colour under it (the backgrounds of its ancestors composited), and
+# whether a disabled control holds it (exempt from contrast, as WCAG has it).
 TEXT_JS = """() => {
   const parse = s => { const m = s && s.match(/rgba?\\(([^)]+)\\)/); if (!m) return null;
     const p = m[1].split(/[\\s,\\/]+/).filter(Boolean).map(Number); return [p[0], p[1], p[2], p.length > 3 ? p[3] : 1]; };
   const over = (top, bottom) => [0, 1, 2].map(i => top[i] * top[3] + bottom[i] * (1 - top[3])).concat([1]);
   const lum = c => { const [r, g, b] = c.slice(0, 3).map(v => { v /= 255; return v <= 0.04045 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); });
                      return 0.2126 * r + 0.7152 * g + 0.0722 * b; };
-  const stage = document.getElementById('stage');
   const seen = new Set(), out = [];
   const walk = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
   for (let n = walk.nextNode(); n; n = walk.nextNode()) {
     const e = n.parentElement;
     if (!e || seen.has(e) || !n.textContent.trim()) continue;
-    if (e.closest('script, style, .sr, title') || !__vis(e)) continue;
+    if (e.closest('script, style, title') || !__vis(e)) continue;
     seen.add(e);
     const r = e.getBoundingClientRect();
     if (r.width === 0 || r.height === 0) continue;
     const cs = getComputedStyle(e), svg = e instanceof SVGElement;
+    const scale = svg && e.getScreenCTM ? e.getScreenCTM().a : 1;
     let fg = parse(svg ? cs.fill : cs.color) || [0, 0, 0, 1], opacity = 1;
     const chain = [];
     for (let a = e; a && a.nodeType === 1; a = a.parentElement) { chain.push(a); opacity *= parseFloat(getComputedStyle(a).opacity); }
-    let bg = [255, 255, 255, 1], card = false;
+    let bg = [255, 255, 255, 1];
     for (const a of chain.slice().reverse()) {
       const c = parse(getComputedStyle(a).backgroundColor);
-      if (c && c[3] > 0) { bg = over(c, bg); if (stage.contains(a) && a !== stage && c[3] >= 0.99) card = true; }
+      if (c && c[3] > 0) bg = over(c, bg);
     }
     fg = [fg[0], fg[1], fg[2], fg[3] * opacity];
     const shown = over(fg, bg), L1 = lum(shown), L2 = lum(bg);
     const ratio = (Math.max(L1, L2) + 0.05) / (Math.min(L1, L2) + 0.05);
     const own = [...e.childNodes].filter(c => c.nodeType === 3).map(c => c.textContent).join('').trim();
-    const pane = e.closest('.tabpanel');
-    out.push({id: e.id || (e.className && e.className.baseVal === undefined ? e.className : '') || e.tagName, text: own.slice(0, 40),
+    out.push({id: e.id || (typeof e.className === 'string' ? e.className : e.getAttribute('class') || '') || e.tagName, text: own.slice(0, 40),
               len: (e.innerText || e.textContent).trim().length, tag: e.tagName.toLowerCase(),
-              x: r.left, y: r.top, w: r.width, h: r.height, size: parseFloat(cs.fontSize),
-              ratio: +ratio.toFixed(2), overCanvas: stage.contains(e) && !card,
-              disabled: Boolean(e.closest('button[disabled], input[disabled]')), pane: pane ? pane.id : null}); }
+              x: r.left, y: r.top, w: r.width, h: r.height, size: parseFloat(cs.fontSize) * scale,
+              ratio: +ratio.toFixed(2), disabled: Boolean(e.closest('button[disabled], input[disabled]')),
+              prose: ['P', 'LI', 'CAPTION'].includes(e.tagName), legend: Boolean(e.closest('.legend'))}); }
   return out; }"""
 
-# The boxes that hold writing on the stage and in the control bar, for the overlap rows: each
-# visible tag, the counter, the key (on the stage), the buttons, the ticks' label, the tabs.
-BOXES_JS = """() => { const box = (e, name) => { const b = e.getBoundingClientRect(); return {name, x: b.left, y: b.top, w: b.width, h: b.height}; };
-  const out = [];
-  for (const t of document.querySelectorAll('#tags .tag')) if (!t.hidden) out.push(box(t, 'tag ' + t.textContent.trim().slice(0, 14)));
-  for (const id of ['count', 'play', 'view-broadcast', 'view-plan', 'variant-v0', 'variant-v1'])
-    if (__vis(document.getElementById(id))) out.push(box(document.getElementById(id), id));
-  const key = document.getElementById('key');
-  if (__vis(key) && document.getElementById('stage').contains(key)) out.push(box(key, 'key'));
-  for (const l of document.querySelectorAll('#ticks .tick-label')) out.push(box(l, 'ticks'));
-  for (const t of document.querySelectorAll('[role=tab]')) out.push(box(t, 'tab ' + t.dataset.tab));
-  return out; }"""
+# The first screen: the boxes of the finding's numbers and of the recommendation in the header.
+FOLD_JS = """() => [...document.querySelectorAll('#finding .q, #finding')].map(e => { const r = e.getBoundingClientRect();
+  return [e.textContent.trim().slice(0, 60), r.top, r.bottom]; })"""
 
+# The centres of the rings at the current frame (the dots' boxes), in page pixels.
+RINGS_JS = """() => [...document.querySelectorAll('#rivals .riv .dot')].map(c => { const r = c.getBoundingClientRect(); return [r.left + r.width / 2, r.top + r.height / 2]; })"""
 
-# Graphics' contrast: the pitch's lines against the grass, and in the shade outside the frame (both
-# darkened by the shade), from the page's colours; and, read off the canvas in broadcast at the
-# reception, each defender's body at mid-height against the ground beside it (the median of the
-# filled-in ones and of the seen ones).
-GRAPHICS_JS = """([rivals, seen]) => { const C = camera.colours || {};
-  const hex = h => [1, 3, 5].map(i => parseInt(h.slice(i, i + 2), 16));
-  const lum = c => { const [r, g, b] = c.map(v => { v /= 255; return v <= 0.04045 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); });
+# Two pieces of writing overlap when a line box of one text node crosses a line box of another by
+# more than a pixel both ways (text nodes inside one element abut, they do not cross).
+OVERLAP_JS = """() => {
+  const rects = [];
+  const walk = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
+  for (let n = walk.nextNode(); n; n = walk.nextNode()) {
+    const e = n.parentElement;
+    if (!e || !n.textContent.trim() || e.closest('script, style, title') || !__vis(e)) continue;
+    const range = document.createRange(); range.selectNodeContents(n);
+    for (const r of range.getClientRects()) if (r.width > 0 && r.height > 0)
+      rects.push({t: n.textContent.trim().slice(0, 24), x: r.left, y: r.top, w: r.width, h: r.height, n});
+  }
+  const hits = [];
+  for (let i = 0; i < rects.length; i++) for (let j = i + 1; j < rects.length; j++) {
+    const a = rects[i], b = rects[j];
+    if (a.n === b.n) continue;
+    const dx = Math.min(a.x + a.w, b.x + b.w) - Math.max(a.x, b.x), dy = Math.min(a.y + a.h, b.y + b.h) - Math.max(a.y, b.y);
+    if (dx > 1 && dy > 1) hits.push([a.t, b.t]);
+  }
+  return {n: rects.length, hits: hits.slice(0, 6)}; }"""
+
+# The marks that carry meaning, each against what it lies on (its colour composited at its
+# opacity): a seen defender and a filled-in ring on the grass and outside the frame (the pitch
+# faded), the receiver, the frame's edge, the ghosts and the live shapes of block 2, each verdict
+# group's dots and median, the zero line, the count bars' fill. The pitch's lines are reported,
+# not gated: they are the map under the marks, white on the grass as the mockup has them.
+MARKS_JS = """() => {
+  const parse = s => { const m = s && s.match(/rgba?\\(([^)]+)\\)/); if (!m) return null;
+    const p = m[1].split(/[\\s,\\/]+/).filter(Boolean).map(Number); return [p[0], p[1], p[2], p.length > 3 ? p[3] : 1]; };
+  const over = (top, bottom) => [0, 1, 2].map(i => top[i] * top[3] + bottom[i] * (1 - top[3])).concat([1]);
+  const lum = c => { const [r, g, b] = c.slice(0, 3).map(v => { v /= 255; return v <= 0.04045 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); });
                      return 0.2126 * r + 0.7152 * g + 0.0722 * b; };
-  const ratio = (a, b) => { const x = lum(a), y = lum(b); return (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05); };
-  if (!C.pitchLines) return null;
-  const L = hex(C.pitchLines), Gr = hex(C.grass), k = C.outside;
-  const out = {lines: +ratio(L, Gr).toFixed(2), linesShade: +ratio(L.map(v => v * k), Gr.map(v => v * k)).toFixed(2)};
-  camera.flight(0); camera.seek(0); camera.variant('V0');
-  const c = document.getElementById('pitch'), t = document.createElement('canvas');
-  t.width = c.width; t.height = c.height; const x = t.getContext('2d'); x.drawImage(c, 0, 0);
-  const d = x.getImageData(0, 0, c.width, c.height).data, s = c.width / c.clientWidth;
-  const px = (u, v) => { const i = 4 * (Math.round(v * s) * c.width + Math.round(u * s)); return [d[i], d[i + 1], d[i + 2]]; };
-  const med = a => { const b = a.slice().sort((p, q) => p - q); return b.length ? b[b.length >> 1] : 0; };
-  const ghost = [], solid = [];
-  rivals.forEach(([rx, ry], j) => {
-    const a = camera.project(rx, ry, 0.9), f = camera.project(rx, ry, 0), hd = camera.project(rx, ry, 1.8);
-    const wpx = Math.abs(hd[1] - f[1]) * 0.35 / 1.8 * 2;
-    if (a[0] < 8 || a[1] < 8 || a[0] > c.clientWidth - 8 || a[1] > c.clientHeight - 8 || wpx < 3) return;
-    const ground = [-3, 3].map(m => px(a[0] + m * wpx, a[1]));
-    const r = Math.min(...ground.map(g => ratio(px(a[0], a[1]), g)));
-    (seen[j] ? solid : ghost).push(r);
-  });
-  out.ghost = +med(ghost).toFixed(2); out.solid = +med(solid).toFixed(2); out.n = [ghost.length, solid.length];
-  return out; }"""
+  const ratio = (f, b) => { const s = over(f, b), x = lum(s), y = lum(b); return +((Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05)).toFixed(2); };
+  const cs = e => getComputedStyle(e), q = s => document.querySelector(s);
+  const paint = (e, prop, op) => { const c = parse(cs(e)[prop]); if (!c) return null; const o = op ? parseFloat(cs(e)[op]) : 1; return [c[0], c[1], c[2], c[3] * o]; };
+  const paper = parse(cs(document.body).backgroundColor);
+  const grass = paint(q('#pitch .grass'), 'fill', 'fillOpacity');
+  const faded = over(paint(q('#fade'), 'fill', 'fillOpacity'), grass);
+  const out = {};
+  const put = (name, fg, bg) => { if (fg && bg) out[name] = ratio(fg, bg); };
+  put('seen defender on the grass', paint(q('#rivals .riv.seen .dot'), 'fill', 'fillOpacity'), grass);
+  put('seen defender outside the frame', paint(q('#rivals .riv.seen .dot'), 'fill', 'fillOpacity'), faded);
+  put('filled-in ring on the grass', paint(q('#rivals .riv:not(.seen) .dot'), 'stroke', 'strokeOpacity'), grass);
+  put('filled-in ring outside the frame', paint(q('#rivals .riv:not(.seen) .dot'), 'stroke', 'strokeOpacity'), faded);
+  const meSeen = q('#me').classList.contains('seen');  // seen: a disc; filled in: a ring
+  put('receiver on the grass', paint(q('#me .dot'), meSeen ? 'fill' : 'stroke', meSeen ? 'fillOpacity' : 'strokeOpacity'), grass);
+  put('receiver outside the frame', paint(q('#me .dot'), meSeen ? 'fill' : 'stroke', meSeen ? 'fillOpacity' : 'strokeOpacity'), faded);
+  if (q('#mates .mate.seen .dot')) put('seen teammate on the grass', paint(q('#mates .mate.seen .dot'), 'fill', 'fillOpacity'), grass);
+  if (q('#mates .mate:not(.seen) .dot')) put('filled-in teammate on the grass', paint(q('#mates .mate:not(.seen) .dot'), 'stroke', 'strokeOpacity'), grass);
+  put('the frame on the grass', paint(q('#frame'), 'stroke', 'strokeOpacity'), grass);
+  put('the frame outside', paint(q('#frame'), 'stroke', 'strokeOpacity'), faded);
+  put('ghost block', paint(q('.ghosts .blk'), 'stroke', 'strokeOpacity'), grass);
+  put('ghost line', paint(q('.ghosts .ln line'), 'stroke', 'strokeOpacity'), grass);
+  put('live block', paint(q('#blk-live'), 'stroke', 'strokeOpacity'), grass);
+  put('live line', paint(q('#ln-live line'), 'stroke', 'strokeOpacity'), grass);
+  for (const g of document.querySelectorAll('.vgroup')) {
+    const c = paint(g.querySelector('.swatch'), 'backgroundColor');
+    put('dots of ' + g.dataset.group, c, paper);
+    put('median of ' + g.dataset.group, paint(g.querySelector('.med'), 'backgroundColor', 'opacity'), paper);
+  }
+  put('zero line', paint(q('.zero'), 'borderLeftColor'), paper);
+  put('count bar', paint(q('.fill'), 'backgroundColor'), paint(q('.track'), 'backgroundColor'));
+  return {gated: out, pitchLines: ratio(paint(q('#pitch .pl rect'), 'stroke', 'strokeOpacity'), grass)}; }"""
+
+# The scene at the current frame: the frame's corners, the fade path, every marker's place and
+# state, the labels on and their text, the count and the clock.
+SCENE_JS = """() => {
+  const xy = g => { const m = g.style.transform.match(/translate\\(([-\\d.e]+)px,\\s*([-\\d.e]+)px\\)/); return m ? [+m[1], +m[2]] : null; };
+  return {
+    i: camera.state().i,
+    points: document.getElementById('frame').getAttribute('points'),
+    fade: document.getElementById('fade').getAttribute('d'),
+    rivals: [...document.querySelectorAll('#rivals .riv')].map(g => ({xy: xy(g), seen: g.classList.contains('seen'), shown: g.style.display !== 'none'})),
+    mates: [...document.querySelectorAll('#mates .mate')].map(g => ({xy: xy(g), seen: g.classList.contains('seen'), shown: g.style.display !== 'none'})),
+    me: xy(document.getElementById('me')), ball: xy(document.getElementById('ball')),
+    labels: [...document.querySelectorAll('#labels .lab')].map(l => ({on: l.classList.contains('on'), text: l.textContent.trim(), seen: l.classList.contains('seen')})),
+    count: document.getElementById('count-n').textContent.trim(),
+    of: document.getElementById('count-of').textContent.trim(),
+    clock: document.getElementById('clock').textContent.trim(),
+    scrub: document.getElementById('scrub').value,
+    play: document.getElementById('play').textContent.trim(),
+  }; }"""
+
+# Block 2 as shown: the live block's geometry, the live line's shift, the pressed buttons, the
+# bars' text and width, the highlighted column of the table.
+SWITCH_JS = """() => {
+  const b = document.getElementById('blk-live'), ln = document.getElementById('ln-live');
+  const num = a => +b.getAttribute(a);
+  const m = ln.style.transform.match(/translate\\(([-\\d.e]+)px/);
+  const on = v => getComputedStyle(document.querySelector('#panel-table td.' + v)).backgroundColor;
+  return {variant: document.getElementById('sw').dataset.v, x: num('x'), width: num('width'), y: num('y'), height: num('height'),
+          line: m ? +m[1] : null,
+          pressed: [document.getElementById('variant-v0').getAttribute('aria-pressed'), document.getElementById('variant-v1').getAttribute('aria-pressed')],
+          clLine: document.getElementById('cl-line').textContent.trim(), clBlock: document.getElementById('cl-block').textContent.trim(),
+          fillLine: document.getElementById('fill-line').style.width, fillBlock: document.getElementById('fill-block').style.width,
+          td: {v0: on('v0'), v1: on('v1')}}; }"""
 
 
 class Report:
@@ -446,17 +273,17 @@ class Data:
         self.doc = json.loads((REPORTS / "camera" / "camera.json").read_text(encoding="utf-8"))
         d = self.doc
         self.n, self.fps, self.key = d["n_frames"], d["fps"], d["key"]["index"]
+        self.label_gap_s = d["label_gap_s"]
         ent = d["entities"]
-        self.rivals = np.array(ent["rivals"]["xy"], dtype=float)  # (n, 11, 2)
-        self.me = np.array(ent["me"]["xy"], dtype=float)
-        self.ball = np.array(ent["ball"]["xy"], dtype=float)
-        self.mates = np.array(
-            [[[np.nan, np.nan] if p[0] is None else p for p in f] for f in ent["mates"]["xy"]],
-            dtype=float,
+        self.rivals, self.seen, self.gap = (
+            ent["rivals"]["xy"],
+            ent["rivals"]["detected"],
+            ent["rivals"]["gap"],
         )
-        self.seen = np.array(ent["rivals"]["detected"], dtype=bool)
-        self.gap = np.array(ent["rivals"]["gap"], dtype=int)
-        self.corners = np.array(d["camera"]["corners"], dtype=float)
+        self.mates, self.mates_seen = ent["mates"]["xy"], ent["mates"]["detected"]
+        self.me, self.ball = ent["me"]["xy"], ent["ball"]["xy"]
+        self.corners = d["camera"]["corners"]
+        self.rows = {r["metric"]: (k, r) for k, r in enumerate(d["match"]["rows"])}
         with (REPORTS / "reliability.csv").open(encoding="utf-8", newline="") as f:
             self.csv = list(csv.DictReader(f))
 
@@ -465,16 +292,6 @@ class Data:
         for part in path.split("."):
             node = node[int(part)] if isinstance(node, list) else node[part]
         return node
-
-    def at(self, tau: float) -> dict:
-        f = min(max(tau * self.fps, 0.0), self.n - 1)
-        i = min(int(math.floor(f + 1e-9)), self.n - 1)
-        j, a = min(i + 1, self.n - 1), max(0.0, f - i)
-
-        def lerp(arr):
-            return arr[i] + (arr[j] - arr[i]) * a
-
-        return {"rivals": lerp(self.rivals), "me": lerp(self.me), "ball": lerp(self.ball), "i": i}
 
     def cell(self, metric: str, variant: str, col: str) -> float:
         rows = [
@@ -487,60 +304,48 @@ class Data:
         ]
         return float(rows[0][col])
 
-
-def clip_frame(corners: np.ndarray) -> list[tuple[float, float, int]]:
-    """The frame clipped to the pitch and its apron (Sutherland-Hodgman), as the page does: each
-    vertex with the frame edge its outgoing side lies on (-1 along the apron)."""
-    poly = [(float(x), float(y), k) for k, (x, y) in enumerate(corners)]
-    for axis, side in ((0, 1), (0, -1), (1, 1), (1, -1)):
-        lim = side * (HALF_L + APRON if axis == 0 else HALF_W + APRON)
-        out = []
-        for k, p in enumerate(poly):
-            q = poly[(k + 1) % len(poly)]
-            inside_p, inside_q = (
-                side * p[axis] <= side * lim + 1e-9,
-                side * q[axis] <= side * lim + 1e-9,
-            )
-            u = (lim - p[axis]) / (q[axis] - p[axis]) if q[axis] != p[axis] else 0.0
-            cut = (p[0] + (q[0] - p[0]) * u, p[1] + (q[1] - p[1]) * u)
-            if inside_p:
-                out.append(p)
-                if not inside_q:
-                    out.append((*cut, -1))
-            elif inside_q:
-                out.append((*cut, p[2]))
-        poly = out
-    return poly
+    def labels_on(self, i: int) -> list[bool]:
+        """The rings whose label is pinned at frame i: filled in, gap over the sidecar's
+        label_gap_s."""
+        return [
+            not s and g > self.label_gap_s * self.fps
+            for s, g in zip(self.seen[i], self.gap[i], strict=True)
+        ]
 
 
-def in_poly(pt, poly) -> bool:
-    """Point in a convex polygon (pixels), either orientation."""
-    signs = []
-    for k in range(len(poly)):
-        a, b = poly[k], poly[(k + 1) % len(poly)]
-        signs.append((b[0] - a[0]) * (pt[1] - a[1]) - (b[1] - a[1]) * (pt[0] - a[0]))
-    return all(s >= 0 for s in signs) or all(s <= 0 for s in signs)
+def close(a, b, tol: float = 1e-6) -> bool:
+    return a is not None and b is not None and abs(float(a) - float(b)) <= tol
 
 
-def meets(a: dict, b: dict, pad: float = 0.5) -> bool:
-    """Two boxes ({x, y, w, h}) overlap by more than `pad` px both ways."""
-    return (
-        min(a["x"] + a["w"], b["x"] + b["w"]) - max(a["x"], b["x"]) > pad
-        and min(a["y"] + a["h"], b["y"] + b["h"]) - max(a["y"], b["y"]) > pad
-    )
+def same_xy(got, want) -> bool:
+    if want is None or want[0] is None:
+        return got is None
+    return got is not None and close(got[0], want[0]) and close(got[1], want[1])
+
+
+def shown_matches(text: str, value: float) -> bool:
+    """The first number of a text is the value rounded half up to the text's decimals (a % is the
+    value x 100), as the README's gate rounds."""
+    m = re.search(r"([+\-−]?)([0-9][0-9,]*(?:\.[0-9]+)?)(\s*%)?", text)
+    if not m:
+        return False
+    digits = m.group(2).replace(",", "")
+    shown = Decimal(digits) * (-1 if m.group(1) in ("-", "−") else 1)
+    v = Decimal(repr(value * 100 if m.group(3) else value))
+    want = v.quantize(Decimal(1).scaleb(-len(digits.partition(".")[2])), rounding=ROUND_HALF_UP)
+    return want == shown or (want == 0 and shown == 0)
 
 
 # ---------------------------------------------------------------- browser helpers
 
 
-def open_page(browser, target: str, *, width=1440, height=900, reduced=False, touch=None):
-    touch = (width, height) in TOUCH if touch is None else touch
+def open_page(browser, target: str, *, width=1440, height=900, reduced=False):
     ctx = browser.new_context(
         viewport={"width": width, "height": height},
         device_scale_factor=1,
         reduced_motion="reduce" if reduced else "no-preference",
         has_touch=True,
-        is_mobile=touch,
+        is_mobile=(width, height) in TOUCH,
     )
     ctx.add_init_script(INIT_JS)
     pg = ctx.new_page()
@@ -561,31 +366,28 @@ def settle(pg) -> None:
     pg.evaluate("new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)))")
 
 
-def go(pg, view: str, t: float | None = None) -> None:
-    pg.evaluate(f"camera.flight({1 if view == 'plan' else 0})")
-    if t is not None:
-        pg.evaluate(f"camera.seek({t})")
+def seek(pg, i: int) -> None:
+    pg.evaluate(f"camera.seek({i})")
     settle(pg)
 
 
-def proj(pg, pts) -> np.ndarray:
-    return np.array(pg.evaluate(PROJ_JS, [list(map(float, p)) for p in pts]), dtype=float)
+def open_details(pg) -> list[str]:
+    """Open every <details> by its summary (a click, as a reader does); the ones that stay shut."""
+    shut = []
+    for d in pg.query_selector_all("details"):
+        if not d.evaluate("e => e.open"):
+            d.query_selector("summary").click()
+        pg.wait_for_timeout(50)
+        body = d.query_selector(".dbody")
+        if not d.evaluate("e => e.open") or not body or not body.evaluate("e => __vis(e)"):
+            shut.append(d.get_attribute("id") or "?")
+    settle(pg)
+    return shut
 
 
 def shot(pg, shots: Path, name: str) -> None:
     shots.mkdir(parents=True, exist_ok=True)
-    pg.screenshot(path=str(shots / f"{name}.png"))
-
-
-def has_tabs(pg) -> bool:
-    return bool(pg.evaluate("document.querySelectorAll('[role=tab]').length"))
-
-
-def tab(pg, name: str) -> None:
-    """Open a tab through the page's API; the Camera tab rises to the plan, so wait for it."""
-    pg.evaluate(f"camera.tab && camera.tab('{name}')")
-    pg.wait_for_function("camera.state().view !== 'rising'", timeout=10000)
-    settle(pg)
+    pg.screenshot(path=str(shots / f"{name}.png"), full_page=True)
 
 
 def vp(width: int, height: int) -> str:
@@ -596,1416 +398,540 @@ def vp(width: int, height: int) -> str:
 
 
 @guarded
-def check_startup(D: Data, p, target: str) -> None:
-    """Start-up and frame time (2.6), each in a fresh browser: the first painted frame of the
-    stage, the first `playing`, the frame times while the hook plays at 1440 px."""
-    names = ("start-up: first stage frame painted", "start-up: playing", "frame time while playing")
-    if not TIMED["on"]:
-        for name in names:
-            R.check(name, False, SOFTWARE)
-        return
-    runs = []
-    for _ in range(3):
-        browser = p.chromium.launch(args=CHROMIUM_ARGS)
-        ctx, pg = open_page(browser, target)
-        pg.wait_for_function(
-            "camera.state().view !== 'broadcast' || camera.state().phase === 'ended'", timeout=15000
-        )
-        runs.append(
-            pg.evaluate("""() => { const f = window.__frames, d = [];
-            for (let i = 1; i < f.length; i++) d.push(f[i] - f[i - 1]);
-            d.sort((a, b) => a - b);
-            return {paint: window.__firstPaint, playing: window.__playing, median: d[d.length >> 1], n: d.length}; }""")
-        )
-        ctx.close()
-        browser.close()
-    R.check(
-        f"{names[0]} within {FIRST_FRAME_S} s of navigation, three cold loads",
-        all(r["paint"] / 1000 <= FIRST_FRAME_S for r in runs),
-        ", ".join(f"{r['paint'] / 1000:.2f}" for r in runs) + " s",
-    )
-    R.check(
-        f"{names[1]} within {PLAYING_S} s of navigation, three cold loads",
-        all(r["playing"] / 1000 <= PLAYING_S for r in runs),
-        ", ".join(f"{r['playing'] / 1000:.2f}" for r in runs) + " s",
-    )
-    R.check(
-        f"{names[2]} at 1440 px: median <= {FRAME_MEDIAN_MS} ms",
-        all(r["median"] <= FRAME_MEDIAN_MS and r["n"] > 60 for r in runs),
-        "; ".join(f"{r['median']:.1f} ms over {r['n']}" for r in runs),
-    )
-
-
-def run_times(clock: list[dict], key_s: float) -> tuple[bool, str]:
-    """The natural run on the page's clock: each span between two of its moments against the
-    storyboard, allowing the steps the page itself counted (a frame that crosses the end, and the
-    time lost to frames longer than STEP_MAX, which slow the clip on purpose)."""
-    first = {}
-    for c in clock:
-        first.setdefault(c["e"], c)
-    need = ("play", "reception", "hold", "rise", "land", "faded")
-    if any(e not in first for e in need):
-        return False, f"clock has {sorted(first)}"
-    if sum(c["e"] == "play" for c in clock if c["t"] <= first["reception"]["t"]) != 1:
-        return False, "more than one start before the reception"
-    play, rec, hold, rise, land, faded = (first[e] for e in need)
-    eps = 1.0  # ms
-    tk = rec["t"] - play["t"]
-    want_k = key_s / RATE * 1000 + rec["lost"]
-    th = hold["t"] - rec["t"]
-    tr = rise["t"] - hold["t"]
-    tf = land["t"] - rise["t"]
-    want_f = FLIGHT_S * 1000 + land["lost"]
-    tm = faded["t"] - land["t"]
-    ok = (
-        want_k - eps <= tk <= want_k + rec["step"] + eps
-        and HOLD_S * 1000 - 2 * eps <= th <= (HOLD_S + HOLD_SLACK_S) * 1000
-        and -RISE_FRAME_MS <= tr <= RISE_FRAME_MS
-        and want_f - eps <= tf <= want_f + land["step"] + eps
-        and FADE_S * 1000 - eps <= tm <= FADE_S * 1000 + 2 * faded["step"] + eps
-    )
-    said = (
-        f"reception {tk / 1000:.3f} s (frame up to {rec['step']:.0f} ms, lost {rec['lost']:.0f} ms);"
-        f" hold {th / 1000:.3f} s, rise {tr:.0f} ms after; flight {tf / 1000:.3f} s (frame up to {land['step']:.0f} ms,"
-        f" lost {land['lost']:.0f} ms); fade {tm / 1000:.3f} s"
-    )
-    return ok, said
-
-
-@guarded
-def check_hook(D: Data, browser, target: str, shots: Path) -> None:
-    """The natural run from load, no click (3): broadcast i = 0 playing, the reception at 3.0 s,
-    ended, rising after HOLD_S, plan after FLIGHT_S, the plan's measures faded in; one rise per
-    load. Timed by the page's own clock."""
+def check_load(D: Data, browser, target: str) -> None:
+    """The page loads nothing but itself and throws nothing; it opens at the reception."""
     ctx, pg = open_page(browser, target)
-    c = pg.evaluate(
-        "({T: camera.T, T_KEY: camera.T_KEY, RATE: camera.RATE, HOLD: camera.HOLD_S,"
-        " FLIGHT: camera.FLIGHT_S, FADE: camera.FADE_S})"
-    )
-    R.check(
-        "constants: T = n_frames / fps and T_KEY = key.index / fps, from the sidecar",
-        abs(c["T"] - D.n / D.fps) < 1e-9 and abs(c["T_KEY"] - D.key / D.fps) < 1e-9,
-        json.dumps(c),
-    )
-    R.check(
-        "constants: RATE, HOLD_S, FLIGHT_S, FADE_S as the storyboard's table",
-        (c["RATE"], c["HOLD"], c["FLIGHT"], c["FADE"]) == (RATE, HOLD_S, FLIGHT_S, FADE_S),
-    )
-    pg.wait_for_timeout(1200)
-    shot(pg, shots, "hook_1440_broadcast_playing")
-    pg.wait_for_function("camera.state().view === 'rising'", timeout=15000)
-    pg.wait_for_timeout(700)
-    shot(pg, shots, "hook_1440_rising")
-    pg.wait_for_function("camera.state().view === 'plan'", timeout=15000)
-    pg.wait_for_function("camera.clock && camera.clock().some(c => c.e === 'faded')", timeout=15000)
-    pg.wait_for_timeout(200)
-    shot(pg, shots, "hook_1440_plan_landed")
-    log = pg.evaluate("window.__log")
-    first = log[0] if log else {}
-    R.check(
-        "natural run: opens in broadcast at i = 0",
-        first.get("view") == "broadcast" and first.get("i") == 0,
-    )
-    if not TIMED["on"]:
-        R.check(
-            "natural run: the reception at 3.0 s, the hold, the rise, the fade", False, SOFTWARE
+    pg.wait_for_timeout(300)
+    own = [
+        u
+        for u in pg.requests
+        if not (
+            u == target
+            or u.endswith("what_the_camera_saw.html")
+            or u.rstrip("/").endswith("what-the-camera-saw")
         )
-    else:
-        ok, said = run_times(pg.evaluate("camera.clock()"), D.key / D.fps)
-        R.check(
-            "natural run, on the page's clock: the reception (i = 30) 3.0 s after playing starts,"
-            " the hold's timer HOLD_S later and the rise on the next frame, plan FLIGHT_S later, the"
-            " measures faded in FADE_S later",
-            ok,
-            said,
-        )
-    shown = pg.evaluate(
-        "[...document.querySelectorAll('#tags .tag.measure')].filter(t => !t.hidden).map(t => t.dataset.unit)"
-    )
-    R.check(
-        "natural run: lands on the reception (i = 30, t = 0) with the line and the block tagged",
-        pg.evaluate("camera.state().i") == D.key and sorted(shown) == ["block", "line"],
-        f"i {pg.evaluate('camera.state().i')}; measure tags {shown}",
-    )
-    # once per load: back to broadcast, play to the end, no second rise
-    pg.evaluate("camera.view('broadcast'); camera.seek(-3); camera.play()")
-    pg.wait_for_function("camera.state().phase === 'ended'", timeout=20000)
-    pg.wait_for_timeout(int(HOLD_S * 1000) + 400)
-    s = pg.evaluate("camera.state()")
-    later = [e for e in pg.evaluate("window.__log")[len(log) :] if e["view"] == "rising"]
-    R.check(
-        "the rise happens once per load: a second broadcast run ends at i = 99 and stays",
-        s["view"] == "broadcast" and s["i"] == D.n - 1 and not later,
-        f"view {s['view']}, i {s['i']}, rising entries after landing {len(later)}",
-    )
-    R.check(
-        "hook page: no console error and no request outside the page",
-        not pg.errors and all(u == target or u.startswith(("data:", "blob:")) for u in pg.requests),
-        f"errors {pg.errors[:3]}; requests {[u for u in pg.requests if u != target][:3]}",
-    )
-    ctx.close()
-
-
-@guarded
-def check_hook_upright(D: Data, browser, target: str, shots: Path) -> None:
-    """The natural run on a portrait screen (390 x 844): the clip plays from above, opening in
-    plan at i = 0, freezes on the reception (i = 30) and never rises."""
-    ctx, pg = open_page(browser, target, width=390, height=844)
-    pg.wait_for_function("camera.state().phase === 'ended'", timeout=15000)
-    pg.wait_for_timeout(int((HOLD_S + FLIGHT_S) * 1000) + 300)
-    shot(pg, shots, "hook_390_plan_reception")
-    log = pg.evaluate("window.__log")
-    first = log[0] if log else {}
-    s = pg.evaluate("camera.state()")
-    R.check(
-        "390px natural run: opens in plan at i = 0, plays, freezes on the reception (i = 30) and"
-        " never rises",
-        first.get("view") == "plan"
-        and first.get("i") == 0
-        and any(e["phase"] == "playing" for e in log)
-        and not any(e["view"] != "plan" for e in log)
-        and (s["view"], s["i"], s["phase"]) == ("plan", D.key, "ended"),
-        f"first {json.dumps(first)}; now {s['view']} {s['i']} {s['phase']}",
-    )
-    ctx.close()
-
-
-@guarded
-def check_transport(D: Data, browser, target: str) -> None:
-    """seek pins the positions to the sidecar interpolated, clamps; play/pause return what the
-    API says; rising ignores every call (5.1)."""
-    ctx, pg = open_page(browser, target)
-    pg.evaluate("camera.pause()")
-    worst = 0.0
-    for t in (-3.0, -2.55, 0.0, 0.37, 2.5, 6.9):
-        pg.evaluate(f"camera.seek({t})")
-        s = pg.evaluate("camera.state()")
-        want = D.at(t + D.key / D.fps)
-        got = np.array(s["positions"]["rivals"], dtype=float)
-        worst = max(
-            worst,
-            float(np.abs(got - want["rivals"]).max()),
-            float(np.abs(np.array(s["positions"]["me"]) - want["me"]).max()),
-            float(np.abs(np.array(s["positions"]["ball"][:2]) - want["ball"]).max()),
-        )
-    R.check(
-        "seek: positions equal the sidecar interpolated to 1e-6 (six times, between frames too)",
-        worst <= 1e-6,
-        f"worst {worst:.2e} m",
-    )
-    lo = pg.evaluate("camera.seek(-10), camera.state()")
-    hi = pg.evaluate("camera.seek(99), camera.state()")
-    R.check(
-        "seek clamps to i = 0 (t = -3.0) and i = 99 (t = +6.9)",
-        lo["i"] == 0 and abs(lo["t"] + D.key / D.fps) < 1e-9 and hi["i"] == D.n - 1,
-        f"{lo['i']} {lo['t']}, {hi['i']} {hi['t']}",
-    )
-    pg.evaluate("camera.seek(-3)")
-    a = pg.evaluate("[camera.play(), camera.play(), camera.state().phase]")
-    b = pg.evaluate("[camera.pause(), camera.state().phase]")
-    R.check(
-        "play() true then false while playing; pause() true and idle",
-        a == [True, False, "playing"] and b == [True, "idle"],
-        f"{a} {b}",
-    )
-    pg.evaluate("camera.view('plan')")
-    pg.wait_for_function("camera.state().view === 'rising'", timeout=5000)
-    r = pg.evaluate(
-        "[camera.play(), camera.pause(), camera.seek(0), camera.view('broadcast'),"
-        " camera.variant('V1'), camera.state().view]"
-    )
-    R.check(
-        "rising ignores play, pause, seek, view and variant (all false)",
-        r == [False, False, False, False, False, "rising"],
-        str(r),
-    )
-    pg.wait_for_function("camera.state().view === 'plan'", timeout=5000)
-    R.check(
-        "view('plan') from broadcast rises and lands in plan; view of the same view is true",
-        pg.evaluate("camera.view('plan')") is True
-        and pg.evaluate("camera.view('sideways')") is False,
-    )
-    ctx.close()
-
-
-@guarded
-def check_plan_truth(D: Data, browser, target: str) -> None:
-    """Top-down for real (8.3): an orthographic camera in plan; the colour centroids of the four
-    seen defenders' discs and of the receiver's black ring map back (unproject) to < 0.1 m of
-    the sidecar at the reception; in V1 the filled-in markers lose their exact colour."""
-    ctx, pg = open_page(browser, target)
-    go(pg, "plan", 0.0)
-    R.check(
-        "plan: the camera is orthographic", pg.evaluate("camera.camera().type") == "orthographic"
-    )
-    scan = pg.evaluate(SCAN_JS, [[VERMILION, INK], 6])
-    key = D.key
-    seen = [k for k in range(D.seen.shape[1]) if D.seen[key, k]]
-    errs = []
-    for comp in [c for c in scan[VERMILION]["comps"] if c["n"] >= 20]:
-        xy = np.array(pg.evaluate(f"camera.unproject({comp['x']}, {comp['y']})"), dtype=float)
-        d = np.hypot(*(D.rivals[key] - xy).T)
-        k = int(np.argmin(d))
-        if k in seen:
-            errs.append((k, float(d[k])))
-    me = [c for c in scan[INK]["comps"] if c["n"] >= 20]
-    me_err = min(
-        float(
-            np.hypot(*(np.array(pg.evaluate(f"camera.unproject({c['x']}, {c['y']})")) - D.me[key]))
-        )
-        for c in me
-    )
-    R.check(
-        "plan: the four seen discs and the receiver's ring unproject to < 0.1 m of the sidecar (i = 30)",
-        sorted(k for k, _ in errs) == seen and all(e < 0.1 for _, e in errs) and me_err < 0.1,
-        f"discs {[(k, round(e, 3)) for k, e in errs]} of {seen}; receiver {me_err:.3f} m",
-    )
-    n_v0 = len([c for c in scan[VERMILION]["comps"] if c["n"] >= 20])
-    pg.evaluate("camera.variant('V1')")
-    settle(pg)
-    n_v1 = len(
-        [c for c in pg.evaluate(SCAN_JS, [[VERMILION], 6])[VERMILION]["comps"] if c["n"] >= 20]
-    )
-    R.check(
-        "V1: the filled-in markers fade (vermilion markers of exact colour: every defender in V0,"
-        " the seen ones in V1)",
-        n_v0 == D.seen.shape[1] and n_v1 == len(seen),
-        f"{n_v0} -> {n_v1}",
-    )
-    ctx.close()
-
-
-@guarded
-def check_frame(D: Data, browser, target: str) -> None:
-    """The camera's frame (8.3): in broadcast the clipped corners project inside the canvas in
-    the 100 frames; in plan the drawn border sits on the sidecar's edges (< 0.5 px), the seen
-    defenders project inside the polygon and the filled-in ones outside."""
-    ctx, pg = open_page(browser, target)
-    go(pg, "broadcast")
-    w, h = pg.evaluate("[camera.camera().width, camera.camera().height]")
-    out = []
-    for i in range(D.n):
-        pg.evaluate(f"camera.seek({(i - D.key) / D.fps})")
-        poly = clip_frame(D.corners[i])
-        px = proj(pg, [(x, y, 0) for x, y, _ in poly])
-        if (
-            (px[:, 0] < 0).any()
-            or (px[:, 0] > w).any()
-            or (px[:, 1] < 0).any()
-            or (px[:, 1] > h).any()
-        ):
-            out.append(i)
-    R.check(
-        "broadcast: the clipped frame projects inside the canvas in the 100 frames",
-        not out,
-        f"outside at {out[:5]}",
-    )
-    go(pg, "plan", 0.0)
-    poly = clip_frame(D.corners[D.key])
-    px = proj(pg, [(x, y, 0) for x, y, _ in poly])
-    samples = []
-    for k, (_, _, edge) in enumerate(poly):
-        if edge < 0 or edge == 2:  # the apron's border is not drawn; the far edge is dashed
-            continue
-        a, b = px[k], px[(k + 1) % len(poly)]
-        L = float(np.hypot(*(b - a)))
-        nx, ny = -(b - a)[1] / L, (b - a)[0] / L
-        for u in np.linspace(0.15, 0.85, 12):
-            p = a + (b - a) * u
-            samples.append([float(p[0]), float(p[1]), nx, ny])
-    offs = [o for o in pg.evaluate(BAND_JS, samples) if o is not None]
-    med = float(np.median(np.abs(offs))) if offs else math.inf
-    R.check(
-        "plan: the drawn border lies on the sidecar's edges (median offset < 0.5 px)",
-        len(offs) >= 0.8 * len(samples) and med < 0.5,
-        f"{len(offs)}/{len(samples)} samples, median {med:.2f} px",
-    )
-    pts = proj(pg, [(x, y, 0) for x, y in D.rivals[D.key]])
-    inside = [in_poly(p, px) for p in pts]
-    want = list(D.seen[D.key])
-    R.check(
-        "plan: the seen defenders project inside the frame and the filled-in ones outside (i = 30)",
-        inside == want,
-        f"inside {sum(inside)}, seen {sum(want)}",
-    )
-    ctx.close()
-
-
-@guarded
-def check_measure_only_in_plan(D: Data, browser, target: str) -> None:
-    """No measure on the scene outside plan (8.3): the bracket's grey is on the canvas in plan
-    and nowhere in broadcast, the line's and the block's tags are shown in plan only; in
-    broadcast, V0 to V1 changes no pixel."""
-    ctx, pg = open_page(browser, target)
-    tick = (D.doc["units"]["block"]["index"] - D.key) / D.fps  # the bracket at full intensity
-
-    def grey() -> int:
-        comps = pg.evaluate(SCAN_JS, [[GREY], 4])[GREY]["comps"]
-        return sum(c["n"] for c in comps if c["n"] >= 10)
-
-    def measure_tags() -> int:
-        return pg.evaluate(
-            "[...document.querySelectorAll('#tags .tag.measure')].filter(t => !t.hidden).length"
-        )
-
-    go(pg, "plan", tick)
-    grey_plan, tags_plan = grey(), measure_tags()
-    go(pg, "broadcast", tick)
-    grey_b, tags_b = grey(), measure_tags()
-    before = pg.evaluate("document.getElementById('pitch').toDataURL()")
-    pg.evaluate("camera.variant('V1')")
-    settle(pg)
-    after = pg.evaluate("document.getElementById('pitch').toDataURL()")
-    grey_v1 = grey()
-    R.check(
-        "the bracket's grey and the measure tags drawn in plan and absent in broadcast; V1 in"
-        " broadcast dims the filled-in bodies (pixels change) and still draws no measure",
-        grey_plan > 50
-        and grey_b == 0
-        and grey_v1 == 0
-        and tags_plan == 2
-        and tags_b == 0
-        and before != after,
-        f"grey px plan {grey_plan}, broadcast {grey_b}, broadcast V1 {grey_v1}; measure tags"
-        f" {tags_plan}, {tags_b}; pixels changed by V1 {before != after}",
-    )
-    ctx.close()
-
-
-@guarded
-def check_variant_and_ui(D: Data, browser, target: str) -> None:
-    """V0/V1 (4.2, 5.3): the big number of each readout row, aria-pressed, the caption, the
-    buttons in each view; V1 fades the filled-in defenders' tags."""
-    ctx, pg = open_page(browser, target)
-    go(pg, "broadcast", -3.0)
-    u = pg.evaluate("__ui()")
-    R.check(
-        "broadcast: caption and pressed button as 5.3",
-        u["bcast"]["pressed"] == "true"
-        and u["caption"].startswith(
-            f"Match {D.doc['match_id']} · reception at frame {D.doc['key']['frame']} · from the camera's side"
-        ),
-        u["caption"],
-    )
-    go(pg, "plan", 0.0)
-    rows = {}
-    for v in ("V0", "V1"):
-        pg.evaluate(f"camera.variant('{v}')")
-        settle(pg)
-        u = pg.evaluate("__ui()")
-        on = pg.evaluate(
-            """() => [...document.querySelectorAll('#panel-table td.on .num .q')].map(e => +e.dataset.value)"""
-        )
-        col = pg.evaluate(
-            """() => [...document.querySelectorAll('#metrics td.on')].map(e => e.classList.contains('v1') ? 'V1' : 'V0')"""
-        )
-        rows[v] = (on, u["v0"]["pressed"], u["v1"]["pressed"], u["caption"], sorted(set(col)))
-    want = {
-        v: [D.cell("line_height_m", v, "mean"), D.cell("block_length_m", v, "mean")]
-        for v in ("V0", "V1")
-    }
-    R.check(
-        "V0/V1: the readout's big numbers are the CSV's line depth and block length of the"
-        " variant, aria-pressed follows, the caption names it, the metrics table marks its column",
-        rows["V0"][0] == want["V0"]
-        and rows["V1"][0] == want["V1"]
-        and rows["V0"][1:3] == ("true", "false")
-        and rows["V1"][1:3] == ("false", "true")
-        and rows["V0"][3].endswith("every unit")
-        and rows["V1"][3].endswith("players seen throughout")
-        and rows["V0"][4] == ["V0"]
-        and rows["V1"][4] == ["V1"],
-        f"{rows['V0'][0]} -> {rows['V1'][0]}; columns {rows['V0'][4]} -> {rows['V1'][4]}",
-    )
-    diffs = pg.evaluate(
-        "() => [...document.querySelectorAll('#panel-table td.diff .q')].map(e => [+e.dataset.value, e.textContent])"
-    )
-    refs = pg.evaluate(
-        "() => [...document.querySelectorAll('#panel-table tr.ref th')].map(e => e.textContent)"
-    )
-    want = [
-        D.cell(m, "V1", "mean") - D.cell(m, "V0", "mean")
-        for m in ("line_height_m", "block_length_m")
     ]
     R.check(
-        "V0/V1: the readout shows V1 - V0 of each metric (the CSV's cells, at its rounding) and what"
-        " it measures (line depth from halfway toward own goal; block length deepest to furthest)",
-        len(diffs) == 2
-        and all(
-            abs(v - w) < 1e-6 and shown_matches(s, w) for (v, s), w in zip(diffs, want, strict=True)
-        )
-        and len(refs) == 2
-        and refs[0].startswith("line depth")
-        and "halfway toward own goal" in refs[0]
-        and refs[1].startswith("block length")
-        and "deepest to furthest" in refs[1],
-        f"{diffs}; {refs}",
+        "load: the page requests nothing but itself (no font, script, image or fetch) and throws no error",
+        not own and not pg.errors,
+        f"requests {pg.requests[:3]}; errors {pg.errors[:2]}",
     )
-    # V1 fades the filled-in markers' tags too (ink to grey, still legible); V0 leaves them whole
-    fades = {}
-    for v in ("V0", "V1"):
-        pg.evaluate(f"camera.variant('{v}')")
-        settle(pg)
-        fades[v] = pg.evaluate(
-            "() => [...document.querySelectorAll('#tags .tag.rival')].filter(t => !t.hidden)"
-            ".map(t => t.classList.contains('faded'))"
-        )
+    s = pg.evaluate("camera.state()")
     R.check(
-        "V0/V1: in V1 the tags of the filled-in defenders fade with their markers",
-        fades["V0"]
-        and not any(fades["V0"])
-        and len(fades["V1"]) == len(fades["V0"])
-        and all(fades["V1"]),
-        json.dumps(fades),
-    )
-    said = pg.evaluate(
-        "[document.getElementById('readout-cap') && document.getElementById('readout-cap').textContent,"
-        " document.getElementById('count-note') && document.getElementById('count-note').textContent,"
-        " [...document.querySelectorAll('#tags .tag.measure')].filter(t => !t.hidden).map(t => t.textContent)]"
-    )
-    R.check(
-        "the two line depths said apart: the readout is 'this match' and its means, the counter says"
-        " the pitch shows 'this reception' (and that neither unit is V1), the pitch's tags are short",
-        said[0] is not None
-        and "this match" in said[0].lower()
-        and "mean" in said[0].lower()
-        and said[1] is not None
-        and "this reception" in said[1]
-        and "not V1" in said[1]
-        and all(len(x) <= 16 for x in said[2]),
-        json.dumps(said),
-    )
-    tab(pg, "metrics")
-    rows = pg.evaluate(
-        "() => [...document.querySelectorAll('#metrics tbody tr')].map(r => [r.dataset.metric,"
-        " getComputedStyle(r).cursor])"
-    )
-    hint = pg.evaluate("__vis(document.getElementById('table-hint'))")
-    linked = sorted(m for m, c in rows if c == "pointer")
-    R.check(
-        "the table: the rows that ring players take the pointer cursor, a hint says so",
-        hint
-        and linked
-        == sorted(["line_height_m", "block_length_m", "pressure_index", "nearest_rival_m"]),
-        f"pointer on {linked}; hint shown {hint}",
+        "load: the page opens at the reception, paused, on V0, nothing pinned",
+        s["i"] == D.key and not s["playing"] and s["variant"] == "v0" and s["pinned"] == [],
+        json.dumps(s),
     )
     ctx.close()
 
 
-def shown_matches(text: str, value: float) -> bool:
-    """The first number of a text is the value rounded half up to the text's decimals (a % is the
-    value x 100), as the README's gate rounds."""
-    m = re.search(r"([+\-−]?)([0-9][0-9,]*(?:\.[0-9]+)?)(\s*%)?", text)
-    if not m:
-        return False
-    digits = m.group(2).replace(",", "")
-    shown = Decimal(digits) * (-1 if m.group(1) in ("-", "−") else 1)
-    v = Decimal(repr(value * 100 if m.group(3) else value))
-    want = v.quantize(Decimal(1).scaleb(-len(digits.partition(".")[2])), rounding=ROUND_HALF_UP)
-    return want == shown or (want == 0 and shown == 0)
+def scene_problems(D: Data, got: dict, i: int) -> list[str]:
+    """Where the scene shown differs from the sidecar at frame i."""
+    bad = []
+    pts = [tuple(map(float, p.split(","))) for p in got["points"].split()]
+    if len(pts) != 4 or not all(
+        close(a, b)
+        for p, c in zip(pts, D.corners[i], strict=True)
+        for a, b in zip(p, c, strict=True)
+    ):
+        bad.append(f"frame corners {got['points'][:60]}")
+    if not got["fade"].endswith("Z") or "Z M" not in got["fade"]:
+        bad.append("the fade is not the crop less the frame")
+    for k, r in enumerate(got["rivals"]):
+        if not same_xy(r["xy"], D.rivals[i][k]) or r["seen"] != bool(D.seen[i][k]):
+            bad.append(f"defender {k} at {r['xy']} seen {r['seen']}")
+    for k, m in enumerate(got["mates"]):
+        want = D.mates[i][k]
+        if want[0] is None:
+            if m["shown"]:
+                bad.append(f"teammate {k} drawn without a row")
+        elif not same_xy(m["xy"], want) or m["seen"] != bool(D.mates_seen[i][k]):
+            bad.append(f"teammate {k} at {m['xy']}")
+    if not same_xy(got["me"], D.me[i]) or not same_xy(got["ball"], D.ball[i]):
+        bad.append(f"receiver {got['me']} ball {got['ball']}")
+    want_on = D.labels_on(i)
+    for k, lab in enumerate(got["labels"]):
+        if lab["on"] != want_on[k]:
+            bad.append(f"label {k} on={lab['on']}, gap {D.gap[i][k]} seen {D.seen[i][k]}")
+        elif lab["on"] and not shown_matches(lab["text"], D.gap[i][k] / D.fps):
+            bad.append(f"label {k} says {lab['text']!r} for gap {D.gap[i][k]}")
+    if got["count"] != str(D.doc["key"]["defenders_extrapolated_by_frame"][i]) or got["of"] != str(
+        D.doc["n_defenders"]
+    ):
+        bad.append(f"count {got['count']} of {got['of']}")
+    rel = (i - D.key) / D.fps
+    if i == D.key:
+        if got["clock"] != "at the reception":
+            bad.append(f"clock {got['clock']!r}")
+    elif not shown_matches(got["clock"], rel) or "from the reception" not in got["clock"]:
+        bad.append(f"clock {got['clock']!r}")
+    if int(got["scrub"]) != i:
+        bad.append(f"scrub at {got['scrub']}")
+    return bad
+
+
+@guarded
+def check_scene(D: Data, browser, target: str) -> None:
+    """The reception drawn is the sidecar's: at the reception, the first and the last frame, the
+    frame's corners, the fade outside it, every player's place and state, the rings' labels (on for
+    a gap over label_gap_s, with its seconds), the count of defenders filled in and the clock."""
+    ctx, pg = open_page(browser, target)
+    for i in (D.key, 0, D.n - 1):
+        seek(pg, i)
+        got = pg.evaluate(SCENE_JS)
+        bad = scene_problems(D, got, i)
+        R.check(
+            f"scene at frame {i}: the frame's corners, the fade, {len(got['rivals'])} defenders, {len(got['mates'])} teammates, the receiver and the ball are camera.json's;"
+            f" the labels on are the gaps over {D.label_gap_s:g} s (camera.json's label_gap_s) with their seconds; the count and the clock follow the frame",
+            got["i"] == i and not bad,
+            f"{sum(D.labels_on(i))} labels on, count {got['count']} of {got['of']}, clock {got['clock']!r}; wrong {bad[:4]}",
+        )
+    ctx.close()
+
+
+@guarded
+def check_play(D: Data, browser, target: str) -> None:
+    """Play advances the frame counter and the count follows; the clip stops at its last frame;
+    the scrubber seeks and pauses."""
+    ctx, pg = open_page(browser, target)
+    pg.click("#play")
+    t0 = time.time()
+    try:
+        pg.wait_for_function(
+            f"camera.state().i >= {D.key + PLAY_FRAMES}", timeout=int(PLAY_WAIT_S * 1000)
+        )
+        advanced = True
+    except Exception:  # noqa: BLE001 - a slow machine is a FAIL line with its frame
+        advanced = False
+    s = pg.evaluate("camera.state()")
+    got = pg.evaluate(SCENE_JS)
+    R.check(
+        f"Play: pressed at the reception the clip advances {PLAY_FRAMES} frames within {PLAY_WAIT_S:.0f} s, the button reads Pause, the count follows the frame",
+        advanced
+        and s["playing"]
+        and got["play"] == "Pause"
+        and got["count"] == str(D.doc["key"]["defenders_extrapolated_by_frame"][s["i"]]),
+        f"frame {s['i']} after {time.time() - t0:.1f} s; count {got['count']}; button {got['play']}",
+    )
+    pg.click("#play")
+    paused = pg.evaluate("camera.state()")
+    seek(pg, D.n - 2)
+    pg.click("#play")
+    pg.wait_for_timeout(int(2500 / D.fps))
+    end = pg.evaluate("camera.state()")
+    got = pg.evaluate(SCENE_JS)
+    R.check(
+        "Play: Pause stops it; from the last frame but one it reaches the last frame and stops there, the button reading Play",
+        not paused["playing"]
+        and end["i"] == D.n - 1
+        and not end["playing"]
+        and got["play"] == "Play",
+        f"paused at {paused['i']}; ended at {end['i']} playing {end['playing']}",
+    )
+    pg.fill("#scrub", str(D.key))  # a scrub input: seeks and pauses
+    pg.dispatch_event("#scrub", "input")
+    settle(pg)
+    s = pg.evaluate("camera.state()")
+    R.check(
+        "the scrubber seeks to its frame and pauses",
+        s["i"] == D.key and not s["playing"],
+        json.dumps(s),
+    )
+    ctx.close()
+
+
+@guarded
+def check_tap(D: Data, browser, target: str) -> None:
+    """A ring's label shows on tap (pinned until the next tap) and on hover; a seen defender's
+    says seen; the labels pinned by themselves stay."""
+    ctx, pg = open_page(browser, target)
+    seek(pg, D.key)
+    pg.evaluate(
+        "document.getElementById('stage').scrollIntoView({block: 'center'})"
+    )  # every ring on screen
+    pg.wait_for_timeout(200)  # the markers' slide, if any, ends before their centres are read
+    on0 = D.labels_on(D.key)
+    k_seen = next(k for k, s in enumerate(D.seen[D.key]) if s)
+    quiet = [k for k, s in enumerate(D.seen[D.key]) if not s and not on0[k]]
+    centres = pg.evaluate(RINGS_JS)  # a tap lands on the page, not on an element
+    pg.mouse.click(*centres[k_seen])
+    settle(pg)
+    labs = pg.evaluate(SCENE_JS)["labels"]
+    pinned = pg.evaluate("camera.state().pinned")
+    ok = (
+        labs[k_seen]["on"]
+        and labs[k_seen]["text"] == "seen"
+        and labs[k_seen]["seen"]
+        and pinned == [k_seen]
+    )
+    ok = ok and all(labs[k]["on"] == on0[k] for k in range(len(labs)) if k != k_seen)
+    pg.mouse.click(*centres[k_seen])
+    pg.mouse.move(0, 0)  # the pointer leaves the ring: a hover would hold the label on
+    settle(pg)
+    off = pg.evaluate(SCENE_JS)["labels"]
+    ok = ok and not off[k_seen]["on"] and pg.evaluate("camera.state().pinned") == []
+    detail = f"defender {k_seen}: tap {labs[k_seen]['text']!r} on={labs[k_seen]['on']}, second tap on={off[k_seen]['on']}"
+    if quiet:
+        k = quiet[0]
+        pg.mouse.move(*centres[k])
+        settle(pg)
+        hov = pg.evaluate(SCENE_JS)["labels"][k]
+        ok = ok and hov["on"] and shown_matches(hov["text"], D.gap[D.key][k] / D.fps)
+        detail += f"; hover on ring {k} shows {hov['text']!r} for gap {D.gap[D.key][k]}"
+        pg.mouse.move(0, 0)
+        settle(pg)
+    R.check(
+        "tap: a ring's label pins on tap and unpins on the next; a seen defender's reads 'seen'; a hover shows a ring's seconds; the pinned labels stay",
+        ok,
+        detail,
+    )
+    # two close rings: a tap between them, nearer one, pins that one and not the other
+    pairs = sorted(
+        (
+            (math.dist(centres[a], centres[b]), a, b)
+            for a in range(len(centres))
+            for b in range(a + 1, len(centres))
+        ),
+    )
+    d_ab, a, b = pairs[0]
+    at = [
+        centres[a][0] + (centres[b][0] - centres[a][0]) / 3,
+        centres[a][1] + (centres[b][1] - centres[a][1]) / 3,
+    ]
+    pg.mouse.click(*at)
+    pg.mouse.move(0, 0)
+    settle(pg)
+    pinned = pg.evaluate("camera.state().pinned")
+    R.check(
+        f"tap: between the two closest defenders ({d_ab:.0f} px apart) a tap nearer one pins that one alone, the taps of close rings never swallowing each other",
+        pinned == [a],
+        f"defenders {a} and {b}; pinned {pinned}",
+    )
+    ctx.close()
+
+
+@guarded
+def check_dot_tap(D: Data, browser, target: str) -> None:
+    """A strip's dots: a tap between the two closest dots, nearer one, shows that one's match in
+    the tip; a tap elsewhere hides it."""
+    ctx, pg = open_page(browser, target)
+    pg.evaluate("document.getElementById('verdict').scrollIntoView()")
+    settle(pg)
+    dots = pg.evaluate("""() => [...document.querySelector('.strip .srow.cal').querySelectorAll('.d')]
+        .map(d => { const r = d.getBoundingClientRect(); return [r.left + r.width / 2, r.top + r.height / 2, d.dataset.match]; })""")
+    pairs = sorted(
+        (abs(p[0] - q[0]), i, j)
+        for i, p in enumerate(dots)
+        for j, q in enumerate(dots)
+        if i < j and abs(p[0] - q[0]) > 2
+    )
+    gap, i, j = pairs[0]
+    a, b = dots[i], dots[j]
+    pg.mouse.click(a[0] + (b[0] - a[0]) / 3, a[1])
+    settle(pg)
+    tip = pg.evaluate(
+        "() => { const t = document.getElementById('tip'); return [t.hidden, t.textContent]; }"
+    )
+    pg.mouse.click(5, 5)
+    settle(pg)
+    gone = pg.evaluate("document.getElementById('tip').hidden")
+    R.check(
+        f"dots: a tap between the two closest dots of a strip ({gap:.0f} px apart), nearer one, names that one's match; a tap elsewhere hides the tip",
+        not tip[0] and tip[1].startswith(f"match {a[2]}:") and gone,
+        f"tip {tip[1]!r} for match {a[2]} (the other {b[2]}); hidden after {gone}",
+    )
+    ctx.close()
+
+
+@guarded
+def check_switch(D: Data, browser, target: str) -> None:
+    """V0/V1: the live block is the match's mean block (length from the goal line, width centred),
+    the live line sits at the mean line depth, the buttons' aria-pressed follow, the bars say how
+    many units count and the table marks the column; the ghosts are the other variant."""
+    ctx, pg = open_page(browser, target)
+    li, line = D.rows["line_height_m"]
+    bi, block = D.rows["block_length_m"]
+    wi, width = D.rows["block_width_m"]
+    got = {}
+    for v in ("v0", "v1"):
+        pg.click(f"#variant-{v}")
+        pg.wait_for_timeout(700)  # the transition
+        got[v] = pg.evaluate(SWITCH_JS)
+    bad = []
+    for v in ("v0", "v1"):
+        V = v.upper()
+        g = got[v]
+        if not (
+            close(g["x"], HALF_LENGTH - block[V]["mean"], 0.006)
+            and close(g["width"], block[V]["mean"], 0.006)
+        ):
+            bad.append(f"{V} block x {g['x']} width {g['width']}")
+        if not (
+            close(g["y"], -width[V]["mean"] / 2, 0.006)
+            and close(g["height"], width[V]["mean"], 0.006)
+        ):
+            bad.append(f"{V} block y {g['y']} height {g['height']}")
+        if not close(g["line"], line[V]["mean"], 0.006):
+            bad.append(f"{V} line at {g['line']}")
+        if g["variant"] != v or g["pressed"] != (
+            ["true", "false"] if v == "v0" else ["false", "true"]
+        ):
+            bad.append(f"{V} pressed {g['pressed']}")
+        if not (
+            g["clLine"].startswith(f"{line[V]['n']:,} of {line['V0']['n']:,} receptions")
+            and g["clBlock"].startswith(f"{block[V]['n']:,} of {block['V0']['n']:,} phases")
+        ):
+            bad.append(f"{V} bars {g['clLine']!r} {g['clBlock']!r}")
+        if not (
+            close(float(g["fillLine"].rstrip("%")), 100 * line[V]["n"] / line["V0"]["n"], 0.01)
+            and close(
+                float(g["fillBlock"].rstrip("%")), 100 * block[V]["n"] / block["V0"]["n"], 0.01
+            )
+        ):
+            bad.append(f"{V} fills {g['fillLine']} {g['fillBlock']}")
+        if g["td"][v] == g["td"]["v1" if v == "v0" else "v0"]:
+            bad.append(f"{V}: the table's columns look alike")
+    ghosts = pg.evaluate(
+        """() => [...document.querySelectorAll('.ghosts .blk')].map(b => [+b.getAttribute('x'), +b.getAttribute('width')])"""
+    )
+    want_ghosts = sorted([[HALF_LENGTH - block[V]["mean"], block[V]["mean"]] for V in ("V0", "V1")])
+    if (
+        not all(
+            close(a, b, 0.006)
+            for g, w in zip(sorted(ghosts), want_ghosts, strict=False)
+            for a, b in zip(g, w, strict=True)
+        )
+        or len(ghosts) != 2
+    ):
+        bad.append(f"ghosts {ghosts}")
+    R.check(
+        "V0/V1: the live block and line move to the variant's means of reliability.csv (block from the goal line, width centred), the ghosts are the other variant,"
+        " aria-pressed follows, the bars count the units and the table marks the column",
+        not bad,
+        f"line {got['v0']['line']} -> {got['v1']['line']}; block width {got['v0']['width']} -> {got['v1']['width']}; wrong {bad[:3]}",
+    )
+    ctx.close()
 
 
 @guarded
 def check_numbers(D: Data, browser, target: str) -> None:
-    """Every number shown (8.3): in the panel (each tab opened in turn), the counter, the header,
-    the ticks and the tab labels, its data-value is the sidecar's value at its path and its text
-    that value at the text's rounding; the match's cells are the CSV's. At i = 0, 30 and 99. The
-    strips' "this match" labels are the match's V1 - V0 at the table's decimals."""
+    """Every number shown (every span.q, the details open, at the reception and at the first and
+    last frame): its data-value is the sidecar's value at its path and its text that value at the
+    text's rounding (a frame as seconds from the reception, a gap as seconds); the match's cells
+    are the CSV's; the strips' dots are figure 1's points."""
     ctx, pg = open_page(browser, target)
+    open_details(pg)
     bad, seen, paths = [], 0, set()
-    for t in (-3.0, 0.0, 6.9):
-        go(pg, "plan", t)
-        for name in TABS:
-            tab(pg, name)
-            items = pg.evaluate("""() => [...document.querySelectorAll('#panel [data-path], #count [data-path], #top [data-path], #ticks [data-path], #tablist [data-path]')]
-                .filter(e => __vis(e) && e.classList.contains('q')).map(e => [e.dataset.path, e.dataset.value, e.textContent])""")
-            for path, value, text in items:
-                seen += 1
-                paths.add(path)
-                want = D.pick(path)
-                ok = str(want) == value or (
-                    isinstance(want, int | float) and abs(float(value) - want) < 1e-12
-                )
-                if path.startswith("frames."):
-                    ok = ok and shown_matches(text, (want - D.doc["key"]["frame"]) / D.fps)
-                elif path.endswith((".frame",)) and path.startswith("units."):
-                    ok = ok and shown_matches(text, (D.doc["key"]["frame"] - want) / D.fps)
-                elif "gap_len" in path:
-                    ok = ok and shown_matches(text, want / D.fps)
-                elif isinstance(want, int | float) and not isinstance(want, bool):
-                    ok = ok and shown_matches(text, want)
-                m = re.match(r"match\.rows\.(\d+)\.(V[01])\.(mean|n)$", path)
-                if m:
-                    row = D.doc["match"]["rows"][int(m.group(1))]
-                    ok = ok and abs(D.cell(row["metric"], m.group(2), m.group(3)) - want) < 1e-12
-                if not ok:
-                    bad.append((path, value, text))
-    tab(pg, "matches")
-    labels = pg.evaluate(
-        "() => [...document.querySelectorAll('#strips text[data-path]')].map(e => [e.dataset.path, e.textContent])"
-    )
-    wrong_labels = []
-    for path, text in labels:
-        k = int(path.split(".")[2])
-        row = D.doc["match"]["rows"][k]
-        decimals = (3 if row["metric"] == "pressure_index" else 1) + 1
-        m = re.search(r"([+\-−])([0-9.]+)", text)
-        if (
-            not m
-            or len(m.group(2).partition(".")[2]) != decimals
-            or not shown_matches(text.split("match ", 1)[1], row["diff"])
-        ):
-            wrong_labels.append(text)
+    for i in (D.key, 0, D.n - 1):
+        seek(pg, i)
+        items = pg.evaluate("""() => [...document.querySelectorAll('.q[data-path]')].filter(__vis)
+            .map(e => [e.dataset.path, e.dataset.value, e.textContent.trim()])""")
+        for path, value, text in items:
+            seen += 1
+            paths.add(path)
+            want = D.pick(path)
+            numeric = isinstance(want, int | float) and not isinstance(want, bool)
+            ok = str(want) == value or (numeric and close(value, want, 1e-12))
+            if path.startswith("frames."):
+                ok = ok and shown_matches(text, (want - D.doc["key"]["frame"]) / D.fps)
+            elif "gap_len" in path or ".gap." in path:  # frames of gap, shown as seconds
+                ok = ok and shown_matches(text, want / D.fps)
+            elif numeric:
+                ok = ok and shown_matches(text, want)
+            else:
+                ok = ok and text == str(want)
+            m = re.match(r"match\.rows\.(\d+)\.(V[01])\.(mean|n)$", path)
+            if m:
+                row = D.doc["match"]["rows"][int(m.group(1))]
+                ok = ok and close(D.cell(row["metric"], m.group(2), m.group(3)), want, 1e-12)
+            if not ok:
+                bad.append((path, value, text))
     R.check(
-        "numbers: every number in the panel's tabs, the counter, the header, the ticks and the tab"
-        " labels is the sidecar's at its path, shown at its rounding; the match's cells are"
-        " reliability.csv's (i = 0, 30, 99)",
-        seen > 100 and not bad,
+        "numbers: every number shown is the sidecar's at its path, at the text's rounding (details open; the reception, the first and the last frame);"
+        " the match's cells are reliability.csv's",
+        seen > 300 and not bad,
         f"{seen} checked over {len(paths)} paths; wrong {bad[:4]}",
     )
+    dots = pg.evaluate("""() => [...document.querySelectorAll('.strip')].map(s => [s.dataset.metric, s.closest('.vgroup').dataset.group,
+        [...s.querySelectorAll('.d')].map(d => [d.classList.contains('cal') ? 'calibration' : 'held-out', d.dataset.match, +d.dataset.value, parseFloat(d.style.left)])])""")
+    wrong, groups = [], {}
+    for metric, group, pts in dots:
+        groups[metric] = group
+        for split in ("calibration", "held-out"):
+            want = sorted(
+                (p["match"], p["value"])
+                for p in D.doc["strips"]["metrics"][metric][split]["points"]
+            )
+            got = sorted((m, v) for s, m, v, _ in pts if s == split)
+            if got != want:
+                wrong.append((metric, split))
+        order = sorted(pts, key=lambda p: p[2])
+        if [p[3] for p in order] != sorted(p[3] for p in order):
+            wrong.append((metric, "dots out of order"))
+    verdict = {m: g["group"] for g in D.doc["findings"]["verdict"] for m in g["metrics"]}
     R.check(
-        "numbers: the strips' 'this match' labels read V1 - V0 at the table's decimals (no '0.0'"
-        " for a difference that is not nought)",
-        len(labels) == len(D.doc["match"]["rows"]) and not wrong_labels,
-        f"{[t for _, t in labels]}; wrong {wrong_labels}",
+        "strips: every dot is a point of figure 1 (match and V1 minus V0, both splits), in value order, and each metric sits in the README's verdict group",
+        len(dots) == 7 and not wrong and groups == verdict,
+        f"{len(dots)} strips; wrong {wrong[:3]}; groups {groups}",
     )
-    ticks = pg.evaluate(
-        "() => [...document.querySelectorAll('#strips g.strip')].map(g => [g.dataset.metric,"
-        " [...g.querySelectorAll('text.small:not([data-path])')].map(t => t.textContent)])"
+    colours = pg.evaluate(
+        """() => [...document.querySelectorAll('.vgroup')].map(g => [g.dataset.group, getComputedStyle(g.querySelector('.swatch')).backgroundColor, g.className])"""
     )
-    odd = []
-    for metric, texts in ticks:
-        decs = {len(t.replace("−", "-").partition(".")[2]) for t in texts}
-        values = [float(t.replace("−", "-")) for t in texts]
-        if len(decs) != 1 or len(set(values)) != len(values) or values != sorted(values):
-            odd.append((metric, texts))
+    keep = pg.evaluate("document.getElementById('keep').textContent.trim()")
+    words = pg.evaluate(
+        "[...document.querySelectorAll('.vgroup .gwords')].map(p => p.textContent.trim())"
+    )
+    want_words = [g["words"] for g in D.doc["findings"]["verdict"]]
     R.check(
-        "the strips' axes: each axis's ticks share their decimals, distinct and in order",
-        ticks and not odd,
-        f"{odd[:2]}" if odd else "; ".join(f"{m}: {' '.join(t)}" for m, t in ticks[:3]),
+        "verdict: four groups in the README's order, one colour each, green only for the metrics that survive; the README's words under each; the closing sentence is the README's",
+        [c[0] for c in colours] == [g["group"] for g in D.doc["findings"]["verdict"]]
+        and len({c[1] for c in colours}) == 4
+        and [c[0] for c in colours if "c-green" in c[2]] == ["survive"]
+        and keep == D.doc["findings"]["keep"]
+        and all(
+            w.rstrip(".").lower() == ww.lower() for w, ww in zip(words, want_words, strict=True)
+        ),
+        f"{[(c[0], c[1]) for c in colours]}; keep {keep!r}",
     )
+    ctx.close()
+
+
+# ---------------------------------------------------------------- the layout, per viewport
+
+
+@guarded
+def check_layout(D: Data, browser, target: str, size: tuple[int, int], shots: Path) -> None:
+    """At one viewport: every <details> opens; no horizontal scroll; prose at 16 px and every
+    other text at 12 px; text at 4.5:1; the marks that carry meaning at 3:1; no two pieces of
+    writing overlap (at the reception, the first and the last frame, in V0 and V1); every control
+    44 px each way; blocks 1 and 2 side by side from SIDE_BY_SIDE_FROM px and stacked below; a
+    screenshot of the whole page."""
+    w, h = size
+    ctx, pg = open_page(browser, target, width=w, height=h)
+    fold = pg.evaluate(FOLD_JS)  # before any scroll: the finding and the recommendation
+    MEASURED.setdefault(size, {})["fold"] = round(max(b for _, _, b in fold))
+    if size in FIRST_SCREEN:
+        numbers = [t for t, _, _ in fold[:-1]]
+        whole = fold[-1][0]
+        R.check(
+            f"{vp(w, h)}: the first screen holds the twenty matches' finding (its numbers) and the recommendation, before any scroll",
+            len(numbers) >= 5
+            and all(0 <= top and bottom <= h for _, top, bottom in fold)
+            and "Keep the fill" in pg.evaluate("document.getElementById('finding').textContent"),
+            f"numbers {numbers}; the paragraph {whole[:40]!r}… ends at {fold[-1][2]:.0f} px of {h}",
+        )
+    shut = open_details(pg)
+    R.check(
+        f"{vp(w, h)}: every <details> opens on a click of its summary and shows its body",
+        not shut,
+        f"shut {shut}",
+    )
+    sc = pg.evaluate(SCROLL_JS)
+    MEASURED.setdefault(size, {})["page_h"] = sc["sh"]
+    R.check(
+        f"{vp(w, h)}: no horizontal scroll with every detail open (the page scrolls down by design; a phone would zoom out on a wider layout)",
+        sc["sw"] <= w + 0.5 and sc["iw"] <= w + 0.5,
+        f"scroll width {sc['sw']} in a window of {sc['iw']} ({w} asked); height {sc['sh']}",
+    )
+    boxes = pg.evaluate(
+        """() => { const r = id => document.getElementById(id).getBoundingClientRect().toJSON(); return {hook: r('hook'), sw: r('sw')}; }"""
+    )
+    beside = (
+        boxes["hook"]["right"] <= boxes["sw"]["left"] + 0.5
+        and abs(boxes["hook"]["top"] - boxes["sw"]["top"]) < 2
+    )
+    stacked = boxes["hook"]["bottom"] <= boxes["sw"]["top"] + 0.5
+    R.check(
+        f"{vp(w, h)}: blocks 1 and 2 {'side by side' if w >= SIDE_BY_SIDE_FROM else 'stacked'} ({'from' if w >= SIDE_BY_SIDE_FROM else 'under'} {SIDE_BY_SIDE_FROM} px)",
+        beside if w >= SIDE_BY_SIDE_FROM else stacked,
+        f"hook right {boxes['hook']['right']:.0f} bottom {boxes['hook']['bottom']:.0f}; switch left {boxes['sw']['left']:.0f} top {boxes['sw']['top']:.0f}",
+    )
+    small, faint, hits = [], [], []
+    for t in pg.evaluate(TEXT_JS):
+        if t["size"] < LABEL_MIN_PX - 0.01 or (
+            ((t["prose"] and t["len"] >= 60) or t["legend"]) and t["size"] < BODY_MIN_PX - 0.01
+        ):
+            small.append((t["id"], t["text"], round(t["size"], 1)))
+        if not t["disabled"] and t["ratio"] < CONTRAST_MIN:
+            faint.append((t["id"], t["text"], t["ratio"]))
+    R.check(
+        f"{vp(w, h)}: prose (p, li, caption of 60+ characters, the legend) >= {BODY_MIN_PX} px; every other text, tick and label >= {LABEL_MIN_PX} px",
+        not small,
+        json.dumps(small[:4]),
+    )
+    R.check(
+        f"{vp(w, h)}: every piece of text at >= {CONTRAST_MIN}:1 against what is under it (the labels too)",
+        not faint,
+        json.dumps(faint[:4]),
+    )
+    n_rects = 0
+    for v in ("v0", "v1"):
+        pg.evaluate(f"camera.variant('{v}')")
+        for i in (D.key, 0, D.n - 1):
+            seek(pg, i)
+            pg.wait_for_timeout(200)  # a label that goes off fades out
+            found = pg.evaluate(OVERLAP_JS)
+            n_rects = max(n_rects, found["n"])
+            hits += [(f"{v} frame {i}", *pair) for pair in found["hits"]]
+    pg.evaluate("camera.variant('v0')")
+    seek(pg, D.key)
+    R.check(
+        f"{vp(w, h)}: no two pieces of writing overlap (the rings' labels, the plan's texts, the strips, the tables; V0 and V1; the reception, the first and the last frame)",
+        n_rects > 200 and not hits,
+        f"{n_rects} line boxes; overlaps {hits[:3]}",
+    )
+    targets = pg.evaluate("""() => { const box = (e, name) => { const q = e.getBoundingClientRect(); return [name, +q.width.toFixed(1), +q.height.toFixed(1)]; };
+        const out = [...document.querySelectorAll('button:not(.d), input[type=range], summary')].filter(__vis).map(e => box(e, e.id || e.textContent.trim().slice(0, 24)));
+        document.querySelectorAll('#rivals .riv .hit').forEach((c, k) => out.push(box(c, 'ring ' + k)));
+        document.querySelectorAll('.d').forEach((d, k) => { const r = d.getBoundingClientRect(), a = getComputedStyle(d, '::after'), inset = parseFloat(a.top || '0');
+          out.push(['dot ' + k, r.width - 2 * inset, r.height - 2 * inset]); });
+        return out; }""")
+    under = [t for t in targets if t[1] < TARGET_PX - 0.01 or t[2] < TARGET_PX - 0.01]
+    kinds = {t[0].split(" ")[0] for t in targets}
+    R.check(
+        f"{vp(w, h)}: every button, the scrubber, every summary, every ring's hit area and every dot's press area (its ::after) at least {TARGET_PX} px each way",
+        {"ring", "dot", "play", "scrub"} <= kinds and not under,
+        f"{len(targets)} targets ({len([t for t in targets if t[0].startswith('ring')])} rings, {len([t for t in targets if t[0].startswith('dot')])} dots); under: {under[:4]}",
+    )
+    marks = pg.evaluate(MARKS_JS)
+    low = {k: v for k, v in marks["gated"].items() if v < MARK_MIN}
+    MEASURED[size].update({"marks": min(marks["gated"].values()), "lines": marks["pitchLines"]})
+    R.check(
+        f"{vp(w, h)}: the marks that carry meaning at >= {MARK_MIN}:1 against what they lie on (seen discs, rings, the receiver, the frame's edge, the ghosts and live shapes, each group's dots and median, the zero line, the bars)",
+        len(marks["gated"]) >= 18 and not low,
+        f"{len(marks['gated'])} marks, the least {min(marks['gated'].values()):.2f}; under: {low}; the pitch's lines (the map, not gated) {marks['pitchLines']:.2f}",
+    )
+    shot(pg, shots, f"{vp(w, h)}_full")
     ctx.close()
 
 
 @guarded
 def check_reduced_motion(D: Data, browser, target: str) -> None:
-    """Reduced motion (5.2): loads in plan at i = 30, idle, the measures tagged; a view never
-    rises."""
+    """Reduced motion: the page opens the same (paused at the reception) and Play still runs on
+    request; the switch still moves the shapes (without the transition)."""
     ctx, pg = open_page(browser, target, reduced=True)
-    pg.wait_for_timeout(500)
     s = pg.evaluate("camera.state()")
-    shown = pg.evaluate(
-        "[...document.querySelectorAll('#tags .tag.measure')].filter(t => !t.hidden).length"
-    )
-    pg.evaluate("camera.view('broadcast'); camera.view('plan')")
-    pg.wait_for_timeout(300)
-    log = pg.evaluate("window.__log")
+    pg.click("#variant-v1")
+    pg.wait_for_timeout(50)
+    g = pg.evaluate(SWITCH_JS)
+    _, line = D.rows["line_height_m"]
     R.check(
-        "reduced motion: plan, i = 30, idle, the measures tagged; the views cut, never rising",
-        s["view"] == "plan"
-        and s["i"] == D.key
-        and s["phase"] == "idle"
-        and shown == 2
-        and not any(e["view"] == "rising" for e in log)
-        and pg.evaluate("camera.state().view") == "plan",
-        f"{s['view']} {s['i']} {s['phase']}, measure tags {shown}",
+        "reduced motion: opens paused at the reception; the switch moves the line without a transition",
+        s["i"] == D.key and not s["playing"] and close(g["line"], line["V1"]["mean"], 0.006),
+        f"{json.dumps(s)}; line {g['line']}",
     )
     ctx.close()
-
-
-# ---------------------------------------------------------------- one screen, per viewport
-
-
-@guarded
-def check_one_screen(D: Data, browser, target: str, size: tuple[int, int]) -> None:
-    """No page scroll (the acceptance's first row): the document is no taller and no wider than
-    the window at load, through the natural run, and with every tab open in either view."""
-    w, h = size
-    ctx, pg = open_page(browser, target, width=w, height=h)
-    worst = {"sh": 0, "sw": 0}
-    where = []
-
-    def measure(label: str) -> None:
-        m = pg.evaluate(SCROLL_JS)
-        if m["sh"] > m["ih"] + 1 or m["sw"] > m["iw"]:
-            where.append(f"{label} {m['sw']}x{m['sh']}")
-        worst["sh"] = max(worst["sh"], m["sh"])
-        worst["sw"] = max(worst["sw"], m["sw"])
-
-    measure("load")
-    pg.wait_for_function("camera.state().phase === 'ended'", timeout=15000)
-    pg.wait_for_function("camera.state().view !== 'rising'", timeout=15000)
-    pg.wait_for_timeout(int((HOLD_S + FLIGHT_S + FADE_S) * 1000) + 300)
-    measure("after the run")
-    for view in ("broadcast", "plan"):
-        for name in TABS if has_tabs(pg) else ("",):
-            if name:
-                tab(pg, name)
-            go(pg, view, 0.0)
-            measure(f"{view} {name}".strip())
-    MEASURED.setdefault(size, {})["page_h"] = worst["sh"]
-    R.check(
-        f"{vp(w, h)}: no page scroll (scrollHeight <= innerHeight + 1, scrollWidth <= innerWidth)"
-        " at load, after the run, each tab in either view",
-        not where,
-        f"page {worst['sw']}x{worst['sh']} in {w}x{h}" + (f"; {where[:3]}" if where else ""),
-    )
-    ctx.close()
-
-
-@guarded
-def check_tabs(D: Data, browser, target: str, size: tuple[int, int], shots: Path) -> None:
-    """The tabs: ARIA roles; each opens by mouse, by tap and by keyboard (arrows, Home, End, and
-    the focus follows); its body shows inside the panel and on screen, no wider than the panel,
-    and scrolls to its last line; at 1440 x 900 Story, Metrics and the matches fit unscrolled."""
-    w, h = size
-    ctx, pg = open_page(browser, target, width=w, height=h)
-    # the tab open on load (Findings; a page without it, whichever is open)
-    first = pg.evaluate("""() => { const p = document.getElementById('tp-findings') || [...document.querySelectorAll('[role=tabpanel]')].find(x => !x.hidden);
-      const r = p.getBoundingClientRect(), cs = getComputedStyle(p);
-      const padT = parseFloat(cs.paddingTop), padB = parseFloat(cs.paddingBottom);
-      const lead = (p.querySelector('#conclusion-1 li') || p.querySelector('h2')).getBoundingClientRect();
-      const row = p.querySelector('#verdict tbody tr'), rb = row ? row.getBoundingClientRect() : {top: 1e9, bottom: 1e9};
-      return {open: !p.hidden && p.id === 'tp-findings', body: p.clientHeight - padT - padB, top: r.top + padT,
-              bottom: r.top + p.clientHeight - padB, h2top: lead.top, h2bottom: lead.bottom,
-              rowtop: rb.top, rowbottom: rb.bottom, thesisIn: p.contains(document.getElementById('thesis'))}; }""")
-    floor = max(TAB_BODY_MIN, TAB_BODY_SHARE * h)
-    MEASURED.setdefault(size, {})["body"] = first["body"]
-    R.check(
-        f"{vp(w, h)} tabs: Findings is open on load, its body's text box (padding out) >="
-        f" max({TAB_BODY_MIN}, {TAB_BODY_SHARE:.0%} of the height), its first conclusion in it whole and"
-        " the verdict's first row too (where the thesis is not opening it), unscrolled",
-        first["open"]
-        and first["body"] >= floor - 0.5
-        and first["h2top"] >= first["top"] - 0.5
-        and (first["h2bottom"] <= first["bottom"] + 0.5 or first["thesisIn"])
-        and (first["thesisIn"] or first["rowbottom"] <= first["bottom"] + 0.5),
-        f"text box {first['body']:.0f} px (floor {floor:.0f}); first conclusion"
-        f" {first['h2top'] - first['top']:.0f}..{first['h2bottom'] - first['top']:.0f} px, first verdict"
-        f" row ends at {first['rowbottom'] - first['top']:.0f} px",
-    )
-    pg.evaluate("camera.pause()")
-    roles = pg.evaluate("""() => { const list = document.querySelector('[role=tablist]');
-      const tabs = [...document.querySelectorAll('[role=tab]')];
-      return {list: Boolean(list), tabs: tabs.map(t => [t.dataset.tab, t.getAttribute('aria-controls'),
-        document.getElementById(t.getAttribute('aria-controls'))?.getAttribute('role'),
-        document.getElementById(t.getAttribute('aria-controls'))?.getAttribute('aria-labelledby') === t.id])}; }""")
-    R.check(
-        f"{vp(w, h)} tabs: a tablist of six tabs, Findings first, each controlling a tabpanel labelled by it",
-        roles["list"]
-        and [t[0] for t in roles["tabs"]] == list(TABS)
-        and all(t[2] == "tabpanel" and t[3] for t in roles["tabs"]),
-        json.dumps(roles["tabs"]),
-    )
-    state_js = """() => ({sel: [...document.querySelectorAll('[role=tab]')].filter(t => t.getAttribute('aria-selected') === 'true').map(t => t.dataset.tab),
-        open: [...document.querySelectorAll('[role=tabpanel]')].filter(p => !p.hidden).map(p => p.id),
-        tabindex: [...document.querySelectorAll('[role=tab]')].map(t => t.tabIndex),
-        focus: document.activeElement && document.activeElement.dataset ? document.activeElement.dataset.tab || null : null})"""
-
-    def opened(name: str, s: dict) -> bool:
-        return (
-            s["sel"] == [name]
-            and s["open"] == [f"tp-{name}"]
-            and sorted(s["tabindex"]) == [-1] * (len(TABS) - 1) + [0]
-        )
-
-    bad = {"mouse": [], "tap": [], "keys": []}
-    for name in (*TABS[1:], TABS[0]):
-        pg.click(f"#tab-{name}")
-        pg.wait_for_function("camera.state().view !== 'rising'", timeout=10000)
-        if not opened(name, pg.evaluate(state_js)):
-            bad["mouse"].append(name)
-        pg.tap(f"#tab-{name}")
-        pg.wait_for_function("camera.state().view !== 'rising'", timeout=10000)
-        if not opened(name, pg.evaluate(state_js)):
-            bad["tap"].append(name)
-    pg.focus("#tab-story")
-    pg.keyboard.press("Home")
-    seq = [("ArrowRight", n) for n in (*TABS[1:], TABS[0])]
-    seq += [("ArrowLeft", TABS[-1]), ("Home", TABS[0]), ("End", TABS[-1]), ("ArrowDown", TABS[0])]
-    for key, name in seq:
-        pg.keyboard.press(key)
-        pg.wait_for_function("camera.state().view !== 'rising'", timeout=10000)
-        s = pg.evaluate(state_js)
-        if not opened(name, s) or s["focus"] != name:
-            bad["keys"].append(f"{key}->{name}")
-    R.check(
-        f"{vp(w, h)} tabs: each opens by mouse, by tap and by the arrow keys, Home and End (the"
-        " focus follows; one tab selected, one panel shown, roving tabindex)",
-        not any(bad.values()),
-        json.dumps(bad),
-    )
-    inner, cut, fit = {}, [], []
-    for name in TABS:
-        tab(pg, name)
-        if name == "matches":
-            pg.wait_for_timeout(100)
-        m = pg.evaluate(f"""() => {{ const p = document.getElementById('tp-{name}'), r = p.getBoundingClientRect();
-          const kids = [...p.querySelectorAll('*')].filter(e => __vis(e) && !(e.closest('svg') && e.tagName !== 'svg'));
-          const wide = kids.map(e => [e.id || e.tagName, e.getBoundingClientRect()])
-            .filter(([, b]) => b.width > 0 && (b.left < r.left - 0.5 || b.right > r.left + p.clientWidth + 0.5)).map(([n, b]) => [n, Math.round(b.left), Math.round(b.right)]);
-          p.scrollTop = p.scrollHeight;
-          const last = p.lastElementChild.getBoundingClientRect(), r2 = p.getBoundingClientRect();
-          const cs = getComputedStyle(p), pad = parseFloat(cs.paddingTop) + parseFloat(cs.paddingBottom);
-          const out = {{sh: p.scrollHeight, ch: p.clientHeight, text: p.clientHeight - pad, sw: p.scrollWidth, cw: p.clientWidth, top: r.top, bottom: r.bottom,
-                       overflow: getComputedStyle(p).overflowY, lastIn: last.bottom <= r2.bottom + 1 && last.bottom >= r2.top, wide: wide.slice(0, 3), ih: innerHeight, iw: innerWidth, right: r.right}};
-          p.scrollTop = 0; return out; }}""")
-        inner[name] = max(0, m["sh"] - m["ch"])
-        if m["text"] < floor - 0.5:
-            cut.append((name, {"text box": m["text"], "floor": floor}))
-        if (
-            m["sw"] > m["cw"] + 1
-            or m["wide"]
-            or not m["lastIn"]
-            or m["bottom"] > m["ih"] + 0.5
-            or m["right"] > m["iw"] + 0.5
-            or (inner[name] > 0 and m["overflow"] not in ("auto", "scroll"))
-        ):
-            cut.append((name, m))
-        if (
-            size == (1440, 900) and name in FIT_TABS or size == (1280, 720) and name == "findings"
-        ) and inner[name] > 0:
-            fit.append(name)
-        if size in ((1440, 900), (390, 844)):
-            pg.evaluate(f"document.getElementById('tp-{name}').scrollTop = 0")
-            shot(pg, shots, f"{vp(w, h)}_tab_{name}")
-    MEASURED.setdefault(size, {})["inner"] = inner
-    R.check(
-        f"{vp(w, h)} tabs: each body at least the floor, inside the panel and on screen, no wider than"
-        " the panel, and scrolls (not clips) to its last line",
-        not cut,
-        "; ".join(f"{n}: {json.dumps(m)[:200]}" for n, m in cut[:2])
-        or ", ".join(f"{n} {px}" for n, px in inner.items()) + " px to scroll",
-    )
-    if size in ((1440, 900), (1280, 720)):
-        which = "Findings, Story, Metrics and the matches" if size == (1440, 900) else "Findings"
-        R.check(
-            f"{vp(w, h)} tabs: {which} fit their body with no inner scroll",
-            not fit,
-            ", ".join(f"{n} {inner[n]} px over" for n in fit) or "they fit",
-        )
-    ctx.close()
-
-
-@guarded
-def check_text(D: Data, browser, target: str, size: tuple[int, int], shots: Path) -> None:
-    """Text (the acceptance's third and fourth rows): prose at 16 px, every caption, tick and tag
-    at 12 px, every piece of text at 4.5:1 against what is under it (no text straight on the
-    canvas), every visible button, tab, link and the scrubber 44 px each way; and no two pieces of
-    writing on the stage and in the control bar overlap, at load, at the reception in either view
-    and variant, and with each tab open; the strips' labels overlap nowhere. The header holds the
-    title on one line and the thesis that says the change is a different sample, not an error."""
-    w, h = size
-    ctx, pg = open_page(browser, target, width=w, height=h)
-    head = pg.evaluate("""() => { const h1 = document.querySelector('h1'), th = document.getElementById('thesis');
-      const b = th.getBoundingClientRect(), lh = parseFloat(getComputedStyle(th).lineHeight);
-      return {h: h1.getBoundingClientRect().height, lh: parseFloat(getComputedStyle(h1).lineHeight), sw: h1.scrollWidth, cw: h1.clientWidth,
-              thesis: th.textContent, tb: b.bottom, tt: b.top, lines: Math.round(b.height / lh), vis: __vis(th),
-              where: th.closest('#top') ? 'header' : 'findings'}; }""")
-    MEASURED.setdefault(size, {})["thesis"] = f"{head['lines']} lines, {head['where']}"
-    R.check(
-        f"{vp(w, h)}: the title on one line; on load the thesis on screen, one sentence on the twenty"
-        f" matches saying '{THESIS_SAYS}'",
-        head["h"] <= 1.5 * head["lh"]
-        and head["sw"] <= head["cw"]
-        and head["vis"]
-        and head["tt"] >= 0
-        and head["tb"] <= h
-        and THESIS_SAYS in head["thesis"]
-        and "matches" in head["thesis"]
-        and head["thesis"].count(". ") == 0,
-        f"{head['lines']} lines in the {head['where']}: {head['thesis'][:80]}",
-    )
-    small, faint, canvas_text, hits, cut = [], [], [], [], []
-    seen_targets: dict[str, tuple[float, float]] = {}
-
-    def look(label: str) -> None:
-        for t in pg.evaluate(TEXT_JS):
-            if t["size"] < LABEL_MIN_PX or (
-                t["tag"] in ("p", "li") and t["len"] >= 60 and t["size"] < BODY_MIN_PX
-            ):
-                small.append((label, t["id"], t["text"], t["size"]))
-            if not t["disabled"] and t["ratio"] < CONTRAST_MIN:
-                faint.append((label, t["id"], t["text"], t["ratio"]))
-            if t["overCanvas"]:
-                canvas_text.append((label, t["id"], t["text"]))
-            if t["pane"] is None and (
-                t["x"] < -0.5
-                or t["y"] < -0.5
-                or t["x"] + t["w"] > w + 0.5
-                or t["y"] + t["h"] > h + 0.5
-            ):
-                cut.append((label, t["id"], t["text"]))
-        boxes = pg.evaluate(BOXES_JS)
-        for n, a in enumerate(boxes):
-            for b in boxes[n + 1 :]:
-                if meets(a, b):
-                    hits.append((label, a["name"], b["name"]))
-        for e in pg.evaluate("""() => [...document.querySelectorAll('a, button, input, [role=tab]')].filter(__vis)
-            .map(e => { const q = e.getBoundingClientRect(); return [e.id || e.textContent.trim().slice(0, 20), q.width, q.height]; })"""):
-            seen_targets[e[0]] = (
-                min(e[1], seen_targets.get(e[0], (e[1], e[2]))[0]),
-                min(e[2], seen_targets.get(e[0], (e[1], e[2]))[1]),
-            )
-
-    look("load")
-    shot(pg, shots, f"{vp(w, h)}_load")
-    pg.wait_for_function("camera.state().phase === 'ended'", timeout=15000)
-    pg.wait_for_function("camera.state().view !== 'rising'", timeout=15000)
-    pg.wait_for_timeout(int((HOLD_S + FLIGHT_S + FADE_S) * 1000) + 300)
-    look("run ended")
-    shot(pg, shots, f"{vp(w, h)}_reception_freeze")
-    for view in ("broadcast", "plan"):
-        for variant in ("V0", "V1"):
-            go(pg, view, 0.0)
-            pg.evaluate(f"camera.variant('{variant}')")
-            settle(pg)
-            look(f"{view} {variant}")
-            if variant == "V1" and view == "plan":
-                shot(pg, shots, f"{vp(w, h)}_topdown_V1")
-            if variant == "V0" and view == "broadcast":
-                shot(pg, shots, f"{vp(w, h)}_broadcast_reception")
-    pg.evaluate("camera.variant('V0')")
-    if has_tabs(pg):
-        for name in TABS:
-            tab(pg, name)
-            look(f"tab {name}")
-        tab(pg, "story")
-    graphics = pg.evaluate(
-        GRAPHICS_JS,
-        [[(float(x), float(y)) for x, y in D.rivals[D.key]], [bool(v) for v in D.seen[D.key]]],
-    )
-    texts = []
-    if has_tabs(pg):
-        tab(pg, "matches")
-        pg.wait_for_timeout(100)
-    texts = pg.evaluate(
-        "() => [...document.querySelectorAll('#strips text')].map(e => { const b = e.getBoundingClientRect();"
-        " return {x: b.left, y: b.top, w: b.width, h: b.height, t: e.textContent}; })"
-    )
-    strip_hits = [
-        (a["t"], b["t"]) for n, a in enumerate(texts) for b in texts[n + 1 :] if meets(a, b)
-    ]
-    small_t = sorted(
-        {k for k, (tw, th) in seen_targets.items() if tw < TARGET_PX or th < TARGET_PX}
-    )
-    R.check(
-        f"{vp(w, h)}: prose (p, li of 60+ characters) >= {BODY_MIN_PX} px; every other text,"
-        f" tick and tag >= {LABEL_MIN_PX} px",
-        not small,
-        json.dumps(sorted(set(small))[:4]),
-    )
-    R.check(
-        f"{vp(w, h)}: every piece of text at >= {CONTRAST_MIN}:1 against what is under it (the"
-        " tags too), none straight on the canvas",
-        not faint and not canvas_text,
-        f"faint {sorted(set(faint))[:4]}; on the canvas {sorted(set(canvas_text))[:3]}",
-    )
-    R.check(
-        f"{vp(w, h)}: every visible button, tab, link and the scrubber at least {TARGET_PX} px each way",
-        seen_targets and not small_t,
-        f"{len(seen_targets)} targets; under: {small_t[:4]}",
-    )
-    R.check(
-        f"{vp(w, h)}: no two of the tags, the counter, the key, the buttons, the ticks and the tabs"
-        " overlap (load, run, either view and variant, each tab); nothing outside the panel is cut"
-        " by the window",
-        not hits and not cut,
-        f"overlaps {sorted(set(hits))[:3]}; cut {sorted(set(cut))[:3]}",
-    )
-    R.check(
-        f"{vp(w, h)}: the strips' labels overlap nowhere (names, 'this match', the axes' numbers)",
-        len(texts) > 7 and not strip_hits,
-        f"{len(texts)} labels; overlaps {strip_hits[:3]}",
-    )
-    if not graphics:
-        R.check(
-            f"{vp(w, h)}: graphics at 3:1 where they carry meaning (the pitch's lines, the bodies)",
-            False,
-            "the page does not give its pitch colours (camera.colours.pitchLines): nothing to read",
-        )
-    else:
-        MEASURED.setdefault(size, {}).update(
-            {"ghost": graphics["ghost"], "solid": graphics["solid"]}
-        )
-        R.check(
-            f"{vp(w, h)}: graphics at 3:1 where they carry meaning: the pitch's lines >= {LINES_MIN}:1 on"
-            f" the grass and in the shade; a filled-in body >= {GHOST_MIN}:1 and a seen one >="
-            f" {SOLID_MIN}:1 against what is behind them (broadcast, the reception)",
-            graphics["lines"] >= LINES_MIN
-            and graphics["linesShade"] >= LINES_MIN
-            and (
-                graphics["n"] == [0, 0]
-                or (graphics["ghost"] >= GHOST_MIN and graphics["solid"] >= SOLID_MIN)
-            ),
-            json.dumps(graphics)
-            + (
-                "; the bodies are under 3 px wide here: only the lines are read"
-                if graphics["n"] == [0, 0]
-                else ""
-            ),
-        )
-    ctx.close()
-
-
-@guarded
-def check_framing(D: Data, browser, target: str, size: tuple[int, int], shots: Path) -> None:
-    """The broadcast fit (2.4) and the plan's scale: the receiver, the ball and the clipped frame
-    inside the canvas in the 100 frames; a defender outside it, seen or filled in, has his tag on
-    that edge with an arrow and his seconds (or 'seen'); at most 10 % of the height between the
-    lowest and the counter and key; the median drawn height of the defenders in the canvas at
-    least LEGIBLE_PX; at most EMPTY_MAX of the stage bare sky; in plan a defender's disc at least
-    DISC_MIN_PX across, and the frame's far edge inside the stage (the window closes)."""
-    w0, h0 = size
-    ctx, pg = open_page(browser, target, width=w0, height=h0)
-    go(pg, "broadcast")
-    w, h = pg.evaluate("[camera.camera().width, camera.camera().height]")
-    foot = pg.evaluate(
-        "document.getElementById('foot').getBoundingClientRect().top"
-        " - document.getElementById('stage').getBoundingClientRect().top"
-    )
-    bad, edge_bad, low, heights, left_out, leans = [], [], 0.0, [], set(), []
-    arrows = {"left": "←", "right": "→", "top": "↑", "bottom": "↓"}
-    for i in range(D.n):
-        pg.evaluate(f"camera.seek({(i - D.key) / D.fps})")
-        k = len(D.rivals[i])
-        feet = [(x, y, 0) for x, y in D.rivals[i]]
-        heads = [(x, y, BODY_H) for x, y in D.rivals[i]]
-        rest = [(*D.me[i], 0), (*D.me[i], BODY_H), (*D.ball[i], 0)]
-        rest += [(x, y, 0) for x, y, _ in clip_frame(D.corners[i])]
-        px = proj(pg, feet + heads + rest)
-
-        def inside(p) -> bool:
-            return -0.5 <= p[0] <= w + 0.5 and -0.5 <= p[1] <= h + 0.5
-
-        shown = [inside(px[j]) and inside(px[k + j]) for j in range(k)]
-        if not all(inside(p) for p in px[2 * k :]):
-            bad.append(i)
-        tags = {t["k"]: t for t in pg.evaluate(TAGS_JS) if t["kind"] == "rival"}
-        for j in range(k):
-            a = px[k + j]
-            side = (
-                "left"
-                if a[0] < 0
-                else "right"
-                if a[0] > w
-                else "top"
-                if a[1] < 0
-                else "bottom"
-                if a[1] > h
-                else ""
-            )
-            if not side:
-                continue
-            left_out.add(j)
-            t = tags.get(j)
-            says = "seen" if D.seen[i, j] else f"{D.gap[i, j] / D.fps:.1f} s"
-            at_edge = t is not None and (
-                (side == "left" and t["x"] <= 4)
-                or (side == "right" and t["x"] + t["w"] >= w - 4)
-                or (side == "top" and t["y"] <= 4)
-                or (side == "bottom" and t["y"] + t["h"] >= min(h, foot) - 8)
-            )
-            if (
-                t is None
-                or t["edge"] != side
-                or says not in t["text"]
-                or arrows[side] not in t["text"]
-                or not at_edge
-            ):
-                edge_bad.append(i)
-        pts = [px[j] for j in range(k) if shown[j]] + [px[k + j] for j in range(k) if shown[j]]
-        low = max(low, max(float(p[1]) for p in [*pts, *px[2 * k :]]))
-        heights += [float(px[j][1] - px[k + j][1]) for j in range(k) if shown[j]]
-        leans += [
-            abs(math.degrees(math.atan2(px[k + j][0] - px[j][0], px[j][1] - px[k + j][1])))
-            for j in range(k)
-            if shown[j]
-        ]
-    med = float(np.median(heights))
-    R.check(
-        f"{vp(w0, h0)} broadcast: the receiver, the ball and the frame inside the canvas in the 100 frames",
-        not bad,
-        f"outside at {bad[:5]}",
-    )
-    R.check(
-        f"{vp(w0, h0)} broadcast: a defender outside the canvas (any side, seen or filled in) has his"
-        " tag on that edge with an arrow and his seconds or 'seen' (100 frames)",
-        not edge_bad,
-        f"left out: {sorted(D.doc['entities']['rivals']['ids'][j] for j in left_out)}; wrong at {sorted(set(edge_bad))[:5]}",
-    )
-    R.check(
-        f"{vp(w0, h0)} broadcast: at most {BOTTOM_GAP_MAX[size]:.0%} of the height between the lowest"
-        " point and the counter under it",
-        (min(h, foot) - low) / h <= BOTTOM_GAP_MAX[size],
-        f"{(min(h, foot) - low) / h:.3f}",
-    )
-    R.check(
-        f"{vp(w0, h0)} broadcast: the median drawn height of the defenders in the canvas >= {LEGIBLE_PX[size]} px",
-        med >= LEGIBLE_PX[size],
-        f"{med:.1f} px",
-    )
-    lean_med, lean_max = float(np.median(leans)), float(np.max(leans))
-    # the camera's tilt below the horizon, from its view matrix (column-major: row 2 is its axis)
-    tilt = math.degrees(math.asin(max(-1.0, min(1.0, pg.evaluate("camera.camera().view[6]")))))
-    MEASURED.setdefault(size, {})["tilt"] = tilt
-    R.check(
-        f"{vp(w0, h0)} broadcast: a television's angle, the camera {TILT_TV_MAX:.0f} deg or less below"
-        " the horizon",
-        tilt <= TILT_TV_MAX,
-        f"{tilt:.1f} deg",
-    )
-    R.check(
-        f"{vp(w0, h0)} broadcast: the bodies lean at most {LEAN_MEDIAN_MAX:.0f} deg (median) and"
-        f" {LEAN_MAX:.0f} deg (any) from upright",
-        lean_med <= LEAN_MEDIAN_MAX and lean_max <= LEAN_MAX,
-        f"median {lean_med:.1f}, most {lean_max:.1f} deg",
-    )
-    pg.evaluate("camera.seek(0)")
-    settle(pg)
-    sky = sky_share(pg)
-    R.check(
-        f"{vp(w0, h0)} broadcast: at most {EMPTY_MAX[size]:.0%} of the stage is bare sky",
-        sky <= EMPTY_MAX[size],
-        f"{sky:.3f}",
-    )
-    go(pg, "plan", 0.0)
-    one = proj(pg, [(0.0, 0.0, 0.0), (1.0, 0.0, 0.0)])
-    disc = 2 * DISC_R * float(np.hypot(*(one[1] - one[0])))
-    region_y1 = foot - 6
-    far = [
-        proj(pg, [(x, y, 0)])[0]
-        for i in range(D.n)
-        for x, y, edge in clip_frame(D.corners[i])
-        if edge == 2
-    ]
-    # a portrait plan holds the defenders near the window, not the window: its edges run off
-    portrait = h0 > w0
-    far_in = portrait or all(-0.5 <= p[1] <= region_y1 + 0.5 for p in far)
-    R.check(
-        f"{vp(w0, h0)} plan: a defender's disc >= {DISC_MIN_PX[size]} px across"
-        + (
-            ""
-            if portrait
-            else "; the frame's far edge inside the stage in the 100 frames (the window closes)"
-        ),
-        disc >= DISC_MIN_PX[size] and far_in,
-        f"disc {disc:.1f} px; far edge y {min(p[1] for p in far):.0f}..{max(p[1] for p in far):.0f} px in 0..{region_y1:.0f}",
-    )
-    MEASURED.setdefault(size, {}).update(
-        {"players_px": med, "sky": sky, "disc_px": disc, "lean": lean_med}
-    )
-    ctx.close()
-
-
-def sky_share(pg) -> float:
-    """The share of the stage a reader sees as bare sky: the canvas's pixels of the sky's colour,
-    less those under the counter, the key and the key's strip (opaque cards over the canvas)."""
-    return pg.evaluate(
-        """(hex) => { const c = document.getElementById('pitch'), t = document.createElement('canvas');
-      t.width = c.width; t.height = c.height; const x = t.getContext('2d'); x.drawImage(c, 0, 0);
-      const d = x.getImageData(0, 0, c.width, c.height).data, s = c.width / c.clientWidth;
-      const st = document.getElementById('stage'), r0 = st.getBoundingClientRect();
-      const cards = ['count', 'key', 'keystrip'].map(id => document.getElementById(id))
-        .filter(e => e && __vis(e) && st.contains(e)).map(e => e.getBoundingClientRect())
-        .map(b => [(b.left - r0.left) * s, (b.top - r0.top) * s, (b.right - r0.left) * s, (b.bottom - r0.top) * s]);
-      const r = parseInt(hex.slice(1, 3), 16), g = parseInt(hex.slice(3, 5), 16), b = parseInt(hex.slice(5, 7), 16);
-      let n = 0, k = 0;
-      for (let y = 0; y < c.height; y++) for (let i = 0; i < c.width; i++) {
-        if (cards.some(q => i >= q[0] && i < q[2] && y >= q[1] && y < q[3])) continue;
-        const o = 4 * (y * c.width + i); n++;
-        if (Math.abs(d[o] - r) <= 2 && Math.abs(d[o + 1] - g) <= 2 && Math.abs(d[o + 2] - b) <= 2) k++; }
-      return k / n; }""",
-        SKY,
-    )
-
-
-# Each visible tag with its box in the stage, its edge (a defender outside the canvas) and the
-# end of its leader (null when the leader is hidden): tags and leaders are built in one order.
-TAGS_JS = """() => { const s = document.getElementById('stage').getBoundingClientRect();
-  const leads = [...document.querySelectorAll('#tags .lead')];
-  return [...document.querySelectorAll('#tags .tag')].map((t, n) => [t, leads[n]]).filter(([t]) => !t.hidden)
-    .map(([t, l]) => { const b = t.getBoundingClientRect();
-      return {kind: t.dataset.kind, k: t.dataset.k === undefined ? null : +t.dataset.k, text: t.textContent,
-              edge: t.dataset.edge || null, x: b.left - s.left, y: b.top - s.top, w: b.width, h: b.height,
-              anchor: l.style.display === 'none' ? null : [+l.getAttribute('x2'), +l.getAttribute('y2')],
-              lead: l.style.display === 'none' ? 0 : Math.hypot(+l.getAttribute('x2') - +l.getAttribute('x1'), +l.getAttribute('y2') - +l.getAttribute('y1'))}; }); }"""
-
-
-@guarded
-def check_tags(D: Data, browser, target: str, size: tuple[int, int]) -> None:
-    """The tags (2.3) in the 100 frames, both views: each anchor nearer its player than any
-    other (a tag on the canvas's edge: its player outside on that side), no two boxes overlap,
-    none covers the ball, none meets the counter or the key, and no player stands under the
-    counter or the key; a tag left out for lack of room is counted (none above 360 px wide)."""
-    w0, h0 = size
-    ctx, pg = open_page(browser, target, width=w0, height=h0)
-    crowded_max, longest, cover = 0, 0.0, {}
-    for view, variant in (("broadcast", "V0"), ("plan", "V0"), ("plan", "V1")):
-        go(pg, view, 0.0)
-        pg.evaluate(f"camera.variant('{variant}')")
-        settle(pg)
-        area = sum(t["w"] * t["h"] for t in pg.evaluate(TAGS_JS))
-        cw, ch = pg.evaluate("[camera.camera().width, camera.camera().height]")
-        cover[f"{view} {variant}"] = round(area / (cw * ch), 3)
-    pg.evaluate("camera.variant('V0')")
-    for view in ("broadcast", "plan"):
-        go(pg, view)
-        w, h = pg.evaluate("[camera.camera().width, camera.camera().height]")
-        z = BODY_H if view == "broadcast" else 0.0
-        boxes = pg.evaluate("""() => { const s = document.getElementById('stage').getBoundingClientRect();
-          return ['count', 'key', 'keystrip'].map(id => document.getElementById(id)).filter(e => e && __vis(e) && document.getElementById('stage').contains(e))
-            .map(e => { const b = e.getBoundingClientRect(); return {x: b.left - s.left, y: b.top - s.top, w: b.width, h: b.height}; }); }""")
-        wrong, overlap, ball, foot, under = [], [], [], [], []
-        for i in range(D.n):
-            pg.evaluate(f"camera.seek({(i - D.key) / D.fps})")
-            tags = pg.evaluate(TAGS_JS)
-            crowded_max = max(
-                crowded_max,
-                pg.evaluate("document.querySelectorAll('#tags .tag[data-crowded]').length"),
-            )
-            people = proj(pg, [(x, y, z) for x, y in D.rivals[i]] + [(*D.me[i], z)])
-            bpx = proj(pg, [(*D.ball[i], 0)])[0]
-            # a portrait plan holds the defenders near the window, the receiver and the ball; a
-            # teammate outside that box may fall under the counter
-            mates = (
-                []
-                if (view == "plan" and h0 > w0)
-                else [(x, y, z) for x, y in D.mates[i] if not np.isnan(x)]
-            )
-            others = mates + [(*D.ball[i], 0)]
-            for px, py in [*people, *proj(pg, others)]:
-                if any(
-                    b["x"] - 4 <= px <= b["x"] + b["w"] + 4
-                    and b["y"] - 4 <= py <= b["y"] + b["h"] + 4
-                    for b in boxes
-                ):
-                    under.append(i)
-            for t in tags:
-                longest = max(longest, t.get("lead", 0.0))
-                if t["kind"] in ("rival", "me"):
-                    own = t["k"] if t["kind"] == "rival" else len(people) - 1
-                    if t["edge"]:
-                        x, y = people[own]
-                        off = {"left": x < 0, "right": x > w, "top": y < 0, "bottom": y > h}
-                        if not off.get(t["edge"], False):
-                            wrong.append(i)
-                        continue
-                    if t["anchor"] is None:
-                        wrong.append(i)
-                        continue
-                    d = np.hypot(*(people - np.array(t["anchor"])).T)
-                    if int(np.argmin(d)) != own:
-                        wrong.append(i)
-                if (
-                    t["x"] - 1 < bpx[0] < t["x"] + t["w"] + 1
-                    and t["y"] - 1 < bpx[1] < t["y"] + t["h"] + 1
-                ):
-                    ball.append(i)
-                if any(meets(t, b) for b in boxes):
-                    foot.append(i)
-            for m, s in enumerate(tags):
-                for t in tags[m + 1 :]:
-                    if meets(s, t):
-                        overlap.append(i)
-        R.check(
-            f"{vp(w0, h0)} {view}: tags in the 100 frames: each anchor nearest its player, no overlap,"
-            " none over the ball or on the counter and key; no player under the counter or key",
-            not wrong and not overlap and not ball and not foot and not under,
-            f"wrong anchor {sorted(set(wrong))[:5]}, overlaps {sorted(set(overlap))[:5]}, ball"
-            f" {sorted(set(ball))[:5]}, on the foot {sorted(set(foot))[:5]}, players under it {sorted(set(under))[:5]}",
-        )
-    MEASURED.setdefault(size, {}).update({"crowded": crowded_max, "lead": longest, "cover": cover})
-    R.check(
-        f"{vp(w0, h0)}: every leader at most {LEADER_MAX_PX:.0f} px (100 frames, both views); the tags"
-        f" cover at most {LABEL_COVER_MAX[size]:.0%} of the stage at the reception (broadcast, plan V0, V1)",
-        longest <= LEADER_MAX_PX and all(v <= LABEL_COVER_MAX[size] for v in cover.values()),
-        f"longest leader {longest:.0f} px; cover {json.dumps(cover)}",
-    )
-    R.check(
-        f"{vp(w0, h0)}: tags left out for lack of room, at most {0 if w0 > 360 else 2} in a frame",
-        crowded_max <= (0 if w0 > 360 else 2),
-        f"{crowded_max}",
-    )
-    ctx.close()
-
-
-@guarded
-def check_controls(D: Data, browser, target: str, size: tuple[int, int]) -> None:
-    """The control bar: Play, the scrubber and Broadcast | Top-down on one row, on screen, and
-    V0 | V1 beside the readout; the ticks' label on one line where shown; the scrubber's thumb takes
-    a press 20 px either side of its centre; the key (whole on the stage, or as its strip over the
-    scene on a compact screen) and the readout on the first screen."""
-    w, h = size
-    ctx, pg = open_page(browser, target, width=w, height=h)
-    m = pg.evaluate("""() => { const r = id => document.getElementById(id).getBoundingClientRect().toJSON();
-      const l = document.querySelector('#ticks .tick-label');
-      return {ids: ['play', 'scrub', 'view-broadcast', 'view-plan', 'variant-v0', 'variant-v1'].map(id => [id, r(id), __vis(document.getElementById(id))]),
-              ticks: {h: l.getBoundingClientRect().height, lh: parseFloat(getComputedStyle(l).lineHeight), shown: __vis(l)},
-              row: (() => { const t = ['play', 'scrub', 'view-broadcast'].map(id => r(id).top); return Math.max(...t) - Math.min(...t); })(),
-              toggle: Boolean(document.getElementById('variant-v0').closest('#readout')),
-              key: [__vis(document.getElementById('keystrip')) ? r('keystrip') : r('key'),
-                    __vis(document.getElementById('keystrip')) || (__vis(document.getElementById('key')) && Boolean(document.getElementById('key').closest('#stage')))],
-              readout: [r('panel-table'), __vis(document.getElementById('panel-table'))]}; }""")
-    off = [
-        i
-        for i, b, v in m["ids"]
-        if not v or b["bottom"] > h + 0.5 or b["right"] > w + 0.5 or b["left"] < -0.5
-    ]
-    R.check(
-        f"{vp(w, h)}: Play, the scrubber and Broadcast | Top-down on one row and on screen, V0 | V1"
-        " in the readout; the ticks' label on one line where shown",
-        not off
-        and m["row"] <= 2
-        and m["toggle"]
-        and (not m["ticks"]["shown"] or m["ticks"]["h"] <= 1.5 * m["ticks"]["lh"]),
-        f"off screen {off}; row tops differ by {m['row']:.1f} px; V0|V1 in the readout {m['toggle']};"
-        f" ticks {json.dumps(m['ticks'])}",
-    )
-    k, r = m["key"], m["readout"]
-    short = h <= 640  # a short screen: the key closes the Story tab, the stage keeps its height
-    in_story = pg.evaluate("Boolean(document.getElementById('key').closest('#tp-story'))")
-    R.check(
-        f"{vp(w, h)}: the key on the stage (whole, or its strip on a compact screen; closing Story on"
-        " a short one) and the V0/V1 readout on the first screen",
-        (in_story if short else k[1] and 0 <= k[0]["top"] and k[0]["bottom"] <= h)
-        and r[1]
-        and 0 <= r[0]["top"]
-        and r[0]["bottom"] <= h,
-        f"key {k[0]['top']:.0f}..{k[0]['bottom']:.0f}, readout {r[0]['top']:.0f}..{r[0]['bottom']:.0f} of {h}",
-    )
-    go(pg, "broadcast")
-    pg.evaluate("camera.pause(); camera.seek(1.5)")
-    settle(pg)
-    want = pg.evaluate("document.getElementById('scrub').value")
-    b = pg.evaluate("document.getElementById('scrub').getBoundingClientRect().toJSON()")
-    f = int(want) / (D.n - 1)
-    cx = b["left"] + 22 + f * (b["width"] - 44)
-    seen = []
-    for dx in (0, -20, 20):
-        pg.evaluate("camera.seek(1.5)")
-        pg.mouse.click(cx + dx, b["top"] + b["height"] / 2)
-        settle(pg)
-        seen.append(pg.evaluate("document.getElementById('scrub').value"))
-    R.check(
-        f"{vp(w, h)}: the scrubber's thumb takes a press 20 px either side of its centre",
-        all(v == want for v in seen),
-        f"{want}: {seen}",
-    )
-    ctx.close()
-
-
-@guarded
-def check_camera_tab(D: Data, browser, target: str, size: tuple[int, int], shots: Path) -> None:
-    """The Camera tab reuses the scene: from broadcast it rises to the plan, framed to hold where
-    the frame's side edges meet (every apex of the clip; on a portrait screen, their median), the
-    virtual camera tagged, no defender's seconds over the field, a defender's disc at least
-    CAMERA_DISC_MIN_PX; leaving it frames the reception again."""
-    w0, h0 = size
-    ctx, pg = open_page(browser, target, width=w0, height=h0)
-    go(pg, "broadcast", 0.0)
-    tab(pg, "camera")
-    pg.wait_for_timeout(int(FADE_S * 1000) + 200)
-    s = pg.evaluate("camera.state()")
-    w, h = pg.evaluate("[camera.camera().width, camera.camera().height]")
-    portrait = h0 > w0
-    held = [D.doc["camera"]["apex_median"]] if portrait else D.doc["camera"]["apex"]
-    apex = proj(pg, [(x, y, 0) for x, y in held])
-    inside = bool(
-        ((apex[:, 0] >= 0) & (apex[:, 0] <= w) & (apex[:, 1] >= 0) & (apex[:, 1] <= h)).all()
-    )
-    tags = pg.evaluate(
-        "[...document.querySelectorAll('#tags .tag')].filter(t => !t.hidden).map(t => [t.dataset.kind, t.dataset.unit || '', t.textContent])"
-    )
-    camera_tag = [t[2] for t in tags if t[1] == "camera"]
-    seconds = [t[2] for t in tags if t[0] == "rival"]
-    one = proj(pg, [(0.0, 0.0, 0.0), (1.0, 0.0, 0.0)])
-    disc = 2 * DISC_R * math.sqrt(float(((one[1] - one[0]) ** 2).sum()))
-    MEASURED.setdefault(size, {})["camera_disc"] = disc
-    if size in ((1440, 900), (390, 844)):
-        shot(pg, shots, f"{vp(w0, h0)}_camera_tab_scene")
-    height = f"{D.doc['camera']['drawn_height_m']:.0f} m"
-    R.check(
-        f"{vp(w0, h0)} Camera tab: from broadcast the scene rises to the plan holding where the side"
-        " edges meet, the virtual camera tagged with its drawn height, no defender's seconds, a disc"
-        f" >= {CAMERA_DISC_MIN_PX[size]} px",
-        s["view"] == "plan"
-        and s["tab"] == "camera"
-        and inside
-        and len(camera_tag) == 1
-        and height in camera_tag[0]
-        and not seconds
-        and disc >= CAMERA_DISC_MIN_PX[size],
-        f"view {s['view']}; held inside {inside}; camera tag {camera_tag}; seconds tags {seconds[:3]}; disc {disc:.1f} px",
-    )
-    tab(pg, "findings")
-    apex2 = proj(pg, [(x, y, 0) for x, y in held])
-    gone = pg.evaluate(
-        "[...document.querySelectorAll('#tags .tag.measure')].filter(t => !t.hidden && t.dataset.unit === 'camera').length"
-    )
-    R.check(
-        f"{vp(w0, h0)} Camera tab: leaving it frames the reception again (the camera's point off the"
-        " stage, no camera tag)",
-        gone == 0 and bool((apex2[:, 1] > h).all()),
-        f"camera tags {gone}; apex y from {apex2[:, 1].min():.0f} px in {h}",
-    )
-    ctx.close()
-
-
-@guarded
-def check_hidden_tab(D: Data, browser, target: str) -> None:
-    """A hidden tab (5.1), as a browser makes one: no animation frame while hidden. Mid-clip the
-    page's frames are held (requestAnimationFrame queues them) and the document says it is hidden
-    for HIDDEN_S, then it is shown and the frames run again. The clip resumes where it was: one
-    start on the page's clock, the time away counted as lost, and the reception reached 3.0 s of
-    play after the start plus that time."""
-    ctx, pg = open_page(browser, target)
-    pg.wait_for_function(
-        "camera.state().phase === 'playing' && camera.state().i >= 5", timeout=15000
-    )
-    pg.evaluate(HIDE_JS)
-    time.sleep(HIDDEN_S)
-    pg.evaluate(SHOW_JS)
-    pg.wait_for_function("camera.clock().some(c => c.e === 'reception')", timeout=15000)
-    clock = pg.evaluate("camera.clock()")
-    rec = next(c for c in clock if c["e"] == "reception")
-    starts = [c for c in clock if c["e"] == "play" and c["t"] <= rec["t"]]
-    tk = rec["t"] - starts[0]["t"] if starts else 0.0
-    want = D.key / D.fps / RATE * 1000 + rec["lost"]
-    R.check(
-        f"hidden tab: hidden {HIDDEN_S} s mid-clip (its frames held), the clip resumes where it was: one start,"
-        " the time away counted as lost, the reception 3.0 s of play after the start",
-        len(starts) == 1
-        and rec["lost"] >= HIDDEN_S * 1000 * 0.9
-        and want - 1 <= tk <= want + rec["step"] + 1,
-        f"starts {len(starts)}; lost {rec['lost']:.0f} ms; reception {tk / 1000:.3f} s after the start",
-    )
-    ctx.close()
-
-
-# ---------------------------------------------------------------- main
 
 
 def summary() -> None:
     """The per-viewport measures, as one table."""
-    print(
-        "\nviewport    page_h body thesis              players tilt/lean sky disc  cam_disc ghost solid"
-        " lead cover (broadcast, plan V0, V1)  inner scroll per tab"
-    )
+    print("\nviewport    page_h  fold_end  least mark  pitch lines")
     for size in VIEWPORTS:
-        m = MEASURED.get(size, {})
-        nan = float("nan")
-        cover = m.get("cover") or {}
-        inner = m.get("inner") or {}
-        print(
-            f"{vp(*size):<11} {m.get('page_h', '-')!s:>6} {m.get('body', '-')!s:>4} {m.get('thesis', '-')!s:<19}"
-            f" {m.get('players_px', nan):>7.1f} {m.get('tilt', nan):>4.0f}/{m.get('lean', nan):>4.1f} {m.get('sky', nan):>5.3f}"
-            f" {m.get('disc_px', nan):>5.1f} {m.get('camera_disc', nan):>8.1f} {m.get('ghost', nan):>5.2f}"
-            f" {m.get('solid', nan):>5.2f} {m.get('lead', nan):>4.0f} "
-            + " ".join(f"{v:.3f}" for v in cover.values())
-            + "  "
-            + " ".join(f"{k} {v}" for k, v in inner.items())
-        )
+        m = MEASURED.get(size)
+        if m:
+            print(
+                f"{vp(*size):<11} {m.get('page_h', '-')!s:>6}  {m.get('fold', '-')!s:>8}  {m.get('marks', float('nan')):>10.2f}  {m.get('lines', float('nan')):>11.2f}"
+            )
 
 
 def main(argv: list[str]) -> int:
@@ -2013,7 +939,6 @@ def main(argv: list[str]) -> int:
     parser = argparse.ArgumentParser(description=__doc__.split("\n", 1)[0])
     parser.add_argument("target", nargs="?", default=str(DEFAULT_PAGE))
     parser.add_argument("--shots", type=Path, default=ROOT / "build" / "camera")
-    parser.add_argument("--only", choices=["one-screen", "tabs"], default=None)
     parser.add_argument("--sizes", default=None, help="viewports to run, e.g. 1440x900,390x844")
     args = parser.parse_args(argv[1:])
     target = (
@@ -2026,66 +951,21 @@ def main(argv: list[str]) -> int:
     print(f"target: {target}" + (f" (viewports {args.sizes})" if args.sizes else ""), flush=True)
     t0 = time.time()
     with sync_playwright() as p:
-        browser = p.chromium.launch(args=CHROMIUM_ARGS)
-        ctx, pg = open_page(browser, target)
-        live = pg.evaluate("""() => { const c = document.createElement('canvas');
-                              return !!(c.getContext('webgl2') || c.getContext('webgl')); }""")
-        live = live and pg.evaluate("camera.camera() !== null && camera.camera().width > 0")
-        if not live:
-            R.check(
-                "WebGL is live in the browser being driven",
-                False,
-                "no webgl: nothing else can be trusted",
-            )
-            browser.close()
-            return 1
-        renderer = pg.evaluate("""() => { const gl = document.createElement('canvas').getContext('webgl2');
-                                  const ext = gl && gl.getExtension('WEBGL_debug_renderer_info');
-                                  return ext ? gl.getParameter(ext.UNMASKED_RENDERER_WEBGL) : 'unknown'; }""")
-        TIMED["on"] = "swiftshader" not in renderer.lower()
-        R.check(
-            "WebGL is live in the browser being driven",
-            True,
-            renderer + ("" if TIMED["on"] else f"; {SOFTWARE}"),
-        )
-        ctx.close()
+        browser = p.chromium.launch()
+        check_load(D, browser, target)
+        check_scene(D, browser, target)
+        check_play(D, browser, target)
+        check_tap(D, browser, target)
+        check_dot_tap(D, browser, target)
+        check_switch(D, browser, target)
+        check_numbers(D, browser, target)
+        check_reduced_motion(D, browser, target)
+        for size in sizes:
+            check_layout(D, browser, target, size, args.shots)
         browser.close()
-        if args.only:
-            browser = p.chromium.launch(args=CHROMIUM_ARGS)
-            for size in sizes:
-                if args.only == "one-screen":
-                    check_one_screen(D, browser, target, size)
-                else:
-                    check_tabs(D, browser, target, size, args.shots)
-            browser.close()
-        else:
-            check_startup(D, p, target)
-            browser = p.chromium.launch(args=CHROMIUM_ARGS)
-            check_hook(D, browser, target, args.shots)
-            check_hook_upright(D, browser, target, args.shots)
-            check_transport(D, browser, target)
-            check_plan_truth(D, browser, target)
-            check_frame(D, browser, target)
-            check_measure_only_in_plan(D, browser, target)
-            check_variant_and_ui(D, browser, target)
-            check_numbers(D, browser, target)
-            check_reduced_motion(D, browser, target)
-            check_hidden_tab(D, browser, target)
-            for size in sizes:
-                check_camera_tab(D, browser, target, size, args.shots)
-                check_one_screen(D, browser, target, size)
-                check_tabs(D, browser, target, size, args.shots)
-                check_text(D, browser, target, size, args.shots)
-                check_controls(D, browser, target, size)
-                check_framing(D, browser, target, size, args.shots)
-                check_tags(D, browser, target, size)
-            browser.close()
     n_fail = sum(1 for r in R.rows if not r[0])
     summary()
     print(f"\n{len(R.rows) - n_fail} passed, {n_fail} failed, {time.time() - t0:.0f} s")
-    print(
-        "simulated: the hidden tab (frames held and document.hidden set; headless cannot hide one)"
-    )
     return 0 if R.ok else 1
 
 

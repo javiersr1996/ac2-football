@@ -1,7 +1,8 @@
 # Publishes the committed camera page as it is, at https://javiersr1996.github.io/what-the-camera-saw/.
 # Not rebuilt here: `scripts/camera_page.py --check` in full-build.yml proves the build from the
-# data. What needs no data (`--check-static`, as ci.yml runs it: the payload is the sidecar,
-# three.js its hash, no typed number, nothing loaded) runs here too, before anything is deployed.
+# data. What needs no data (`--check-static`, as ci.yml runs it: the payload is the sidecar, the
+# sidecar the reports' and the README's, no typed number, nothing loaded) runs here too, before
+# anything is deployed.
 # Copied from the author's basketball entry (nobody-helps-the-helper, .github/workflows/pages.yml),
 # the path changed.
 name: Pages
@@ -33,7 +34,7 @@ jobs:
         run: uv python install
       - name: Install (the base is cloned from GitHub without a token)
         run: uv sync --locked
-      - name: Camera page, what needs no data (payload = sidecar, three.js by hash, no typed number, no network)
+      - name: Camera page, what needs no data (payload = sidecar, sidecar = the reports and the README, no typed number, no network)
         run: uv run python scripts/camera_page.py --check-static
       - run: mkdir _site && cp reports/camera/what_the_camera_saw.html _site/index.html
       - uses: actions/configure-pages@v5

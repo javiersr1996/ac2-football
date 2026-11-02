@@ -6,8 +6,9 @@ reads and writes; the door to the data stays single). Each figure is an SVG and 
 
 - Figure 1 (layer 2, the 10 calibration and the 10 held-out matches, each one drawn): detection
   by distance to the ball; the share of the filled frames that lies in each gap-length band;
-  per metric, V1 minus V0 and the error of amputation. Its sidecar also holds, drawn nowhere,
-  the error of amputation on the gaps over 20 s alone (panel ``d20``), which the README cites.
+  per metric, V1 minus V0 and the error of amputation, on all gaps (filled marks) and on the
+  gaps over 20 s alone (hollow marks: the sidecar's panel ``d20``, drawn in the strips of panel
+  d after every other series, so the indices the README cites do not move).
 - Figure 2 (layer 3, branch B: calibration only, because layer 3 died before any held-out
   reading): the effect and the pre-trend per match in V0, V1 and V2 with no extrapolated player,
   and the death (D3), stated.
@@ -84,7 +85,8 @@ def _bands() -> list[tuple[str, str]]:
 
 BINS = _bins()
 BANDS = _bands()
-#: The longest gap band ("gt_20s") and the panel, drawn nowhere, of the amputation error on it.
+#: The longest gap band ("gt_20s") and the sidecar's panel of the amputation error on it, drawn as
+#: the hollow marks of panel d.
 LONG_GAPS, LONG_GAPS_PANEL = BANDS[-1][0], "d20"
 METRICS = [
     ("pressure_index", "Pressure index"),
@@ -378,9 +380,9 @@ def _with_median(
 def _long_gaps(
     rep: _Reports, metric: str, matches: Mapping[str, list[str]]
 ) -> list[dict[str, Any]]:
-    """Panel d on the gaps over 20 s alone (band ``gt_20s``), per match and split: written to the
-    sidecar for the README, drawn nowhere. A match with no unit in the band has an empty cell, so
-    no point, as in panel d."""
+    """Panel d on the gaps over 20 s alone (band ``gt_20s``), per match and split: the sidecar's
+    panel ``d20``, drawn as the hollow marks of panel d's strips and cited by the README. A match
+    with no unit in the band has an empty cell, so no point, as in panel d."""
     out: list[dict[str, Any]] = []
     for g in (CAL, HELD):
         amp = f"{PREFIX[g]}amputation.csv"
@@ -446,6 +448,14 @@ def _fig1(rep: _Reports) -> _Drawn:
     ):
         _text(fig, left, height - 5.5, head, weight="bold")
         _text(fig, left, height - 5.75, sub, fontsize=8, color=GREY)
+    _text(
+        fig,
+        4.9,
+        height - 5.95,
+        "filled: all gaps. hollow: only b's longest gaps",
+        fontsize=8,
+        color=GREY,
+    )
     for i, (key, name) in enumerate(METRICS):
         bottom = height - 6.7 - i * STRIP_PITCH
         _text(fig, 1.55, bottom + 0.25, name, ha="right", va="center", fontsize=10)
@@ -455,7 +465,9 @@ def _fig1(rep: _Reports) -> _Drawn:
             ax.spines["left"].set_visible(False)
             ax.set_yticks([])
             ax.set_ylim(-0.5, 0.5)
-            mine = [s for s in series if s["panel"] == panel and s["match"] == key]
+            # panel d holds its own series and the long-gap ones (panel d20 of the sidecar)
+            panels = (panel, LONG_GAPS_PANEL) if panel == "d" else (panel,)
+            mine = [s for s in series if s["panel"] in panels and s["match"] == key]
             values = [p["value"] for s in mine for p in s["points"]]
             if panel == "c":
                 ax.axvline(0, color=GREY, lw=0.8, zorder=1)
@@ -464,19 +476,24 @@ def _fig1(rep: _Reports) -> _Drawn:
             ax.ticklabel_format(useOffset=False, style="plain", axis="x")
             for s in mine:
                 g, y = s["group"], 0.2 if s["group"] == CAL else -0.2
+                hollow = s["panel"] == LONG_GAPS_PANEL
+                if panel == "d":  # two rows per split: all gaps above, the longest gaps below
+                    y += -0.1 if hollow else 0.1
                 xs = [p["value"] for p in s["points"]]
                 if s["kind"] == "median":
-                    ax.plot(xs, [y], ls="", marker="|", ms=15, mew=2.4, c=COLOUR[g], zorder=3)
+                    ms, mew = (6.5, 2.0) if panel == "d" else (15, 2.4)
+                    ax.plot(xs, [y], ls="", marker="|", ms=ms, mew=mew, c=COLOUR[g], zorder=3)
                 else:
                     ax.plot(
                         xs,
                         [y] * len(xs),
                         ls="",
                         marker=MARKER[g],
-                        ms=4.2,
+                        ms=4.6 if hollow else 4.2,
                         c=COLOUR[g],
-                        mec="white",
-                        mew=0.4,
+                        mfc="white" if hollow else COLOUR[g],
+                        mec=COLOUR[g] if hollow else "white",
+                        mew=0.9 if hollow else 0.4,
                         alpha=0.85,
                         zorder=2,
                     )
@@ -484,7 +501,7 @@ def _fig1(rep: _Reports) -> _Drawn:
         fig,
         0.2,
         0.18,
-        "Upper strip of each pair: calibration. Lower strip: held-out. Tick: median of the half.",
+        "Rows of each strip: calibration above, held-out below. Tick: median of the half.",
         fontsize=8,
         color=GREY,
         va="center",

@@ -49,12 +49,12 @@
   {
    "number": "-0.20",
    "src": "reports/calibration.json:criteria.D4.values.t_v1",
-   "note": "...seen-only players leave layer 3's effect unchanged ( -0.20; the effect in V1, players seen throughout the window"
+   "note": "...In layer 3 the leak changes nothing ( -0.20 sd seen-only; the effect in layer 3's V1, carrier and near rivals detected at the reception (protocol.json variants.V1)"
   },
   {
    "number": "-0.19",
    "src": "reports/calibration.json:criteria.D3.values.effect",
-   "note": "...(-0.20 sd against -0.19; the effect on every unit (V0), the one layer 3 states"
+   "note": "...(-0.20 sd seen-only against -0.19); the effect on every unit (V0), the one layer 3 states"
   },
   {
    "number": "0.8",
@@ -89,7 +89,7 @@
   {
    "number": "1.3",
    "src": "reports/figures/fig1_layer2.json:series.109.points.0.of.*(min)",
-   "note": "...it errs 1.3; amputation error on gaps over 20 s alone (panel d20, band gt_20s, not drawn), line depth; min over both halves: calibration holds it, the held-out (series.111) is 1.44 to 1.83 m"
+   "note": "...it errs 1.3; amputation error on gaps over 20 s alone (panel d20, band gt_20s: the hollow marks of panel d), line depth; min over both halves: calibration holds it, the held-out (series.111) is 1.44 to 1.83 m"
   },
   {
    "number": "1.9",
@@ -99,7 +99,7 @@
   {
    "number": "9",
    "src": "reports/figures/fig1_layer2.json:series.123.points.0.of.*(max)",
-   "note": "...at most 9 m on block length; panel d20, block length; max over both halves: the held-out holds it (8.93; calibration, series.121, is 1.98 to 8.85)"
+   "note": "...at most 9 m on block length; panel d20 (the hollow marks of panel d), block length; max over both halves: the held-out holds it (8.93; calibration, series.121, is 1.98 to 8.85)"
   },
   {
    "number": "639",
@@ -164,12 +164,32 @@
   {
    "number": "-0.19",
    "src": "reports/calibration.json:criteria.D3.values.effect",
-   "note": "...The rule killed its effect ( -0.19"
+   "note": "...The effect, -0.19 sd, passed its own bar"
+  },
+  {
+   "number": "8",
+   "src": "reports/calibration.json:variants.V0.bar.agreeing",
+   "note": "...(same sign in 8; matches whose V0 effect has the pooled sign; the same number is printed in reports/figures/fig2_layer3.json:labels.3.numbers.1.value"
+  },
+  {
+   "number": "10",
+   "src": "reports/calibration.json:variants.V0.bar.matches",
+   "note": "...same sign in 8 of 10 matches; also reports/figures/fig2_layer3.json:labels.3.numbers.2.value"
+  },
+  {
+   "number": "0.0005",
+   "src": "reports/calibration.json:variants.V0.bar.p",
+   "note": "...permutation p 0.0005; the permutation p of the pooled V0 effect (the bar's p_ok); also reports/figures/fig2_layer3.json:labels.3.numbers.0.value"
   },
   {
    "number": "0.18",
    "src": "reports/calibration.json:criteria.D3.values.pretrend",
-   "note": "...pressed and free receptions already differed by 0.18 sd (P, the pooled pre-trend)"
+   "note": "...already differed by 0.18 sd (P, the pooled pre-trend, in sd of the cell)"
+  },
+  {
+   "number": "0.6",
+   "src": "reports/calibration.json:variants.V0.pretrend_m",
+   "note": "...0.18 sd ( 0.6 m) beforehand; the same pooled pre-trend in metres (0.589984): the ball's advance over the 1.3 s before a pressed reception minus that before a free one, w-weighted over the same cells"
   },
   {
    "number": "95",

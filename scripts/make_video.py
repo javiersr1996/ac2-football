@@ -15,10 +15,12 @@ atempo, off by default. Output: 1920x1080, 30 fps, H.264 + AAC, yuv420p, faststa
 
 What is on screen comes from the repository and nothing else: ``reports/clip/clip.mp4`` and its
 still, the panels of figure 1 drawn again by ``scripts/video_panels.py`` from the figure's
-sidecar at the stage's size in large type (the committed SVGs are not touched), and five
-typographic cards (rows 1, 5, 9, 10 and 11) whose words are the script's plus the repository
-URL, the licence, the author and the data's name. The look is a dark theme in two Google Fonts,
-Chakra Petch for headings, labels and cards and Roboto for the captions, fetched once into
+sidecar at the stage's size in large type (the committed SVGs are not touched), and six
+typographic cards (rows 1, 3, 5, 6, 10 and 11) whose words are the script's plus the repository
+URL, the licence, the author, the data's name and, on row 3, the README's call to
+``sensitivity`` with the V0 and V1 of the clip's match as ``reports/camera/camera.json`` holds
+them (``match.rows``). The look is a dark theme in two Google
+Fonts, Chakra Petch for headings, labels and cards and Roboto for the captions, fetched once into
 ``build/`` from pinned commits and checked by hash; no logo and no image but the repository's own.
 Everything is written under ``build/video``.
 """
@@ -78,6 +80,10 @@ FONTS = {
 }
 
 
+# The code card's face: DejaVu Sans Mono as the pinned matplotlib ships it, nothing fetched.
+MONO = Path(panels.matplotlib.get_data_path()) / "fonts" / "ttf" / "DejaVuSansMono.ttf"
+
+
 def _rgb(colour: str) -> tuple[int, int, int]:
     return int(colour[1:3], 16), int(colour[3:5], 16), int(colour[5:7], 16)
 
@@ -95,6 +101,9 @@ CARD_STYLE = {  # style: face, size in px, colour
     "plain": ("label", 60, INK),
     "small": ("label", 40, GREY),
     "faint": ("label", 36, FAINT),
+    "code": ("mono", 34, INK),
+    "codehl": ("mono", 34, GREEN),
+    "codedim": ("mono", 34, GREY),
 }
 # The panels are drawn at the stage's size (100 px per inch) and rendered at 150, never upscaled.
 PANEL_DPI = 150
@@ -160,34 +169,47 @@ STORYBOARD: dict[int, Scene] = {
         ),
     ),
     2: Scene("clip", enter="cut", clip_from=0.0, clip_stop=3.0),
-    3: Scene("panel_a", box=INSET, start=FULL),
-    4: Scene("clip", enter="cut", clip_from=3.0),
+    3: Scene(
+        "card",
+        card=(
+            ("plain", "The tag: block length, match 1874553"),
+            ("small", "its 2 players are the two ends of the block"),
+            ("codedim", ">>> tagged = sensitivity(metric, long_table(frames), units)[match_id]"),
+            ("code", ">>> tagged.v0.n, round(tagged.v0.mean, 2)  # every phase             "),
+            ("codehl", "(405, 51.95)                                                         "),
+            ("code", ">>> tagged.v1.n, round(tagged.v1.mean, 2)  # both ends seen          "),
+            ("codehl", "(17, 21.83)                                                          "),
+        ),
+    ),
+    4: Scene("panel_a", box=INSET, start=FULL),
     5: Scene(
         "card",
         card=(
-            ("plain", "The problem is what the camera shows:"),
-            ("title", "all players together,"),
+            ("plain", "Fill check: hide seen players, refill them"),
+            ("title", "line depth: about 1 metre off"),
+        ),
+    ),
+    6: Scene(
+        "card",
+        card=(
+            ("plain", "The bigger problem: the back four or block"),
+            ("title", "are fully seen"),
             ("title", "mostly near the ball."),
         ),
     ),
-    6: Scene("line_height", box=INSET, start=FULL),
-    7: Scene("block_length", box=INSET, start=FULL),
-    8: Scene("pressure_rival", box=INSET, start=FULL),
-    9: Scene(
-        "card",
-        card=(
-            ("title", "Tag every metric"),
-            ("plain", "with how many of its players were seen."),
-            ("small", "7 Defensive Positioning metrics:"),
-            ("small", "pressure on the receiver, nearest rival, line depth,"),
-            ("small", "the line's reaction, block width, length and area"),
-        ),
-    ),
+    7: Scene("line_height", box=INSET, start=FULL),
+    8: Scene("block_length", box=INSET, start=FULL),
+    9: Scene("pressure_rival", box=INSET, start=FULL),
     10: Scene(
         "card",
         card=(
-            ("title", "Report the number with its tag"),
-            ("plain", "a coach knows how far to trust it."),
+            ("plain", "Block length is mostly the camera's choice;"),
+            ("plain", "line depth follows."),
+            ("title", "report both with their tag."),
+            (
+                "small",
+                "Pressure and nearest rival survive. Tagged: 7 Defensive Positioning metrics",
+            ),
         ),
     ),
     11: Scene(
@@ -561,7 +583,8 @@ def prepare_voice(voice: Path, timing: Timing, out: Path) -> None:
 
 
 def fetch_fonts(build: Path) -> dict[str, Path]:
-    """The faces of ``FONTS`` under ``build/fonts``, downloaded once and checked by sha256."""
+    """The faces of ``FONTS`` under ``build/fonts``, downloaded once and checked by sha256, and
+    ``MONO`` for the code card."""
     folder = build / "fonts"
     folder.mkdir(parents=True, exist_ok=True)
     out = {}
@@ -578,6 +601,7 @@ def fetch_fonts(build: Path) -> dict[str, Path]:
                 raise SystemExit(f"{path.name} from {url} does not match its sha256 in FONTS")
             path.write_bytes(data)
         out[name] = path
+    out["mono"] = MONO
     return out
 
 

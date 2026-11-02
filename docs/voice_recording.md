@@ -7,22 +7,22 @@
 
 ## Your block length from broadcast tracking may describe the camera, not your team.
 
-## Why? The camera saw four of these eleven defenders; SkillCorner filled in seven.
+## SkillCorner filled in seven of these eleven defenders; the camera saw four.
 
-## In twenty matches it saw about half; it follows the ball.
+## This code tags each metric with how many of its players were seen: block length.
 
-## Not the fill-in: refill players we hid and line depth is off by about one metre.
+## In twenty matches the camera saw about half the positions; it follows the ball.
 
-## The problem is what the camera shows: all players together, mostly near the ball.
+## We tested the fill-in: on line depth it is about one metre off.
 
-## Compare those moments with all moments: the back four sit seven to fourteen metres deeper,
+## The bigger problem: the back four or block are fully seen mostly near the ball.
 
-## the block seventeen to thirty-seven metres shorter, in every match.
+## Fully seen, the back four sit seven to fourteen metres deeper than overall,
 
-## Block length and area are mostly the camera's choice; pressure and nearest rival survive.
+## the block seventeen to thirty-seven metres shorter, in all twenty matches.
 
-## So this code tags each metric with how many of its players were seen.
+## Pressure and nearest rival shift less than the fill-in's own error: they survive.
 
-## Report the number with its tag; a coach knows how far to trust it.
+## Block length is mostly the camera's choice; line depth follows. Report both with their tag.
 
 ## Clone it, run one match, tag your metrics.

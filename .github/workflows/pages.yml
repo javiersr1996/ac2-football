@@ -1,4 +1,4 @@
-# Publishes the committed camera page as it is, at https://javiersr1996.github.io/ac2-football/.
+# Publishes the committed camera page as it is, at https://javiersr1996.github.io/what-the-camera-saw/.
 # Not rebuilt here: `scripts/camera_page.py --check` in full-build.yml proves the build from the
 # data. What needs no data (`--check-static`, as ci.yml runs it: the payload is the sidecar,
 # three.js its hash, no typed number, nothing loaded) runs here too, before anything is deployed.

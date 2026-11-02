@@ -8,8 +8,8 @@ One match, 96 MB of SkillCorner data, 9 s on a GitHub runner with packages cache
 
 <!-- clean-clone:quick:start -->
 ```bash
-git clone https://github.com/javiersr1996/ac2-football
-cd ac2-football
+git clone https://github.com/javiersr1996/what-the-camera-saw
+cd what-the-camera-saw
 uv sync --locked
 uv run ftbase ingest --match 1874553
 uv run ftbase bronze && uv run ftbase silver && uv run ac2fb layer2 --match 1874553 --reports-dir ../reports-quick
@@ -24,7 +24,7 @@ In the 20 A-League 2024/25 matches of the Analytics Cup 2.0 the camera saw 56% o
 
 *Figure 1, per match: (a) detection by distance to the ball, (b) filled frames by gap length, (c) V1 minus V0, (d) amputation error.*
 
-The page: [javiersr1996.github.io/ac2-football](https://javiersr1996.github.io/ac2-football/), the video's reception in 3D inside the camera's measured frame and from above, with the V0/V1 switch.
+The page: [javiersr1996.github.io/what-the-camera-saw](https://javiersr1996.github.io/what-the-camera-saw/), the video's reception in 3D inside the camera's measured frame and from above, with the V0/V1 switch.
 
 **The fill behaves as an interpolation.** A predictor's error grows with the gap, so a re-detection would jump; it does not: after a gap over 20 s a player reappears a median 0.19 to 0.20 m from its filled position (held-out, calibration), a step between two detections (0.20 m). So the fill reads the future: a model forecasting from filled positions sees part of its answer; seen-only players leave layer 3's effect unchanged (-0.20 sd against -0.19). Amputation, the same kind of fill, errs 0.8 to 1.4 m per match on line depth, at most 6 m on block length (Figure 1d, units seen whole). On gaps over 20 s (36% to 39% of filled frames) it errs 1.3 to 1.9 m on line depth, at most 9 m on block length. kloppy drops `is_detected` on SkillCorner tracking ([known upstream issue](https://github.com/PySport/kloppy/issues/639)).
 
@@ -62,8 +62,8 @@ Needs [uv](https://docs.astral.sh/uv/), git, Python 3.13 or later and ffmpeg (`a
 
 <!-- clean-clone:full:start -->
 ```bash
-git clone https://github.com/javiersr1996/ac2-football
-cd ac2-football
+git clone https://github.com/javiersr1996/what-the-camera-saw
+cd what-the-camera-saw
 uv sync --locked
 uv run ftbase ingest
 uv run ftbase bronze && uv run ftbase silver && uv run ac2fb layer2 && uv run ac2fb reliability && uv run ac2fb amputation && uv run ac2fb calibration

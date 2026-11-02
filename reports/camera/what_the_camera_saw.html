@@ -81765,8 +81765,8 @@ function renderFindings() {
       + ` already differed by ${fq("pretrend_sd", num(v("pretrend_sd"), 2) + NB + "sd")} before (${fq("pretrend_share", pct(v("pretrend_share")))} of it),`
       + ` and the pre-registered rule refuses an effect under twice that.`,
   ].map(x => `<li>${x}</li>`).join("");
-  at("more").innerHTML = `More: <a href="https://github.com/javiersr1996/ac2-football#readme">the README</a>`
-    + ` and <a href="https://github.com/javiersr1996/ac2-football">the repository</a>.`;
+  at("more").innerHTML = `More: <a href="https://github.com/javiersr1996/what-the-camera-saw#readme">the README</a>`
+    + ` and <a href="https://github.com/javiersr1996/what-the-camera-saw">the repository</a>.`;
 }
 function renderFrameSection() {
   const f = FS, a = f.area_m2, ap = f.apex;
@@ -81860,7 +81860,7 @@ function renderStatic() {
     "uv run python scripts/camera_page.py --check    # recomputes and compares",
     "uv run --with playwright python scripts/drive_camera_page.py [path-or-url]"];
   at("about").innerHTML = "<h3>What this is</h3><p>The page of the entry <i>What the camera saw: a reliability tag for defensive metrics</i>:"
-    + " <a href=\"https://github.com/javiersr1996/ac2-football\">github.com/javiersr1996/ac2-football</a>. It is built by"
+    + " <a href=\"https://github.com/javiersr1996/what-the-camera-saw\">github.com/javiersr1996/what-the-camera-saw</a>. It is built by"
     + " <code>scripts/camera_page.py</code> from <code>scripts/camera_template.html</code>, with <code>reports/camera/camera.json</code>"
     + " and <code>vendor/three/</code>, and driven from the console by <code>scripts/drive_camera_page.py</code>.</p>"
     + "<h3>Run it</h3><pre>" + cmd.map(esc).join("\n") + "</pre>"

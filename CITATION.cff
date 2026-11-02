@@ -7,7 +7,7 @@ authors:
     given-names: "Javier"
 version: 0.1.0
 license: MIT
-repository-code: "https://github.com/javiersr1996/ac2-football"
+repository-code: "https://github.com/javiersr1996/what-the-camera-saw"
 abstract: >-
   Entry to the SkillCorner x PySport Analytics Cup 2.0 (football). Tags defensive metrics
   computed from SkillCorner broadcast tracking with how many of their players the camera saw,

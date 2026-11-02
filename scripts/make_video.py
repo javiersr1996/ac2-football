@@ -215,7 +215,7 @@ STORYBOARD: dict[int, Scene] = {
         "card",
         card=(
             ("plain", "Clone it, run one match, tag your metrics"),
-            ("url", "github.com/javiersr1996/ac2-football"),
+            ("url", "github.com/javiersr1996/what-the-camera-saw"),
             ("small", "Code and protocol under MIT"),
             ("small", "Presented by Javier Sánchez Rueda"),
             ("faint", "Data: SkillCorner open data, A-League 2024/25"),

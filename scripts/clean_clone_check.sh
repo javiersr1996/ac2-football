@@ -21,7 +21,7 @@ quick_match=1874553
 
 here="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 readme="${README_FILE:-$here/README.md}"
-github_url="https://github.com/javiersr1996/ac2-football"
+github_url="https://github.com/javiersr1996/what-the-camera-saw"
 repo="${AC2_REPO:-$github_url}"
 
 # The lines between the markers, minus the code fences.
@@ -48,7 +48,7 @@ fail() { echo "FAIL: $*" >&2; exit 1; }
 
 start=$SECONDS
 (cd "$work" && bash -euo pipefail -c "$block")
-clone="$work/ac2-football"
+clone="$work/what-the-camera-saw"
 [ -d "$clone/.git" ] || fail "the block did not leave a clone at $clone"
 cd "$clone"
 

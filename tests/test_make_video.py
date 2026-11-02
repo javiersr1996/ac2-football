@@ -237,7 +237,7 @@ def test_the_storyboard_is_consistent() -> None:
     # and names the data, in words only.
     assert all(mv.STORYBOARD[k].source == "card" for k in (1, 3, 5, 6, 10, 11))
     last = [t for _, t in mv.STORYBOARD[11].card]
-    assert any("github.com/javiersr1996/ac2-football" in t for t in last)
+    assert any("github.com/javiersr1996/what-the-camera-saw" in t for t in last)
     assert any(t.startswith("Data: SkillCorner open data") for t in last)
 
 

@@ -6,7 +6,7 @@
 One shot per row of ``docs/video_script.md``, whose Sentence column is the caption burned in (the
 transcript is never shown). The preview plays each shot at the planned window of the table. With
 ``--voice`` (a phone memo: m4a, mp3, wav, ogg or opus) the recording is transcribed with word
-timestamps by an open-source local model (faster-whisper, pulled in with ``--with``), the twelve
+timestamps by an open-source local model (faster-whisper, pulled in with ``--with``), the eleven
 sentences are aligned to the words heard (tolerant to a misread word, a filler and a pause; a
 sentence that is not heard stops the build and is named), every shot is retimed to start when its
 sentence starts, the voice is trimmed to its words, normalised to -16 LUFS (EBU R128, two passes)
@@ -14,13 +14,13 @@ and muxed. The build fails if the video would exceed 60 s; ``--speed-up`` allows
 atempo, off by default. Output: 1920x1080, 30 fps, H.264 + AAC, yuv420p, faststart.
 
 What is on screen comes from the repository and nothing else: ``reports/clip/clip.mp4`` and its
-still, the panels of the two figures drawn again by ``scripts/video_panels.py`` from the figures'
-sidecars at the stage's size in large type (the committed SVGs are not touched), and four
-typographic cards (rows 3, 4, 9 and 12) whose words are the script's plus the repository URL, the
-licence, the author and the data's name. The look is a dark theme in two Google Fonts, Chakra
-Petch for headings, labels and cards and Roboto for the captions, fetched once into ``build/``
-from pinned commits and checked by hash; no logo and no image but the repository's own. Everything
-is written under ``build/video``.
+still, the panels of figure 1 drawn again by ``scripts/video_panels.py`` from the figure's
+sidecar at the stage's size in large type (the committed SVGs are not touched), and five
+typographic cards (rows 1, 5, 9, 10 and 11) whose words are the script's plus the repository
+URL, the licence, the author and the data's name. The look is a dark theme in two Google Fonts,
+Chakra Petch for headings, labels and cards and Roboto for the captions, fetched once into
+``build/`` from pinned commits and checked by hash; no logo and no image but the repository's own.
+Everything is written under ``build/video``.
 """
 
 from __future__ import annotations
@@ -96,10 +96,8 @@ CARD_STYLE = {  # style: face, size in px, colour
     "small": ("label", 40, GREY),
     "faint": ("label", 36, FAINT),
 }
-# The panels are drawn at the stage's size (100 px per inch); the pooled rows of figure 2 are
-# shown 2.2 times closer, so that panel is rendered with the headroom and is never upscaled.
-PANEL_DPI = {"layer3": 250}
-PANEL_DPI_DEFAULT = 150
+# The panels are drawn at the stage's size (100 px per inch) and rendered at 150, never upscaled.
+PANEL_DPI = 150
 FULL = (0.0, 0.0, *panels.SIZE)  # a whole panel, and the same inset by 3 %: a slow zoom in
 INSET = (0.03 * panels.SIZE[0], 0.03 * panels.SIZE[1], 0.97 * panels.SIZE[0], 0.97 * panels.SIZE[1])
 CLIP_FPS, CLIP_FRAMES = 10, 100
@@ -151,41 +149,48 @@ class Scene:
     card: tuple[tuple[str, str], ...] = ()
 
 
-# The panels are those of scripts/video_panels.py. Figure 2's matches sit at y = 9 .. 0 and the
-# pooled row at y = -1 (markers 0.3 above and below); a window on y = -1.6 .. 1.5 holds the last
-# two matches and the pooled row, whole, with no pad or drift above (the next row's markers
-# start at y = 1.6); the marks hold the three pooled markers.
+# The panels are those of scripts/video_panels.py.
 STORYBOARD: dict[int, Scene] = {
-    1: Scene("clip", enter="cut", clip_from=0.0, clip_stop=3.0),
-    2: Scene("panel_a", box=INSET, start=FULL),
-    3: Scene(
-        "card",
-        card=(("plain", "Is a defensive metric about"), ("title", "the team, or the camera?")),
-    ),
-    4: Scene(
+    1: Scene(
         "card",
         card=(
-            ("title", "7 Defensive Positioning metrics"),
-            ("small", "pressure on the receiver, nearest rival, line depth,"),
-            ("small", "the line's reaction, block width, length and area"),
+            ("plain", "Your block length from broadcast tracking"),
+            ("title", "may describe the camera,"),
+            ("title", "not your team."),
         ),
     ),
-    5: Scene("clip", enter="cut", clip_from=3.0),
+    2: Scene("clip", enter="cut", clip_from=0.0, clip_stop=3.0),
+    3: Scene("panel_a", box=INSET, start=FULL),
+    4: Scene("clip", enter="cut", clip_from=3.0),
+    5: Scene(
+        "card",
+        card=(
+            ("plain", "The problem is what the camera shows:"),
+            ("title", "all players together,"),
+            ("title", "mostly near the ball."),
+        ),
+    ),
     6: Scene("line_height", box=INSET, start=FULL),
     7: Scene("block_length", box=INSET, start=FULL),
     8: Scene("pressure_rival", box=INSET, start=FULL),
     9: Scene(
         "card",
-        card=(("title", "Tag every metric"), ("plain", "with how many of its players were seen.")),
+        card=(
+            ("title", "Tag every metric"),
+            ("plain", "with how many of its players were seen."),
+            ("small", "7 Defensive Positioning metrics:"),
+            ("small", "pressure on the receiver, nearest rival, line depth,"),
+            ("small", "the line's reaction, block width, length and area"),
+        ),
     ),
-    10: Scene("layer3", box=INSET, start=FULL),
+    10: Scene(
+        "card",
+        card=(
+            ("title", "Report the number with its tag"),
+            ("plain", "a coach knows how far to trust it."),
+        ),
+    ),
     11: Scene(
-        "layer3",
-        enter="move",
-        box=Window("a", (-0.5, 0.5), (-1.6, 1.5), pad=(1.6, 0.0, 0.2, 1.0)),
-        mark=Window("a", (-0.28, -0.12), (-1.55, -0.45)),
-    ),
-    12: Scene(
         "card",
         card=(
             ("plain", "Clone it, run one match, tag your metrics"),
@@ -583,7 +588,7 @@ def render_panels(
     drawn = panels.draw_all(root / SIDECARS, fonts)
     out = {}
     for name, panel in drawn.items():
-        dpi = PANEL_DPI.get(name, PANEL_DPI_DEFAULT)
+        dpi = PANEL_DPI
         path = build / f"{name}.png"
         panel.save(path, dpi)
         out[name] = (Image.open(path).convert("RGB"), dpi)

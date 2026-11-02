@@ -1,4 +1,4 @@
-"""The panels of the two figures drawn again for the video, from their sidecars, in large type.
+"""The panels of figure 1 drawn again for the video, from their sidecars, in large type.
 
 The committed figures are drawn for a page: at 1080p their 8 pt labels are 20 px tall and one
 panel fills half the frame. Each shot of the video gets its own panel at the stage's size
@@ -7,7 +7,7 @@ panel fills half the frame. Each shot of the video gets its own panel at the sta
 the same markers and wording, and no neighbour cut at an edge. The theme is the video's: a
 near-black ground, light text, neon green for the calibration half and orange for the held-out
 half (circles and squares as in the figures; the two keep a clear lightness gap under a
-deuteranopia simulation, which green and the palette's light orange do not), red for V2.
+deuteranopia simulation, which green and the palette's light orange do not).
 Nothing here reads a report; the committed SVGs are not touched.
 """
 
@@ -27,15 +27,14 @@ from matplotlib.figure import Figure
 from matplotlib.lines import Line2D
 
 from ac2fb import figures
-from ac2fb.figures import CAL, HELD, MARKER, STYLE, VARIANTS
+from ac2fb.figures import CAL, HELD, MARKER, STYLE
 
 SIZE = (15.2, 8.55)  # inches: the stage of the video at 100 px per inch
 BG, PANEL, BORDER = "#0B0F0D", "#0A0E0C", "#26302A"
 TEXT, MUTED, FAINT = "#DDE5DF", "#93A198", "#7D8C83"
-AXES, GRID = "#5F6E65", "#46534B"
-GREEN, ORANGE, RED = "#32FE6B", "#FF8A3D", "#FF4D3D"
+AXES = "#5F6E65"
+GREEN, ORANGE = "#32FE6B", "#FF8A3D"
 COLOUR = {CAL: GREEN, HELD: ORANGE}
-VARIANT_COLOUR = {"V0": GREEN, "V1": ORANGE, "V2": RED}
 HEADING = "Chakra Petch"  # the heading face when its files are given; DejaVu Sans otherwise
 RC: dict[str, Any] = {
     "font.family": ["DejaVu Sans"],
@@ -200,70 +199,6 @@ def strips(doc: Mapping[str, Any], keys: Sequence[str]) -> Drawn:
     return Drawn(fig, axes)
 
 
-def layer3(doc: Mapping[str, Any]) -> Drawn:
-    """Figure 2: the effect and the pre-trend per match and pooled, V0, V1 and V2, the D3 floor."""
-    fig = Figure(figsize=SIZE)
-    v0 = next(s for s in _series(doc, "a") if s["group"] == "V0" and s["kind"] == "match")
-    matches = [p["x"] for p in v0["points"]]
-    floor_label, v2_label = doc["labels"][0], doc["labels"][1]
-    floor = float(floor_label["numbers"][0]["value"])
-    order = [*matches, "pooled"]
-    ypos = {m: len(matches) - 1 - i for i, m in enumerate(matches)} | {"pooled": -1.0}
-    shift = {"V0": 0.3, "V1": 0.0, "V2": -0.3}
-    style = {v: (VARIANT_COLOUR[v], marker) for v, _, _, marker in VARIANTS}
-    names = {v: name for v, name, _, _ in VARIANTS} | {"V2": v2_label["text"]}
-    axes = {}
-    for panel, left, title in (
-        ("a", 2.1, "a. Effect of pressure\non the ball's advance"),
-        ("b", 9.3, "b. Same difference\nbefore the reception"),
-    ):
-        ax = _axes(fig, left, 1.5, 5.6, 4.6)  # the two-line title clears the two-row key
-        for s in _series(doc, panel):
-            colour, marker = style[s["group"]]
-            pooled = s["kind"] == "pooled"
-            for p in s["points"]:
-                ax.plot(
-                    [p["value"]],
-                    [ypos[p["x"]] + shift[s["group"]] * (1.0 if pooled else 0.75)],
-                    ls="",
-                    marker=marker,
-                    ms=16 if pooled else 9,
-                    c=colour,
-                    mec=TEXT if pooled else BG,
-                    mew=1.6 if pooled else 0.6,
-                    zorder=3,
-                )
-        ax.axvline(0, color=MUTED, lw=1.5, zorder=1)
-        ax.axhline(-0.35, color=GRID, lw=1.2, ls=":", zorder=1)
-        ax.set_ylim(-1.6, len(matches) + 0.5)
-        ax.set_xlim(-0.5, 0.5)
-        ax.set_xlabel("sd of the ball's advance")
-        ax.set_title(title, loc="left", pad=14)
-        if panel == "a":
-            ax.axvspan(-floor, floor, color=TEXT, alpha=0.12, lw=0, zorder=0)
-            # 18 pt, inside the band and right of the zero line: no line crosses the words
-            ax.text(
-                0.02,
-                len(matches) + 0.4,
-                floor_label["text"],
-                ha="left",
-                va="top",
-                color=MUTED,
-                fontsize=18,
-            )
-            ax.set_yticks([ypos[m] for m in order], order)
-        else:
-            ax.set_yticks([])
-            ax.spines["left"].set_visible(False)
-        axes[panel] = ax
-    key = [
-        Line2D([], [], ls="", marker=marker, ms=12, color=colour, label=names[v])
-        for v, (colour, marker) in style.items()
-    ]
-    fig.legend(handles=key, loc="upper left", ncol=2, frameon=False, bbox_to_anchor=(0.04, 0.97))
-    return Drawn(fig, axes)
-
-
 def draw_all(folder: Path, fonts: Mapping[str, Path] | None = None) -> dict[str, Drawn]:
     """Every panel the video shows, keyed by its name in the storyboard, from ``folder``'s JSON.
 
@@ -271,7 +206,6 @@ def draw_all(folder: Path, fonts: Mapping[str, Path] | None = None) -> dict[str,
     panels are drawn in DejaVu Sans (the geometry the tests check does not depend on the face).
     """
     doc1 = json.loads((folder / "fig1_layer2.json").read_text(encoding="utf-8"))
-    doc2 = json.loads((folder / "fig2_layer3.json").read_text(encoding="utf-8"))
     rc = dict(RC)
     if fonts:
         for path in fonts.values():
@@ -283,5 +217,4 @@ def draw_all(folder: Path, fonts: Mapping[str, Path] | None = None) -> dict[str,
             "line_height": strips(doc1, ["line_height_m"]),
             "block_length": strips(doc1, ["block_length_m"]),
             "pressure_rival": strips(doc1, ["pressure_index", "nearest_rival_m"]),
-            "layer3": layer3(doc2),
         }

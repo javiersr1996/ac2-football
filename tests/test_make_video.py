@@ -18,7 +18,6 @@ from types import ModuleType
 
 import matplotlib
 import pytest
-from matplotlib.backends.backend_agg import FigureCanvasAgg
 
 ROOT = Path(__file__).resolve().parent.parent
 SCRIPT = ROOT / "scripts" / "make_video.py"
@@ -64,7 +63,7 @@ def test_the_script_read_verbatim_is_found_where_it_is_spoken() -> None:
 
 
 def test_a_misread_word_a_filler_and_a_long_pause_do_not_move_the_starts() -> None:
-    # "defenders" read as "defendants" in sentence 1, "metres" as "meters" in 6 and 7.
+    # "defenders" read as "defendants" in sentence 2, "metres" as "meters" in 6 and 7.
     spoken = [s.replace("defenders", "defendants").replace("metres", "meters") for s in SENTENCES]
     words, starts = heard(spoken)
     assert starts_of(mv.align(words, SENTENCES)) == starts
@@ -96,7 +95,6 @@ def test_numerals_read_as_words_match_the_script() -> None:
         s.replace("4 of these 11", "four of these eleven")
         .replace("filled in 7", "filled in seven")
         .replace("In 20", "In twenty")
-        .replace("for 7", "for seven")
         .replace("about 1 metre", "about one metre")
         .replace("17 to 37", "seventeen to thirty-seven")
         .replace("7 to 14", "seven to fourteen")
@@ -111,10 +109,10 @@ def test_numerals_read_as_words_match_the_script() -> None:
 
 def test_a_skipped_word_is_tolerated_and_a_missing_sentence_is_named() -> None:
     spoken = list(SENTENCES)
-    spoken[1] = spoken[1].replace("about half", "half")
+    spoken[2] = spoken[2].replace("about half", "half")
     words, starts = heard(spoken)
     spans = mv.align(words, SENTENCES)
-    assert starts_of(spans) == starts and spans[1].heard == spans[1].words - 1
+    assert starts_of(spans) == starts and spans[2].heard == spans[2].words - 1
     spoken = [s for k, s in enumerate(SENTENCES, 1) if k != 11]
     words, _ = heard(spoken)
     with pytest.raises(mv.NotFound) as caught:
@@ -127,12 +125,12 @@ def test_a_skipped_word_is_tolerated_and_a_missing_sentence_is_named() -> None:
 
 
 def spans_lasting(voice: float) -> list[mv.Span]:
-    """Twelve spans whose trimmed voice (lead, pad included) lasts ``voice`` seconds; the 6th is
-    the longest and the 12th the second longest."""
-    each = (voice - mv.LEAD - mv.PAD - 11 * 0.5) / 12
+    """Eleven spans whose trimmed voice (lead, pad included) lasts ``voice`` seconds; the 6th is
+    the longest and the 11th the second longest."""
+    each = (voice - mv.LEAD - mv.PAD - 10 * 0.5) / 11
     spans, t = [], 1.0
-    for k in range(1, 13):
-        length = each + (1.0 if k == 6 else 0.5 if k == 12 else -1.5 / 10)
+    for k in range(1, 12):
+        length = each + (1.0 if k == 6 else 0.5 if k == 11 else -1.5 / 9)
         spans.append(mv.Span(t, t + length, 10, 10))
         t += length + 0.5
     return spans
@@ -158,7 +156,7 @@ def test_sixty_seconds_pass_and_a_frame_more_fails_naming_the_longest() -> None:
     message = str(caught.value)
     assert "would last 60.1 s, over 60 s" in message and "--speed-up" in message
     lines = message.split("Longest sentences:\n")[1].splitlines()
-    assert lines[0].startswith("  6:") and lines[1].startswith("  12:")
+    assert lines[0].startswith("  6:") and lines[1].startswith("  11:")
     assert SENTENCES[5] in lines[0]
 
 
@@ -180,14 +178,14 @@ def test_speed_up_is_off_by_default_and_gives_five_percent_at_most() -> None:
 # --- the shots -----------------------------------------------------------------------------------
 
 
-def test_the_committed_script_gives_twelve_planned_shots() -> None:
-    assert [r.number for r in ROWS] == list(range(1, 13))
+def test_the_committed_script_gives_eleven_planned_shots() -> None:
+    assert [r.number for r in ROWS] == list(range(1, 12))
     shots = mv.planned(ROWS)
-    assert [s.start for s in shots] == [0, 5, 10, 14, 18, 24, 30, 35, 41, 45, 50, 54]
+    assert [s.start for s in shots] == [0, 5, 10, 15, 21, 27, 33, 37, 42, 48, 54]
     assert shots[-1].end == ROWS[-1].end + mv.TAIL <= 60.0
     assert all(s.end == t.start for s, t in zip(shots, shots[1:], strict=False))
     assert all(s.scene is mv.STORYBOARD[s.row.number] for s in shots)
-    assert "4 of these 11" in shots[0].row.sentence
+    assert "4 of these 11" in shots[1].row.sentence
 
 
 def test_the_shots_follow_the_voice() -> None:
@@ -201,14 +199,14 @@ def test_the_shots_follow_the_voice() -> None:
 
 def test_a_broken_table_is_refused() -> None:
     text = (ROOT / "docs" / "video_script.md").read_text(encoding="utf-8")
-    with pytest.raises(ValueError, match="row 3: time '0:10 - 0:14'"):
-        mv.rows_of(text.replace("0:10 to 0:14", "0:10 - 0:14"))
+    with pytest.raises(ValueError, match="row 3: time '0:10 - 0:15'"):
+        mv.rows_of(text.replace("0:10 to 0:15", "0:10 - 0:15"))
     with pytest.raises(ValueError, match="row 2 ends at 10 s, row 3 starts at 11 s"):
-        mv.rows_of(text.replace("| 0:10 to 0:14 |", "| 0:11 to 0:14 |"))
+        mv.rows_of(text.replace("| 0:10 to 0:15 |", "| 0:11 to 0:15 |"))
     with pytest.raises(ValueError, match="the storyboard"):
         mv.shots_of(ROWS[:-1], [r.start for r in ROWS[:-1]], 50.0)
     with pytest.raises(ValueError, match="increasing"):
-        mv.shots_of(ROWS, [0, 6, 10, 14, 20, 23, 29, 33, 38, 42, 46, 46], 50.0)
+        mv.shots_of(ROWS, [0, 5, 10, 15, 21, 27, 33, 37, 42, 48, 48], 50.0)
 
 
 def test_the_storyboard_is_consistent() -> None:
@@ -233,29 +231,12 @@ def test_the_storyboard_is_consistent() -> None:
                 assert isinstance(scene.mark, tuple), number
                 assert left <= scene.mark[0] < scene.mark[2] <= right, number
                 assert top <= scene.mark[1] < scene.mark[3] <= bottom, number
-    # A window is inches only once its panel is drawn.
-    assert isinstance(mv.STORYBOARD[11].box, mv.Window) and isinstance(scenes[11].box, tuple)
-    # The question, the seven metrics and the recommendation are cards; the last one carries the
-    # repository and names the data, in words only.
-    assert all(mv.STORYBOARD[k].source == "card" for k in (3, 4, 9, 12))
-    last = [t for _, t in mv.STORYBOARD[12].card]
+    # The claim, the problem, the tag and its use are cards; the last one carries the repository
+    # and names the data, in words only.
+    assert all(mv.STORYBOARD[k].source == "card" for k in (1, 5, 9, 10, 11))
+    last = [t for _, t in mv.STORYBOARD[11].card]
     assert any("github.com/javiersr1996/ac2-football" in t for t in last)
     assert any(t.startswith("Data: SkillCorner open data") for t in last)
-
-
-def test_the_d3_floor_label_of_the_video_is_crossed_by_no_line() -> None:
-    """It sat centred on the zero line; it must stay between the zero line and the band edge."""
-    drawn = mv.panels.draw_all(ROOT / "reports" / "figures")["layer3"]
-    with matplotlib.rc_context(mv.panels.RC):
-        renderer = FigureCanvasAgg(drawn.fig).get_renderer()
-        drawn.fig.draw(renderer)
-    ax = drawn.axes["a"]
-    label = next(t for t in ax.texts if t.get_text().startswith("D3 floor"))
-    box = label.get_window_extent(renderer)
-    floor = float(label.get_text().split()[-1])
-    for x in (0.0, -floor, floor):
-        px = ax.transData.transform((x, 0))[0]
-        assert not (box.x0 <= px <= box.x1), f"the line at {x} crosses the label"
 
 
 def face(name: str, size: int) -> mv.ImageFont.FreeTypeFont:

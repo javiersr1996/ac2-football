@@ -1,30 +1,28 @@
 # Guion para grabar la voz
 
 1. Graba una nota de voz con el móvil en una habitación silenciosa, con el teléfono a unos 20 cm de la boca.
-2. Lee las doce frases de abajo seguidas, en orden y a ritmo normal, con una pausa breve entre frases; la grabación puede durar hasta 58 segundos. Si te trabas, empieza de nuevo.
+2. Lee las once frases de abajo seguidas, en orden y a ritmo normal, con una pausa breve entre frases; la grabación puede durar hasta 58 segundos. Si te trabas, empieza de nuevo.
 3. Los números están escritos en letras, tal como se dicen en inglés: lee exactamente lo que pone, nada más.
 4. Sube el archivo (m4a, mp3, wav, ogg u opus) a Google Drive con un nombre que empiece por `voz-ac2`; el montaje (`scripts/make_video.py --voice`) lo hace Claude.
 
-## The camera saw four of these eleven defenders; SkillCorner filled in seven.
+## Your block length from broadcast tracking may describe the camera, not your team.
 
-## In twenty matches it saw about half the player positions; it follows the ball.
+## Why? The camera saw four of these eleven defenders; SkillCorner filled in seven.
 
-## Is a defensive metric about the team, or the camera?
+## In twenty matches it saw about half; it follows the ball.
 
-## This entry measures that for seven Defensive Positioning metrics.
+## Not the fill-in: refill players we hid and line depth is off by about one metre.
 
-## One, the fill: hide seen players, refill them; line depth misses by about one metre.
+## The problem is what the camera shows: all players together, mostly near the ball.
 
-## Two: on moments seen whole the back four sit seven to fourteen metres deeper,
+## Compare those moments with all moments: the back four sit seven to fourteen metres deeper,
 
-## the block seventeen to thirty-seven metres shorter: a different sample, near the ball.
+## the block seventeen to thirty-seven metres shorter, in every match.
 
 ## Block length and area are mostly the camera's choice; pressure and nearest rival survive.
 
-## Tag every metric with how many of its players were seen.
+## So this code tags each metric with how many of its players were seen.
 
-## A pre-registered question: does pressure on the receiver reduce the ball's advance?
-
-## An effect, killed by its own rule, published as killed.
+## Report the number with its tag; a coach knows how far to trust it.
 
 ## Clone it, run one match, tag your metrics.

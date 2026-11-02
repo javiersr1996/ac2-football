@@ -5626,6 +5626,1588 @@
      "x": "median"
     }
    ]
+  },
+  {
+   "group": "calibration",
+   "kind": "match",
+   "match": "pressure_index",
+   "panel": "d20",
+   "points": [
+    {
+     "formula": "value",
+     "refs": [
+      "amputation.csv#match_id=1874553,metric=pressure_index,band=gt_20s:mean_abs_error"
+     ],
+     "value": 0.187911,
+     "x": "1874553"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "amputation.csv#match_id=1886347,metric=pressure_index,band=gt_20s:mean_abs_error"
+     ],
+     "value": 0.152279,
+     "x": "1886347"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "amputation.csv#match_id=1925299,metric=pressure_index,band=gt_20s:mean_abs_error"
+     ],
+     "value": 0.171105,
+     "x": "1925299"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "amputation.csv#match_id=1959846,metric=pressure_index,band=gt_20s:mean_abs_error"
+     ],
+     "value": 0.192281,
+     "x": "1959846"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "amputation.csv#match_id=1996435,metric=pressure_index,band=gt_20s:mean_abs_error"
+     ],
+     "value": 0.157314,
+     "x": "1996435"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "amputation.csv#match_id=1996436,metric=pressure_index,band=gt_20s:mean_abs_error"
+     ],
+     "value": 0.208064,
+     "x": "1996436"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "amputation.csv#match_id=2007448,metric=pressure_index,band=gt_20s:mean_abs_error"
+     ],
+     "value": 0.16403,
+     "x": "2007448"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "amputation.csv#match_id=2010085,metric=pressure_index,band=gt_20s:mean_abs_error"
+     ],
+     "value": 0.193185,
+     "x": "2010085"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "amputation.csv#match_id=2011166,metric=pressure_index,band=gt_20s:mean_abs_error"
+     ],
+     "value": 0.16169,
+     "x": "2011166"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "amputation.csv#match_id=2015213,metric=pressure_index,band=gt_20s:mean_abs_error"
+     ],
+     "value": 0.213099,
+     "x": "2015213"
+    }
+   ]
+  },
+  {
+   "group": "calibration",
+   "kind": "median",
+   "match": "pressure_index",
+   "panel": "d20",
+   "points": [
+    {
+     "formula": "median_of_points",
+     "of": [
+      0.187911,
+      0.152279,
+      0.171105,
+      0.192281,
+      0.157314,
+      0.208064,
+      0.16403,
+      0.193185,
+      0.16169,
+      0.213099
+     ],
+     "value": 0.179508,
+     "x": "median"
+    }
+   ]
+  },
+  {
+   "group": "held-out",
+   "kind": "match",
+   "match": "pressure_index",
+   "panel": "d20",
+   "points": [
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/amputation.csv#match_id=1899585,metric=pressure_index,band=gt_20s:mean_abs_error"
+     ],
+     "value": 0.168135,
+     "x": "1899585"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/amputation.csv#match_id=1927964,metric=pressure_index,band=gt_20s:mean_abs_error"
+     ],
+     "value": 0.173674,
+     "x": "1927964"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/amputation.csv#match_id=1953632,metric=pressure_index,band=gt_20s:mean_abs_error"
+     ],
+     "value": 0.247804,
+     "x": "1953632"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/amputation.csv#match_id=1986691,metric=pressure_index,band=gt_20s:mean_abs_error"
+     ],
+     "value": 0.171707,
+     "x": "1986691"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/amputation.csv#match_id=2006229,metric=pressure_index,band=gt_20s:mean_abs_error"
+     ],
+     "value": 0.189025,
+     "x": "2006229"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/amputation.csv#match_id=2006363,metric=pressure_index,band=gt_20s:mean_abs_error"
+     ],
+     "value": 0.199265,
+     "x": "2006363"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/amputation.csv#match_id=2007721,metric=pressure_index,band=gt_20s:mean_abs_error"
+     ],
+     "value": 0.194944,
+     "x": "2007721"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/amputation.csv#match_id=2013725,metric=pressure_index,band=gt_20s:mean_abs_error"
+     ],
+     "value": 0.16972,
+     "x": "2013725"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/amputation.csv#match_id=2016236,metric=pressure_index,band=gt_20s:mean_abs_error"
+     ],
+     "value": 0.187424,
+     "x": "2016236"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/amputation.csv#match_id=2017461,metric=pressure_index,band=gt_20s:mean_abs_error"
+     ],
+     "value": 0.229604,
+     "x": "2017461"
+    }
+   ]
+  },
+  {
+   "group": "held-out",
+   "kind": "median",
+   "match": "pressure_index",
+   "panel": "d20",
+   "points": [
+    {
+     "formula": "median_of_points",
+     "of": [
+      0.168135,
+      0.173674,
+      0.247804,
+      0.171707,
+      0.189025,
+      0.199265,
+      0.194944,
+      0.16972,
+      0.187424,
+      0.229604
+     ],
+     "value": 0.1882245,
+     "x": "median"
+    }
+   ]
+  },
+  {
+   "group": "calibration",
+   "kind": "match",
+   "match": "nearest_rival_m",
+   "panel": "d20",
+   "points": [
+    {
+     "formula": "value",
+     "refs": [
+      "amputation.csv#match_id=1874553,metric=nearest_rival_m,band=gt_20s:mean_abs_error"
+     ],
+     "value": 2.123847,
+     "x": "1874553"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "amputation.csv#match_id=1886347,metric=nearest_rival_m,band=gt_20s:mean_abs_error"
+     ],
+     "value": 3.635486,
+     "x": "1886347"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "amputation.csv#match_id=1925299,metric=nearest_rival_m,band=gt_20s:mean_abs_error"
+     ],
+     "value": 2.783177,
+     "x": "1925299"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "amputation.csv#match_id=1959846,metric=nearest_rival_m,band=gt_20s:mean_abs_error"
+     ],
+     "value": 2.58141,
+     "x": "1959846"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "amputation.csv#match_id=1996435,metric=nearest_rival_m,band=gt_20s:mean_abs_error"
+     ],
+     "value": 3.749208,
+     "x": "1996435"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "amputation.csv#match_id=1996436,metric=nearest_rival_m,band=gt_20s:mean_abs_error"
+     ],
+     "value": 2.628342,
+     "x": "1996436"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "amputation.csv#match_id=2007448,metric=nearest_rival_m,band=gt_20s:mean_abs_error"
+     ],
+     "value": 3.466684,
+     "x": "2007448"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "amputation.csv#match_id=2010085,metric=nearest_rival_m,band=gt_20s:mean_abs_error"
+     ],
+     "value": 2.476631,
+     "x": "2010085"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "amputation.csv#match_id=2011166,metric=nearest_rival_m,band=gt_20s:mean_abs_error"
+     ],
+     "value": 2.669569,
+     "x": "2011166"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "amputation.csv#match_id=2015213,metric=nearest_rival_m,band=gt_20s:mean_abs_error"
+     ],
+     "value": 3.095223,
+     "x": "2015213"
+    }
+   ]
+  },
+  {
+   "group": "calibration",
+   "kind": "median",
+   "match": "nearest_rival_m",
+   "panel": "d20",
+   "points": [
+    {
+     "formula": "median_of_points",
+     "of": [
+      2.123847,
+      3.635486,
+      2.783177,
+      2.58141,
+      3.749208,
+      2.628342,
+      3.466684,
+      2.476631,
+      2.669569,
+      3.095223
+     ],
+     "value": 2.726373,
+     "x": "median"
+    }
+   ]
+  },
+  {
+   "group": "held-out",
+   "kind": "match",
+   "match": "nearest_rival_m",
+   "panel": "d20",
+   "points": [
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/amputation.csv#match_id=1899585,metric=nearest_rival_m,band=gt_20s:mean_abs_error"
+     ],
+     "value": 3.332211,
+     "x": "1899585"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/amputation.csv#match_id=1927964,metric=nearest_rival_m,band=gt_20s:mean_abs_error"
+     ],
+     "value": 2.745926,
+     "x": "1927964"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/amputation.csv#match_id=1953632,metric=nearest_rival_m,band=gt_20s:mean_abs_error"
+     ],
+     "value": 2.894957,
+     "x": "1953632"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/amputation.csv#match_id=1986691,metric=nearest_rival_m,band=gt_20s:mean_abs_error"
+     ],
+     "value": 2.439071,
+     "x": "1986691"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/amputation.csv#match_id=2006229,metric=nearest_rival_m,band=gt_20s:mean_abs_error"
+     ],
+     "value": 2.630302,
+     "x": "2006229"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/amputation.csv#match_id=2006363,metric=nearest_rival_m,band=gt_20s:mean_abs_error"
+     ],
+     "value": 2.978832,
+     "x": "2006363"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/amputation.csv#match_id=2007721,metric=nearest_rival_m,band=gt_20s:mean_abs_error"
+     ],
+     "value": 2.895785,
+     "x": "2007721"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/amputation.csv#match_id=2013725,metric=nearest_rival_m,band=gt_20s:mean_abs_error"
+     ],
+     "value": 3.103108,
+     "x": "2013725"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/amputation.csv#match_id=2016236,metric=nearest_rival_m,band=gt_20s:mean_abs_error"
+     ],
+     "value": 2.394973,
+     "x": "2016236"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/amputation.csv#match_id=2017461,metric=nearest_rival_m,band=gt_20s:mean_abs_error"
+     ],
+     "value": 2.498462,
+     "x": "2017461"
+    }
+   ]
+  },
+  {
+   "group": "held-out",
+   "kind": "median",
+   "match": "nearest_rival_m",
+   "panel": "d20",
+   "points": [
+    {
+     "formula": "median_of_points",
+     "of": [
+      3.332211,
+      2.745926,
+      2.894957,
+      2.439071,
+      2.630302,
+      2.978832,
+      2.895785,
+      3.103108,
+      2.394973,
+      2.498462
+     ],
+     "value": 2.8204415,
+     "x": "median"
+    }
+   ]
+  },
+  {
+   "group": "calibration",
+   "kind": "match",
+   "match": "line_height_m",
+   "panel": "d20",
+   "points": [
+    {
+     "formula": "value",
+     "refs": [
+      "amputation.csv#match_id=1874553,metric=line_height_m,band=gt_20s:mean_abs_error"
+     ],
+     "value": 1.417253,
+     "x": "1874553"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "amputation.csv#match_id=1886347,metric=line_height_m,band=gt_20s:mean_abs_error"
+     ],
+     "value": 1.31304,
+     "x": "1886347"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "amputation.csv#match_id=1925299,metric=line_height_m,band=gt_20s:mean_abs_error"
+     ],
+     "value": 1.568081,
+     "x": "1925299"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "amputation.csv#match_id=1959846,metric=line_height_m,band=gt_20s:mean_abs_error"
+     ],
+     "value": 1.447925,
+     "x": "1959846"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "amputation.csv#match_id=1996435,metric=line_height_m,band=gt_20s:mean_abs_error"
+     ],
+     "value": 1.684748,
+     "x": "1996435"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "amputation.csv#match_id=1996436,metric=line_height_m,band=gt_20s:mean_abs_error"
+     ],
+     "value": 1.616853,
+     "x": "1996436"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "amputation.csv#match_id=2007448,metric=line_height_m,band=gt_20s:mean_abs_error"
+     ],
+     "value": 1.474017,
+     "x": "2007448"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "amputation.csv#match_id=2010085,metric=line_height_m,band=gt_20s:mean_abs_error"
+     ],
+     "value": 1.33175,
+     "x": "2010085"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "amputation.csv#match_id=2011166,metric=line_height_m,band=gt_20s:mean_abs_error"
+     ],
+     "value": 1.420887,
+     "x": "2011166"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "amputation.csv#match_id=2015213,metric=line_height_m,band=gt_20s:mean_abs_error"
+     ],
+     "value": 1.937134,
+     "x": "2015213"
+    }
+   ]
+  },
+  {
+   "group": "calibration",
+   "kind": "median",
+   "match": "line_height_m",
+   "panel": "d20",
+   "points": [
+    {
+     "formula": "median_of_points",
+     "of": [
+      1.417253,
+      1.31304,
+      1.568081,
+      1.447925,
+      1.684748,
+      1.616853,
+      1.474017,
+      1.33175,
+      1.420887,
+      1.937134
+     ],
+     "value": 1.460971,
+     "x": "median"
+    }
+   ]
+  },
+  {
+   "group": "held-out",
+   "kind": "match",
+   "match": "line_height_m",
+   "panel": "d20",
+   "points": [
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/amputation.csv#match_id=1899585,metric=line_height_m,band=gt_20s:mean_abs_error"
+     ],
+     "value": 1.444232,
+     "x": "1899585"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/amputation.csv#match_id=1927964,metric=line_height_m,band=gt_20s:mean_abs_error"
+     ],
+     "value": 1.828626,
+     "x": "1927964"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/amputation.csv#match_id=1953632,metric=line_height_m,band=gt_20s:mean_abs_error"
+     ],
+     "value": 1.687406,
+     "x": "1953632"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/amputation.csv#match_id=1986691,metric=line_height_m,band=gt_20s:mean_abs_error"
+     ],
+     "value": 1.451314,
+     "x": "1986691"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/amputation.csv#match_id=2006229,metric=line_height_m,band=gt_20s:mean_abs_error"
+     ],
+     "value": 1.548865,
+     "x": "2006229"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/amputation.csv#match_id=2006363,metric=line_height_m,band=gt_20s:mean_abs_error"
+     ],
+     "value": 1.604323,
+     "x": "2006363"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/amputation.csv#match_id=2007721,metric=line_height_m,band=gt_20s:mean_abs_error"
+     ],
+     "value": 1.50832,
+     "x": "2007721"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/amputation.csv#match_id=2013725,metric=line_height_m,band=gt_20s:mean_abs_error"
+     ],
+     "value": 1.826347,
+     "x": "2013725"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/amputation.csv#match_id=2016236,metric=line_height_m,band=gt_20s:mean_abs_error"
+     ],
+     "value": 1.6492,
+     "x": "2016236"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/amputation.csv#match_id=2017461,metric=line_height_m,band=gt_20s:mean_abs_error"
+     ],
+     "value": 1.681287,
+     "x": "2017461"
+    }
+   ]
+  },
+  {
+   "group": "held-out",
+   "kind": "median",
+   "match": "line_height_m",
+   "panel": "d20",
+   "points": [
+    {
+     "formula": "median_of_points",
+     "of": [
+      1.444232,
+      1.828626,
+      1.687406,
+      1.451314,
+      1.548865,
+      1.604323,
+      1.50832,
+      1.826347,
+      1.6492,
+      1.681287
+     ],
+     "value": 1.6267615,
+     "x": "median"
+    }
+   ]
+  },
+  {
+   "group": "calibration",
+   "kind": "match",
+   "match": "line_reaction_m",
+   "panel": "d20",
+   "points": [
+    {
+     "formula": "value",
+     "refs": [
+      "amputation.csv#match_id=1874553,metric=line_reaction_m,band=gt_20s:mean_abs_error"
+     ],
+     "value": 0.64173,
+     "x": "1874553"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "amputation.csv#match_id=1886347,metric=line_reaction_m,band=gt_20s:mean_abs_error"
+     ],
+     "value": 0.549962,
+     "x": "1886347"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "amputation.csv#match_id=1925299,metric=line_reaction_m,band=gt_20s:mean_abs_error"
+     ],
+     "value": 0.53729,
+     "x": "1925299"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "amputation.csv#match_id=1959846,metric=line_reaction_m,band=gt_20s:mean_abs_error"
+     ],
+     "value": 0.613188,
+     "x": "1959846"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "amputation.csv#match_id=1996435,metric=line_reaction_m,band=gt_20s:mean_abs_error"
+     ],
+     "value": 0.570175,
+     "x": "1996435"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "amputation.csv#match_id=1996436,metric=line_reaction_m,band=gt_20s:mean_abs_error"
+     ],
+     "value": 0.63091,
+     "x": "1996436"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "amputation.csv#match_id=2007448,metric=line_reaction_m,band=gt_20s:mean_abs_error"
+     ],
+     "value": 0.613449,
+     "x": "2007448"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "amputation.csv#match_id=2010085,metric=line_reaction_m,band=gt_20s:mean_abs_error"
+     ],
+     "value": 0.662501,
+     "x": "2010085"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "amputation.csv#match_id=2011166,metric=line_reaction_m,band=gt_20s:mean_abs_error"
+     ],
+     "value": 0.668193,
+     "x": "2011166"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "amputation.csv#match_id=2015213,metric=line_reaction_m,band=gt_20s:mean_abs_error"
+     ],
+     "value": 0.653961,
+     "x": "2015213"
+    }
+   ]
+  },
+  {
+   "group": "calibration",
+   "kind": "median",
+   "match": "line_reaction_m",
+   "panel": "d20",
+   "points": [
+    {
+     "formula": "median_of_points",
+     "of": [
+      0.64173,
+      0.549962,
+      0.53729,
+      0.613188,
+      0.570175,
+      0.63091,
+      0.613449,
+      0.662501,
+      0.668193,
+      0.653961
+     ],
+     "value": 0.6221795,
+     "x": "median"
+    }
+   ]
+  },
+  {
+   "group": "held-out",
+   "kind": "match",
+   "match": "line_reaction_m",
+   "panel": "d20",
+   "points": [
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/amputation.csv#match_id=1899585,metric=line_reaction_m,band=gt_20s:mean_abs_error"
+     ],
+     "value": 0.605098,
+     "x": "1899585"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/amputation.csv#match_id=1927964,metric=line_reaction_m,band=gt_20s:mean_abs_error"
+     ],
+     "value": 0.517078,
+     "x": "1927964"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/amputation.csv#match_id=1953632,metric=line_reaction_m,band=gt_20s:mean_abs_error"
+     ],
+     "value": 0.596474,
+     "x": "1953632"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/amputation.csv#match_id=1986691,metric=line_reaction_m,band=gt_20s:mean_abs_error"
+     ],
+     "value": 0.515934,
+     "x": "1986691"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/amputation.csv#match_id=2006229,metric=line_reaction_m,band=gt_20s:mean_abs_error"
+     ],
+     "value": 0.607477,
+     "x": "2006229"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/amputation.csv#match_id=2006363,metric=line_reaction_m,band=gt_20s:mean_abs_error"
+     ],
+     "value": 0.590593,
+     "x": "2006363"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/amputation.csv#match_id=2007721,metric=line_reaction_m,band=gt_20s:mean_abs_error"
+     ],
+     "value": 0.639437,
+     "x": "2007721"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/amputation.csv#match_id=2013725,metric=line_reaction_m,band=gt_20s:mean_abs_error"
+     ],
+     "value": 0.695164,
+     "x": "2013725"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/amputation.csv#match_id=2016236,metric=line_reaction_m,band=gt_20s:mean_abs_error"
+     ],
+     "value": 0.686482,
+     "x": "2016236"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/amputation.csv#match_id=2017461,metric=line_reaction_m,band=gt_20s:mean_abs_error"
+     ],
+     "value": 0.576505,
+     "x": "2017461"
+    }
+   ]
+  },
+  {
+   "group": "held-out",
+   "kind": "median",
+   "match": "line_reaction_m",
+   "panel": "d20",
+   "points": [
+    {
+     "formula": "median_of_points",
+     "of": [
+      0.605098,
+      0.517078,
+      0.596474,
+      0.515934,
+      0.607477,
+      0.590593,
+      0.639437,
+      0.695164,
+      0.686482,
+      0.576505
+     ],
+     "value": 0.600786,
+     "x": "median"
+    }
+   ]
+  },
+  {
+   "group": "calibration",
+   "kind": "match",
+   "match": "block_width_m",
+   "panel": "d20",
+   "points": [
+    {
+     "formula": "value",
+     "refs": [
+      "amputation.csv#match_id=1874553,metric=block_width_m,band=gt_20s:mean_abs_error"
+     ],
+     "value": 5.400567,
+     "x": "1874553"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "amputation.csv#match_id=1886347,metric=block_width_m,band=gt_20s:mean_abs_error"
+     ],
+     "value": 4.764154,
+     "x": "1886347"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "amputation.csv#match_id=1925299,metric=block_width_m,band=gt_20s:mean_abs_error"
+     ],
+     "value": 4.1711,
+     "x": "1925299"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "amputation.csv#match_id=1959846,metric=block_width_m,band=gt_20s:mean_abs_error"
+     ],
+     "value": 3.90482,
+     "x": "1959846"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "amputation.csv#match_id=1996435,metric=block_width_m,band=gt_20s:mean_abs_error"
+     ],
+     "value": 4.352119,
+     "x": "1996435"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "amputation.csv#match_id=1996436,metric=block_width_m,band=gt_20s:mean_abs_error"
+     ],
+     "value": 3.796882,
+     "x": "1996436"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "amputation.csv#match_id=2007448,metric=block_width_m,band=gt_20s:mean_abs_error"
+     ],
+     "value": 4.751192,
+     "x": "2007448"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "amputation.csv#match_id=2010085,metric=block_width_m,band=gt_20s:mean_abs_error"
+     ],
+     "value": 4.840501,
+     "x": "2010085"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "amputation.csv#match_id=2011166,metric=block_width_m,band=gt_20s:mean_abs_error"
+     ],
+     "value": 4.390495,
+     "x": "2011166"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "amputation.csv#match_id=2015213,metric=block_width_m,band=gt_20s:mean_abs_error"
+     ],
+     "value": 5.27873,
+     "x": "2015213"
+    }
+   ]
+  },
+  {
+   "group": "calibration",
+   "kind": "median",
+   "match": "block_width_m",
+   "panel": "d20",
+   "points": [
+    {
+     "formula": "median_of_points",
+     "of": [
+      5.400567,
+      4.764154,
+      4.1711,
+      3.90482,
+      4.352119,
+      3.796882,
+      4.751192,
+      4.840501,
+      4.390495,
+      5.27873
+     ],
+     "value": 4.5708435,
+     "x": "median"
+    }
+   ]
+  },
+  {
+   "group": "held-out",
+   "kind": "match",
+   "match": "block_width_m",
+   "panel": "d20",
+   "points": [
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/amputation.csv#match_id=1899585,metric=block_width_m,band=gt_20s:mean_abs_error"
+     ],
+     "value": 4.558379,
+     "x": "1899585"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/amputation.csv#match_id=1927964,metric=block_width_m,band=gt_20s:mean_abs_error"
+     ],
+     "value": 4.641968,
+     "x": "1927964"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/amputation.csv#match_id=1953632,metric=block_width_m,band=gt_20s:mean_abs_error"
+     ],
+     "value": 4.907756,
+     "x": "1953632"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/amputation.csv#match_id=1986691,metric=block_width_m,band=gt_20s:mean_abs_error"
+     ],
+     "value": 3.662579,
+     "x": "1986691"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/amputation.csv#match_id=2006229,metric=block_width_m,band=gt_20s:mean_abs_error"
+     ],
+     "value": 4.858944,
+     "x": "2006229"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/amputation.csv#match_id=2006363,metric=block_width_m,band=gt_20s:mean_abs_error"
+     ],
+     "value": 4.334738,
+     "x": "2006363"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/amputation.csv#match_id=2007721,metric=block_width_m,band=gt_20s:mean_abs_error"
+     ],
+     "value": 5.006689,
+     "x": "2007721"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/amputation.csv#match_id=2013725,metric=block_width_m,band=gt_20s:mean_abs_error"
+     ],
+     "value": 4.683432,
+     "x": "2013725"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/amputation.csv#match_id=2016236,metric=block_width_m,band=gt_20s:mean_abs_error"
+     ],
+     "value": 4.815679,
+     "x": "2016236"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/amputation.csv#match_id=2017461,metric=block_width_m,band=gt_20s:mean_abs_error"
+     ],
+     "value": 4.881893,
+     "x": "2017461"
+    }
+   ]
+  },
+  {
+   "group": "held-out",
+   "kind": "median",
+   "match": "block_width_m",
+   "panel": "d20",
+   "points": [
+    {
+     "formula": "median_of_points",
+     "of": [
+      4.558379,
+      4.641968,
+      4.907756,
+      3.662579,
+      4.858944,
+      4.334738,
+      5.006689,
+      4.683432,
+      4.815679,
+      4.881893
+     ],
+     "value": 4.7495555,
+     "x": "median"
+    }
+   ]
+  },
+  {
+   "group": "calibration",
+   "kind": "match",
+   "match": "block_length_m",
+   "panel": "d20",
+   "points": [
+    {
+     "formula": "value",
+     "refs": [
+      "amputation.csv#match_id=1874553,metric=block_length_m,band=gt_20s:mean_abs_error"
+     ],
+     "value": 6.322933,
+     "x": "1874553"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "amputation.csv#match_id=1886347,metric=block_length_m,band=gt_20s:mean_abs_error"
+     ],
+     "value": 2.659981,
+     "x": "1886347"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "amputation.csv#match_id=1925299,metric=block_length_m,band=gt_20s:mean_abs_error"
+     ],
+     "value": 4.052652,
+     "x": "1925299"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "amputation.csv#match_id=1959846,metric=block_length_m,band=gt_20s:mean_abs_error"
+     ],
+     "value": 2.313776,
+     "x": "1959846"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "amputation.csv#match_id=1996435,metric=block_length_m,band=gt_20s:mean_abs_error"
+     ],
+     "value": 1.977556,
+     "x": "1996435"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "amputation.csv#match_id=1996436,metric=block_length_m,band=gt_20s:mean_abs_error"
+     ],
+     "value": 8.852993,
+     "x": "1996436"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "amputation.csv#match_id=2007448,metric=block_length_m,band=gt_20s:mean_abs_error"
+     ],
+     "value": 7.594,
+     "x": "2007448"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "amputation.csv#match_id=2010085,metric=block_length_m,band=gt_20s:mean_abs_error"
+     ],
+     "value": 4.488625,
+     "x": "2010085"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "amputation.csv#match_id=2011166,metric=block_length_m,band=gt_20s:mean_abs_error"
+     ],
+     "value": 5.869324,
+     "x": "2011166"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "amputation.csv#match_id=2015213,metric=block_length_m,band=gt_20s:mean_abs_error"
+     ],
+     "value": 3.198792,
+     "x": "2015213"
+    }
+   ]
+  },
+  {
+   "group": "calibration",
+   "kind": "median",
+   "match": "block_length_m",
+   "panel": "d20",
+   "points": [
+    {
+     "formula": "median_of_points",
+     "of": [
+      6.322933,
+      2.659981,
+      4.052652,
+      2.313776,
+      1.977556,
+      8.852993,
+      7.594,
+      4.488625,
+      5.869324,
+      3.198792
+     ],
+     "value": 4.2706385,
+     "x": "median"
+    }
+   ]
+  },
+  {
+   "group": "held-out",
+   "kind": "match",
+   "match": "block_length_m",
+   "panel": "d20",
+   "points": [
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/amputation.csv#match_id=1899585,metric=block_length_m,band=gt_20s:mean_abs_error"
+     ],
+     "value": 4.755966,
+     "x": "1899585"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/amputation.csv#match_id=1927964,metric=block_length_m,band=gt_20s:mean_abs_error"
+     ],
+     "value": 2.382924,
+     "x": "1927964"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/amputation.csv#match_id=1953632,metric=block_length_m,band=gt_20s:mean_abs_error"
+     ],
+     "value": 2.248142,
+     "x": "1953632"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/amputation.csv#match_id=1986691,metric=block_length_m,band=gt_20s:mean_abs_error"
+     ],
+     "value": 2.331589,
+     "x": "1986691"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/amputation.csv#match_id=2006229,metric=block_length_m,band=gt_20s:mean_abs_error"
+     ],
+     "value": 2.924755,
+     "x": "2006229"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/amputation.csv#match_id=2006363,metric=block_length_m,band=gt_20s:mean_abs_error"
+     ],
+     "value": 8.933014,
+     "x": "2006363"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/amputation.csv#match_id=2007721,metric=block_length_m,band=gt_20s:mean_abs_error"
+     ],
+     "value": 0.293927,
+     "x": "2007721"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/amputation.csv#match_id=2013725,metric=block_length_m,band=gt_20s:mean_abs_error"
+     ],
+     "value": 5.905302,
+     "x": "2013725"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/amputation.csv#match_id=2016236,metric=block_length_m,band=gt_20s:mean_abs_error"
+     ],
+     "value": 2.033784,
+     "x": "2016236"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/amputation.csv#match_id=2017461,metric=block_length_m,band=gt_20s:mean_abs_error"
+     ],
+     "value": 4.468184,
+     "x": "2017461"
+    }
+   ]
+  },
+  {
+   "group": "held-out",
+   "kind": "median",
+   "match": "block_length_m",
+   "panel": "d20",
+   "points": [
+    {
+     "formula": "median_of_points",
+     "of": [
+      4.755966,
+      2.382924,
+      2.248142,
+      2.331589,
+      2.924755,
+      8.933014,
+      0.293927,
+      5.905302,
+      2.033784,
+      4.468184
+     ],
+     "value": 2.6538395,
+     "x": "median"
+    }
+   ]
+  },
+  {
+   "group": "calibration",
+   "kind": "match",
+   "match": "block_area_m2",
+   "panel": "d20",
+   "points": [
+    {
+     "formula": "value",
+     "refs": [
+      "amputation.csv#match_id=1874553,metric=block_area_m2,band=gt_20s:mean_abs_error"
+     ],
+     "value": 183.05728,
+     "x": "1874553"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "amputation.csv#match_id=1886347,metric=block_area_m2,band=gt_20s:mean_abs_error"
+     ],
+     "value": 73.392891,
+     "x": "1886347"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "amputation.csv#match_id=1925299,metric=block_area_m2,band=gt_20s:mean_abs_error"
+     ],
+     "value": 110.867292,
+     "x": "1925299"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "amputation.csv#match_id=1959846,metric=block_area_m2,band=gt_20s:mean_abs_error"
+     ],
+     "value": 163.548986,
+     "x": "1959846"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "amputation.csv#match_id=1996435,metric=block_area_m2,band=gt_20s:mean_abs_error"
+     ],
+     "value": 106.168913,
+     "x": "1996435"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "amputation.csv#match_id=1996436,metric=block_area_m2,band=gt_20s:mean_abs_error"
+     ],
+     "value": 371.39856,
+     "x": "1996436"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "amputation.csv#match_id=2007448,metric=block_area_m2,band=gt_20s:mean_abs_error"
+     ],
+     "value": 355.714306,
+     "x": "2007448"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "amputation.csv#match_id=2010085,metric=block_area_m2,band=gt_20s:mean_abs_error"
+     ],
+     "value": 172.96758,
+     "x": "2010085"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "amputation.csv#match_id=2011166,metric=block_area_m2,band=gt_20s:mean_abs_error"
+     ],
+     "value": 132.13138,
+     "x": "2011166"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "amputation.csv#match_id=2015213,metric=block_area_m2,band=gt_20s:mean_abs_error"
+     ],
+     "value": 309.697969,
+     "x": "2015213"
+    }
+   ]
+  },
+  {
+   "group": "calibration",
+   "kind": "median",
+   "match": "block_area_m2",
+   "panel": "d20",
+   "points": [
+    {
+     "formula": "median_of_points",
+     "of": [
+      183.05728,
+      73.392891,
+      110.867292,
+      163.548986,
+      106.168913,
+      371.39856,
+      355.714306,
+      172.96758,
+      132.13138,
+      309.697969
+     ],
+     "value": 168.258283,
+     "x": "median"
+    }
+   ]
+  },
+  {
+   "group": "held-out",
+   "kind": "match",
+   "match": "block_area_m2",
+   "panel": "d20",
+   "points": [
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/amputation.csv#match_id=1899585,metric=block_area_m2,band=gt_20s:mean_abs_error"
+     ],
+     "value": 226.971814,
+     "x": "1899585"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/amputation.csv#match_id=1927964,metric=block_area_m2,band=gt_20s:mean_abs_error"
+     ],
+     "value": 221.887419,
+     "x": "1927964"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/amputation.csv#match_id=1953632,metric=block_area_m2,band=gt_20s:mean_abs_error"
+     ],
+     "value": 104.209869,
+     "x": "1953632"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/amputation.csv#match_id=1986691,metric=block_area_m2,band=gt_20s:mean_abs_error"
+     ],
+     "value": 142.785072,
+     "x": "1986691"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/amputation.csv#match_id=2006229,metric=block_area_m2,band=gt_20s:mean_abs_error"
+     ],
+     "value": 219.330677,
+     "x": "2006229"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/amputation.csv#match_id=2006363,metric=block_area_m2,band=gt_20s:mean_abs_error"
+     ],
+     "value": 228.724525,
+     "x": "2006363"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/amputation.csv#match_id=2007721,metric=block_area_m2,band=gt_20s:mean_abs_error"
+     ],
+     "value": 44.830095,
+     "x": "2007721"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/amputation.csv#match_id=2013725,metric=block_area_m2,band=gt_20s:mean_abs_error"
+     ],
+     "value": 203.090395,
+     "x": "2013725"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/amputation.csv#match_id=2016236,metric=block_area_m2,band=gt_20s:mean_abs_error"
+     ],
+     "value": 178.526808,
+     "x": "2016236"
+    },
+    {
+     "formula": "value",
+     "refs": [
+      "heldout/amputation.csv#match_id=2017461,metric=block_area_m2,band=gt_20s:mean_abs_error"
+     ],
+     "value": 121.671394,
+     "x": "2017461"
+    }
+   ]
+  },
+  {
+   "group": "held-out",
+   "kind": "median",
+   "match": "block_area_m2",
+   "panel": "d20",
+   "points": [
+    {
+     "formula": "median_of_points",
+     "of": [
+      226.971814,
+      221.887419,
+      104.209869,
+      142.785072,
+      219.330677,
+      228.724525,
+      44.830095,
+      203.090395,
+      178.526808,
+      121.671394
+     ],
+     "value": 190.8086015,
+     "x": "median"
+    }
+   ]
   }
  ],
  "sources": {

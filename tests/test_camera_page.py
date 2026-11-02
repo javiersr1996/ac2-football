@@ -9,10 +9,12 @@ Each rule has its planted case; the mutations that kill them are logged in scrip
 
 from __future__ import annotations
 
+import base64
 import copy
 import importlib.util
 import json
 import math
+import re
 import shutil
 import sys
 from pathlib import Path
@@ -442,6 +444,23 @@ def test_a_page_whose_payload_is_not_the_sidecar_is_named(page: Any) -> None:
     ]
 
 
+def test_the_no_gl_fallback_carries_the_clips_still(page: Any) -> None:
+    # without WebGL the page shows reports/clip/clip_still.png, inlined in the fallback's block
+    text = page[0]
+    png = (cp.REPORTS / cp.STILL_PNG).read_bytes()
+    block = re.search(r'<figure class="no-gl" id="no-gl" hidden>(.*?)</figure>', text, re.DOTALL)
+    assert block is not None
+    uri = re.search(r'<img [^>]*src="data:image/png;base64,([^"]*)"', block.group(1))
+    assert uri is not None and base64.b64decode(uri.group(1), validate=True) == png
+    assert cp.still_problems(text, png) == []
+    assert cp.still_problems(text, png + b"\0") == [
+        f"the no-WebGL still is not reports/{cp.STILL_PNG}"
+    ]
+    assert cp.still_problems(text.replace('class="no-gl"', 'class="gone"'), png) == [
+        "no no-WebGL fallback with an inlined PNG"
+    ]
+
+
 def test_a_byte_of_the_page_is_named(page: Any) -> None:
     text = page[0].encode("utf-8")
     bad = text.replace(b"What the camera saw</h1>", b"What the camera sees</h1>")
@@ -469,6 +488,10 @@ def test_the_template_may_not_type_a_number(page: Any, typed: str, found: str) -
     "load",
     [
         '<img src="https://example.org/x.png">',
+        '<img src="data:image/png;base64,AAAA" srcset="https://example.org/x.png">',
+        '<script src="data:text/javascript,fetch(1)"></script>',
+        '<frame src="data:text/html;base64,AAAA">',
+        '<img src="data:image/svg+xml,AAAA">',
         '<link rel="stylesheet" href="a.css">',
         "<script>fetch('data.json')</script>",
         "<style>a{background:url(x.png)}</style>",

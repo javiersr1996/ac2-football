@@ -26,7 +26,8 @@ detected inside it, players filled in outside it).
 ones, holds the committed sidecar to the reports again, holds the payload inlined in the committed
 page to the sidecar, and checks three.js and the template; exit 0 when it all holds, 1 when it does
 not, 2 when the data are missing or the match is held out. ``--check-static`` runs what needs no
-data: the payload against the sidecar, three.js by its hash, the template's rules (no number with a
+data: the payload against the sidecar, the still shown without WebGL against
+``reports/clip/clip_still.png``, three.js by its hash, the template's rules (no number with a
 unit typed in it) and a page that loads nothing from the network.
 
 Copied, with a declaration, from the author's basketball entry
@@ -38,6 +39,7 @@ Copied, with a declaration, from the author's basketball entry
 from __future__ import annotations
 
 import argparse
+import base64
 import csv
 import hashlib
 import io
@@ -67,9 +69,13 @@ VENDOR = ROOT / "vendor" / "three"
 PAYLOAD = "/*PAYLOAD*/"
 THREE = "/*THREE*/"
 THREE_FILE = "three.cjs"
+#: The clip's frame at the reception (``ac2fb clip``), by its path under ``reports/``: inlined in
+#: the page as a data URI at this marker and shown in place of the scene when there is no WebGL.
+STILL_PNG = "clip/clip_still.png"
+CLIP_STILL = "/*CLIP_STILL*/"
 #: What the inlined three.js must never contain: an HTML parser would end or re-enter the
 #: script element on the first two, and the markers would be substituted twice.
-FORBIDDEN_IN_SCRIPT = ("</script", "<script", "<!--", PAYLOAD, THREE)
+FORBIDDEN_IN_SCRIPT = ("</script", "<script", "<!--", PAYLOAD, THREE, CLIP_STILL)
 
 #: The reports the page reads, by their path under ``reports/``.
 SOURCES = (
@@ -1069,11 +1075,14 @@ def template_rules(template: str) -> list[str]:
     return problems
 
 
-def assemble(template: str, data: Mapping[str, Any], three: str) -> str:
-    """The template with three.js and the payload in place of their markers, once each."""
-    for marker in (PAYLOAD, THREE):
+def assemble(template: str, data: Mapping[str, Any], three: str, still: bytes | None = None) -> str:
+    """The template with three.js, the payload and, when given, the clip's still (base64) in place
+    of their markers, once each."""
+    for marker in (PAYLOAD, THREE) + ((CLIP_STILL,) if still is not None else ()):
         if template.count(marker) != 1:
             raise Refused(f"the template must hold {marker} exactly once")
+    if still is not None:  # base64 holds no marker and no `<`
+        template = template.replace(CLIP_STILL, base64.b64encode(still).decode("ascii"))
     # `</` inside a <script> would close it early, whatever the JSON says it means.
     blob = json.dumps(
         data, allow_nan=False, sort_keys=True, ensure_ascii=False, separators=(",", ":")
@@ -1137,11 +1146,19 @@ def prove_loads(page: str, release: str) -> str:
 
 #: What would make the page load something: an element with a source, a stylesheet link, a CSS
 #: url or import, a script call that fetches, imports or opens a connection. Read on the page
-#: without the inlined three.js (checked by its hash); links (<a href>) do not load.
+#: without the inlined three.js (checked by its hash); links (<a href>) do not load, nor does a
+#: source that is a data: URI (the clip's still, bytes of the page itself, checked by its bytes).
 NETWORK = re.compile(
-    r"""\bsrc\s*=|<link\b|url\(|@import|\bfetch\(|\bimport\(|XMLHttpRequest|WebSocket"""
-    r"""|EventSource|sendBeacon|new Worker|<iframe|<img|<object|<embed""",
+    r"""\bsrc\s*=(?!\s*"data:image/png;base64,)|\bsrcset\b|<link\b|url\(|@import|\bfetch\("""
+    r"""|\bimport\(|XMLHttpRequest|WebSocket|EventSource|sendBeacon|new Worker|<iframe"""
+    r"""|<img\b(?![^>]*\bsrc\s*=\s*"data:image/png;base64,)|<object|<embed""",
     re.IGNORECASE,
+)
+#: The fallback when there is no WebGL and the PNG it inlines.
+NO_GL_STILL = re.compile(
+    r'<figure class="no-gl" id="no-gl" hidden>\s*<img [^>]*\bsrc="data:image/png;base64,'
+    r'([A-Za-z0-9+/=]*)"[^>]*>.*?</figure>',
+    re.DOTALL,
 )
 
 
@@ -1149,6 +1166,16 @@ def network_rules(page: str) -> list[str]:
     """The page loads nothing from the network (its links are <a> and load nothing)."""
     own = page.replace(inlined_block(page), "")
     return [f"the page would load something: {m.group(0)!r}" for m in NETWORK.finditer(own)]
+
+
+def still_problems(page: str, png: bytes) -> list[str]:
+    """The page's no-WebGL fallback inlines ``png`` (reports/clip/clip_still.png), byte for byte."""
+    found = NO_GL_STILL.search(page)
+    if found is None:
+        return ["no no-WebGL fallback with an inlined PNG"]
+    if base64.b64decode(found.group(1)) != png:
+        return [f"the no-WebGL still is not reports/{STILL_PNG}"]
+    return []
 
 
 def static_problems(
@@ -1160,13 +1187,15 @@ def static_problems(
 ) -> list[str]:
     """Rules 3 and 10, the template's and the network's: everything that needs no data; with the
     versioned reports, the sidecar held to them too (its cells, strips, context, findings, frame
-    statistics and the reports' hashes: the cross-check, which reads no data)."""
+    statistics and the reports' hashes: the cross-check, which reads no data) and the page's
+    no-WebGL still to the clip's PNG."""
     problems = []
     if reports is not None:
         try:
             problems += cross_check(json.loads(sidecar_bytes), reports)
         except (KeyError, TypeError, ValueError) as exc:
             problems.append(f"{SIDECAR}: cannot be read against the reports ({exc!r})")
+        problems += [f"{PAGE}: {p}" for p in still_problems(page, reports[STILL_PNG])]
     try:
         if payload_of(page) != sidecar_bytes:
             problems.append(f"{PAGE}: its payload differs from {SIDECAR}")
@@ -1209,10 +1238,12 @@ def compare(name: str, committed: bytes | None, recomputed: bytes) -> list[str]:
 
 
 def read_reports(reports: Path) -> dict[str, bytes]:
-    missing = [name for name in SOURCES if not (reports / name).is_file()]
+    """The reports the sidecar hashes (``SOURCES``) and the still the page inlines."""
+    names = (*SOURCES, STILL_PNG)
+    missing = [name for name in names if not (reports / name).is_file()]
     if missing:
         raise FileNotFoundError(f"missing in {reports}: {', '.join(missing)}")
-    return {name: (reports / name).read_bytes() for name in SOURCES}
+    return {name: (reports / name).read_bytes() for name in names}
 
 
 def build(
@@ -1223,7 +1254,7 @@ def build(
     doc = sidecar(inputs, reports, {"release": release, "sha256": digest})
     check_finite(doc)
     body = canonical(doc)
-    page = assemble(template, json.loads(body), three)
+    page = assemble(template, json.loads(body), three, reports[STILL_PNG])
     proof = prove_loads(page, release)
     return body, page, proof
 
@@ -1317,7 +1348,8 @@ def main(argv: Sequence[str] | None = None) -> int:
         print(
             "verified: the sidecar against the versioned reports (cells, strips, context, "
             f"findings, frame statistics, {len(SOURCES)} hashes), the payload against the sidecar, "
-            "three.js by its hash, the template's rules, a page that loads nothing"
+            f"the no-WebGL still against reports/{STILL_PNG}, three.js by its hash, the "
+            "template's rules, a page that loads nothing"
         )
         for problem in problems:
             print(f"  - {problem}")

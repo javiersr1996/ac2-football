@@ -94,8 +94,13 @@ h1{font-size:clamp(26px,2.6vw,38px);line-height:1.1;margin:0;font-weight:800;let
 .keystrip{flex-wrap:wrap;max-width:calc(100% - 16px)}
 .keystrip li.br{flex-basis:100%;height:0}
 .count .note{display:block;font-size:13px;font-weight:400;color:var(--dim);margin-top:2px}
-.no-gl{position:absolute;inset:0;margin:0;padding:24px;display:flex;align-items:center;font-size:17px;
-       background:var(--paper)}
+/* no WebGL: the clip's still of the reception, whole inside the stage, its caption under it; the
+   counter and the key belong to the drawn scene and the still carries its own */
+.no-gl{position:absolute;inset:0;margin:0;padding:12px;display:flex;flex-direction:column;align-items:center;
+       justify-content:center;gap:8px;background:var(--paper)}
+.no-gl img{display:block;flex:0 1 auto;min-height:0;max-width:100%;object-fit:contain}
+.no-gl figcaption{flex:none;font-size:17px;line-height:1.35;text-align:center}
+.flat .foot,.flat .keystrip,.flat .key{display:none}
 
 /* ------------------------------------------------------------ the control bar */
 /* one row: Play, the scrubber, the view; the ticks' label runs under the row */
@@ -305,11 +310,10 @@ code{font-family:var(--mono);font-size:15px;overflow-wrap:anywhere}
       </div>
       <ul class="key" id="key" aria-label="key"></ul>
     </div>
-    <p class="no-gl" id="no-gl" hidden>This browser has no WebGL, so the reception cannot be drawn
-      here. What it shows: the camera shows a window around the ball; SkillCorner fills in the
-      rest. Keep a metric to what the camera saw whole and line depth and block length become
-      a different sample, not a different error. The README's figures draw the same; the tabs
-      need no GPU and still work.</p>
+    <figure class="no-gl" id="no-gl" hidden>
+      <img alt="The reception from above, drawn flat: the defenders the camera saw (filled discs), the ones the model filled in (rings, each with the seconds to its nearest detection), the receiver, the ball, the teammates and the count of defenders filled in." src="data:image/png;base64,/*CLIP_STILL*/">
+      <figcaption>No WebGL here: the reception as a still.</figcaption>
+    </figure>
   </section>
 
   <div class="controls" id="controls">

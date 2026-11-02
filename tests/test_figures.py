@@ -38,7 +38,7 @@ REPORTS = ROOT / "reports"
 COMMITTED = REPORTS / "figures"
 FIXED = re.compile(r"\b[VD]\d\b|[Ll]ayer \d")  # names, not claims: V0, D3, layer 2
 SIDECARS = (f"{figures.FIG1}.json", f"{figures.FIG2}.json")
-POINTS, NUMBERS = 594, 13
+POINTS, NUMBERS = 748, 13
 
 
 def read_inputs(root: Path) -> dict[str, bytes]:
@@ -182,7 +182,7 @@ def coverage_problems(documents: dict[str, dict[str, Any]]) -> list[str]:
                 found.append(f"{panel}/{group}: matches {sorted(lines)}")
             if any(len(s["points"]) != n_points for s in mine):
                 found.append(f"{panel}/{group}: a line without its {n_points} points")
-    for panel in ("c", "d"):
+    for panel in ("c", "d", "d20"):
         for group in ("calibration", "held-out"):
             dots = [
                 s for s in fig1 if (s["panel"], s["group"], s["kind"]) == (panel, group, "match")
@@ -413,6 +413,7 @@ def test_each_panel_reads_the_cell_it_names(documents: dict[str, dict[str, Any]]
         "c": r"(heldout/)?reliability\.csv#match_id=\d+,metric=\w+,ball_stratum=all,"
         r"variant=V[01]:mean",
         "d": r"(heldout/)?amputation\.csv#match_id=\d+,metric=\w+,band=all:mean_abs_error",
+        "d20": r"(heldout/)?amputation\.csv#match_id=\d+,metric=\w+,band=gt_20s:mean_abs_error",
     }
     seen = dict.fromkeys(shapes, 0)
     for s in documents[SIDECARS[0]]["series"]:

@@ -47,6 +47,16 @@
    "note": "...a step between two detections ( 0.20 m); the held-out (steps.detected_to_detected.p50.median) rounds to 0.20 too"
   },
   {
+   "number": "-0.20",
+   "src": "reports/calibration.json:criteria.D4.values.t_v1",
+   "note": "...seen-only players leave layer 3's effect unchanged ( -0.20; the effect in V1, players seen throughout the window"
+  },
+  {
+   "number": "-0.19",
+   "src": "reports/calibration.json:criteria.D3.values.effect",
+   "note": "...(-0.20 sd against -0.19; the effect on every unit (V0), the one layer 3 states"
+  },
+  {
    "number": "0.8",
    "src": "reports/figures/fig1_layer2.json:series.65.points.0.of.*(min)",
    "note": "...errs 0.8; min over both halves: calibration holds it, the held-out (series.67) is 0.90 to 1.20 m"
@@ -60,6 +70,36 @@
    "number": "6",
    "src": "reports/figures/fig1_layer2.json:series.91.points.0.of.*(max)",
    "note": "...at most 6 m on block length; max over both halves: the held-out holds it (5.95; calibration, series.89, is 1.17 to 5.06)"
+  },
+  {
+   "number": "20",
+   "src": "reports/layer2.json:summary.reacquisition.by_band.gt_20s.frame_share.median",
+   "note": "...On gaps over 20 s"
+  },
+  {
+   "number": "36",
+   "src": "reports/heldout/layer2.json:summary.reacquisition.by_band.gt_20s.frame_share.median",
+   "note": "...On gaps over 20 s (36% to 39% of filled frames; held-out median of the share of the filled frames in gaps over 20 s (Figure 1b)"
+  },
+  {
+   "number": "39",
+   "src": "reports/layer2.json:summary.reacquisition.by_band.gt_20s.frame_share.median",
+   "note": "...to 39% of filled frames); calibration median of the same share"
+  },
+  {
+   "number": "1.3",
+   "src": "reports/figures/fig1_layer2.json:series.109.points.0.of.*(min)",
+   "note": "...it errs 1.3; amputation error on gaps over 20 s alone (panel d20, band gt_20s, not drawn), line depth; min over both halves: calibration holds it, the held-out (series.111) is 1.44 to 1.83 m"
+  },
+  {
+   "number": "1.9",
+   "src": "reports/figures/fig1_layer2.json:series.109.points.0.of.*(max)",
+   "note": "...it errs 1.3 to 1.9 m on line depth; max over both halves: calibration holds it"
+  },
+  {
+   "number": "9",
+   "src": "reports/figures/fig1_layer2.json:series.123.points.0.of.*(max)",
+   "note": "...at most 9 m on block length; panel d20, block length; max over both halves: the held-out holds it (8.93; calibration, series.121, is 1.98 to 8.85)"
   },
   {
    "number": "639",
@@ -124,22 +164,7 @@
   {
    "number": "-0.19",
    "src": "reports/calibration.json:criteria.D3.values.effect",
-   "note": "...The effect, -0.19"
-  },
-  {
-   "number": "8",
-   "src": "reports/calibration.json:variants.V0.bar.agreeing",
-   "note": "...passed its own bar (same sign in 8; the calibration bar (protocol bars.calibration): T has the sign of E_m in at least 8 of the 10 matches and the permutation p is at most 0.00135; variants.V0.bar.passed is true"
-  },
-  {
-   "number": "10",
-   "src": "reports/calibration.json:variants.V0.bar.matches",
-   "note": "...same sign in 8 of 10 matches"
-  },
-  {
-   "number": "0.0005",
-   "src": "reports/calibration.json:variants.V0.bar.p",
-   "note": "...permutation p 0.0005; two-sided over 2000 draws (protocol null.p_value), at most 0.00135 to pass"
+   "note": "...The rule killed its effect ( -0.19"
   },
   {
    "number": "0.18",
@@ -149,12 +174,7 @@
   {
    "number": "95",
    "src": "reports/calibration.json:criteria.D3.values.pretrend / criteria.D3.values.effect",
-   "note": "...0.18 sd, 95% of the effect; the rule (death_criteria.D3, ratio 0.5) refuses an effect under 2 |P|, the floor criteria.D3.values.floor"
-  },
-  {
-   "number": "-0.20",
-   "src": "reports/calibration.json:criteria.D4.values.t_v1",
-   "note": "...Seen-only players give the same effect ( -0.20"
+   "note": "...0.18 sd, 95% of it; the rule (death_criteria.D3, ratio 0.5) refuses an effect under 2 |P|, the floor criteria.D3.values.floor"
   },
   {
    "number": "3.13",

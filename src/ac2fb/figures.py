@@ -6,7 +6,8 @@ reads and writes; the door to the data stays single). Each figure is an SVG and 
 
 - Figure 1 (layer 2, the 10 calibration and the 10 held-out matches, each one drawn): detection
   by distance to the ball; the share of the filled frames that lies in each gap-length band;
-  per metric, V1 minus V0 and the error of amputation.
+  per metric, V1 minus V0 and the error of amputation. Its sidecar also holds, drawn nowhere,
+  the error of amputation on the gaps over 20 s alone (panel ``d20``), which the README cites.
 - Figure 2 (layer 3, branch B: calibration only, because layer 3 died before any held-out
   reading): the effect and the pre-trend per match in V0, V1 and V2 with no extrapolated player,
   and the death (D3), stated.
@@ -83,6 +84,8 @@ def _bands() -> list[tuple[str, str]]:
 
 BINS = _bins()
 BANDS = _bands()
+#: The longest gap band ("gt_20s") and the panel, drawn nowhere, of the amputation error on it.
+LONG_GAPS, LONG_GAPS_PANEL = BANDS[-1][0], "d20"
 METRICS = [
     ("pressure_index", "Pressure index"),
     ("nearest_rival_m", "Nearest rival (m)"),
@@ -342,18 +345,47 @@ def _dots(
             v0 = _cell(rel, **where, variant="V0", column="mean")
             v1 = _cell(rel, **where, variant="V1", column="mean")
             panels["c"].append(_point(rep, m, "diff", [v0, v1]))
-            error = _cell(amp, match_id=m, metric=metric, band="all", column="mean_abs_error")
-            panels["d"].append(_point(rep, m, "value", [error]))
+            panels["d"].append(_amputation_error(rep, amp, m, metric, "all"))
         for panel, points in panels.items():
-            out[panel].append(_series(panel, g, metric, "match", points))
-            kept = [p["value"] for p in points if p is not None]
-            tick = {
-                "x": "median",
-                "formula": "median_of_points",
-                "of": kept,
-                "value": round(statistics.median(kept), 9),
-            }
-            out[panel].append(_series(panel, g, metric, "median", [tick]))
+            out[panel] += _with_median(panel, g, metric, points)
+    return out
+
+
+def _amputation_error(
+    rep: _Reports, amp: str, match: str, metric: str, band: str
+) -> dict[str, Any] | None:
+    error = _cell(amp, match_id=match, metric=metric, band=band, column="mean_abs_error")
+    return _point(rep, match, "value", [error])
+
+
+def _with_median(
+    panel: str, group: str, metric: str, points: list[dict[str, Any] | None]
+) -> list[dict[str, Any]]:
+    """One metric's dots in one split, and their median as a series of one tick."""
+    kept = [p["value"] for p in points if p is not None]
+    tick = {
+        "x": "median",
+        "formula": "median_of_points",
+        "of": kept,
+        "value": round(statistics.median(kept), 9),
+    }
+    return [
+        _series(panel, group, metric, "match", points),
+        _series(panel, group, metric, "median", [tick]),
+    ]
+
+
+def _long_gaps(
+    rep: _Reports, metric: str, matches: Mapping[str, list[str]]
+) -> list[dict[str, Any]]:
+    """Panel d on the gaps over 20 s alone (band ``gt_20s``), per match and split: written to the
+    sidecar for the README, drawn nowhere. A match with no unit in the band has an empty cell, so
+    no point, as in panel d."""
+    out: list[dict[str, Any]] = []
+    for g in (CAL, HELD):
+        amp = f"{PREFIX[g]}amputation.csv"
+        points = [_amputation_error(rep, amp, m, metric, LONG_GAPS) for m in matches[g]]
+        out += _with_median(LONG_GAPS_PANEL, g, metric, points)
     return out
 
 
@@ -364,6 +396,9 @@ def _fig1(rep: _Reports) -> _Drawn:
     for key, _ in METRICS:
         for panel_series in _dots(rep, key, matches).values():
             series += panel_series
+    # after every drawn series, so the indices the README and the page cite do not move
+    for key, _ in METRICS:
+        series += _long_gaps(rep, key, matches)
     t_cal, l_cal = _label(rep, "calibration, {0} matches", ("count", ["layer2.json#matches"], 0))
     t_held, l_held = _label(
         rep, "held-out, {0} matches", ("count", ["heldout/layer2.json#matches"], 0)

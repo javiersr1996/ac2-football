@@ -97,6 +97,7 @@ def test_numerals_read_as_words_match_the_script() -> None:
         .replace("all 20", "all twenty")
         .replace("In 20", "In twenty")
         .replace("about 1 metre", "about one metre")
+        .replace("at most 6", "at most six")
         .replace("17 to 37", "seventeen to thirty-seven")
         .replace("7 to 14", "seven to fourteen")
         for s in SENTENCES
@@ -182,7 +183,7 @@ def test_speed_up_is_off_by_default_and_gives_five_percent_at_most() -> None:
 def test_the_committed_script_gives_eleven_planned_shots() -> None:
     assert [r.number for r in ROWS] == list(range(1, 12))
     shots = mv.planned(ROWS)
-    assert [s.start for s in shots] == [0, 5, 10, 16, 22, 27, 33, 38, 42, 48, 54]
+    assert [s.start for s in shots] == [0, 6, 11, 17, 23, 29, 35, 40, 44, 48, 54]
     assert shots[-1].end == ROWS[-1].end + mv.TAIL <= 60.0
     assert all(s.end == t.start for s, t in zip(shots, shots[1:], strict=False))
     assert all(s.scene is mv.STORYBOARD[s.row.number] for s in shots)
@@ -200,10 +201,10 @@ def test_the_shots_follow_the_voice() -> None:
 
 def test_a_broken_table_is_refused() -> None:
     text = (ROOT / "docs" / "video_script.md").read_text(encoding="utf-8")
-    with pytest.raises(ValueError, match="row 3: time '0:10 - 0:16'"):
-        mv.rows_of(text.replace("0:10 to 0:16", "0:10 - 0:16"))
-    with pytest.raises(ValueError, match="row 2 ends at 10 s, row 3 starts at 11 s"):
-        mv.rows_of(text.replace("| 0:10 to 0:16 |", "| 0:11 to 0:16 |"))
+    with pytest.raises(ValueError, match="row 3: time '0:11 - 0:17'"):
+        mv.rows_of(text.replace("0:11 to 0:17", "0:11 - 0:17"))
+    with pytest.raises(ValueError, match="row 2 ends at 11 s, row 3 starts at 12 s"):
+        mv.rows_of(text.replace("| 0:11 to 0:17 |", "| 0:12 to 0:17 |"))
     with pytest.raises(ValueError, match="the storyboard"):
         mv.shots_of(ROWS[:-1], [r.start for r in ROWS[:-1]], 50.0)
     with pytest.raises(ValueError, match="increasing"):

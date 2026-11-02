@@ -5,7 +5,7 @@
 3. Los números están escritos en letras, tal como se dicen en inglés: lee exactamente lo que pone, nada más.
 4. Sube el archivo (m4a, mp3, wav, ogg u opus) a Google Drive con un nombre que empiece por `voz-ac2`; el montaje (`scripts/make_video.py --voice`) lo hace Claude.
 
-## Your block length from broadcast tracking may describe the camera, not your team.
+## Keep only what the camera saw, and your block length describes the camera, not your team.
 
 ## SkillCorner filled in seven of these eleven defenders; the camera saw four.
 
@@ -13,16 +13,16 @@
 
 ## In twenty matches the camera saw about half the positions; it follows the ball.
 
-## We tested the fill-in: on line depth it is about one metre off.
+## We tested the fill-in: on average about one metre off on line depth, at most six on block length.
 
-## The bigger problem: the back four or block are fully seen mostly near the ball.
+## The trap is that filter: whole lines are seen mostly near the ball.
 
-## Fully seen, the back four sit seven to fourteen metres deeper than overall,
+## Seen whole, the back four sit seven to fourteen metres deeper than overall,
 
 ## the block seventeen to thirty-seven metres shorter, in all twenty matches.
 
-## Pressure and nearest rival shift less than the fill-in's own error: they survive.
+## Pressure and nearest rival move less than the fill-in's own error.
 
-## Block length is mostly the camera's choice; line depth follows. Report both with their tag.
+## Keep the fill-in, don't filter it out, report each metric with its tag.
 
 ## Clone it, run one match, tag your metrics.

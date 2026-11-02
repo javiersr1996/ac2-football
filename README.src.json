@@ -57,6 +57,11 @@
    "note": "...errs 0.8 to 1.4 m per match on line depth; max over both halves: calibration holds it"
   },
   {
+   "number": "6",
+   "src": "reports/figures/fig1_layer2.json:series.91.points.0.of.*(max)",
+   "note": "...at most 6 m on block length; max over both halves: the held-out holds it (5.95; calibration, series.89, is 1.17 to 5.06)"
+  },
+  {
    "number": "639",
    "src": "docs/kloppy_issue_draft.md:PySport/kloppy#639",
    "note": "...[known upstream issue](https://github.com/PySport/kloppy/issues/639; opened by another user, see the draft's first line"

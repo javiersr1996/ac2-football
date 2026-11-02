@@ -163,9 +163,9 @@ STORYBOARD: dict[int, Scene] = {
     1: Scene(
         "card",
         card=(
-            ("plain", "Your block length from broadcast tracking"),
-            ("title", "may describe the camera,"),
-            ("title", "not your team."),
+            ("plain", "Keep only what the camera saw, and"),
+            ("title", "your block length describes"),
+            ("title", "the camera, not your team."),
         ),
     ),
     2: Scene("clip", enter="cut", clip_from=0.0, clip_stop=3.0),
@@ -187,13 +187,15 @@ STORYBOARD: dict[int, Scene] = {
         card=(
             ("plain", "Fill check: hide seen players, refill them"),
             ("title", "line depth: about 1 metre off"),
+            ("title", "block length: 6 metres at most"),
+            ("small", "mean absolute error per match, on the moments seen whole"),
         ),
     ),
     6: Scene(
         "card",
         card=(
-            ("plain", "The bigger problem: the back four or block"),
-            ("title", "are fully seen"),
+            ("plain", "The trap: keeping only what was seen whole."),
+            ("title", "Whole lines are seen"),
             ("title", "mostly near the ball."),
         ),
     ),
@@ -203,13 +205,10 @@ STORYBOARD: dict[int, Scene] = {
     10: Scene(
         "card",
         card=(
-            ("plain", "Block length is mostly the camera's choice;"),
-            ("plain", "line depth follows."),
-            ("title", "report both with their tag."),
-            (
-                "small",
-                "Pressure and nearest rival survive. Tagged: 7 Defensive Positioning metrics",
-            ),
+            ("plain", "Keep the fill-in; don't filter it out."),
+            ("title", "Report each metric"),
+            ("title", "with its tag."),
+            ("small", "Tagged: 7 Defensive Positioning metrics"),
         ),
     ),
     11: Scene(

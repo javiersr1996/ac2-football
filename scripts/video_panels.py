@@ -128,7 +128,7 @@ def panel_a(doc: Mapping[str, Any]) -> Drawn:
     ax.set_ylim(0, 1.0)
     ax.set_xlabel("distance of the player to the ball (m)")
     ax.set_ylabel("share of player-frames detected")
-    ax.set_title("a. The camera loses the players far from the ball", loc="left", pad=16)
+    ax.set_title("The camera loses the players far from the ball", loc="left", pad=16)
     key = [
         Line2D([], [], color=COLOUR[g], ls=STYLE[g], lw=5, marker=MARKER[g], ms=12, label=label)
         for g, label in ((CAL, doc["labels"][0]["text"]), (HELD, doc["labels"][1]["text"]))
@@ -139,28 +139,27 @@ def panel_a(doc: Mapping[str, Any]) -> Drawn:
 
 
 def strips(doc: Mapping[str, Any], keys: Sequence[str]) -> Drawn:
-    """Figure 1, panel c, the strips of ``keys``: V1 minus V0 per match, calibration above."""
+    """Figure 1, panel c, the strips of ``keys``: V1 minus V0 per match, calibration above, over a
+    grey band of panel d's fill-in error (amputation), from 0 to its worst match of the split."""
     fig = Figure(figsize=SIZE)
     names = dict(figures.METRICS)
     height, gap = 2.0, 1.2  # the strip, then its tick labels
     total = len(keys) * height + (len(keys) - 1) * gap
     head, foot = 2.3, 0.5  # the four title lines above the strips; the last tick labels below
     top = SIZE[1] - head - (SIZE[1] - head - foot - total) / 2  # centred between the two
-    _text(
-        fig, 0.7, SIZE[1] - 0.7, "c. V1 minus V0: players seen throughout the window", weight="bold"
-    )
+    _text(fig, 0.7, SIZE[1] - 0.7, "Seen whole minus all moments, per match", weight="bold")
     # The definition the sentence leans on, in the text colour (21 pt here is 29 px on screen).
     _text(
         fig,
         0.7,
         SIZE[1] - 1.15,
-        "V1: moments where every player was seen · V0: all moments",
+        "seen whole: every player of the metric seen · all moments: the fill-in kept",
         fontsize=21,
     )
     for line, words in enumerate(
         (
-            "per match, in the metric's own unit; line = no change",
-            "upper strip: calibration, lower strip: held-out, tick: median",
+            "in the metric's own unit · grey band: the fill-in's mean absolute error, worst match",
+            "upper strip: calibration, lower strip: held-out, tick: median, line: no change",
         )
     ):
         _text(fig, 0.7, SIZE[1] - 1.55 - 0.4 * line, words, fontsize=21, color=MUTED)
@@ -173,8 +172,15 @@ def strips(doc: Mapping[str, Any], keys: Sequence[str]) -> Drawn:
         ax.set_ylim(-0.5, 0.5)
         mine = [s for s in _series(doc, "c") if s["match"] == key]
         values = [p["value"] for s in mine for p in s["points"]]
+        error = {  # panel d: each match's mean absolute amputation error, its worst per split
+            s["group"]: max(p["value"] for p in s["points"])
+            for s in _series(doc, "d")
+            if s["match"] == key and s["kind"] == "match"
+        }
+        for g, (low, high) in ((CAL, (0.5, 1.0)), (HELD, (0.0, 0.5))):
+            ax.axvspan(-error[g], error[g], low, high, color=TEXT, alpha=0.16, lw=0, zorder=0)
         ax.axvline(0, color=MUTED, lw=1.5, zorder=1)
-        ax.set_xlim(*figures._strip_xlim(values))
+        ax.set_xlim(*figures._strip_xlim([*values, *error.values(), *(-e for e in error.values())]))
         ax.ticklabel_format(useOffset=False, style="plain", axis="x")
         for s in mine:
             g, y = s["group"], 0.2 if s["group"] == CAL else -0.2

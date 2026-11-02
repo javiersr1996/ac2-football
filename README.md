@@ -76,6 +76,6 @@ Its `ac2fb` commands take `--check` (recompute and compare); `ac2fb figures` red
 
 Ingestion and the conformed data come from [`ftbase`](https://github.com/javiersr1996/football-tracking-base), my open-source (MIT) pipeline, pinned at tag `v0.1.0` (commit `53080bc`), extracted in October 2026 from my private repository *tracklab*. tracklab measured the proportion of detected rows; everything here was written for the Cup.
 
-Code: MIT (`LICENSE.md`, `CITATION.cff`). Data: SkillCorner's open data (MIT per `ftbase`'s manifest), downloaded by the commands above; `reports/` holds only derived numbers and one reception (`reports/clip`, `reports/camera`). Synthetic fixtures are used only for tests and produce no figure in this README.
+Code: MIT (`LICENSE.md`, `CITATION.cff`). Data: SkillCorner's open data (MIT per `ftbase`'s manifest), downloaded by the commands above; `reports/` holds only derived numbers and one reception (`reports/clip`, `reports/camera`), an excerpt redistributed with SkillCorner's licence (`DATA_LICENSE.md`). Synthetic fixtures are used only for tests and produce no figure in this README.
 
 Clone it, run one match, tag your metrics.

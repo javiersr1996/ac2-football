@@ -15,8 +15,8 @@ atempo, off by default. Output: 1920x1080, 30 fps, H.264 + AAC, yuv420p, faststa
 
 What is on screen comes from the repository and nothing else: ``reports/clip/clip.mp4`` and its
 still, the panels of the two figures drawn again by ``scripts/video_panels.py`` from the figures'
-sidecars at the stage's size in large type (the committed SVGs are not touched), and three
-typographic cards (rows 7, 11 and 12) whose words are the script's plus the repository URL, the
+sidecars at the stage's size in large type (the committed SVGs are not touched), and four
+typographic cards (rows 3, 4, 9 and 12) whose words are the script's plus the repository URL, the
 licence, the author and the data's name. The look is a dark theme in two Google Fonts, Chakra
 Petch for headings, labels and cards and Roboto for the captions, fetched once into ``build/``
 from pinned commits and checked by hash; no logo and no image but the repository's own. Everything
@@ -157,29 +157,34 @@ class Scene:
 # start at y = 1.6); the marks hold the three pooled markers.
 STORYBOARD: dict[int, Scene] = {
     1: Scene("clip", enter="cut", clip_from=0.0, clip_stop=3.0),
-    2: Scene("clip", enter="cut", clip_from=3.0),
-    3: Scene("panel_a", box=INSET, start=FULL),
-    4: Scene("line_height", box=INSET, start=FULL),
-    5: Scene("block_length", box=INSET, start=FULL),
-    6: Scene("pressure_rival", box=INSET, start=FULL),
-    7: Scene(
+    2: Scene("panel_a", box=INSET, start=FULL),
+    3: Scene(
+        "card",
+        card=(("plain", "Is a defensive metric about"), ("title", "the team, or the camera?")),
+    ),
+    4: Scene(
+        "card",
+        card=(
+            ("title", "7 Defensive Positioning metrics"),
+            ("small", "pressure on the receiver, nearest rival, line depth,"),
+            ("small", "the line's reaction, block width, length and area"),
+        ),
+    ),
+    5: Scene("clip", enter="cut", clip_from=3.0),
+    6: Scene("line_height", box=INSET, start=FULL),
+    7: Scene("block_length", box=INSET, start=FULL),
+    8: Scene("pressure_rival", box=INSET, start=FULL),
+    9: Scene(
         "card",
         card=(("title", "Tag every metric"), ("plain", "with how many of its players were seen.")),
     ),
-    8: Scene("layer3", box=INSET, start=FULL),
-    9: Scene(
+    10: Scene("layer3", box=INSET, start=FULL),
+    11: Scene(
         "layer3",
         enter="move",
         box=Window("a", (-0.5, 0.5), (-1.6, 1.5), pad=(1.6, 0.0, 0.2, 1.0)),
         mark=Window("a", (-0.28, -0.12), (-1.55, -0.45)),
     ),
-    10: Scene(
-        "layer3",
-        enter="move",
-        box=Window("b", (-0.5, 0.5), (-1.6, 1.5), pad=(0.3, 0.0, 0.2, 1.0)),
-        mark=Window("b", (0.12, 0.26), (-1.55, -0.45)),
-    ),
-    11: Scene("card", card=(("plain", "That is"), ("title", "the published result."))),
     12: Scene(
         "card",
         card=(

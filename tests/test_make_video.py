@@ -64,14 +64,14 @@ def test_the_script_read_verbatim_is_found_where_it_is_spoken() -> None:
 
 
 def test_a_misread_word_a_filler_and_a_long_pause_do_not_move_the_starts() -> None:
-    # "defenders" read as "defendants" in sentence 1, "metres" as "meters" in 4 and 5.
+    # "defenders" read as "defendants" in sentence 1, "metres" as "meters" in 6 and 7.
     spoken = [s.replace("defenders", "defendants").replace("metres", "meters") for s in SENTENCES]
     words, starts = heard(spoken)
     assert starts_of(mv.align(words, SENTENCES)) == starts
-    # Fillers: "um" before sentence 4 and "you know" inside sentence 6.
+    # Fillers: "um" before sentence 4 and "you know" inside sentence 8.
     spoken = list(SENTENCES)
     spoken[3] = "um " + spoken[3]
-    spoken[5] = spoken[5].replace("choice;", "choice; you know,")
+    spoken[7] = spoken[7].replace("choice;", "choice; you know,")
     words, starts = heard(spoken)
     expected = list(starts)
     expected[3] += 0.35  # the sentence starts at its own first word, after the filler
@@ -93,11 +93,16 @@ def test_numerals_read_as_words_match_the_script() -> None:
     assert mv.tokens_of("17 to 37 metres") == "seventeen to thirty seven metres".split()
     assert mv.tokens_of("SkillCorner's player-frames") == ["skillcorners", "player", "frames"]
     spoken = [
-        s.replace("7 of these 11", "seven of these eleven")
-        .replace("-0.19", "minus zero point one nine")
-        .replace("by 0.18", "by zero point one eight")
+        s.replace("4 of these 11", "four of these eleven")
+        .replace("filled in 7", "filled in seven")
+        .replace("In 20", "In twenty")
+        .replace("for 7", "for seven")
+        .replace("about 1 metre", "about one metre")
+        .replace("17 to 37", "seventeen to thirty-seven")
+        .replace("7 to 14", "seven to fourteen")
         for s in SENTENCES
     ]
+    assert not any(c.isdigit() for s in spoken for c in s)  # every numeral of the script is read
     words, starts = heard(spoken)
     spans = mv.align(words, SENTENCES)
     assert starts_of(spans) == starts
@@ -106,10 +111,10 @@ def test_numerals_read_as_words_match_the_script() -> None:
 
 def test_a_skipped_word_is_tolerated_and_a_missing_sentence_is_named() -> None:
     spoken = list(SENTENCES)
-    spoken[2] = spoken[2].replace("about half", "half")
+    spoken[1] = spoken[1].replace("about half", "half")
     words, starts = heard(spoken)
     spans = mv.align(words, SENTENCES)
-    assert starts_of(spans) == starts and spans[2].heard == spans[2].words - 1
+    assert starts_of(spans) == starts and spans[1].heard == spans[1].words - 1
     spoken = [s for k, s in enumerate(SENTENCES, 1) if k != 11]
     words, _ = heard(spoken)
     with pytest.raises(mv.NotFound) as caught:
@@ -178,11 +183,11 @@ def test_speed_up_is_off_by_default_and_gives_five_percent_at_most() -> None:
 def test_the_committed_script_gives_twelve_planned_shots() -> None:
     assert [r.number for r in ROWS] == list(range(1, 13))
     shots = mv.planned(ROWS)
-    assert [s.start for s in shots] == [0, 6, 10, 14, 20, 23, 29, 33, 38, 42, 46, 48]
+    assert [s.start for s in shots] == [0, 5, 10, 14, 18, 24, 30, 35, 41, 45, 50, 54]
     assert shots[-1].end == ROWS[-1].end + mv.TAIL <= 60.0
     assert all(s.end == t.start for s, t in zip(shots, shots[1:], strict=False))
     assert all(s.scene is mv.STORYBOARD[s.row.number] for s in shots)
-    assert "7 of these 11" in shots[0].row.sentence
+    assert "4 of these 11" in shots[0].row.sentence
 
 
 def test_the_shots_follow_the_voice() -> None:
@@ -229,10 +234,10 @@ def test_the_storyboard_is_consistent() -> None:
                 assert left <= scene.mark[0] < scene.mark[2] <= right, number
                 assert top <= scene.mark[1] < scene.mark[3] <= bottom, number
     # A window is inches only once its panel is drawn.
-    assert isinstance(mv.STORYBOARD[9].box, mv.Window) and isinstance(scenes[9].box, tuple)
-    # The two rows that were "on camera" are cards; the last one carries the repository and
-    # names the data, in words only.
-    assert mv.STORYBOARD[7].source == mv.STORYBOARD[11].source == "card"
+    assert isinstance(mv.STORYBOARD[11].box, mv.Window) and isinstance(scenes[11].box, tuple)
+    # The question, the seven metrics and the recommendation are cards; the last one carries the
+    # repository and names the data, in words only.
+    assert all(mv.STORYBOARD[k].source == "card" for k in (3, 4, 9, 12))
     last = [t for _, t in mv.STORYBOARD[12].card]
     assert any("github.com/javiersr1996/ac2-football" in t for t in last)
     assert any(t.startswith("Data: SkillCorner open data") for t in last)

@@ -13,19 +13,19 @@ a slower narrator.
 Shots: the clip is `reports/clip/clip.mp4` (match 1874553, 10 s at 10 fps; the reception is at
 second 3.0 and `reports/clip/clip_still.png` is that frame), figure 1 is
 `reports/figures/fig1_layer2.svg` (panels a to d), figure 2 is `reports/figures/fig2_layer3.svg`
-(panels a and b). Numerals are read as words; `-0.19` is "minus zero point one nine".
+(panels a and b). Numerals are read as words; `37` is "thirty-seven".
 
 | # | Time | Shot | Sentence | Sources |
 |---|---|---|---|---|
-| 1 | 0:00 to 0:06 | Clip, seconds 0 to 3, then frozen at second 3.0, the reception (`clip_still.png`): the counter reads 7 of 11 | SkillCorner filled in 7 of these 11 defenders. | `reports/clip/clip.json:key.defenders_extrapolated`, `reports/clip/clip.json:n_defenders` |
-| 2 | 0:06 to 0:10 | Clip, seconds 3 to 10: hollow markers fill in as the camera finds the players again | The camera saw 4; hollow markers show seconds to the nearest detection. | `reports/clip/clip.json:key.defenders_seen` |
-| 3 | 0:10 to 0:14 | Figure 1, panel a: detection falls with the distance to the ball | In 20 matches it saw about half the player-frames, those near the ball; the fill is good. | `protocol/split.json:calibration,heldout` |
-| 4 | 0:14 to 0:20 | Figure 1, panel c, the line depth strip; the panel's title defines V1 and V0 on screen (rows 4 to 6) | On moments seen whole the back four sit 7 to 14 metres deeper, nearer their own goal, | `reports/figures/fig1_layer2.json:series.63.points.0.of.*(min)`, `reports/figures/fig1_layer2.json:series.61.points.0.of.*(max)` |
-| 5 | 0:20 to 0:23 | Figure 1, panel c, the block length strip | the block 17 to 37 metres shorter: a different sample, not an error. | `reports/figures/fig1_layer2.json:series.87.points.0.of.*(max)`, `reports/figures/fig1_layer2.json:series.87.points.0.of.*(min)` |
-| 6 | 0:23 to 0:29 | Figure 1, panel c, the pressure and nearest rival strips, both near zero | Block length and area are mostly the camera's choice; pressure and nearest rival survive. | |
-| 7 | 0:29 to 0:33 | Typographic card: the sentence in large type, no camera | Tag every metric with how many of its players were seen. | |
-| 8 | 0:33 to 0:38 | Figure 2, panel a | The one tactical question: does pressure on the receiver reduce the ball's advance? | |
-| 9 | 0:38 to 0:42 | Figure 2, panel a: the pooled effect against the grey floor the rule set | The pre-registered rule killed an effect of -0.19 standard deviations: | `reports/calibration.json:criteria.D3.values.effect` |
-| 10 | 0:42 to 0:46 | Figure 2, panel b | pressed and free receptions already differed by 0.18 before the ball arrived. | `reports/calibration.json:criteria.D3.values.pretrend` |
-| 11 | 0:46 to 0:48 | Typographic card: the sentence in large type, no camera | That is the published result. | |
-| 12 | 0:48 to 0:54 | Card: the call to action, the repo URL, "Code and protocol under MIT", "Presented by" and the author, the data's name | Clone it, run one match in seconds, tag your metrics. | |
+| 1 | 0:00 to 0:05 | Clip, seconds 0 to 3, then frozen at second 3.0, the reception (`clip_still.png`): the counter reads 7 of 11 | The camera saw 4 of these 11 defenders; SkillCorner filled in 7. | `reports/clip/clip.json:key.defenders_seen`, `reports/clip/clip.json:n_defenders`, `reports/clip/clip.json:key.defenders_extrapolated` |
+| 2 | 0:05 to 0:10 | Figure 1, panel a: detection falls with the distance to the ball | In 20 matches it saw about half the player positions; it follows the ball. | `protocol/split.json:calibration,heldout` |
+| 3 | 0:10 to 0:14 | Typographic card: the question in large type | Is a defensive metric about the team, or the camera? | |
+| 4 | 0:14 to 0:18 | Typographic card: the seven metrics by name | This entry measures that for 7 Defensive Positioning metrics. | `reports/camera/camera.json:findings.signs.*.of(min)` |
+| 5 | 0:18 to 0:24 | Clip, seconds 3 to 10: hollow markers fill in as the camera finds the players again | One, the fill: hide seen players, refill them; line depth misses by about 1 metre. | `reports/figures/fig1_layer2.json:series.65.points.0.of.*(max)` |
+| 6 | 0:24 to 0:30 | Figure 1, panel c, the line depth strip; the panel's title defines V1 and V0 on screen (rows 6 to 8) | Two: on moments seen whole the back four sit 7 to 14 metres deeper, | `reports/figures/fig1_layer2.json:series.63.points.0.of.*(min)`, `reports/figures/fig1_layer2.json:series.61.points.0.of.*(max)` |
+| 7 | 0:30 to 0:35 | Figure 1, panel c, the block length strip | the block 17 to 37 metres shorter: a different sample, near the ball. | `reports/figures/fig1_layer2.json:series.87.points.0.of.*(max)`, `reports/figures/fig1_layer2.json:series.87.points.0.of.*(min)` |
+| 8 | 0:35 to 0:41 | Figure 1, panel c, the pressure and nearest rival strips, both near zero | Block length and area are mostly the camera's choice; pressure and nearest rival survive. | |
+| 9 | 0:41 to 0:45 | Typographic card: the sentence in large type, no camera | Tag every metric with how many of its players were seen. | |
+| 10 | 0:45 to 0:50 | Figure 2, panels a and b | A pre-registered question: does pressure on the receiver reduce the ball's advance? | |
+| 11 | 0:50 to 0:54 | Figure 2, panel a: the pooled effect against the grey floor the rule set | An effect, killed by its own rule, published as killed. | |
+| 12 | 0:54 to 0:57 | Card: the call to action, the repo URL, "Code and protocol under MIT", "Presented by" and the author, the data's name | Clone it, run one match, tag your metrics. | |

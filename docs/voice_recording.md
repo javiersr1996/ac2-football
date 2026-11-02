@@ -5,26 +5,26 @@
 3. Los números están escritos en letras, tal como se dicen en inglés: lee exactamente lo que pone, nada más.
 4. Sube el archivo (m4a, mp3, wav, ogg u opus) a Google Drive con un nombre que empiece por `voz-ac2`; el montaje (`scripts/make_video.py --voice`) lo hace Claude.
 
-## SkillCorner filled in seven of these eleven defenders.
+## The camera saw four of these eleven defenders; SkillCorner filled in seven.
 
-## The camera saw four; hollow markers show seconds to the nearest detection.
+## In twenty matches it saw about half the player positions; it follows the ball.
 
-## In twenty matches it saw about half the player-frames, those near the ball; the fill is good.
+## Is a defensive metric about the team, or the camera?
 
-## On moments seen whole the back four sit seven to fourteen metres deeper, nearer their own goal,
+## This entry measures that for seven Defensive Positioning metrics.
 
-## the block seventeen to thirty-seven metres shorter: a different sample, not an error.
+## One, the fill: hide seen players, refill them; line depth misses by about one metre.
+
+## Two: on moments seen whole the back four sit seven to fourteen metres deeper,
+
+## the block seventeen to thirty-seven metres shorter: a different sample, near the ball.
 
 ## Block length and area are mostly the camera's choice; pressure and nearest rival survive.
 
 ## Tag every metric with how many of its players were seen.
 
-## The one tactical question: does pressure on the receiver reduce the ball's advance?
+## A pre-registered question: does pressure on the receiver reduce the ball's advance?
 
-## The pre-registered rule killed an effect of minus zero point one nine standard deviations:
+## An effect, killed by its own rule, published as killed.
 
-## pressed and free receptions already differed by zero point one eight before the ball arrived.
-
-## That is the published result.
-
-## Clone it, run one match in seconds, tag your metrics.
+## Clone it, run one match, tag your metrics.

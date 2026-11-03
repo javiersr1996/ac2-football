@@ -76,4 +76,4 @@ uv run ftbase bronze && uv run ftbase silver && uv run ac2fb layer2 && uv run ac
 
 Ingestion and conformed data come from [`ftbase`](https://github.com/javiersr1996/football-tracking-base), my MIT pipeline, pinned at `v0.1.0` (commit `53080bc`), extracted in October 2026 from my private repository *tracklab*, which measured the proportion of detected rows; everything here was written for the Cup.
 
-Code: MIT (`LICENSE.md`, `CITATION.cff`). Data: SkillCorner's open data (MIT per `ftbase`'s manifest); `reports/` holds only derived numbers and one reception, an excerpt redistributed with SkillCorner's licence (`DATA_LICENSE.md`). Synthetic fixtures are used only for tests and produce no figure in this README.
+Code: MIT (`LICENSE.md`, `CITATION.cff`). Data: SkillCorner's open data (MIT per `ftbase`'s manifest); `reports/` holds only derived numbers and two receptions, an excerpt redistributed with SkillCorner's licence (`DATA_LICENSE.md`). Synthetic fixtures are used only for tests and produce no figure in this README.

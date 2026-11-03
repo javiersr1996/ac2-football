@@ -7,7 +7,8 @@ commands of the README download it, and it is not in this repository, with one e
 `reports/clip/` (`clip.json`, `clip.mp4`, `clip_still.png`) and `reports/camera/`
 (`camera.json`, `what_the_camera_saw.html`) hold an excerpt of it: the positions around one
 reception of match 1874553, 100 frames (10 s), so that the clip, the video and the page show it
-without a download. The rest of `reports/` holds derived numbers only. That excerpt is
+without a download, and, in `reports/camera/` only, around a second reception of the same match,
+100 frames more, which the page shows beside it. The rest of `reports/` holds derived numbers only. That excerpt is
 redistributed under SkillCorner's licence, reproduced below as it stands at that commit.
 
 ```text

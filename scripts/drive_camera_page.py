@@ -11,10 +11,13 @@ check; exit 0 if every check passes and 1 otherwise. Screenshots of the whole pa
 ``build/camera/`` (ignored) or ``--shots``.
 
 The page scrolls by design: one column read top to bottom, blocks 1 and 2 side by side from
-``SIDE_BY_SIDE_FROM`` px. The rows: the page loads nothing and throws nothing; the reception drawn
-is the sidecar's at three frames (the frame's corners, every player, the rings and their labels);
-Play advances the frame and the count follows it; the labels pinned are those of gaps over
-``LABEL_GAP_S``, the rest show on tap; the V0/V1 switch moves the live block and line to the
+``SIDE_BY_SIDE_FROM`` px. The rows: the page loads nothing and throws nothing; each of the two
+receptions (the video's, the sidecar's top level, and the second, its ``second``) is the
+sidecar's at three frames (the frame's corners, every player, the rings and their labels); Play
+advances the frame and the count follows it; the labels pinned are those of gaps over
+``LABEL_GAP_S``, the rest show on tap; the pick between the receptions, by mouse and keyboard,
+says of each what the sidecar says (counts in V1 or not, its units' players seen) and clears what
+was pinned; the V0/V1 switch moves the live block and line to the
 match's means and the bars and the table follow; every number shown is the sidecar's at its path,
 at the text's rounding, and the match's cells are the CSV's; the strips hold every point of
 figure 1 in the README's groups, one colour per group, green only for the metrics that survive;
@@ -268,12 +271,20 @@ def guarded(fn):
 # ---------------------------------------------------------------- expected values, from files
 
 
+RECEPTIONS = ("the video's reception", "the second reception")
+
+
 class Data:
-    def __init__(self) -> None:
+    """The expected values of one reception: 0 the video's (the sidecar's top level), 1 the second
+    (its ``second``); ``pre`` is the prefix of its paths."""
+
+    def __init__(self, reception: int = 0) -> None:
         self.doc = json.loads((REPORTS / "camera" / "camera.json").read_text(encoding="utf-8"))
-        d = self.doc
-        self.n, self.fps, self.key = d["n_frames"], d["fps"], d["key"]["index"]
-        self.label_gap_s = d["label_gap_s"]
+        self.reception, self.pre = reception, ("", "second.")[reception]
+        self.name = RECEPTIONS[reception]
+        d = self.play = self.doc if reception == 0 else self.doc["second"]
+        self.n, self.fps, self.key = d["n_frames"], self.doc["fps"], d["key"]["index"]
+        self.label_gap_s = self.doc["label_gap_s"]
         ent = d["entities"]
         self.rivals, self.seen, self.gap = (
             ent["rivals"]["xy"],
@@ -283,7 +294,7 @@ class Data:
         self.mates, self.mates_seen = ent["mates"]["xy"], ent["mates"]["detected"]
         self.me, self.ball = ent["me"]["xy"], ent["ball"]["xy"]
         self.corners = d["camera"]["corners"]
-        self.rows = {r["metric"]: (k, r) for k, r in enumerate(d["match"]["rows"])}
+        self.rows = {r["metric"]: (k, r) for k, r in enumerate(self.doc["match"]["rows"])}
         with (REPORTS / "reliability.csv").open(encoding="utf-8", newline="") as f:
             self.csv = list(csv.DictReader(f))
 
@@ -362,6 +373,12 @@ def open_page(browser, target: str, *, width=1440, height=900, reduced=False):
     return ctx, pg
 
 
+def pick(pg, D: Data) -> None:
+    """Show D's reception (the page opens on the video's)."""
+    pg.evaluate(f"camera.reception({D.reception})")
+    settle(pg)
+
+
 def settle(pg) -> None:
     pg.evaluate("new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)))")
 
@@ -418,8 +435,12 @@ def check_load(D: Data, browser, target: str) -> None:
     )
     s = pg.evaluate("camera.state()")
     R.check(
-        "load: the page opens at the reception, paused, on V0, nothing pinned",
-        s["i"] == D.key and not s["playing"] and s["variant"] == "v0" and s["pinned"] == [],
+        "load: the page opens on the video's reception, at the reception, paused, on V0, nothing pinned",
+        s["i"] == D.key
+        and not s["playing"]
+        and s["variant"] == "v0"
+        and s["pinned"] == []
+        and s["reception"] == 0,
         json.dumps(s),
     )
     ctx.close()
@@ -455,8 +476,8 @@ def scene_problems(D: Data, got: dict, i: int) -> list[str]:
             bad.append(f"label {k} on={lab['on']}, gap {D.gap[i][k]} seen {D.seen[i][k]}")
         elif lab["on"] and not shown_matches(lab["text"], D.gap[i][k] / D.fps):
             bad.append(f"label {k} says {lab['text']!r} for gap {D.gap[i][k]}")
-    if got["count"] != str(D.doc["key"]["defenders_extrapolated_by_frame"][i]) or got["of"] != str(
-        D.doc["n_defenders"]
+    if got["count"] != str(D.play["key"]["defenders_extrapolated_by_frame"][i]) or got["of"] != str(
+        D.play["n_defenders"]
     ):
         bad.append(f"count {got['count']} of {got['of']}")
     rel = (i - D.key) / D.fps
@@ -476,12 +497,13 @@ def check_scene(D: Data, browser, target: str) -> None:
     frame's corners, the fade outside it, every player's place and state, the rings' labels (on for
     a gap over label_gap_s, with its seconds), the count of defenders filled in and the clock."""
     ctx, pg = open_page(browser, target)
+    pick(pg, D)
     for i in (D.key, 0, D.n - 1):
         seek(pg, i)
         got = pg.evaluate(SCENE_JS)
         bad = scene_problems(D, got, i)
         R.check(
-            f"scene at frame {i}: the frame's corners, the fade, {len(got['rivals'])} defenders, {len(got['mates'])} teammates, the receiver and the ball are camera.json's;"
+            f"{D.name}, scene at frame {i}: the frame's corners, the fade, {len(got['rivals'])} defenders, {len(got['mates'])} teammates, the receiver and the ball are camera.json's;"
             f" the labels on are the gaps over {D.label_gap_s:g} s (camera.json's label_gap_s) with their seconds; the count and the clock follow the frame",
             got["i"] == i and not bad,
             f"{sum(D.labels_on(i))} labels on, count {got['count']} of {got['of']}, clock {got['clock']!r}; wrong {bad[:4]}",
@@ -494,6 +516,7 @@ def check_play(D: Data, browser, target: str) -> None:
     """Play advances the frame counter and the count follows; the clip stops at its last frame;
     the scrubber seeks and pauses."""
     ctx, pg = open_page(browser, target)
+    pick(pg, D)
     pg.click("#play")
     t0 = time.time()
     try:
@@ -506,11 +529,11 @@ def check_play(D: Data, browser, target: str) -> None:
     s = pg.evaluate("camera.state()")
     got = pg.evaluate(SCENE_JS)
     R.check(
-        f"Play: pressed at the reception the clip advances {PLAY_FRAMES} frames within {PLAY_WAIT_S:.0f} s, the button reads Pause, the count follows the frame",
+        f"{D.name}, Play: pressed at the reception the clip advances {PLAY_FRAMES} frames within {PLAY_WAIT_S:.0f} s, the button reads Pause, the count follows the frame",
         advanced
         and s["playing"]
         and got["play"] == "Pause"
-        and got["count"] == str(D.doc["key"]["defenders_extrapolated_by_frame"][s["i"]]),
+        and got["count"] == str(D.play["key"]["defenders_extrapolated_by_frame"][s["i"]]),
         f"frame {s['i']} after {time.time() - t0:.1f} s; count {got['count']}; button {got['play']}",
     )
     pg.click("#play")
@@ -521,7 +544,7 @@ def check_play(D: Data, browser, target: str) -> None:
     end = pg.evaluate("camera.state()")
     got = pg.evaluate(SCENE_JS)
     R.check(
-        "Play: Pause stops it; from the last frame but one it reaches the last frame and stops there, the button reading Play",
+        f"{D.name}, Play: Pause stops it; from the last frame but one it reaches the last frame and stops there, the button reading Play",
         not paused["playing"]
         and end["i"] == D.n - 1
         and not end["playing"]
@@ -533,7 +556,7 @@ def check_play(D: Data, browser, target: str) -> None:
     settle(pg)
     s = pg.evaluate("camera.state()")
     R.check(
-        "the scrubber seeks to its frame and pauses",
+        f"{D.name}: the scrubber seeks to its frame and pauses",
         s["i"] == D.key and not s["playing"],
         json.dumps(s),
     )
@@ -545,6 +568,7 @@ def check_tap(D: Data, browser, target: str) -> None:
     """A ring's label shows on tap (pinned until the next tap) and on hover; a seen defender's
     says seen; the labels pinned by themselves stay."""
     ctx, pg = open_page(browser, target)
+    pick(pg, D)
     seek(pg, D.key)
     pg.evaluate(
         "document.getElementById('stage').scrollIntoView({block: 'center'})"
@@ -581,7 +605,7 @@ def check_tap(D: Data, browser, target: str) -> None:
         pg.mouse.move(0, 0)
         settle(pg)
     R.check(
-        "tap: a ring's label pins on tap and unpins on the next; a seen defender's reads 'seen'; a hover shows a ring's seconds; the pinned labels stay",
+        f"{D.name}, tap: a defender's label pins on tap and unpins on the next; a seen defender's reads 'seen'; a hover shows a ring's seconds; the pinned labels stay",
         ok,
         detail,
     )
@@ -603,7 +627,7 @@ def check_tap(D: Data, browser, target: str) -> None:
     settle(pg)
     pinned = pg.evaluate("camera.state().pinned")
     R.check(
-        f"tap: between the two closest defenders ({d_ab:.0f} px apart) a tap nearer one pins that one alone, the taps of close rings never swallowing each other",
+        f"{D.name}, tap: between the two closest defenders ({d_ab:.0f} px apart) a tap nearer one pins that one alone, the taps of close rings never swallowing each other",
         pinned == [a],
         f"defenders {a} and {b}; pinned {pinned}",
     )
@@ -722,36 +746,55 @@ def check_numbers(D: Data, browser, target: str) -> None:
     ctx, pg = open_page(browser, target)
     open_details(pg)
     bad, seen, paths = [], 0, set()
-    for i in (D.key, 0, D.n - 1):
-        seek(pg, i)
-        items = pg.evaluate("""() => [...document.querySelectorAll('.q[data-path]')].filter(__vis)
-            .map(e => [e.dataset.path, e.dataset.value, e.textContent.trim()])""")
-        for path, value, text in items:
-            seen += 1
-            paths.add(path)
-            want = D.pick(path)
-            numeric = isinstance(want, int | float) and not isinstance(want, bool)
-            ok = str(want) == value or (numeric and close(value, want, 1e-12))
-            if path.startswith("frames."):
-                ok = ok and shown_matches(text, (want - D.doc["key"]["frame"]) / D.fps)
-            elif "gap_len" in path or ".gap." in path:  # frames of gap, shown as seconds
-                ok = ok and shown_matches(text, want / D.fps)
-            elif numeric:
-                ok = ok and shown_matches(text, want)
-            else:
-                ok = ok and text == str(want)
-            m = re.match(r"match\.rows\.(\d+)\.(V[01])\.(mean|n)$", path)
-            if m:
-                row = D.doc["match"]["rows"][int(m.group(1))]
-                ok = ok and close(D.cell(row["metric"], m.group(2), m.group(3)), want, 1e-12)
-            if not ok:
-                bad.append((path, value, text))
+    for P in (D, Data(1)):
+        pick(pg, P)
+        for i in (P.key, 0, P.n - 1):
+            seek(pg, i)
+            items = pg.evaluate("""() => [...document.querySelectorAll('.q[data-path]')].filter(__vis)
+                .map(e => [e.dataset.path, e.dataset.value, e.textContent.trim()])""")
+            for path, value, text in items:
+                seen += 1
+                paths.add(path)
+                if not number_ok(D, path, value, text):
+                    bad.append((path, value, text))
+    pick(pg, D)
     R.check(
-        "numbers: every number shown is the sidecar's at its path, at the text's rounding (details open; the reception, the first and the last frame);"
+        "numbers: every number shown is the sidecar's at its path, at the text's rounding (details open; both receptions at the reception, the first and the last frame);"
         " the match's cells are reliability.csv's",
-        seen > 300 and not bad,
-        f"{seen} checked over {len(paths)} paths; wrong {bad[:4]}",
+        seen > 300 and any(p.startswith("second.") for p in paths) and not bad,
+        f"{seen} checked over {len(paths)} paths ({sum(p.startswith('second.') for p in paths)} of the second reception); wrong {bad[:4]}",
     )
+    strips_and_verdict(D, pg)
+    ctx.close()
+
+
+def number_ok(D: Data, path: str, value: str, text: str) -> bool:
+    """A number shown: its data-value is the sidecar's at its path and its text that value at the
+    text's rounding (a frame as seconds from its reception's key frame, a gap as seconds); the
+    match's cells are the CSV's."""
+    want = D.pick(path)
+    numeric = isinstance(want, int | float) and not isinstance(want, bool)
+    ok = str(want) == value or (numeric and close(value, want, 1e-12))
+    frame = re.match(r"(second\.)?frames\.", path)
+    if frame:
+        key = D.pick(f"{frame.group(1) or ''}key.frame")
+        ok = ok and shown_matches(text, (want - key) / D.fps)
+    elif "gap_len" in path or ".gap." in path:  # frames of gap, shown as seconds
+        ok = ok and shown_matches(text, want / D.fps)
+    elif numeric:
+        ok = ok and shown_matches(text, want)
+    else:
+        ok = ok and text == str(want)
+    m = re.match(r"match\.rows\.(\d+)\.(V[01])\.(mean|n)$", path)
+    if m:
+        row = D.doc["match"]["rows"][int(m.group(1))]
+        ok = ok and close(D.cell(row["metric"], m.group(2), m.group(3)), want, 1e-12)
+    return ok
+
+
+def strips_and_verdict(D: Data, pg) -> None:
+    """The strips' dots are figure 1's points in the README's groups; the verdict's colours and
+    words."""
     dots = pg.evaluate("""() => [...document.querySelectorAll('.strip')].map(s => [s.dataset.metric, s.closest('.vgroup').dataset.group,
         [...s.querySelectorAll('.d')].map(d => [d.classList.contains('cal') ? 'calibration' : 'held-out', d.dataset.match, +d.dataset.value, parseFloat(d.style.left)])])""")
     wrong, groups = [], {}
@@ -792,6 +835,69 @@ def check_numbers(D: Data, browser, target: str) -> None:
             w.rstrip(".").lower() == ww.lower() for w, ww in zip(words, want_words, strict=True)
         ),
         f"{[(c[0], c[1]) for c in colours]}; keep {keep!r}",
+    )
+
+
+# ---------------------------------------------------------------- the pick between receptions
+
+# The hook as shown: the pick's buttons, the lead, the units' rows, the rule's sentence, block 2's
+# note, the state.
+PICK_JS = """() => ({pressed: [...document.querySelectorAll('.pick button')].map(b => b.getAttribute('aria-pressed')),
+  lead: document.getElementById('counted-lead').textContent.trim(),
+  rows: [...document.querySelectorAll('#counted-body tr')].map(r => [...r.cells].map(c => c.textContent.trim())),
+  rule: document.getElementById('counted-rule').textContent.trim(),
+  note: document.getElementById('sw-note').textContent.trim(), state: camera.state()})"""
+UNIT_ORDER = ("line", "block", "pressure", "nearest")
+
+
+@guarded
+def check_pick(D: Data, browser, target: str) -> None:
+    """The pick: a click, Enter or Space on a button shows its reception and presses it; the hook
+    says it counts in V1 exactly when every unit of the sidecar does, each unit's players seen are
+    the sidecar's, the rule named is the reception's, block 2's note follows; what was pinned and
+    a running clip do not survive the pick."""
+    ctx, pg = open_page(browser, target)
+    seek(pg, D.key)
+    k = next(k for k, s in enumerate(D.seen[D.key]) if s)
+    pg.evaluate(
+        f"document.querySelectorAll('#rivals .riv')[{k}].dispatchEvent(new KeyboardEvent('keydown', {{key: 'Enter'}}))"
+    )
+    pinned = pg.evaluate("camera.state().pinned")
+    got, bad = {}, []
+    for how, p in (("click", 1), ("Enter", 0), ("Space", 1)):
+        pg.evaluate("camera.play()")
+        if how == "click":
+            pg.click(f"#pick-{p}")
+        else:
+            pg.focus(f"#pick-{p}")
+            pg.keyboard.press(how)
+        settle(pg)
+        got[how] = g = pg.evaluate(PICK_JS)
+        P = Data(p)
+        units = [P.play["units"][u] for u in UNIT_ORDER]
+        counts = all(u["v1"] for u in units)
+        if g["state"]["reception"] != p or g["pressed"] != (
+            ["false", "true"] if p else ["true", "false"]
+        ):
+            bad.append(f"{how}: reception {g['state']['reception']} pressed {g['pressed']}")
+        if g["lead"] != ("This one counts in V1." if counts else "This one counts for V0 only."):
+            bad.append(f"{how}: lead {g['lead']!r}")
+        want = [[f"{u['n_seen']} of {u['n_players']}", "yes" if u["v1"] else "no"] for u in units]
+        if [r[1:] for r in g["rows"]] != want:
+            bad.append(f"{how}: rows {g['rows']}")
+        if ("second.rule" in g["rule"]) != bool(p) or ("counts in V1" in g["note"]) != counts:
+            bad.append(f"{how}: rule {g['rule'][:40]!r} note {g['note'][:40]!r}")
+        if g["state"]["pinned"] or g["state"]["playing"] or g["state"]["i"] != P.key:
+            bad.append(f"{how}: state {g['state']}")
+    one_way = Data(0).play["units"]["line"]["v1"] is False and all(
+        u["v1"] for u in Data(1).play["units"].values()
+    )
+    R.check(
+        "pick: a click, Enter and Space each show their reception and press its button; the hook says 'counts in V1' exactly when every unit of the sidecar does,"
+        " each unit's players seen and its V1 are the sidecar's, the rule named is the reception's (clip.json's or second.rule), block 2's note follows;"
+        " the pick stops a running clip, unpins and opens at the reception",
+        pinned == [k] and one_way and not bad,
+        f"pinned before {pinned}; leads {[g['lead'] for g in got.values()]}; wrong {bad[:3]}",
     )
     ctx.close()
 
@@ -865,18 +971,20 @@ def check_layout(D: Data, browser, target: str, size: tuple[int, int], shots: Pa
         json.dumps(faint[:4]),
     )
     n_rects = 0
-    for v in ("v0", "v1"):
-        pg.evaluate(f"camera.variant('{v}')")
-        for i in (D.key, 0, D.n - 1):
-            seek(pg, i)
-            pg.wait_for_timeout(200)  # a label that goes off fades out
-            found = pg.evaluate(OVERLAP_JS)
-            n_rects = max(n_rects, found["n"])
-            hits += [(f"{v} frame {i}", *pair) for pair in found["hits"]]
+    for P in (Data(1), D):  # the video's last: the rows after this one read it
+        pick(pg, P)
+        for v in ("v0", "v1"):
+            pg.evaluate(f"camera.variant('{v}')")
+            for i in (P.key, 0, P.n - 1):
+                seek(pg, i)
+                pg.wait_for_timeout(200)  # a label that goes off fades out
+                found = pg.evaluate(OVERLAP_JS)
+                n_rects = max(n_rects, found["n"])
+                hits += [(f"{P.reception} {v} frame {i}", *pair) for pair in found["hits"]]
     pg.evaluate("camera.variant('v0')")
     seek(pg, D.key)
     R.check(
-        f"{vp(w, h)}: no two pieces of writing overlap (the rings' labels, the plan's texts, the strips, the tables; V0 and V1; the reception, the first and the last frame)",
+        f"{vp(w, h)}: no two pieces of writing overlap (the rings' labels, the plan's texts, the strips, the tables; both receptions; V0 and V1; the reception, the first and the last frame)",
         n_rects > 200 and not hits,
         f"{n_rects} line boxes; overlaps {hits[:3]}",
     )
@@ -889,8 +997,8 @@ def check_layout(D: Data, browser, target: str, size: tuple[int, int], shots: Pa
     under = [t for t in targets if t[1] < TARGET_PX - 0.01 or t[2] < TARGET_PX - 0.01]
     kinds = {t[0].split(" ")[0] for t in targets}
     R.check(
-        f"{vp(w, h)}: every button, the scrubber, every summary, every ring's hit area and every dot's press area (its ::after) at least {TARGET_PX} px each way",
-        {"ring", "dot", "play", "scrub"} <= kinds and not under,
+        f"{vp(w, h)}: every button (the pick's two too), the scrubber, every summary, every ring's hit area and every dot's press area (its ::after) at least {TARGET_PX} px each way",
+        {"ring", "dot", "play", "scrub", "pick-0", "pick-1"} <= kinds and not under,
         f"{len(targets)} targets ({len([t for t in targets if t[0].startswith('ring')])} rings, {len([t for t in targets if t[0].startswith('dot')])} dots); under: {under[:4]}",
     )
     marks = pg.evaluate(MARKS_JS)
@@ -946,16 +1054,18 @@ def main(argv: list[str]) -> int:
         if re.match(r"^https?://", args.target)
         else Path(args.target).resolve().as_uri()
     )
-    D = Data()
+    D, D2 = Data(0), Data(1)
     sizes = [s for s in VIEWPORTS if vp(*s) in args.sizes.split(",")] if args.sizes else VIEWPORTS
     print(f"target: {target}" + (f" (viewports {args.sizes})" if args.sizes else ""), flush=True)
     t0 = time.time()
     with sync_playwright() as p:
         browser = p.chromium.launch()
         check_load(D, browser, target)
-        check_scene(D, browser, target)
-        check_play(D, browser, target)
-        check_tap(D, browser, target)
+        for P in (D, D2):
+            check_scene(P, browser, target)
+            check_play(P, browser, target)
+            check_tap(P, browser, target)
+        check_pick(D, browser, target)
         check_dot_tap(D, browser, target)
         check_switch(D, browser, target)
         check_numbers(D, browser, target)

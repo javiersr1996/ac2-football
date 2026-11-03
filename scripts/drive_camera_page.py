@@ -840,22 +840,36 @@ def strips_and_verdict(D: Data, pg) -> None:
 
 # ---------------------------------------------------------------- the pick between receptions
 
-# The hook as shown: the pick's buttons, the lead, the units' rows, the rule's sentence, block 2's
-# note, the state.
+# The hook as shown: the pick's buttons and their second lines, the lead, the units' rows, the
+# rule's sentence, the instruction, the key's line on the rings' numbers, block 2's note, the state.
 PICK_JS = """() => ({pressed: [...document.querySelectorAll('.pick button')].map(b => b.getAttribute('aria-pressed')),
+  subs: [...document.querySelectorAll('.pick button .sub')].map(b => b.textContent.trim()),
   lead: document.getElementById('counted-lead').textContent.trim(),
+  instr: document.getElementById('instr').textContent.trim(), keyGap: document.getElementById('key-gap').textContent.trim(),
   rows: [...document.querySelectorAll('#counted-body tr')].map(r => [...r.cells].map(c => c.textContent.trim())),
   rule: document.getElementById('counted-rule').textContent.trim(),
   note: document.getElementById('sw-note').textContent.trim(), state: camera.state()})"""
 UNIT_ORDER = ("line", "block", "pressure", "nearest")
+UNIT_NAMES = {"line": "line", "block": "block", "pressure": "pressure", "nearest": "nearest rival"}
+
+
+def out_of_v1(play: dict) -> list[str]:
+    """The names of a reception's units that do not count in V1 (the sidecar's v1), in order."""
+    return [UNIT_NAMES[u] for u in UNIT_ORDER if not play["units"][u]["v1"]]
+
+
+def listed(xs: list[str]) -> str:
+    return ", ".join(xs[:-1]) + " and " + xs[-1] if len(xs) > 1 else "".join(xs)
 
 
 @guarded
 def check_pick(D: Data, browser, target: str) -> None:
-    """The pick: a click, Enter or Space on a button shows its reception and presses it; the hook
-    says it counts in V1 exactly when every unit of the sidecar does, each unit's players seen are
-    the sidecar's, the rule named is the reception's, block 2's note follows; what was pinned and
-    a running clip do not survive the pick."""
+    """The pick: a click, Enter or Space on a button shows its reception and presses it; each
+    button and the hook name the units of the sidecar that do not count in V1 (or say every one
+    does), each unit's players seen are the sidecar's, the rule named is the reception's, the
+    instruction and the key say rings only where the sidecar has defenders filled in, block 2's
+    note follows the line's and the block's V1; what was pinned and a running clip do not survive
+    the pick."""
     ctx, pg = open_page(browser, target)
     seek(pg, D.key)
     k = next(k for k, s in enumerate(D.seen[D.key]) if s)
@@ -875,17 +889,34 @@ def check_pick(D: Data, browser, target: str) -> None:
         got[how] = g = pg.evaluate(PICK_JS)
         P = Data(p)
         units = [P.play["units"][u] for u in UNIT_ORDER]
-        counts = all(u["v1"] for u in units)
+        out = out_of_v1(P.play)
         if g["state"]["reception"] != p or g["pressed"] != (
             ["false", "true"] if p else ["true", "false"]
         ):
             bad.append(f"{how}: reception {g['state']['reception']} pressed {g['pressed']}")
-        if g["lead"] != ("This one counts in V1." if counts else "This one counts for V0 only."):
-            bad.append(f"{how}: lead {g['lead']!r}")
+        subs = [
+            f"{listed(o)} not in V1" if o else "all in V1"
+            for o in (out_of_v1(Data(0).play), out_of_v1(Data(1).play))
+        ]
+        lead = (
+            f"Its {listed(out)} {'do' if len(out) > 1 else 'does'} not count in V1."
+            if out
+            else "Every unit it gives counts in V1."
+        )
+        if g["lead"] != lead or g["subs"] != subs:
+            bad.append(f"{how}: lead {g['lead']!r} buttons {g['subs']}")
+        rings = any(P.play["key"]["defenders_extrapolated_by_frame"])
+        if (g["instr"] == "Press Play: the rings are players the camera did not see.") != rings or (
+            "No defender is filled in" in g["keyGap"]
+        ) == rings:
+            bad.append(f"{how}: instruction {g['instr']!r} key {g['keyGap'][:40]!r}")
         want = [[f"{u['n_seen']} of {u['n_players']}", "yes" if u["v1"] else "no"] for u in units]
         if [r[1:] for r in g["rows"]] != want:
             bad.append(f"{how}: rows {g['rows']}")
-        if ("second.rule" in g["rule"]) != bool(p) or ("counts in V1" in g["note"]) != counts:
+        lb = units[0]["v1"] and units[1]["v1"]
+        if ("second.rule" in g["rule"]) != bool(p) or (
+            "block of the reception above count in V1" in g["note"]
+        ) != lb:
             bad.append(f"{how}: rule {g['rule'][:40]!r} note {g['note'][:40]!r}")
         if g["state"]["pinned"] or g["state"]["playing"] or g["state"]["i"] != P.key:
             bad.append(f"{how}: state {g['state']}")
@@ -893,9 +924,9 @@ def check_pick(D: Data, browser, target: str) -> None:
         u["v1"] for u in Data(1).play["units"].values()
     )
     R.check(
-        "pick: a click, Enter and Space each show their reception and press its button; the hook says 'counts in V1' exactly when every unit of the sidecar does,"
-        " each unit's players seen and its V1 are the sidecar's, the rule named is the reception's (clip.json's or second.rule), block 2's note follows;"
-        " the pick stops a running clip, unpins and opens at the reception",
+        "pick: a click, Enter and Space each show their reception and press its button; the buttons and the hook name the units out of V1 as the sidecar has them,"
+        " each unit's players seen and its V1 are the sidecar's, the rule named is the reception's (clip.json's or second.rule), rings are mentioned only where"
+        " defenders are filled in, block 2's note follows; the pick stops a running clip, unpins and opens at the reception",
         pinned == [k] and one_way and not bad,
         f"pinned before {pinned}; leads {[g['lead'] for g in got.values()]}; wrong {bad[:3]}",
     )

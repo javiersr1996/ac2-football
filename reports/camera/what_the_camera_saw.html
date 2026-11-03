@@ -233,8 +233,8 @@ footer p{max-width:90ch}
   <div class="block-head">
     <p class="eyebrow sec" id="hook-eyebrow"></p>
     <div class="seg pick" role="group" aria-label="which reception">
-      <button type="button" id="pick-0" data-p="0" aria-pressed="true"><b>The video's</b>not in V1</button>
-      <button type="button" id="pick-1" data-p="1" aria-pressed="false"><b>Another</b>in V1</button>
+      <button type="button" id="pick-0" data-p="0" aria-pressed="true"><b>The video's</b><span class="sub"></span></button>
+      <button type="button" id="pick-1" data-p="1" aria-pressed="false"><b>Another</b><span class="sub"></span></button>
     </div>
     <div class="counted" id="counted" aria-live="polite">
       <p class="verdict-line" id="counted-lead"></p>
@@ -248,7 +248,7 @@ footer p{max-width:90ch}
       <div class="big num"><span id="count-n"></span><small>of</small><span id="count-of"></span></div>
       <div class="what"><span>defenders filled in</span><span class="clock num" id="clock"></span></div>
     </div>
-    <p class="instr">Press Play: the rings are players the camera did not see.</p>
+    <p class="instr" id="instr"></p>
   </div>
   <div class="stage bleed" id="stage"></div>
   <div class="controls">
@@ -558,38 +558,59 @@ scrub.addEventListener("input", () => { stop(); render(Number(scrub.value)); });
 playBtn.addEventListener("click", () => (timer ? stop() : start()));
 document.addEventListener("visibilitychange", () => { if (document.hidden) stop(); });
 
-/* The pick: the video's reception, which counts for V0 only, or the second, whose every unit
-   counts in V1. The plan, the count, the clock and the texts follow; nothing stays pinned. */
+/* The pick: the video's reception, whose line and block do not count in V1, or the second, whose
+   every unit does. The plan, the count, the clock and the texts follow; nothing stays pinned.
+   What counts in V1 is read from each unit's v1, never typed. */
 const UNIT_WORDS = {line: "back four", block: "block's two ends", pressure: "pressing rivals",
                     nearest: "nearest rival"};
+const UNIT_NAMES = {line: "line", block: "block", pressure: "pressure", nearest: "nearest rival"};
+const listed = xs => (xs.length > 1 ? xs.slice(0, -1).join(", ") + " and " + xs[xs.length - 1] : xs.join(""));
+/** The names of a reception's units that do not count in V1, in the page's order. */
+const outOfV1 = units => Object.keys(UNIT_NAMES).filter(n => !units[n].v1).map(n => UNIT_NAMES[n]);
+function renderPickLabels() {
+  PLAYS.forEach(({s: play}, p) => {
+    const out = outOfV1(play.units);
+    at(`pick-${p}`).querySelector(".sub").textContent = out.length ? `${listed(out)} not in V1` : "all in V1";
+  });
+}
 function renderPlayText() {
-  const m = `${NB}m`, all = Object.values(U).every(u => u.v1);
+  const m = `${NB}m`, out = outOfV1(U), lb = U.line.v1 && U.block.v1;
+  // rings: defenders filled in at some frame of the clip; else the attackers' rings, if any
+  const rings = S.key.defenders_extrapolated_by_frame.some(n => n > 0);
+  const attackers = E.me.detected.some(d => !d)
+    || E.mates.detected.some((f, i) => f.some((d, k) => !d && E.mates.xy[i][k][0] !== null));
+  at("instr").textContent = rings ? "Press Play: the rings are players the camera did not see."
+    : "Press Play: the camera saw every defender all through this clip"
+      + (attackers ? "; the rings are attackers it did not see." : ".");
   at("hook-eyebrow").innerHTML = `The reception at frame ${q(`${PRE}key.frame`, S.key.frame)}`;
   at("count-of").innerHTML = q(`${PRE}n_defenders`, S.n_defenders);
   at("ticks").innerHTML = `<span>${q(`${PRE}frames.0`, fmt(-KEY / FPS) + NB + "s")}</span><span>reception</span>`
     + `<span>${q(`${PRE}frames.${N - 1}`, plus((N - 1 - KEY) / FPS) + NB + "s")}</span>`;
   const ex = U.line.gap_len[0] > 0;
-  at("key-gap").innerHTML = (ex ? `<b class="num">${q(`${PRE}units.line.gap_len.0`, (U.line.gap_len[0] / FPS).toFixed(1) + NB + "s")}</b>` : "")
+  at("key-gap").innerHTML = !rings ? "<span>No defender is filled in during this clip, so no ring carries a number.</span>"
+    : (ex ? `<b class="num">${q(`${PRE}units.line.gap_len.0`, (U.line.gap_len[0] / FPS).toFixed(1) + NB + "s")}</b>` : "")
     + `<span>${ex ? "seconds" : "A ring's number is the seconds"} to the nearest frame the camera saw him, shown over ${q("label_gap_s", LABEL_GAP_S.toFixed(0) + NB + "s")}; tap a ring for the rest</span>`;
-  at("counted-lead").textContent = all ? "This one counts in V1." : "This one counts for V0 only.";
+  at("counted-lead").textContent = out.length
+    ? `Its ${listed(out)} ${out.length > 1 ? "do" : "does"} not count in V1.` : "Every unit it gives counts in V1.";
   at("counted-body").innerHTML = Object.entries(UNIT_WORDS).map(([name, words]) => {
     const u = U[name], path = `${PRE}units.${name}`;
     return `<tr><td>${esc(words)}</td><td>${q(`${path}.n_seen`, u.n_seen)} of ${q(`${path}.n_players`, u.n_players)}</td><td>${u.v1 ? "yes" : "no"}</td></tr>`;
   }).join("");
   at("counted-rule").innerHTML = P === 0
     ? "Chosen by the video's rule (<code>clip.json:rule</code>): the reception with most defenders filled in."
-    : `Chosen by its own rule, written and committed before it was looked for (<code>camera.json:second.rule</code>): the earliest reception`
-      + ` of the match whose four units all count in V1; the ${q("second.earlier", thou(D.second.earlier))} before it fail the rule.`;
+    : `Chosen by its own rule, written and committed before it was looked for (<code>camera.json:second.rule</code>): the first reception`
+      + ` of the match, by period and frame, with a complete window, the camera's corners in every frame of it, one phase of play that`
+      + ` starts inside it and its four units in V1; the ${q("second.earlier", thou(D.second.earlier))} before it fail the rule.`;
   const gaps = U.line.gap_len.map((g, k) => q(`${PRE}units.line.gap_len.${k}`, (g / FPS).toFixed(1)));
   const gapText = gaps.slice(0, -1).join(", ") + " and " + gaps[gaps.length - 1] + NB + "s";
   const kk = U.block.player_ids.indexOf(U.block.phase.keeper_id), cx = D.context;
-  const lead = all
-    ? `The reception above counts in V1: the camera saw its back four at the reception, so its line depth`
+  const lead = lb
+    ? `The line and the block of the reception above count in V1: the camera saw its back four at the reception, so its line depth`
       + ` (${q(`${PRE}units.line.value`, fmt(U.line.value) + m)}) is one of the ${q(`match.rows.${LI}.V1.n`, thou(LINE.V1.n))} V1 readings,`
       + ` and both players who fix the length of its phase's block (${q(`${PRE}units.block.value`, fmt(U.block.value) + m)}), so that block is one of the`
       + ` ${q(`match.rows.${BI}.V1.n`, thou(BLOCK.V1.n))}.`
-    : `The reception above counts for V0 only: its back four were all filled in (${gapText} from the nearest`
-      + ` frame the camera saw each), so its line depth (${q(`${PRE}units.line.value`, fmt(U.line.value) + m)}) has no V1 reading. The block of its`
+    : `The reception above has no V1 reading of its line or its block: its back four were all filled in (${gapText} from the nearest`
+      + ` frame the camera saw each), so its line depth (${q(`${PRE}units.line.value`, fmt(U.line.value) + m)}) counts for V0 only. The block of its`
       + ` phase is fixed by the goalkeeper, filled in ${q(`${PRE}units.block.gap_len.${kk}`, (U.block.gap_len[kk] / FPS).toFixed(1) + NB + "s")}`
       + ` from his nearest detection.`;
   at("sw-note").innerHTML = lead + ` In this match the camera saw the back four whole at ${q("context.line.all_detected", pct(cx.line.all_detected))}`
@@ -829,7 +850,8 @@ function renderDetails() {
   const items = [
     `One reception of one match, chosen by rule (<code>clip.json:rule</code>): match ${q("match_id", D.match_id)}, the match of the README's quick block, so a reader regenerates it in seconds; the reception with most defenders filled in (${q("key.defenders_extrapolated", D.key.defenders_extrapolated)} of ${q("n_defenders", D.n_defenders)}) and the longest gap among them (${q("key.longest_gap_len", (D.key.longest_gap_len / FPS).toFixed(1) + NB + "s")}), clearer than most, not typical.`
       + ` The second reception of the same match is chosen by its own rule (<code>camera.json:second.rule</code>, in <code>scripts/second_reception.py</code>), committed before it was looked for:`
-      + ` the earliest whose four units all count in V1, after ${q("second.earlier", thou(D.second.earlier))} that fail the rule. Near the ball and in view, it is not typical either.`,
+      + ` the first, by period and frame, that passes it (a complete window with the camera's corners in every frame, one phase of play that starts inside it,`
+      + ` four units in V1), after ${q("second.earlier", thou(D.second.earlier))} that fail it. Near the ball and in view, it is not typical either.`,
     "Tracked: each player's and the ball's (x, y), <code>is_detected</code> and <code>gap_len</code>, and the frame's four corners. Drawn: nothing the data do not give; the camera's place and height are not in them.",
     `The frame's far edge is cut by the provider at y = ${q("frame_stats.far_cut_y_m", f.far_cut_y_m.toFixed(1) + m)} in ${q("frame_stats.far_cut_share", pct(f.far_cut_share))} of the frames with corners: the polygon is not the whole image.`,
     `No corners in ${q("frame_stats.without_corners", thou(f.without_corners))} frames: no player listed, or the camera off the game; of the clip's ${q("n_frames", D.n_frames)} frames, ${q("frame_stats.clip.without_corners", f.clip.without_corners)} lack them.`,
@@ -880,6 +902,7 @@ render(KEY);
 requestAnimationFrame(() => stage.classList.add("live"));  // the markers slide between frames from now on, not into place
 setVariant("v0");
 renderSwitchText();
+renderPickLabels();
 renderPlayText();
 renderVerdict();
 renderDetails();

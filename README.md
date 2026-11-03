@@ -24,7 +24,7 @@ In the Cup's 20 A-League 2024/25 matches the camera saw 56% of the player-frames
 
 *Figure 1, per match: (a) detection by distance to the ball, (b) filled frames by gap length, (c) V1 minus V0, (d) amputation error.*
 
-[The page](https://javiersr1996.github.io/what-the-camera-saw/): the reception from above inside the camera's measured frame, V0 against V1.
+[The page](https://javiersr1996.github.io/what-the-camera-saw/): two receptions from above inside the camera's measured frame, V0 against V1.
 
 **The fill behaves as an interpolation.** A predictor's error grows with the gap, so a re-detection would jump; it does not: after a gap over 20 s a player reappears a median 0.19 to 0.20 m from its filled position, a step between two detections (0.20 m). So the fill reads the future: a model forecasting from filled positions sees part of its answer. In layer 3 the leak changes nothing (-0.20 sd seen-only against -0.19); a forecasting model should check it. Amputation, the same kind of fill, errs 0.8 to 1.4 m per match on line depth, at most 6 m on block length (Figure 1d, units seen whole). On gaps over 20 s (36% to 39% of filled frames; hollow marks) it errs 1.3 to 1.9 m on line depth, at most 9 m on block length. kloppy drops `is_detected` on SkillCorner tracking ([known upstream issue](https://github.com/PySport/kloppy/issues/639)).
 

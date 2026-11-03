@@ -325,6 +325,99 @@ def test_the_cross_check_names_each_broken_number(
     assert problems and any(named in p for p in problems), problems
 
 
+def test_the_second_reception_holds_to_its_rule_and_counts_in_v1(committed: Any) -> None:
+    doc, _ = committed
+    second = doc["second"]
+    assert cp.second_problems(doc) == []
+    assert all(u["v1"] for u in second["units"].values())
+    assert not doc["units"]["line"]["v1"] and second["reception"] != doc["reception"]
+    assert second["rule"] == cp.second_reception().describe()
+    assert second["earlier"] == sum(second["rejected"].values()) > 0
+
+
+def _filled_in_at_the_reception(doc: dict[str, Any], unit: str) -> tuple[dict[str, Any], list[str]]:
+    """The sidecar with the first player of a unit of the second reception filled in at the
+    reception, everywhere the sidecar says it (the defender, every unit read there that reads him,
+    the key's counts): what a second reception that does not count in V1 would look like; and the
+    units that read him."""
+    out = copy.deepcopy(doc)
+    s = out["second"]
+    key = s["key"]["index"]
+    player = s["units"][unit]["player_ids"][0]
+    j = s["entities"]["rivals"]["ids"].index(player)
+    s["entities"]["rivals"]["detected"][key][j] = False
+    s["entities"]["rivals"]["gap"][key][j] = 12
+    hit = []
+    for name, u in s["units"].items():
+        if u["index"] == key and player in u["player_ids"]:
+            i = u["player_ids"].index(player)
+            u["seen"][i], u["gap_len"][i], u["n_seen"], u["v1"] = False, 12, u["n_seen"] - 1, False
+            hit.append(name)
+    k = s["key"]
+    k["defenders_extrapolated"] += 1
+    k["defenders_seen"] -= 1
+    k["defenders_extrapolated_by_frame"][key] += 1
+    k["longest_gap_len"], k["longest_gap_player_id"] = 12, player
+    return out, hit
+
+
+@pytest.mark.parametrize("unit", ["line", "pressure", "nearest"])
+def test_a_second_reception_with_a_defender_filled_in_is_named(committed: Any, unit: str) -> None:
+    # The planted case of the rule's one test the sidecar can show: a unit read at the reception
+    # with a player the camera did not see, consistent everywhere else. Mutation (V1 not asked of
+    # the second's units): no problem is named.
+    doc, _ = committed
+    bad, hit = _filled_in_at_the_reception(doc, unit)
+    assert unit in hit
+    assert sorted(cp.second_problems(bad)) == sorted(
+        f"camera.json: second.units.{name} does not count in V1" for name in hit
+    )
+
+
+@pytest.mark.parametrize(
+    ("path", "change", "named"),
+    [
+        ("second.rule", lambda v: v.replace("at least 4", "at least 3"), "second.rule is not"),
+        ("second.frames", lambda v: v[:-1], "second's window is not the rule's"),
+        ("second.key.index", lambda v: v + 1, "second's window is not the rule's"),
+        ("second.key.defenders_seen", lambda v: v - 1, "second.key.defenders_seen is not"),
+        ("second.key.defenders_extrapolated_by_frame.0", lambda v: v + 1, "by_frame is not"),
+        ("second.reception.frame", lambda v: v + 1, "second.reception is not"),
+        ("second.n_defenders", lambda v: v + 1, "second.reception is not"),
+        ("second.entities.me.detected.30", lambda v: False, "not a candidate of the rule"),
+        ("second.entities.ball.detected.30", lambda v: False, "not a candidate of the rule"),
+        ("second.entities.rivals.gap.50.0", lambda v: -1, "second's window has a hole"),
+        ("second.entities.ball.xy.70", lambda v: [None, None], "second's window has a hole"),
+        ("second.camera.corners.10.0", lambda v: [None, None], "a frame of second has no corners"),
+        ("second.units.line.frame", lambda v: v + 1, "second.units.line is not read where"),
+        ("second.units.block.frame", lambda v: v + 1, "second.units.block is not read where"),
+        ("second.units.block.metric", lambda v: "block_width_m", "second.units.block is not read"),
+        ("second.units.block.phase.frame_end", lambda v: v - 100, "does not hold it"),
+        ("second.units.pressure.gap_len.0", lambda v: v + 3, "pressure's players are not"),
+        ("second.units.nearest.player_ids.0", lambda v: 1, "nearest's players are not"),
+        ("second.units.nearest.v1", lambda v: False, "second.units.nearest does not count"),
+        ("second.units.line.n_seen", lambda v: v - 1, "second.units.line's counts are not"),
+        ("units.block.n_players", lambda v: v + 1, "units.block's counts are not"),
+        ("units.line.v1", lambda v: True, "the video's reception counts in V1"),
+        ("second.rejected.v1", lambda v: v + 1, "earlier their sum"),
+        ("second.earlier", lambda v: v - 1, "earlier their sum"),
+    ],
+)
+def test_the_static_check_names_each_broken_rule_of_the_second_reception(
+    committed: Any, path: str, change: Any, named: str
+) -> None:
+    doc, _ = committed
+    problems = cp.second_problems(_mutated(doc, path, change))
+    assert any(named in p for p in problems), problems
+
+
+def test_a_sidecar_without_the_second_reception_is_named(committed: Any) -> None:
+    doc, reports = committed
+    gone = {k: v for k, v in doc.items() if k != "second"}
+    assert cp.second_problems(gone) == ["camera.json: no second reception"]
+    assert "camera.json: no second reception" in cp.cross_check(gone, reports)
+
+
 def test_a_clip_json_with_another_reception_is_named(committed: Any) -> None:
     doc, reports = committed
     clip = json.loads(reports["clip/clip.json"])
@@ -632,6 +725,9 @@ def test_counts_say_what_was_verified(committed: Any) -> None:
     n = cp.counts(doc)
     assert (n["frames"], n["entities"], n["units"]) == (100, 23, 4)
     assert n["positions"] == 100 * (11 + 10 + 1 + 1 + 4) and n["numbers"] > 200
+    mates = len(doc["second"]["entities"]["mates"]["ids"])
+    assert (n["second_frames"], n["second_units"]) == (100, 4)
+    assert n["second_positions"] == 100 * (doc["second"]["n_defenders"] + mates + 1 + 1 + 4)
 
 
 def test_bronze_refuses_frames_out_of_order() -> None:

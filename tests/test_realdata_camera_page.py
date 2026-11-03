@@ -34,6 +34,42 @@ def test_the_scene_is_the_clips_and_the_line_is_four_filled_in_defenders(inputs:
     assert block.phase["keeper_id"] in block.player_ids
 
 
+def test_the_second_reception_counts_in_v1_as_sensitivity_counts_it(inputs: object) -> None:
+    # Each of its units, run through sensitivity on the real long table, is one V1 unit; the
+    # rule turned down exactly the eligible receptions before it, by period and frame.
+    from ac2fb.reliability import metrics
+    from ac2fb.reliability.match import load_with_long
+    from ac2fb.reliability.sensitivity import Window, sensitivity
+
+    match, long = load_with_long(clip.DEFAULT_MATCH)
+    second = inputs.second  # type: ignore[attr-defined]
+    scene = second.scene
+    key = int(scene.frame[scene.key])
+    assert key != int(inputs.scene.frame[inputs.scene.key])  # type: ignore[attr-defined]
+    units_of = metrics.metric_units(match)
+    for name, unit in second.units.items():
+        fn, _ = units_of[unit.metric]
+        got = sensitivity(fn, long, [Window(match.match_id, unit.frame, unit.frame)])
+        assert (got[match.match_id].n_units, got[match.match_id].v1.n) == (1, 1), name
+    eligible = sorted(
+        (e.period, e.frame_start)
+        for e in match.events
+        if e.family == "player_possession" and e.player is not None and e.team is not None
+    )
+    assert sum(second.rejected.values()) == eligible.index((scene.period, key))
+
+
+def test_a_second_reception_with_a_unit_not_in_v1_is_refused(inputs: object) -> None:
+    import dataclasses
+
+    second = inputs.second  # type: ignore[attr-defined]
+    line = second.units["line"]
+    broken = {**second.units, "line": dataclasses.replace(line, seen=(False, *line.seen[1:]))}
+    bad = dataclasses.replace(inputs, second=dataclasses.replace(second, units=broken))
+    with pytest.raises(SystemExit, match="second reception does not count in V1"):
+        cp.build(bad, cp.read_reports(cp.REPORTS), cp.TEMPLATE.read_text(encoding="utf-8"))
+
+
 def test_a_broken_committed_sidecar_is_named_by_the_check(inputs: object) -> None:
     reports = cp.read_reports(cp.REPORTS)
     template = cp.TEMPLATE.read_text(encoding="utf-8")

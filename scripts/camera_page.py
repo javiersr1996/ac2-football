@@ -8,7 +8,10 @@
 
 The page is read top to bottom: the reception of the video (``reports/clip/clip.json``: the one
 ``ac2fb.clip.choose`` picks by its frozen rule) drawn from above over the clip's frames, the
-camera's measured frame the only lit area of the pitch and the defenders filled in as rings; the
+camera's measured frame the only lit area of the pitch and the defenders filled in as rings, and
+a pick between it, which counts for V0 only, and a second reception of the same match drawn the
+same way, one whose units all count in V1 (``scripts/second_reception.py``: its own rule, committed
+before it was run); the
 V0/V1 switch that moves this match's mean line and block; the verdict on the twenty matches of
 figure 1, panel c, in the README's groups; and the details folded (the fill, layer 3's question,
 the frame measured, the limits, the code, the twenty matches as a table).
@@ -31,7 +34,8 @@ page to the sidecar, and checks the template; exit 0 when it all holds, 1 when i
 the data are missing or the match is held out. ``--check-static`` runs what needs no data: the
 payload against the sidecar, the inlined fonts against the vendored files by their hashes, the
 template's rules (no number with a unit typed in it) and a page that loads nothing from the
-network.
+network; and the second reception against its rule as far as the sidecar shows it (its words,
+window, key, candidate tests, corners, and every unit in V1): choosing it needs the data.
 
 Copied, with a declaration, from the author's basketball entry
 (github.com/javiersr1996/nobody-helps-the-helper, ``scripts/wind_html.py``, MIT): ``Refused``,
@@ -306,6 +310,14 @@ class Bronze:
             raise Refused("a frame of the scene has no bronze row")
         return where
 
+    def whole(self, frames: NDArray[np.int64]) -> bool:
+        """Whether every one of ``frames`` has a bronze row with its four corners."""
+        where = np.searchsorted(self.frame, frames)
+        ok = (where < len(self.frame)) & (
+            self.frame[np.minimum(where, len(self.frame) - 1)] == frames
+        )
+        return bool(ok.all() and not np.isnan(self.corners[where]).any())
+
 
 @dataclass(frozen=True)
 class Unit:
@@ -322,41 +334,59 @@ class Unit:
 
 
 @dataclass(frozen=True)
+class Second:
+    """The second reception (``scripts/second_reception.py``): its scene, units and the receptions
+    the rule turned down before it, by reason."""
+
+    scene: Any  # ac2fb.clip.Scene
+    units: dict[str, Unit]
+    rejected: dict[str, int]
+
+
+@dataclass(frozen=True)
 class Inputs:
-    """What the page is built from: the scene, the bronze frames, the units and the match."""
+    """What the page is built from: the scene, the bronze frames, the units and the match, and
+    the second reception."""
 
     scene: Any  # ac2fb.clip.Scene
     bronze: Bronze
     units: dict[str, Unit]
     players: dict[str, NDArray[Any]]  # frame, x, y, detected of every player row of the match
+    second: Second
 
 
-def read_inputs(match_id: int) -> Inputs:
-    """The match through the guarded door: its scene (the clip's rule), bronze frames and units.
+def second_reception() -> Any:
+    """scripts/second_reception.py, the rule of the second reception."""
+    import importlib.util
 
-    Raises ``HeldOutLocked`` for a held-out match and ``FileNotFoundError`` without the data.
-    """
-    from ac2fb import clip
-    from ac2fb.protocol import data
-    from ac2fb.reliability import metrics
-    from ac2fb.reliability.match import load_with_long, locate_rows
-    from ac2fb.reliability.sensitivity import Window, window_frames
+    if "second_reception" in sys.modules:
+        return sys.modules["second_reception"]
+    spec = importlib.util.spec_from_file_location(
+        "second_reception", Path(__file__).with_name("second_reception.py")
+    )
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    sys.modules["second_reception"] = module
+    spec.loader.exec_module(module)
+    return module
+
+
+def units_at(match: Any, units_of: Any, windows: Any, scene: Any) -> dict[str, Unit]:
+    """The units the page draws of a scene's reception, read by the frozen code of layer 2: the
+    line, the pressure and the nearest rival at the reception, the block at the start of the one
+    phase of play of the receiver's team that holds it (inside the clip); refused otherwise."""
+    from ac2fb.reliability.match import locate_rows
     from ac2fb.reliability.visibility import goalkeepers
 
-    match, long = load_with_long(match_id)
-    scene = clip.choose(match, clip.DEFAULT_RULE)
-    bronze = Bronze.of(data.read_bronze_frames([match_id], columns=BRONZE_COLUMNS))
+    rule = second_reception()
     key = int(scene.frame[scene.key])
-    units_of = metrics.metric_units(match)
-    windows = window_frames(long)
     sign = scene.sign
 
     def unit(name: str, frame: int, phase: dict[str, Any] | None = None) -> Unit:
-        metric, _ = units_of[name]
-        frames = windows(Window(match_id, frame, frame))
-        reading = None if frames is None else metric(frames)
-        if frames is None or reading is None:
+        got = rule.reading(units_of, windows, match.match_id, name, frame)
+        if got is None:
             raise Refused(f"{name} has no unit at frame {frame}")
+        frames, reading = got
         index = {int(p): i for i, p in enumerate(frames.player_ids)}
         rows = [index[p] for p in reading.player_ids]
         return Unit(
@@ -370,11 +400,7 @@ def read_inputs(match_id: int) -> Inputs:
             phase=phase,
         )
 
-    holding = [
-        e
-        for e in metrics.phases(match.events)
-        if e.team == scene.team and e.period == scene.period and e.frame_start <= key <= e.frame_end
-    ]
+    holding = rule.holding(match, scene.team, scene.period, key)
     if len(holding) != 1:
         raise Refused(f"{len(holding)} phases of play of team {scene.team} hold frame {key}")
     phase = holding[0]
@@ -383,7 +409,7 @@ def read_inputs(match_id: int) -> Inputs:
     start = phase.frame_start
     if not scene.frame[0] <= start <= scene.frame[-1]:
         raise Refused(f"the phase that holds the reception starts at {start}, outside the clip")
-    units = {
+    return {
         "line": unit("line_height_m", key),
         "block": unit(
             "block_length_m",
@@ -398,8 +424,29 @@ def read_inputs(match_id: int) -> Inputs:
         "pressure": unit("pressure_index", key),
         "nearest": unit("nearest_rival_m", key),
     }
+
+
+def read_inputs(match_id: int) -> Inputs:
+    """The match through the guarded door: its scene (the clip's rule), bronze frames and units,
+    and the second reception (its own rule, on the same arrays).
+
+    Raises ``HeldOutLocked`` for a held-out match and ``FileNotFoundError`` without the data.
+    """
+    from ac2fb import clip
+    from ac2fb.protocol import data
+    from ac2fb.reliability import metrics
+    from ac2fb.reliability.match import load_with_long
+    from ac2fb.reliability.sensitivity import window_frames
+
+    match, long = load_with_long(match_id)
+    scene = clip.choose(match, clip.DEFAULT_RULE)
+    bronze = Bronze.of(data.read_bronze_frames([match_id], columns=BRONZE_COLUMNS))
+    units_of = metrics.metric_units(match)
+    windows = window_frames(long)
+    found = second_reception().choose(match, windows, bronze.whole, clip.DEFAULT_RULE)
+    second = Second(found.scene, units_at(match, units_of, windows, found.scene), found.rejected)
     players = {"frame": match.frame, "x": match.x, "y": match.y, "detected": match.detected}
-    return Inputs(scene, bronze, units, players)
+    return Inputs(scene, bronze, units_at(match, units_of, windows, scene), players, second)
 
 
 # --- the reports -------------------------------------------------------------------------------
@@ -764,6 +811,98 @@ def against_clip(view: Mapping[str, Any], clip_json: Mapping[str, Any]) -> list[
     return problems
 
 
+def scene_doc(scene: Any, units: Mapping[str, Unit], bronze: Bronze) -> dict[str, Any]:
+    """What the page draws of one reception: the camera's frame, the crop, the players and the
+    ball frame by frame, the count, the reception and its units."""
+    view = _clip_view(scene)
+    sign = int(scene.sign)
+    corners = bronze.corners[bronze.rows(scene.frame)] * sign  # into the clip's frame
+    if np.isnan(corners).any():
+        raise Refused("a frame of the clip has no corners: the page would draw no frame there")
+    steps = np.hypot(*np.diff(corners, axis=0).transpose(2, 0, 1)).max(axis=1)
+    every = np.concatenate([scene.rival_xy, scene.me[:, None], scene.ball[:, None]], axis=1)
+    every = np.concatenate([every, scene.mate_xy], axis=1)
+    lo, hi = np.nanmin(every, axis=(0, 1)) - CROP_PAD_M, np.nanmax(every, axis=(0, 1)) + CROP_PAD_M
+    out = {}
+    for name, u in units.items():
+        out[name] = {
+            "frame": u.frame,
+            "index": int(np.flatnonzero(scene.frame == u.frame)[0]),
+            "metric": u.metric,
+            "value": round(u.value, 6),
+            "player_ids": list(u.player_ids),
+            "seen": list(u.seen),
+            "n_seen": sum(u.seen),
+            "n_players": len(u.player_ids),
+            "gap_len": list(u.gap_len),
+            "x": _r(list(u.x), 2),
+            "v1": all(u.seen),
+            **({"phase": u.phase} if u.phase else {}),
+        }
+    return {
+        "camera": {
+            "apex": _r(apexes(corners), 2),
+            "apex_median": _r(np.median(apexes(corners), axis=0), 2),
+            "area_m2": _r(area(corners), 1),
+            "corners": _r(corners, 2),
+            "cut_step_m": CUT_STEP_M,
+            "cuts": int((steps > CUT_STEP_M).sum()),
+        },
+        "crop": {"x": _r([lo[0], hi[0]], 2), "y": _r([lo[1], hi[1]], 2), "pad_m": CROP_PAD_M},
+        "entities": {
+            "ball": {
+                "detected": scene.ball_detected.tolist(),
+                "gap": scene.ball_gap.tolist(),
+                "xy": _r(scene.ball, 2),
+                "z": _r(bronze.ball_z[bronze.rows(scene.frame)], 2),
+            },
+            "mates": {
+                "detected": scene.mate_detected.tolist(),
+                "ids": scene.mates.tolist(),
+                "xy": _r(scene.mate_xy, 2),
+            },
+            "me": {
+                "detected": scene.me_detected.tolist(),
+                "gap": scene.me_gap.tolist(),
+                "id": int(scene.receiver),
+                "xy": _r(scene.me, 2),
+            },
+            "rivals": {
+                "detected": scene.rival_detected.tolist(),
+                "gap": scene.rival_gap.tolist(),
+                "ids": scene.rivals.tolist(),
+                "xy": _r(scene.rival_xy, 2),
+            },
+        },
+        "frames": view["frames"],
+        "key": {**view["key"], "defenders_extrapolated_by_frame": view["defenders_extrapolated"]},
+        "n_defenders": view["n_defenders"],
+        "n_frames": view["n_frames"],
+        "reception": view["reception"],
+        "sign": sign,
+        "units": out,
+    }
+
+
+def second_doc(second: Second, bronze: Bronze) -> dict[str, Any]:
+    """The second reception as the page draws it, with its rule in words and the receptions the
+    rule turned down before it; refused unless each of its units counts in V1."""
+    from ac2fb import clip
+
+    rule = second_reception()
+    doc = scene_doc(second.scene, second.units, bronze)
+    if not all(u["v1"] for u in doc["units"].values()):
+        raise Refused(
+            "a unit of the second reception does not count in V1: 'this one does' is false"
+        )
+    return {
+        **doc,
+        "earlier": sum(second.rejected.values()),
+        "rejected": {k: second.rejected[k] for k in rule.REASONS},
+        "rule": rule.describe(clip.DEFAULT_RULE),
+    }
+
+
 def sidecar(inputs: Inputs, reports: Mapping[str, bytes]) -> dict[str, Any]:
     """Every number and position the page draws, from the inputs and the reports."""
     from ac2fb import clip
@@ -774,12 +913,8 @@ def sidecar(inputs: Inputs, reports: Mapping[str, bytes]) -> dict[str, Any]:
     problems = against_clip(view, clip_json)
     if problems:
         raise Refused(problems[0])
-    sign = int(scene.sign)
     rows = inputs.bronze.rows(scene.frame)
     key_row = int(rows[scene.key])
-    corners = inputs.bronze.corners[rows] * sign  # into the clip's frame, as the scene is
-    if np.isnan(corners).any():
-        raise Refused("a frame of the clip has no corners: the page would draw no frame there")
     stats = frame_stats(
         inputs.bronze, inputs.players, rows, key_row,
         clip.PITCH_LENGTH * clip.PITCH_WIDTH, clip.PITCH_WIDTH / 2,
@@ -789,10 +924,6 @@ def sidecar(inputs: Inputs, reports: Mapping[str, bytes]) -> dict[str, Any]:
             f"{stats['seen_inside']:.3f} of the detected rows and {stats['filled_inside']:.3f} of "
             "the filled ones lie inside the frame: 'the window the camera saw' would be false"
         )
-    steps = np.hypot(*np.diff(corners, axis=0).transpose(2, 0, 1)).max(axis=1)
-    every = np.concatenate([scene.rival_xy, scene.me[:, None], scene.ball[:, None]], axis=1)
-    every = np.concatenate([every, scene.mate_xy], axis=1)
-    lo, hi = np.nanmin(every, axis=(0, 1)) - CROP_PAD_M, np.nanmax(every, axis=(0, 1)) + CROP_PAD_M
     table = match_table(reports, scene.match_id)
     strip = strips(reports)
     by_metric = {r["metric"]: r for r in table}
@@ -818,20 +949,6 @@ def sidecar(inputs: Inputs, reports: Mapping[str, bytes]) -> dict[str, Any]:
     keeper = (block.phase or {}).get("keeper_id")
     if keeper not in block.player_ids or block.seen[block.player_ids.index(keeper)]:
         raise Refused("the block is not fixed by the goalkeeper filled in: the lead would be false")
-    units = {}
-    for name, u in inputs.units.items():
-        units[name] = {
-            "frame": u.frame,
-            "index": int(np.flatnonzero(scene.frame == u.frame)[0]),
-            "metric": u.metric,
-            "value": round(u.value, 6),
-            "player_ids": list(u.player_ids),
-            "seen": list(u.seen),
-            "gap_len": list(u.gap_len),
-            "x": _r(list(u.x), 2),
-            "v1": all(u.seen),
-            **({"phase": u.phase} if u.phase else {}),
-        }
     return {
         "about": (
             "Every number and position the page draws. Positions are metres in the clip's frame: "
@@ -845,64 +962,29 @@ def sidecar(inputs: Inputs, reports: Mapping[str, bytes]) -> dict[str, Any]:
             "data do not give. gap is gap_len in frames at 10 Hz (a hollow marker's label is "
             "gap / 10, one decimal, in seconds; it stays pinned over label_gap_s seconds, a "
             "drawing choice). units: the layer 2 units of this reception, read "
-            "by ac2fb.reliability.metrics at their frame; seen is is_detected there. match: the "
-            "match's cells of reports/reliability.csv; strips: figure 1, panel c. findings: what "
-            "the page quotes of the README: its numbers, each with the README.src.json key it is "
-            "read by, per metric and half the matches whose V1 minus V0 has the sign of its "
+            "by ac2fb.reliability.metrics at their frame; seen is is_detected there. second: a "
+            "second reception of the match, drawn the same way, chosen by its own rule "
+            "(scripts/second_reception.py, in words in second.rule): one whose units all count in "
+            "V1; rejected counts the receptions before it that the rule turned down, by reason, "
+            "and earlier their sum. n_seen of n_players: a unit's players the camera saw. match: "
+            "the match's cells of reports/reliability.csv; strips: figure 1, panel c. findings: "
+            "what the page quotes of the README: its numbers, each with the README.src.json key it "
+            "is read by, per metric and half the matches whose V1 minus V0 has the sign of its "
             "median, its verdict, its closing sentence and the paragraphs the details fold, "
             "verbatim."
         ),
-        "camera": {
-            "apex": _r(apexes(corners), 2),
-            "apex_median": _r(np.median(apexes(corners), axis=0), 2),
-            "area_m2": _r(area(corners), 1),
-            "corners": _r(corners, 2),
-            "cut_step_m": CUT_STEP_M,
-            "cuts": int((steps > CUT_STEP_M).sum()),
-        },
+        **scene_doc(scene, inputs.units, inputs.bronze),
         "context": context(reports, scene.match_id),
-        "crop": {"x": _r([lo[0], hi[0]], 2), "y": _r([lo[1], hi[1]], 2), "pad_m": CROP_PAD_M},
-        "entities": {
-            "ball": {
-                "detected": scene.ball_detected.tolist(),
-                "gap": scene.ball_gap.tolist(),
-                "xy": _r(scene.ball, 2),
-                "z": _r(inputs.bronze.ball_z[rows], 2),
-            },
-            "mates": {
-                "detected": scene.mate_detected.tolist(),
-                "ids": scene.mates.tolist(),
-                "xy": _r(scene.mate_xy, 2),
-            },
-            "me": {
-                "detected": scene.me_detected.tolist(),
-                "gap": scene.me_gap.tolist(),
-                "id": int(scene.receiver),
-                "xy": _r(scene.me, 2),
-            },
-            "rivals": {
-                "detected": scene.rival_detected.tolist(),
-                "gap": scene.rival_gap.tolist(),
-                "ids": scene.rivals.tolist(),
-                "xy": _r(scene.rival_xy, 2),
-            },
-        },
         "fps": clip_json["video"]["fps"],
         "frame_stats": stats,
-        "frames": view["frames"],
-        "key": {**view["key"], "defenders_extrapolated_by_frame": view["defenders_extrapolated"]},
         "label_gap_s": LABEL_GAP_S,
         "match": {"rows": table},
         "match_id": scene.match_id,
-        "n_defenders": view["n_defenders"],
-        "n_frames": view["n_frames"],
-        "reception": view["reception"],
         "rule": clip_json["rule"],
-        "sign": sign,
+        "second": second_doc(inputs.second, inputs.bronze),
         "sources": {name: hashlib.sha256(reports[name]).hexdigest() for name in SOURCES},
         "strips": {"claim": strip_claim(strip), "metrics": strip},
         "findings": findings(reports, strip, readme_keys(), readme_text()),
-        "units": units,
     }
 
 
@@ -925,7 +1007,8 @@ def check_finite(value: Any, where: str = "payload") -> None:
     elif isinstance(value, float) and not math.isfinite(value):
         raise Refused(f"{where} is {value}")
     elif value is None and not (
-        where.startswith("payload.entities.mates.xy") or where.endswith("longest_gap_player_id")
+        where.startswith(("payload.entities.mates.xy", "payload.second.entities.mates.xy"))
+        or where.endswith("longest_gap_player_id")
     ):
         raise Refused(f"{where} is missing")
 
@@ -1057,6 +1140,109 @@ def cross_check(doc: Mapping[str, Any], reports: Mapping[str, bytes]) -> list[st
     for name in SOURCES:
         if doc["sources"].get(name) != hashlib.sha256(reports[name]).hexdigest():
             problems.append(f"camera.json: the hash of {name} is not the committed file's")
+    return problems + second_problems(doc)
+
+
+def second_problems(doc: Mapping[str, Any]) -> list[str]:
+    """The second reception as committed, held to its rule without the data (``--check`` chooses
+    it again from the data): the rule's words are the code's, the window is the rule's, the key is
+    its defenders', the reception passes the clip's candidate tests and has a complete window and
+    the camera's corners in every frame, each unit is read where the rule reads it, its players
+    are rivals as drawn at its frame, and every unit counts in V1, while the video's does not."""
+    from ac2fb import clip
+
+    rule, sr = clip.DEFAULT_RULE, second_reception()
+    s = doc.get("second")
+    if not isinstance(s, Mapping):
+        return ["camera.json: no second reception"]
+    problems = []
+    if s.get("rule") != sr.describe(rule):
+        problems.append("camera.json: second.rule is not the words of scripts/second_reception.py")
+    frames, key = s["frames"], s["key"]["index"]
+    if (
+        len(frames) != rule.frames
+        or s["n_frames"] != rule.frames
+        or key != rule.before
+        or frames != list(range(frames[0], frames[0] + rule.frames))
+    ):
+        return [
+            *problems,
+            f"camera.json: second's window is not the rule's ({rule.frames} frames from "
+            f"{rule.before} before the reception)",
+        ]
+    ent = s["entities"]
+    rivals, me, ball = ent["rivals"], ent["me"], ent["ball"]
+    ids, at = rivals["ids"], rivals["detected"][key]
+    gaps = [0 if d else g for d, g in zip(at, rivals["gap"][key], strict=True)]
+    longest = max(gaps)
+    want = {
+        "defenders_extrapolated": at.count(False),
+        "defenders_extrapolated_by_frame": [f.count(False) for f in rivals["detected"]],
+        "defenders_seen": at.count(True),
+        "frame": frames[key],
+        "index": key,
+        "longest_gap_len": longest,
+        "longest_gap_player_id": ids[gaps.index(longest)] if longest else None,
+    }
+    for k in sorted(want.keys() | s["key"].keys()):
+        if s["key"].get(k) != want.get(k):
+            problems.append(f"camera.json: second.key.{k} is not its defenders' at the reception")
+    if (
+        s["reception"]["frame"] != frames[key]
+        or s["reception"]["receiver_id"] != me["id"]
+        or s["n_defenders"] != len(ids)
+    ):
+        problems.append("camera.json: second.reception is not its key frame's and receiver's")
+    if not (me["detected"][key] and ball["detected"][key] and at.count(True) >= rule.min_seen):
+        problems.append(
+            f"camera.json: second's receiver, ball or {rule.min_seen} rivals are not seen at the "
+            "reception: it is not a candidate of the rule"
+        )
+    points = [p for f in rivals["xy"] for p in f] + me["xy"] + ball["xy"]
+    if any(g < 0 for f in rivals["gap"] for g in f) or any(v is None for p in points for v in p):
+        problems.append("camera.json: second's window has a hole: the rule wants it complete")
+    if any(v is None for c in s["camera"]["corners"] for p in c for v in p):
+        problems.append("camera.json: a frame of second has no corners: the rule wants them all")
+    for name, metric, where in sr.UNITS:
+        u = s["units"].get(name, {})
+        phase = u.get("phase") or {}
+        frame = frames[key] if where == "reception" else phase.get("frame_start")
+        if u.get("metric") != metric or u.get("frame") != frame or frame not in frames:
+            problems.append(f"camera.json: second.units.{name} is not read where the rule reads it")
+            continue
+        if where == "phase" and not phase["frame_start"] <= frames[key] <= phase["frame_end"]:
+            problems.append(f"camera.json: the phase of second.units.{name} does not hold it")
+        i = frames.index(frame)
+        drawn = [
+            (rivals["detected"][i][ids.index(p)], rivals["gap"][i][ids.index(p)])
+            if p in ids
+            else None
+            for p in u["player_ids"]
+        ]
+        if u["index"] != i or drawn != list(zip(u["seen"], u["gap_len"], strict=True)):
+            problems.append(
+                f"camera.json: second.units.{name}'s players are not its rivals as drawn there"
+            )
+        if u["v1"] is not True or not all(u["seen"]):
+            problems.append(f"camera.json: second.units.{name} does not count in V1")
+    for where, units in (("units", doc["units"]), ("second.units", s["units"])):
+        for name, u in units.items():
+            if u["n_seen"] != sum(u["seen"]) or u["n_players"] != len(u["player_ids"]):
+                problems.append(f"camera.json: {where}.{name}'s counts are not its players'")
+    if any(u["v1"] != all(u["seen"]) for u in doc["units"].values()) or all(
+        u["v1"] for u in doc["units"].values()
+    ):
+        problems.append(
+            "camera.json: the video's reception counts in V1, or its v1 is not its seen"
+        )
+    if (
+        sorted(s["rejected"]) != sorted(sr.REASONS)
+        or any(not isinstance(v, int) or v < 0 for v in s["rejected"].values())
+        or s.get("earlier") != sum(s["rejected"].values())
+    ):
+        problems.append(
+            "camera.json: second.rejected does not count the rule's reasons, or earlier their sum"
+        )
     return problems
 
 
@@ -1229,11 +1415,21 @@ def build(inputs: Inputs, reports: Mapping[str, bytes], template: str) -> tuple[
     return body, assemble(template, json.loads(body), faces)
 
 
-def counts(doc: Mapping[str, Any]) -> dict[str, int]:
-    """What the check verified: frames, entities, positions, numbers, units, frame statistics."""
-    ent = doc["entities"]
+def _positions(play: Mapping[str, Any]) -> int:
+    ent = play["entities"]
     positions = sum(len(f) for f in ent["rivals"]["xy"]) + sum(len(f) for f in ent["mates"]["xy"])
-    positions += len(ent["me"]["xy"]) + len(ent["ball"]["xy"]) + 4 * len(doc["camera"]["corners"])
+    return (
+        positions
+        + len(ent["me"]["xy"])
+        + len(ent["ball"]["xy"])
+        + 4 * len(play["camera"]["corners"])
+    )
+
+
+def counts(doc: Mapping[str, Any]) -> dict[str, int]:
+    """What the check verified: frames, entities, positions, numbers, units, frame statistics,
+    and the second reception's frames, positions and units."""
+    ent = doc["entities"]
 
     def leaves(v: Any) -> int:
         if isinstance(v, dict):
@@ -1252,10 +1448,13 @@ def counts(doc: Mapping[str, Any]) -> dict[str, int]:
     return {
         "frames": len(doc["frames"]),
         "entities": len(ent["rivals"]["ids"]) + len(ent["mates"]["ids"]) + 2,
-        "positions": positions,
+        "positions": _positions(doc),
         "numbers": numbers,
         "units": len(doc["units"]),
         "stats": stats(doc["frame_stats"]),
+        "second_frames": len(doc["second"]["frames"]),
+        "second_positions": _positions(doc["second"]),
+        "second_units": len(doc["second"]["units"]),
     }
 
 
@@ -1283,7 +1482,8 @@ def check(
     said = (
         f"verified: {n['frames']} frames, {n['entities']} entities, {n['positions']} "
         f"positions, {n['numbers']} numbers, {n['units']} units, {n['stats']} frame "
-        f"statistics; page bytes {equal}"
+        f"statistics; the second reception chosen again by its rule: {n['second_frames']} "
+        f"frames, {n['second_positions']} positions, {n['second_units']} units; page bytes {equal}"
     )
     return problems, said
 
@@ -1312,7 +1512,9 @@ def main(argv: Sequence[str] | None = None) -> int:
         )
         print(
             "verified: the sidecar against the versioned reports (cells, strips, context, "
-            f"findings, frame statistics, {len(SOURCES)} hashes), the payload against the sidecar, "
+            f"findings, frame statistics, {len(SOURCES)} hashes), the second reception against its "
+            "rule (its words, window, key, candidate tests, corners, units in V1; choosing it "
+            "needs the data: --check), the payload against the sidecar, "
             f"the {len(FACES)} inlined fonts against vendor/fonts by their hashes, the template's "
             "rules, a page that loads nothing"
         )

@@ -112,6 +112,10 @@ input[type=range]{width:100%;margin:0;accent-color:var(--ink);height:44px;cursor
 .k-frame{width:22px!important;height:13px!important;border-radius:1px!important;border:1.25px solid var(--ink-2);background:var(--grass);clip-path:polygon(22% 0,78% 0,100% 100%,0 100%)}
 .k-side{width:22px!important;height:3px!important;border-radius:0!important;background:var(--muted)}
 .note{font-size:16px;color:var(--ink-2);max-width:62ch}
+.pick{margin-top:8px}
+.counted{display:grid;gap:8px;margin-top:4px}
+.verdict-line{font-family:var(--display);font-weight:700;font-size:clamp(22px,3.4vw,26px);line-height:1.15}
+.utab td:nth-child(3),.utab th:nth-child(3){width:4.5em}
 
 /* block 2: the switch */
 .seg{display:inline-grid;grid-auto-flow:column;grid-auto-columns:1fr;border:1.5px solid var(--ink);border-radius:24px;overflow:hidden;justify-self:start;max-width:100%}
@@ -223,6 +227,18 @@ footer p{max-width:90ch}
 <section class="block" id="hook" aria-labelledby="hook-eyebrow">
   <div class="block-head">
     <p class="eyebrow sec" id="hook-eyebrow"></p>
+    <div class="seg pick" role="group" aria-label="which reception">
+      <button type="button" id="pick-0" data-p="0" aria-pressed="true"><b>The video's</b>not in V1</button>
+      <button type="button" id="pick-1" data-p="1" aria-pressed="false"><b>Another</b>in V1</button>
+    </div>
+    <div class="counted" id="counted" aria-live="polite">
+      <p class="verdict-line" id="counted-lead"></p>
+      <table class="ptab utab" id="counted-table" aria-label="what the camera saw of each unit this reception gives">
+        <thead><tr><th scope="col">its unit's players</th><th scope="col">seen</th><th scope="col">in V1</th></tr></thead>
+        <tbody id="counted-body"></tbody>
+      </table>
+      <p class="note" id="counted-rule"></p>
+    </div>
     <div class="count" id="count">
       <div class="big num"><span id="count-n"></span><small>of</small><span id="count-of"></span></div>
       <div class="what"><span>defenders filled in</span><span class="clock num" id="clock"></span></div>
@@ -247,7 +263,7 @@ footer p{max-width:90ch}
     <li><i class="k-side"></i>camera side: the near touchline; where the camera stands is not in the data</li>
     <li class="long" id="key-gap"></li>
   </ul>
-  <p class="note">One reception, drawn from the data, with the camera's frame measured on the pitch: the frame is the provider's own estimate of the image's four corners on the grass, frame by frame. Outside it the pitch is faded: what is drawn there is what the model filled in.</p>
+  <p class="note">Each reception is drawn from the data, with the camera's frame measured on the pitch: the frame is the provider's own estimate of the image's four corners on the grass, frame by frame. Outside it the pitch is faded: what is drawn there is what the model filled in.</p>
 </section>
 
 <section class="block sw" id="sw" data-v="v0" aria-labelledby="h-sw">
@@ -313,10 +329,19 @@ footer p{max-width:90ch}
    none of it but the pitch's geometry and the drawing below.
    ========================================================================== */
 const D = JSON.parse(document.getElementById("payload").textContent);
-const FPS = D.fps, N = D.n_frames, KEY = D.key.index, E = D.entities, CAM = D.camera;
-const ROWS = D.match.rows, F = D.findings, U = D.units, FS = D.frame_stats, STRIPS = D.strips.metrics;
+const FPS = D.fps, ROWS = D.match.rows, F = D.findings, FS = D.frame_stats, STRIPS = D.strips.metrics;
 const SPLITS = ["calibration", "held-out"];
-const [X0, X1] = D.crop.x, [Y0, Y1] = D.crop.y, W = X1 - X0, H = Y1 - Y0;
+/* The two receptions, drawn the same way: the video's (the sidecar's top level) and the second
+   (its "second"); the paths of a reception's numbers carry its prefix. */
+const PLAYS = [{s: D, pre: ""}, {s: D.second, pre: "second."}];
+let P = 0, S = D, PRE = "", N, KEY, E, CAM, U, X0, X1, Y0, Y1, W, H;
+function usePlay(p) {
+  P = p;
+  ({s: S, pre: PRE} = PLAYS[p]);
+  N = S.n_frames; KEY = S.key.index; E = S.entities; CAM = S.camera; U = S.units;
+  [X0, X1] = S.crop.x; [Y0, Y1] = S.crop.y; W = X1 - X0; H = Y1 - Y0;
+}
+usePlay(0);
 
 /* The pitch, drawn: the geometry of ac2fb.clip's pitch (metres), y down, the receiving team
    attacking toward +x. */
@@ -389,29 +414,37 @@ const grass = () => `<rect x="${-PITCH.length / 2}" y="${-PITCH.width / 2}" widt
 /* ==========================================================================
    Block 1: the reception from above, over the clip's frames.
    ========================================================================== */
-const stage = at("stage");
-stage.style.aspectRatio = `${W.toFixed(2)} / ${H.toFixed(2)}`;
-stage.innerHTML = `<svg class="pitch" id="pitch" viewBox="${X0} ${Y0} ${W.toFixed(2)} ${H.toFixed(2)}" preserveAspectRatio="xMidYMid meet" role="img"
-    aria-label="The reception from above: the camera's frame on the pitch, the defenders it saw as filled discs, the ones filled in as rings, the receiver, the ball and his teammates.">
-  ${grass()}${pitchLines()}
-  <g class="frustum" fill="none"><line id="fr-l"/><line id="fr-r"/></g>
-  <path id="fade" class="fade" fill-rule="evenodd"/>
-  <polygon id="frame" class="frame"/>
-  <g id="mates">${E.mates.ids.map((id, k) => `<g class="pl-g mate" data-k="${k}"><circle class="dot" r=".95"/></g>`).join("")}</g>
-  <g id="rivals">${E.rivals.ids.map((id, k) => `<g class="pl-g riv" data-k="${k}" tabindex="0" role="button" aria-label="defender ${esc(id)}"><circle class="hit" r="3.2"/><circle class="dot" r="1.45"/></g>`).join("")}</g>
-  <g id="me" class="pl-g me"><circle class="dot" r="1.7"/></g>
-  <g id="ball" class="pl-g ball"><circle class="dot" r=".75"/></g>
-</svg>
-<div class="labels" id="labels" aria-hidden="true"><span class="camside" id="camside">camera side</span></div>`;
-const pitch = at("pitch");
-const frame = at("frame"), fade = at("fade"), frL = at("fr-l"), frR = at("fr-r");
-const meG = at("me"), ballG = at("ball");
-const rivG = [...document.querySelectorAll("#rivals .riv")], mateG = [...document.querySelectorAll("#mates .mate")];
-const labels = at("labels");
-const labs = rivG.map(() => { const s = document.createElement("span"); s.className = "lab"; labels.appendChild(s); return s; });
-const scrub = at("scrub"), playBtn = at("play");
+const stage = at("stage"), scrub = at("scrub"), playBtn = at("play");
 const pinned = new Set(), hovered = new Set();
 let cur = KEY, timer = null;
+let pitch, frame, fade, frL, frR, meG, ballG, rivG, mateG, labs;
+/** The plan of the reception picked, its markers and labels: built again at each pick. */
+function buildStage() {
+  stage.style.aspectRatio = `${W.toFixed(2)} / ${H.toFixed(2)}`;
+  stage.innerHTML = `<svg class="pitch" id="pitch" viewBox="${X0} ${Y0} ${W.toFixed(2)} ${H.toFixed(2)}" preserveAspectRatio="xMidYMid meet" role="img"
+      aria-label="The reception from above: the camera's frame on the pitch, the defenders it saw as filled discs, the ones filled in as rings, the receiver, the ball and his teammates.">
+    ${grass()}${pitchLines()}
+    <g class="frustum" fill="none"><line id="fr-l"/><line id="fr-r"/></g>
+    <path id="fade" class="fade" fill-rule="evenodd"/>
+    <polygon id="frame" class="frame"/>
+    <g id="mates">${E.mates.ids.map((id, k) => `<g class="pl-g mate" data-k="${k}"><circle class="dot" r=".95"/></g>`).join("")}</g>
+    <g id="rivals">${E.rivals.ids.map((id, k) => `<g class="pl-g riv" data-k="${k}" tabindex="0" role="button" aria-label="defender ${esc(id)}"><circle class="hit" r="3.2"/><circle class="dot" r="1.45"/></g>`).join("")}</g>
+    <g id="me" class="pl-g me"><circle class="dot" r="1.7"/></g>
+    <g id="ball" class="pl-g ball"><circle class="dot" r=".75"/></g>
+  </svg>
+  <div class="labels" id="labels" aria-hidden="true"><span class="camside" id="camside">camera side</span></div>`;
+  pitch = at("pitch");
+  frame = at("frame"); fade = at("fade"); frL = at("fr-l"); frR = at("fr-r");
+  meG = at("me"); ballG = at("ball");
+  rivG = [...document.querySelectorAll("#rivals .riv")]; mateG = [...document.querySelectorAll("#mates .mate")];
+  const labels = at("labels");
+  labs = rivG.map(() => { const s = document.createElement("span"); s.className = "lab"; labels.appendChild(s); return s; });
+  rivG.forEach((g, k) => {
+    g.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); togglePin(k); } });
+  });
+  scrub.max = String(N - 1);
+  fitHits();
+}
 
 function place(g, p) {
   if (!p || p[0] === null) { g.style.display = "none"; return; }
@@ -478,27 +511,24 @@ function render(i) {
     lab.style.top = py + "%";
     lab.classList.toggle("edge-r", px > 86);
     lab.classList.toggle("edge-l", px < 14);
-    lab.innerHTML = det ? "seen" : q(`entities.rivals.gap.${i}.${k}`, (gap / FPS).toFixed(1) + NB + "s");
+    lab.innerHTML = det ? "seen" : q(`${PRE}entities.rivals.gap.${i}.${k}`, (gap / FPS).toFixed(1) + NB + "s");
     lab.classList.toggle("seen", det);
     lab.classList.toggle("on", (!det && gap > LABEL_GAP_S * FPS) || pinned.has(k) || hovered.has(k));
   });
   mateG.forEach((g, k) => { place(g, E.mates.xy[i][k]); g.classList.toggle("seen", Boolean(E.mates.detected[i][k])); });
   spread();
-  at("count-n").innerHTML = q(`key.defenders_extrapolated_by_frame.${i}`, D.key.defenders_extrapolated_by_frame[i]);
+  at("count-n").innerHTML = q(`${PRE}key.defenders_extrapolated_by_frame.${i}`, S.key.defenders_extrapolated_by_frame[i]);
   at("clock").innerHTML = i === KEY ? "at the reception"
-    : q(`frames.${i}`, plus((i - KEY) / FPS) + NB + "s") + " from the reception";
+    : q(`${PRE}frames.${i}`, plus((i - KEY) / FPS) + NB + "s") + " from the reception";
 }
 function togglePin(k) {
   if (pinned.has(k)) pinned.delete(k); else pinned.add(k);
   render(cur);
 }
-rivG.forEach((g, k) => {
-  g.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); togglePin(k); } });
-});
 // a tap or a hover goes to the nearest defender within TAP_PX, so two close rings never swallow
-// each other's taps
-pitch.addEventListener("click", e => { const k = nearestRival(e); if (k !== null) togglePin(k); });
-pitch.addEventListener("pointermove", e => {
+// each other's taps; on the stage, which outlives the plan built again at each pick
+stage.addEventListener("click", e => { const k = nearestRival(e); if (k !== null) togglePin(k); });
+stage.addEventListener("pointermove", e => {
   if (e.pointerType === "touch") return;
   const k = nearestRival(e), was = [...hovered];
   hovered.clear();
@@ -506,8 +536,7 @@ pitch.addEventListener("pointermove", e => {
   pitch.classList.toggle("near", k !== null);
   if (was.length !== hovered.size || (k !== null && was[0] !== k)) render(cur);
 });
-pitch.addEventListener("pointerleave", () => { hovered.clear(); pitch.classList.remove("near"); render(cur); });
-fitHits();
+stage.addEventListener("pointerleave", () => { hovered.clear(); pitch.classList.remove("near"); render(cur); });
 addEventListener("resize", fitHits);
 function stop() {
   if (timer) { clearInterval(timer); timer = null; }
@@ -520,10 +549,63 @@ function start() {
   playBtn.textContent = "Pause";
   playBtn.setAttribute("aria-pressed", "true");
 }
-scrub.max = String(N - 1);
 scrub.addEventListener("input", () => { stop(); render(Number(scrub.value)); });
 playBtn.addEventListener("click", () => (timer ? stop() : start()));
 document.addEventListener("visibilitychange", () => { if (document.hidden) stop(); });
+
+/* The pick: the video's reception, which counts for V0 only, or the second, whose every unit
+   counts in V1. The plan, the count, the clock and the texts follow; nothing stays pinned. */
+const UNIT_WORDS = {line: "back four", block: "block's two ends", pressure: "pressing rivals",
+                    nearest: "nearest rival"};
+function renderPlayText() {
+  const m = `${NB}m`, all = Object.values(U).every(u => u.v1);
+  at("hook-eyebrow").innerHTML = `The reception at frame ${q(`${PRE}key.frame`, S.key.frame)}`;
+  at("count-of").innerHTML = q(`${PRE}n_defenders`, S.n_defenders);
+  at("ticks").innerHTML = `<span>${q(`${PRE}frames.0`, fmt(-KEY / FPS) + NB + "s")}</span><span>reception</span>`
+    + `<span>${q(`${PRE}frames.${N - 1}`, plus((N - 1 - KEY) / FPS) + NB + "s")}</span>`;
+  const ex = U.line.gap_len[0] > 0;
+  at("key-gap").innerHTML = (ex ? `<b class="num">${q(`${PRE}units.line.gap_len.0`, (U.line.gap_len[0] / FPS).toFixed(1) + NB + "s")}</b>` : "")
+    + `<span>${ex ? "seconds" : "A ring's number is the seconds"} to the nearest frame the camera saw him, shown over ${q("label_gap_s", LABEL_GAP_S.toFixed(0) + NB + "s")}; tap a ring for the rest</span>`;
+  at("counted-lead").textContent = all ? "This one counts in V1." : "This one counts for V0 only.";
+  at("counted-body").innerHTML = Object.entries(UNIT_WORDS).map(([name, words]) => {
+    const u = U[name], path = `${PRE}units.${name}`;
+    return `<tr><td>${esc(words)}</td><td>${q(`${path}.n_seen`, u.n_seen)} of ${q(`${path}.n_players`, u.n_players)}</td><td>${u.v1 ? "yes" : "no"}</td></tr>`;
+  }).join("");
+  at("counted-rule").innerHTML = P === 0
+    ? "Chosen by the video's rule (<code>clip.json:rule</code>): the reception with most defenders filled in."
+    : `Chosen by its own rule, written and committed before it was looked for (<code>camera.json:second.rule</code>): the earliest reception`
+      + ` of the match whose four units all count in V1; the ${q("second.earlier", thou(D.second.earlier))} before it fail the rule.`;
+  const gaps = U.line.gap_len.map((g, k) => q(`${PRE}units.line.gap_len.${k}`, (g / FPS).toFixed(1)));
+  const gapText = gaps.slice(0, -1).join(", ") + " and " + gaps[gaps.length - 1] + NB + "s";
+  const kk = U.block.player_ids.indexOf(U.block.phase.keeper_id), cx = D.context;
+  const lead = all
+    ? `The reception above counts in V1: the camera saw its back four at the reception, so its line depth`
+      + ` (${q(`${PRE}units.line.value`, fmt(U.line.value) + m)}) is one of the ${q(`match.rows.${LI}.V1.n`, thou(LINE.V1.n))} V1 readings,`
+      + ` and both players who fix the length of its phase's block (${q(`${PRE}units.block.value`, fmt(U.block.value) + m)}), so that block is one of the`
+      + ` ${q(`match.rows.${BI}.V1.n`, thou(BLOCK.V1.n))}.`
+    : `The reception above counts for V0 only: its back four were all filled in (${gapText} from the nearest`
+      + ` frame the camera saw each), so its line depth (${q(`${PRE}units.line.value`, fmt(U.line.value) + m)}) has no V1 reading. The block of its`
+      + ` phase is fixed by the goalkeeper, filled in ${q(`${PRE}units.block.gap_len.${kk}`, (U.block.gap_len[kk] / FPS).toFixed(1) + NB + "s")}`
+      + ` from his nearest detection.`;
+  at("sw-note").innerHTML = lead + ` In this match the camera saw the back four whole at ${q("context.line.all_detected", pct(cx.line.all_detected))}`
+    + ` of ${q("context.line.events", thou(cx.line.events))} receptions and the whole block at ${q("context.block.all_detected", pct(cx.block.all_detected, 1))}`
+    + ` of ${q("context.block.phases", thou(cx.block.phases))} phases.`;
+}
+function pickPlay(p) {
+  stop();
+  pinned.clear();
+  hovered.clear();
+  stage.classList.remove("live");
+  usePlay(p);
+  buildStage();
+  document.querySelectorAll(".pick button").forEach(b => b.setAttribute("aria-pressed", String(Number(b.dataset.p) === p)));
+  renderPlayText();
+  render(KEY);
+  requestAnimationFrame(() => stage.classList.add("live"));
+}
+document.querySelectorAll(".pick button").forEach(b => b.addEventListener("click", () => {
+  if (Number(b.dataset.p) !== P) pickPlay(Number(b.dataset.p));
+}));
 
 /* ==========================================================================
    Block 2: the switch. This match's means drawn to scale on the defending
@@ -601,15 +683,6 @@ function renderSwitchText() {
     + `<td>${q(`match.rows.${k}.diff`, signed(r.diff) + m)}</td></tr>`;
   at("panel-body").innerHTML = row(LI, LINE, "m from halfway toward own goal", "receptions")
     + row(BI, BLOCK, "deepest to furthest player, keeper in", "phases");
-  const gaps = U.line.gap_len.map((g, k) => q(`units.line.gap_len.${k}`, (g / FPS).toFixed(1)));
-  const gapText = gaps.slice(0, -1).join(", ") + " and " + gaps[gaps.length - 1] + NB + "s";
-  const kk = U.block.player_ids.indexOf(U.block.phase.keeper_id), cx = D.context;
-  at("sw-note").innerHTML = `The reception above counts for V0 only: its back four were all filled in (${gapText} from the nearest`
-    + ` frame the camera saw each), so its line depth (${q("units.line.value", fmt(U.line.value) + m)}) has no V1 reading. The block of its`
-    + ` phase is fixed by the goalkeeper, filled in ${q(`units.block.gap_len.${kk}`, (U.block.gap_len[kk] / FPS).toFixed(1) + NB + "s")}`
-    + ` from his nearest detection. In this match the camera saw the back four whole at ${q("context.line.all_detected", pct(cx.line.all_detected))}`
-    + ` of ${q("context.line.events", thou(cx.line.events))} receptions and the whole block at ${q("context.block.all_detected", pct(cx.block.all_detected, 1))}`
-    + ` of ${q("context.block.phases", thou(cx.block.phases))} phases.`;
 }
 
 /* ==========================================================================
@@ -749,12 +822,15 @@ function renderDetails() {
     + ` tenth to ninetieth percentile over the match). The corners are the provider's estimate and the far edge is cut, so the camera's pose`
     + ` cannot be recovered from them, and its height is not in the data.</p>`;
   const items = [
-    `One reception of one match, chosen by rule (<code>clip.json:rule</code>): match ${q("match_id", D.match_id)}, the match of the README's quick block, so a reader regenerates it in seconds; the reception with most defenders filled in (${q("key.defenders_extrapolated", D.key.defenders_extrapolated)} of ${q("n_defenders", D.n_defenders)}) and the longest gap among them (${q("key.longest_gap_len", (D.key.longest_gap_len / FPS).toFixed(1) + NB + "s")}), clearer than most, not typical.`,
+    `One reception of one match, chosen by rule (<code>clip.json:rule</code>): match ${q("match_id", D.match_id)}, the match of the README's quick block, so a reader regenerates it in seconds; the reception with most defenders filled in (${q("key.defenders_extrapolated", D.key.defenders_extrapolated)} of ${q("n_defenders", D.n_defenders)}) and the longest gap among them (${q("key.longest_gap_len", (D.key.longest_gap_len / FPS).toFixed(1) + NB + "s")}), clearer than most, not typical.`
+      + ` The second reception of the same match is chosen by its own rule (<code>camera.json:second.rule</code>, in <code>scripts/second_reception.py</code>), committed before it was looked for:`
+      + ` the earliest whose four units all count in V1, after ${q("second.earlier", thou(D.second.earlier))} that fail the rule. Near the ball and in view, it is not typical either.`,
     "Tracked: each player's and the ball's (x, y), <code>is_detected</code> and <code>gap_len</code>, and the frame's four corners. Drawn: nothing the data do not give; the camera's place and height are not in them.",
     `The frame's far edge is cut by the provider at y = ${q("frame_stats.far_cut_y_m", f.far_cut_y_m.toFixed(1) + m)} in ${q("frame_stats.far_cut_share", pct(f.far_cut_share))} of the frames with corners: the polygon is not the whole image.`,
-    `No corners in ${q("frame_stats.without_corners", thou(f.without_corners))} frames: no player listed, or the camera off the game; of the clip's ${q("n_frames", N)} frames, ${q("frame_stats.clip.without_corners", f.clip.without_corners)} lack them.`,
-    `V1 is a declared selection: what was near the ball and in view. The match's numbers are means over ${q(`match.rows.${LI}.V0.n`, thou(LINE.V0.n))} receptions and ${q(`match.rows.${BI}.V0.n`, thou(BLOCK.V0.n))} phases; the reception drawn is one case, and the page does not say where it ranks.`,
-    `The goalkeeper is a proxy (<code>ac2fb.reliability.visibility.goalkeepers</code>: the deepest mean position of a team in a period): player ${q("units.block.phase.keeper_id", U.block.phase.keeper_id)} for the defending team. The receiver is that proxy for his own team; the page does not call him a goalkeeper.`,
+    `No corners in ${q("frame_stats.without_corners", thou(f.without_corners))} frames: no player listed, or the camera off the game; of the clip's ${q("n_frames", D.n_frames)} frames, ${q("frame_stats.clip.without_corners", f.clip.without_corners)} lack them.`,
+    `V1 is a declared selection: what was near the ball and in view. The match's numbers are means over ${q(`match.rows.${LI}.V0.n`, thou(LINE.V0.n))} receptions and ${q(`match.rows.${BI}.V0.n`, thou(BLOCK.V0.n))} phases; each reception drawn is one case, and the page does not say where it ranks.`,
+    `The goalkeeper is a proxy (<code>ac2fb.reliability.visibility.goalkeepers</code>: the deepest mean position of a team in a period): player ${q("units.block.phase.keeper_id", D.units.block.phase.keeper_id)} for the defending team of the video's reception, player`
+      + ` ${q("second.units.block.phase.keeper_id", D.second.units.block.phase.keeper_id)} for that of the second. The video's receiver is that proxy for his own team; the page does not call him a goalkeeper.`,
     "The page measures nothing the repository does not print: <code>camera.json</code> lists every number and position drawn, and <code>scripts/camera_page.py --check</code> recomputes it from the data. The players of both units are read by the frozen code of layer 2 at their frames.",
   ];
   at("limits-list").innerHTML = items.map(t => `<li>${t}</li>`).join("");
@@ -790,30 +866,27 @@ function renderStatic() {
     + ` ${q("strips.claim.line_height_m.least", cl.line_height_m.least.toFixed(0))} to ${q("strips.claim.line_height_m.most", cl.line_height_m.most.toFixed(0))}${NB}m deeper`
     + ` and the block ${q("strips.claim.block_length_m.least", cl.block_length_m.least.toFixed(0))} to ${q("strips.claim.block_length_m.most", cl.block_length_m.most.toFixed(0))}${NB}m shorter:`
     + ` a different sample, not an error. ${esc(F.keep)}${report ? ` For block length and area, ${esc(report)}.` : ""}`;
-  at("hook-eyebrow").innerHTML = `The reception at frame ${q("key.frame", D.key.frame)}`;
-  at("count-of").innerHTML = q("n_defenders", D.n_defenders);
-  at("ticks").innerHTML = `<span>${q("frames.0", fmt(-KEY / FPS) + NB + "s")}</span><span>reception</span>`
-    + `<span>${q(`frames.${N - 1}`, plus((N - 1 - KEY) / FPS) + NB + "s")}</span>`;
-  at("key-gap").innerHTML = `<b class="num">${q("units.line.gap_len.0", (U.line.gap_len[0] / FPS).toFixed(1) + NB + "s")}</b>`
-    + `<span>seconds to the nearest frame the camera saw him, shown over ${q("label_gap_s", LABEL_GAP_S.toFixed(0) + NB + "s")}; tap a ring for the rest</span>`;
   at("repo").textContent = "github.com/javiersr1996/what-the-camera-saw";
 }
 
+buildStage();
 renderStatic();
 render(KEY);
 requestAnimationFrame(() => stage.classList.add("live"));  // the markers slide between frames from now on, not into place
 setVariant("v0");
 renderSwitchText();
+renderPlayText();
 renderVerdict();
 renderDetails();
 
 /* The console API the driver uses (scripts/drive_camera_page.py). */
 window.camera = {
-  state: () => ({i: cur, playing: Boolean(timer), variant: sw.dataset.v, pinned: [...pinned].sort()}),
+  state: () => ({i: cur, playing: Boolean(timer), variant: sw.dataset.v, pinned: [...pinned].sort(), reception: P}),
   seek: i => { stop(); render(Number(i)); },
   play: start,
   pause: stop,
   variant: setVariant,
+  reception: pickPlay,
 };
 </script>
 </body>
